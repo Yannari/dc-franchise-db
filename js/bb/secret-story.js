@@ -154,7 +154,7 @@ const secretOf = (state, n) => (state?.secrets || []).find(s => s.holders.includ
 /**
  * The week's hunt: suspicion grows, and the bold press the buzzer. Returns the buzz acts.
  */
-export function runSecretHunt({ week, house = [], rng = Math.random } = {}) {
+export function runSecretHunt({ week = undefined, house = [], rng = Math.random } = {}) {
   const state = ssState();
   if (!state) return [];
   const room = house.filter(Boolean);
@@ -224,7 +224,7 @@ export function runSecretHunt({ week, house = [], rng = Math.random } = {}) {
  * Odd weeks the women nominate the men; even weeks the men nominate the women. A side too small
  * to nominate from (or a house with no gender on the roster) nominates freely.
  */
-export function secretStoryNominations({ week, house = [], immune = [], rng = Math.random } = {}) {
+export function secretStoryNominations({ week = undefined, house = [], immune = [], rng = Math.random } = {}) {
   const room = house.filter(Boolean);
   const wk = Number(week?.num) || 1;
   const nominateMen = wk % 2 === 1;

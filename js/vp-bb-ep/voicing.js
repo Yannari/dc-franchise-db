@@ -168,7 +168,7 @@ function askToken() {
 /** Delete clips from the bucket: one week (but the line ids in `keep`), every week from `from` on, or the whole
  *  season. For a re-run week and a reset season, as Total Drama's (vp-td-ep/voicing.js clearVoices), in
  *  Big Brother's own folder. Quietly nothing without the studio token. */
-export async function bbClearVoices({ season = bbVoiceSeason(), episode, from, keep } = {}) {
+export async function bbClearVoices({ season = bbVoiceSeason(), episode = undefined, from = undefined, keep = undefined } = {}) {
   if (!token() || offline()) return 0;
   try {
     const r = await fetch(`${VOICE_API()}/api/voice/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },

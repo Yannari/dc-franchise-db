@@ -55,7 +55,7 @@ const SOURCE_CRED = { public: 1.0, observed: 0.9, told: 0.7, deduced: 0.62, rumo
 export const ALIGNMENT_CRED_CEILING = SOURCE_CRED.deduced;   // 0.62
 
 // ── ground-truth facts ────────────────────────────────────────────────
-export function recordFact({ type, subject, object = null, payload = null, truth = true, ep = null } = {}) {
+export function recordFact({ type = undefined, subject = undefined, object = null, payload = null, truth = true, ep = null } = {}) {
   if (!type || !subject) return null;
   const id = factId(type, subject, object);
   const s = store();

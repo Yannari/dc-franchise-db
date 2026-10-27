@@ -174,7 +174,7 @@ export function viewerOpen() {
 /** Silence every title video (closing the viewer hides it, and a hidden video keeps playing). */
 export function stopTitles() {
   if (typeof document === 'undefined') return;
-  document.querySelectorAll('.bbt video, .bbt audio').forEach(v => { try { v.pause(); v.dataset.started = ''; } catch { /* fine */ } });
+  /** @type {NodeListOf<HTMLMediaElement>} */ (document.querySelectorAll('.bbt video, .bbt audio')).forEach(v => { try { v.pause(); v.dataset.started = ''; } catch { /* fine */ } });
 }
 
 if (typeof window !== 'undefined') Object.assign(window, { bbxTitleReady, bbxTitlePlay, bbxTitleFallback, bbxTitleDone, bbxTitleLiveSilent });

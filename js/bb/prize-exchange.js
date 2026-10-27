@@ -89,10 +89,16 @@ function prizeDesire(name, prize, archetypeOf) {
 /**
  * Run the exchange.
  *
- * @param {string[]} order  pick order, first to last (worst comp finish first)
+ * @param {object} [opts]
+ * @param {*}        [opts.week]
+ * @param {string[]} [opts.order]  pick order, first to last (worst comp finish first)
+ * @param {string[]} [opts.nominees]
+ * @param {string}   [opts.hoh]
+ * @param {() => number} [opts.rng]
+ * @param {(name: string) => string} [opts.archetypeOf]
  * @returns {object|null} the act, or null when there is nobody to play
  */
-export function runPrizeExchange({ week, order = [], nominees = [], hoh = null,
+export function runPrizeExchange({ week = undefined, order = [], nominees = [], hoh = null,
   rng = Math.random, archetypeOf = () => '' } = {}) {
   const pickers = [...order].filter(Boolean);
   if (pickers.length < 3) return null;

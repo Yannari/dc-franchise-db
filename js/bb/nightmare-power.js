@@ -61,7 +61,7 @@ const beat = (text, players, badgeText, badgeClass = 'gold', part = null) =>
  * problem, and the house never even learns you did it.
  */
 export function nightmarePull(holder, { nominees = [], weeksLeft = 0, rng = Math.random } = {}) {
-  const st = pStats(holder) || {};
+  const st = pStats(holder);
   if (nominees.includes(holder)) {
     // Your name is on the wall and this takes it off. Nearly always.
     return clamp(0.93 - (st.temperament ?? 5) * 0.01, 0.7, 0.97);
@@ -84,13 +84,18 @@ export function nightmarePull(holder, { nominees = [], weeksLeft = 0, rng = Math
 /**
  * Void the ceremony and make the Head of Household do it again.
  *
- * @param {object} opts
- * @param {string[]} opts.nominees the two who were just nominated
- * @param {string[]} opts.untouchable anybody who cannot be seated at all
+ * @param {object} [opts]
+ * @param {*}        [opts.week]
+ * @param {string[]} [opts.house]
+ * @param {string}   [opts.hoh]
+ * @param {string}   [opts.holder]
+ * @param {string[]} [opts.nominees] the two who were just nominated
+ * @param {string[]} [opts.untouchable] anybody who cannot be seated at all
+ * @param {() => number} [opts.rng]
  * @returns {object|null} `{ nominees, act }` — the NEW two, or null when the
  *   house cannot field two fresh names, in which case the ceremony stands.
  */
-export function runNightmarePower({ week, house, hoh, holder, nominees = [],
+export function runNightmarePower({ week = undefined, house = undefined, hoh = undefined, holder = undefined, nominees = [],
   untouchable = [], rng = Math.random } = {}) {
   const room = (house || []).filter(Boolean);
   // ── THE ORIGINAL TWO ARE OFF THE TABLE, AND SO IS THE HEAD OF HOUSEHOLD ──

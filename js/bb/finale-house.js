@@ -32,10 +32,11 @@ import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { stableRng } from './knowledge.js';
 import { seatedJurors } from './jury.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || 'floater';
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 
 /** A picker that will not repeat itself inside one scene. */
 function drawer(rng) {

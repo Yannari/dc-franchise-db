@@ -81,7 +81,7 @@ const sharedSpace = {
   },
   fire(house, ctx, api) {
     const { a, b } = _quietPair(house, ctx);
-    const warm = bond(a, b) >= 1 || sharesAlliance(a, b) || !!romanceOf(a, b);
+    const warm = bond(a, b) >= 1 || sharesAlliance(a, b) || romanceOf(a) === b;
     const scene = makeScene('venue.shared', { a, b }, { ending: warm ? 'warm' : 'cold' }, [],
       _room(['living-room', 'kitchen', 'backyard'], ctx, a, b));
     api.addBond(a, b, warm ? 0.8 : -0.3);

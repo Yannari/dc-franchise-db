@@ -43,7 +43,7 @@ const archOf = n => players.find(p => p.name === n)?.archetype;
 export function registerOf(name) {
   const arch = archOf(name);
   let s = {};
-  try { s = pStats(name) || {}; } catch { s = {}; }
+  try { s = pStats(name); } catch { s = {}; }
   const t = s.temperament ?? 5, so = s.social ?? 5, st = s.strategic ?? 5;
   if (VILLAIN.has(arch)) return 'schemer';
   if (['hothead', 'chaos-agent'].includes(arch) || t <= 3) return 'fiery';

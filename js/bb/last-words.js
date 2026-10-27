@@ -40,6 +40,7 @@ import { dealBetween } from './deals.js';
 import { rememberBBStrategy, setBBTarget } from './shared-strategy.js';
 import { seedJurorReads, moveRead } from './jury-sentiment.js';
 import { evictionSeatsAJuror } from './jury.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const clamp01 = v => clamp(v, 0, 1);
@@ -393,7 +394,7 @@ function drawer(rng) {
     return chosen;
   };
 }
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 
 function speechFor(reveal, speaker, register, rng) {
   const a = reveal.accused;
@@ -915,6 +916,7 @@ export function checkBBLastWords(week, rngIn) {
 
   deduceVotes(week, evictee, rng);
 
+  /** @type {any} */
   let reveal = null;
   const fabricated = mayFabricate(evictee) && rng() < 0.35;
   if (fabricated) reveal = fabricate(week, evictee);
@@ -946,7 +948,7 @@ export function checkBBLastWords(week, rngIn) {
   // eight words.
   const draw = drawer(rng);
   for (const listener of listeners) {
-    const reaction = resolveBelief(listener, evictee, reveal, isTrue, rng);
+    const reaction = /** @type {any} */ (resolveBelief(listener, evictee, reveal, isTrue, rng));
     applyReaction(listener, evictee, reveal, reaction, week, rng);
     reactions.push({ listener, ...reaction, text: reactionText(listener, evictee, reveal, reaction, draw) });
   }

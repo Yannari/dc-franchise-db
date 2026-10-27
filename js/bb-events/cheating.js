@@ -54,7 +54,7 @@ const stateOf = sh => (sh._cheat ||= { remorse: 0, guilt: 0, cold: 0, outed: fal
 export function homeWords(cheater, at) {
   const word = at?.word || kinWord(homeKin(at?.stage), at?.name || '');
   const named = at?.outside ? !!at.named : !!at?.name;
-  const pr = pronouns(cheater) || {};
+  const pr = pronouns(cheater);
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
   const home = named ? at.name : `${pr.posAdj || 'their'} ${word}`;
   const myhome = named ? at.name : `my ${word}`;

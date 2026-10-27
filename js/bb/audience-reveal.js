@@ -99,9 +99,9 @@ const pick = (list, rng) => list[Math.floor((rng ? rng() : 0.5) * list.length) %
  *   reveal     the tally in READING order — lowest share first, target last
  *   resultLine the sentence the name lands in
  *
- * @param {object}   o
- * @param {Array}    o.tally   [{name, share}], any order
- * @param {string}   o.target  who the vote landed on
+ * @param {object}   [o]
+ * @param {Array}    [o.tally]   [{name, share}], any order
+ * @param {string}   [o.target]  who the vote landed on
  * @param {string}   [o.verb]  'evict' | 'save' | 'nominate'
  * @param {number}   [o.weight] how many ballots this vote is worth
  * @param {function} [o.rng]

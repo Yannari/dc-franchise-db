@@ -95,6 +95,7 @@ export function voiceMix(voice) {
   }
   // 2. then the words, in the order they come (hashtags taken out so a #warm is not counted twice)
   const words = t.replace(/#-?[a-z]+(?::[\d.]+)?/g, ' ');
+  /** @type {[number, string][]} */
   const found = [];
   for (const r of BB_REGISTERS) {
     const g = new RegExp(KEYS[r].source, 'g');

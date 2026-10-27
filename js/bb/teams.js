@@ -106,7 +106,7 @@ export const CLIQUES = Object.freeze([
 
 /** How well this houseguest fits that clique, 0..1-ish. Never a gate. */
 function affinity(name, clique) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   let score = 0;
   for (const [stat, weight] of Object.entries(clique.mix)) {
     score += ((st[stat] ?? 5) / 10) * weight;
@@ -197,6 +197,7 @@ export function assignTeams({ house = [], rng = Math.random } = {}) {
 export const BB23_TEAMS = Object.freeze(['Kings', 'Queens', 'Jokers', 'Aces']);
 const genderOf = n => (players || []).find(p => p.name === n)?.gender || null;
 
+/** @param {{ house?: string[], rng?: () => number, readBond?: (a: string, b: string) => number }} [opts] */
 export function assignCaptainTeams({ house = [], rng = Math.random, readBond = () => 0 } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 8) return null;

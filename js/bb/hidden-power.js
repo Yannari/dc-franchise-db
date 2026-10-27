@@ -84,7 +84,7 @@ export function hiddenPowerState() { return store().hiddenPower || null; }
  * information in it, which is the most destabilising thing you can hand a
  * group of people who already suspect each other.
  */
-export function hidePower({ week, house, rng = Math.random, powerId = 'the-cloud' } = {}) {
+export function hidePower({ week = undefined, house = undefined, rng = Math.random, powerId = 'the-cloud' } = {}) {
   if (hiddenPowerState() || (house || []).length < 4) return null;
   const def = BB_POWER_DEFINITIONS[powerId] || BB_POWER_DEFINITIONS['the-cloud'];
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
@@ -118,7 +118,7 @@ export function hidePower({ week, house, rng = Math.random, powerId = 'the-cloud
  * believing house searches far harder than a sceptical one. That is why the
  * twist accelerates — the first searcher is the expensive one.
  */
-export function searchForPower({ week, house, nominees = [], rng = Math.random } = {}) {
+export function searchForPower({ week = undefined, house = undefined, nominees = [], rng = Math.random } = {}) {
   const hp = hiddenPowerState();
   if (!hp || hp.found || hp.gone) return null;
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;

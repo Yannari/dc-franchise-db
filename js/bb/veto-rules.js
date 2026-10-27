@@ -80,10 +80,11 @@ function _secondHolder(kind, {
  * @returns {{primary: object, extra: object[]}}
  */
 export function resolveVetoRules({
-  week, vetoWinner = null, placements = [], vetoPlayers = [], house = [], hoh = null,
+  week = undefined, vetoWinner = null, placements = [], vetoPlayers = [], house = [], hoh = null,
   rng = Math.random,
 } = {}) {
   const rules = week?.twistState?.rules || {};
+  /** @type {Record<string, any>} */
   const primary = { ...DEFAULT_PRIMARY };
   const extra = [];
 

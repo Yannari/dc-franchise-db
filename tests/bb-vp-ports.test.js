@@ -37,8 +37,9 @@ const CASES = [
   ...['summer-of-temptation', 'machine-summer', 'summer-of-mystery', 'high-rollers', 'summer-camp', 'summer-school'].map(theme => ({ name: `theme ${theme}`, cfg: { theme }, weeks: 2 })),
   { name: 'theme turn', cfg: { theme: 'high-rollers' }, weeks: 6 },
   { name: 'have-nots', cfg: { bbHaveNots: 'every-week' }, weeks: 2 },
-  // (a seed with two walk-outs in five weeks: 'often' is a chance, and any new house event moves the dice)
-  { name: 'departures', cfg: { bbDepartures: 'often' }, weeks: 5, seed: 3 },
+  // (a seed with two walk-outs in five weeks: 'often' is a chance, and any new house event moves the dice;
+  // seed 3 lost its walk-outs to the HOH self-pitch, 2026-10-27, when seeds 1-16 all had one but 3)
+  { name: 'departures', cfg: { bbDepartures: 'often' }, weeks: 5, seed: 7 },
   { name: 'instant eviction', cfg: twist('bb-instant-eviction', [2]), weeks: 2 },
   { name: 'double eviction', cfg: twist('bb-double-eviction', [2]), weeks: 2 },
   { name: 'triple eviction', cfg: twist('bb-triple-eviction', [2]), weeks: 2 },

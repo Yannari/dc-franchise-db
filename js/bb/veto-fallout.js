@@ -109,7 +109,7 @@ export function saveExpectation({ nominee, holder, decision, replacementPool = [
  * @returns {{beats: object[], damage: number, resented: string[]}}
  */
 export function applyVetoFallout({
-  week, holder, decision, priorBlock = [], nominees = [], replacement = null,
+  week = undefined, holder = undefined, decision = undefined, priorBlock = [], nominees = [], replacement = null,
   hoh = null, plan = null, house = [], rng = Math.random,
 } = {}) {
   const beats = [];

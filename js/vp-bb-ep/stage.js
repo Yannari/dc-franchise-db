@@ -649,6 +649,7 @@ const FRONT = { 1: [50], 2: [36, 64], 3: [27, 50, 73] };
 // people in a scene who are not talking do what the room is for (the gym lifts, the kitchen cooks,
 // the pool tans, the library reads, the bedroom sleeps), with a small badge and their own rhythm.
 // each room's things to do; each person picks one of them (by name, so they keep it all scene)
+/** @type {[RegExp, (string | null)[]][]} */
 const IDLE_OF = [[/^kitchen-/, ['cook', 'eat', 'drink']], [/^dining-/, ['eat', 'drink']], [/^(bar-|beach-bar)/, ['drink', 'eat']], [/^gym-/, ['lift', 'stretch']],
   [/^(pool-|patio$|balcony$|beach-|dock$)/, ['tan', 'drink', 'read']], [/^library-/, ['read']], [/^bedroom-/, ['rest', 'read', 'groom']], [/^hallway$/, ['groom']],
   [/^(comp-|lawn-)/, ['stretch']], [/^living-/, ['eat', 'read', 'drink', null]], [/^hoh-/, ['rest', 'snack', 'read']], [/^storage/, ['snack']],
@@ -682,6 +683,7 @@ const idleFx = k => (k ? `<span class="idle-b idle-${k}"><svg viewBox="0 0 24 24
 // action, that's how you make a viewer alive, like we did in Perfect Match". As there, the action
 // is read from what HAPPENS (a stage direction), never from what somebody says they did, except
 // a shout, which is how a line is said. Who: the people the direction names, or the speaker.
+/** @type {[string, RegExp, number?][]} */
 const ACTIONS = [
   ['kiss', /\bkiss(es|ed)?\b/i, 2],
   ['hug', /\bhug(s|ged)?\b|\bembrace|into a hug|squeezes .{0,20}(shoulder|hand)/i, 2],

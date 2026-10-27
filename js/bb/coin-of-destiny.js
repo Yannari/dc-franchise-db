@@ -135,7 +135,7 @@ function coinNeed(name, { house = [], nominees = [] } = {}) {
  * it, temperament is the rest inverted, and it tilts rather than gates.
  */
 function nerveFor(name) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   return clamp(((st.boldness ?? 5) * 0.7 + (10 - (st.temperament ?? 5)) * 0.3) / 10, 0, 1);
 }
 
@@ -145,7 +145,7 @@ function nerveFor(name) {
  *
  * @returns {object|null} the act, or null when nobody bought in
  */
-export function runCoinOfDestiny({ week, house, hoh, nominees = [], price = COIN_PRICE,
+export function runCoinOfDestiny({ week = undefined, house = undefined, hoh = undefined, nominees = [], price = COIN_PRICE,
   rng = stableRng('coin-of-destiny', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 5) return null;

@@ -48,7 +48,7 @@ export function supportingAlumni(cast = [], count = 3) {
  * `teams` are the sorted cliques (the returnee is in none of them yet), `returnee` is
  * mysteryHouseguestOf's pick or null.
  */
-export function runCliqueReturnees({ week, teams = [], returnee = null, house = [], rng = Math.random } = {}) {
+export function runCliqueReturnees({ week = undefined, teams = [], returnee = null, house = [], rng = Math.random } = {}) {
   const live = teams.filter(t => (t.members || []).length);
   if (live.length < 2) return null;
   const players = live.flatMap(t => t.members);

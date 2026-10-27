@@ -95,7 +95,7 @@ function drawn() {
  *   still says yes.
  */
 function acceptPull(name, { hoh, house, houseWide }) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   const bond = (a, b) => { try { return getPerceivedBond(a, b); } catch { return 0; } };
   const exposure = clamp(0.5 - bond(hoh, name) * 0.06, 0, 1);
   // How much this houseguest cares about spending the room's goodwill. Loyalty
@@ -122,7 +122,7 @@ function acceptPull(name, { hoh, house, houseWide }) {
  *
  * @returns {object|null} the act, or null when there is nobody to draw
  */
-export function runWildcard({ week, house, hoh, nominees = [],
+export function runWildcard({ week = undefined, house = undefined, hoh = undefined, nominees = [],
   rng = stableRng('bb-wildcard', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 5) return null;

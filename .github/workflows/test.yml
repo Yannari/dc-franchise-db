@@ -57,6 +57,20 @@ jobs:
       # simulations remain in nightly.yml and are not weakened or skipped.
       - run: npm test -- --shard=${{ matrix.shard }}/4
 
+  # Big Brother's code, type-checked from its JSDoc and types/*.d.ts (tsconfig.bb.json).
+  # About fifteen seconds; it reads the source and runs nothing.
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:bb
+
   show-pages:
     runs-on: ubuntu-latest
     timeout-minutes: 10

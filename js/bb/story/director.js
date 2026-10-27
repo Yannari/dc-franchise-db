@@ -636,7 +636,7 @@ export function airStorylines(week) {
     const seen = n => chosen.filter(c => c.players[0] === n).length + (pitchedBy.get(n) || 0);
     const third = week.blockBeforeSafety?.length && week.safetyWinner ? week.safetyWinner : null;
     const most = () => Math.max(0, ...(week.blockBeforeSafety || []).filter(n => n !== third).map(seen));
-    const order = [...new Set(pitches.map(b => b.players[0]))].sort((x, y) => (x === third) - (y === third));
+    const order = [...new Set(pitches.map(b => b.players[0]))].sort((x, y) => Number(x === third) - Number(y === third));
     for (const nominee of order) {
       if (nominee === third && seen(third) > most()) continue;
       const best = pitches.filter(b => b.players[0] === nominee && !chosen.some(c => voter(c) === voter(b))).sort((x, y) => rank(y) - rank(x))[0];

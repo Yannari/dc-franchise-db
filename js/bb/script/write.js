@@ -50,7 +50,7 @@ function slot(m, role, part, who, ctx, data) {
   const name = role === 'hoh' ? ctx.hoh : (who[role] ?? (typeof data[role] === 'string' ? data[role] : undefined));
   if (!name) return m;
   if (!part) return name;
-  const p = pronouns(name) || {};
+  const p = pronouns(name);
   return p[part] ?? m;
 }
 
@@ -77,9 +77,9 @@ function beatRepeats(text) {
     for (const n of cast) {
       const re = new RegExp(`\\b${escRe(n)}\\b('s)?`, 'g');
       if ((sent.match(re) || []).length < 2) continue;
-      const p = pronouns(n) || {};
+      const p = pronouns(n);
       if (!p.sub) continue;
-      if (cast.some(o => o !== n && new RegExp(`\\b${escRe(o)}\\b`).test(sent) && (pronouns(o) || {}).sub === p.sub)) continue;
+      if (cast.some(o => o !== n && new RegExp(`\\b${escRe(o)}\\b`).test(sent) && (pronouns(o)).sub === p.sub)) continue;
       let seen = false;
       sent = sent.replace(re, (m, poss, at, whole) => {
         if (!seen) { seen = true; return m; }
@@ -112,7 +112,7 @@ function acrossSentences(text) {
     let out = part;
     const m = part.match(/^(["“'‘]?)([A-Z][\w-]*)(['’]s)?\s+([a-z']+)/);
     if (m && only && m[2] === only && named.length === 1) {
-      const p = pronouns(only) || {};
+      const p = pronouns(only);
       if (m[3] && p.posAdj) out = m[1] + capFirst(p.posAdj) + part.slice(m[1].length + m[2].length + m[3].length);
       else if (!m[3] && p.sub && (p.sub !== 'they' || THEY_SAFE.test(m[4]))) out = m[1] + capFirst(p.sub) + part.slice(m[1].length + m[2].length);
     }

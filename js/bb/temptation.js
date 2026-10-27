@@ -164,7 +164,7 @@ function acceptRead(name, rng, { house = [], hoh = null } = {}) {
  * here because "third chair" is what this said for months after it stopped
  * being true, and it is what the twist-compatibility tests went on asserting.
  */
-export function runDenOfTemptation({ week, house, rng = Math.random, offered = 'random' } = {}) {
+export function runDenOfTemptation({ week = undefined, house = undefined, rng = Math.random, offered = 'random' } = {}) {
   const room = (house || []).filter(Boolean);
   // The curse needs somebody who is not the taker, and a house this small has
   // nobody spare to take the seat anyway.
@@ -293,7 +293,7 @@ export const TREE_APPLES = Object.freeze({
   'minus-two': { id: 'minus-two', name: 'Eliminate Two Eviction Votes', good: true },
   'second-veto': { id: 'second-veto', name: 'A Second Veto', good: true },
 });
-export function runTreeOfTemptation({ week, house, hoh, rng = Math.random } = {}) {
+export function runTreeOfTemptation({ week = undefined, house = undefined, hoh = undefined, rng = Math.random } = {}) {
   const b = (gs.bb ||= {});
   if (!b.treeApples) {
     const all = Object.keys(TREE_APPLES);
@@ -316,6 +316,7 @@ export function runTreeOfTemptation({ week, house, hoh, rng = Math.random } = {}
   const picker = runners.slice().sort((x, y) => pStats(y).physical - pStats(x).physical)[0];
   const apple = TREE_APPLES[b.treeApples.shift()];
   b.treePicked.push(picker);
+  /** @type {Record<string, any>} */
   const out = { ...base, picker, apple: apple.id, appleName: apple.name, good: apple.good };
   if (apple.id === 'save-a-friend') {
     const friend = room.filter(n => n !== picker).sort((x, y) => { try { return getBond(picker, y) - getBond(picker, x); } catch { return 0; } })[0] || null;
@@ -339,7 +340,7 @@ const listOfNames = l => (l.length < 2 ? l.join('') : `${l.slice(0, -1).join(', 
  * Opting in is the gamble: the people who feel the week closing on them are
  * the ones who take it.
  */
-export function runTemptationCompetition({ week, house, hoh, protectedNames = [], rng = Math.random } = {}) {
+export function runTemptationCompetition({ week = undefined, house = undefined, hoh = undefined, protectedNames = [], rng = Math.random } = {}) {
   const room = (house || []).filter(n => n && n !== hoh);
   const want = n => {
     const st = pStats(n);
@@ -380,7 +381,7 @@ export function runTemptationCompetition({ week, house, hoh, protectedNames = []
  * the caller must still say so out loud, because the Den already promised the
  * house a curse.
  */
-export function resolveCurse({ week, house, protectedNames = [], rng = Math.random } = {}) {
+export function resolveCurse({ week = undefined, house = undefined, protectedNames = [], rng = Math.random } = {}) {
   const t = week?.temptation;
   // only the chair waits for the nominations: Ve-Toads and the Temptation Competition already landed
   if (!t?.accepted || t.cursed || t.cursePending === false) return null;

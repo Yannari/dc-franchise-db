@@ -15,6 +15,7 @@ import { duoPartnerFor } from './duos.js';
 // where the ask happens. A fourth was measured and deleted — see the note in
 // jury-pressure.js before adding one.
 import { juryManagementWeight, juryPactKeepPull } from './jury-pressure.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const noise = (rng, amount = 1) => (rng() - 0.5) * amount;
@@ -739,7 +740,7 @@ export function nominationGrievance(hoh, name) {
   if (!shared.length) return null;
   let heat;
   try { heat = bbHeat(hoh, name); } catch { return null; }
-  const c = heat.components || {};
+  const c = /** @type {Record<string, any>} */ (heat.components || {});
   const alliance = shared.sort((a, b) => (b.members || []).length - (a.members || []).length)[0];
   const live = (alliance.members || []).filter(n => (gs.activePlayers || []).includes(n));
   const base = { alliance: alliance.name || null, size: live.length,
@@ -807,7 +808,7 @@ export function explainReplacement(hoh, name, pool, plan, nominees = [], opts = 
 
 function _explainReplacement(hoh, name, pool, plan, nominees = [], { as = null } = {}) {
   const who = as || hoh;
-  const whoP = as ? { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They', Obj: 'Them' } : pronouns(hoh);
+  const whoP = as ? pronounsOf('nb') : pronouns(hoh);
   if (!name) return '';
   const options = (pool || []).filter(n => n !== name);
   if (!options.length) {
@@ -1014,7 +1015,7 @@ export function campaignAttempt(nominee, voter, opponent, rng = Math.random) {
  * houseguest keeps about half, and a genuine reader keeps all of it.
  */
 export function throwLiteracy(name) {
-  const s = pStats(name) || {};
+  const s = pStats(name);
   const read = ((s.strategic || 5) * 0.55 + (s.mental || 5) * 0.25 + (s.intuition || 5) * 0.20) / 10;
   return clamp((read - 0.28) / 0.42, 0, 1);
 }

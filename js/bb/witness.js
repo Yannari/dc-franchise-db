@@ -29,7 +29,7 @@ const PRIVATE = new Set(['hoh-room', 'pantry', 'washroom', 'diary-room', 'storag
 
 /** Where c stands between a and b: { side: 'a' | 'b' | 'out', turned }. */
 export function stanceOf(c, a, b, key) {
-  const s = pStats(c) || {};
+  const s = pStats(c);
   const jitter = (stableRng(gs.bb?.seasonSalt || 0, 'bb-witness', key, c, a, b)() - 0.5) * 1.5;
   const lean = getBond(c, a) - getBond(c, b) + jitter;
   // the calm hold back and the bold speak up: the same feelings take more to say for a calm person

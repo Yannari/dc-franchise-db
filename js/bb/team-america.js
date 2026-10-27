@@ -437,7 +437,7 @@ const MISSION_EFFECTS = {
  *
  * @returns {object|null} the act, or null when there is no team to send
  */
-export function runMission({ week, house = [], rng = Math.random, forced = null,
+export function runMission({ week = undefined, house = [], rng = Math.random, forced = null,
   plan = null, hoh = null } = {}) {
   const t = store();
   const team = teamMembers(house);

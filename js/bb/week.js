@@ -31,7 +31,7 @@ import { recordBBExits } from './exit-interview.js';
 import { duosActive, duosSittingOut, duoNominees, grantGoldenKey, expireKeys,
   announceDuos, keyHolders, repairOrphans, duosWeekLife, duoBlock,
   duoSafeWith, duoReplacementBlock, duoKinLabel, duoDoubleBlock, duoVoteResult,
-  twoDuoBlock } from './duos.js';
+  twoDuoBlock, partnerOf } from './duos.js';
 import { openDuoWeek, duoWeekActive, duoWeekNominees, duoWeekAfterVeto,
   duoWeekSecondEvictee, duoWeekEviction, duoWeekEvents, duoWeekSafe,
   DUO_WEEK_MIN_HOUSE } from './duo-week.js';
@@ -886,7 +886,7 @@ function runHouseRomance(week, rng) {
         }
         const arch = (players.find(p => p.name === c) || {}).archetype || '';
         let st = {};
-        try { st = pStats(c) || {}; } catch { st = {}; }
+        try { st = pStats(c); } catch { st = {}; }
         if (['villain', 'schemer', 'mastermind'].includes(arch)) {
           return romanceLine(e.type, [
             `${c} takes it with a smile that does not reach anything. "That is fine. I would only say that you made that choice in a house where everybody gets a vote."`,
@@ -999,7 +999,7 @@ function runHouseRomance(week, rng) {
         if (e.kind !== 'chose') return [who, { ending: 'faded' }];
         const arch = (players.find(x => x.name === c) || {}).archetype || '';
         let st = {};
-        try { st = pStats(c) || {}; } catch { st = {}; }
+        try { st = pStats(c); } catch { st = {}; }
         if (['villain', 'schemer', 'mastermind'].includes(arch)) return [who, { ending: 'villain' }];
         if ((st.strategic ?? 5) >= 7 && (st.loyalty ?? 5) <= 4) return [who, { ending: 'cool' }];
         return [who, { ending: 'hurt' }];
@@ -1063,6 +1063,7 @@ function runHouseMaintenance(week, rng = Math.random) {
     campEvents: { merge: { pre: [], post: [] } },
     knowledgeEvents: [],
   };
+  /** @type {[string, () => any][]} */
   const steps = [
     // Suspicion is attention, and attention fades. Without this, suspicion
     // was a pure ratchet — 3,063 upward moves against 18 downward across
@@ -2850,13 +2851,13 @@ export function simulateBBWeek(options = {}) {
         // Back yourself, against the three you are most likely to beat — but a
         // promise made an hour ago outranks the arithmetic, because breaking
         // one on night one is a thing the whole house watches you do.
-        const rest = others.sort((a, b) => (owed.has(b) - owed.has(a)) || (strength(a) - strength(b)));
+        const rest = others.sort((a, b) => (Number(owed.has(b)) - Number(owed.has(a))) || (strength(a) - strength(b)));
         picked = [relic.holder, ...rest.slice(0, 3)];
       } else {
         // You cannot win it, so buy a friendly reign instead: the people who
         // asked and were told yes first, then the people who like you most.
         picked = others.sort((a, b) => {
-          if (owed.has(a) !== owed.has(b)) return owed.has(b) - owed.has(a);
+          if (owed.has(a) !== owed.has(b)) return Number(owed.has(b)) - Number(owed.has(a));
           let ba = 0; let bb = 0;
           try { ba = getPerceivedBond(relic.holder, a); } catch { ba = 0; }
           try { bb = getPerceivedBond(relic.holder, b); } catch { bb = 0; }
@@ -3003,11 +3004,11 @@ export function simulateBBWeek(options = {}) {
     try {
       const runner = hohCompetition.placements.find(n => n !== hoh && (week.captainsOnly || []).includes(n)) || null;
       if (runner) {
-        const ds = pStats(hoh) || {};
+        const ds = pStats(hoh);
         const took = rng() < Math.min(0.75, Math.max(0.1, 0.15 + (ds.boldness || 5) * 0.05 - (ds.strategic || 5) * 0.02));
         const don = { type: 'double-or-nothing', week: week.num, hoh, runner, team: teamOf(hoh)?.name || null, took, won: null, beats: [] };
         if (took) {
-          const sc = n => { const p = pStats(n) || {}; return (p.physical || 5) * 0.35 + (p.mental || 5) * 0.35 + (p.endurance || 5) * 0.3 + rng() * 4; };
+          const sc = n => { const p = pStats(n); return (p.physical || 5) * 0.35 + (p.mental || 5) * 0.35 + (p.endurance || 5) * 0.3 + rng() * 4; };
           don.won = sc(hoh) >= sc(runner);
           if (don.won) {
             const t = teamOf(hoh);
@@ -3187,6 +3188,7 @@ export function simulateBBWeek(options = {}) {
   // has to be the first thing that happens after the crown.
   if (!compressed) {
     try {
+      /** @type {Record<string, any>} */
       const usurp = playInterrogation({ week, house, hoh, rng });
       if (usurp) {
         week.interrogation = usurp;
@@ -3755,7 +3757,7 @@ export function simulateBBWeek(options = {}) {
       const w = n => Math.max(0.3, 3 + (gs.popularity?.[n] || 0) * 0.6 + rng() * 2);
       const sent = pool.slice().sort((a, b) => w(b) - w(a)).slice(0, 3);
       if (sent.length === 3) {
-        const st = n => pStats(n) || {};
+        const st = n => pStats(n);
         const sc = Object.fromEntries(sent.map(n => [n, Math.round(((st(n).physical || 5) * 0.4 + (st(n).mental || 5) * 0.3 + (st(n).endurance || 5) * 0.3 + rng() * 4) * 10) / 10]));
         const order = sent.slice().sort((a, b) => sc[b] - sc[a]);
         const [winner, second, last] = order;
@@ -4331,6 +4333,7 @@ export function simulateBBWeek(options = {}) {
       // nobody chose.
       targets: blocks.map(p => p.find(n => wanted.includes(n)) || p[0]),
       kins: blocks.map(p => { try { return duoKinLabel(p[0], p[1]); } catch { return ''; } }),
+      kin: '',
     };
     try { duoNom.kin = duoKinLabel(blocks[0][0], blocks[0][1]); } catch { duoNom.kin = ''; }
   }
@@ -4446,7 +4449,7 @@ export function simulateBBWeek(options = {}) {
         try { if (getBBTarget(n) === nominee) return true; } catch { /* no target */ }
         try { return (housePlan(n)?.targets || []).includes(nominee); } catch { return false; }
       };
-      const hStats = (() => { try { return pStats(hoh) || {}; } catch { return {}; } })();
+      const hStats = (() => { try { return pStats(hoh); } catch { return {}; } })();
       let hArch = '';
       try { hArch = (players.find(pp => pp.name === hoh) || {}).archetype || ''; } catch { hArch = ''; }
       // 0.58 rather than 0.42: at the lower number half of all Heads of
@@ -4513,7 +4516,7 @@ export function simulateBBWeek(options = {}) {
       if (live.length < 3) continue;
       const leaverName = consented ? nominee : hoh;
       let lStats = {};
-      try { lStats = pStats(leaverName) || {}; } catch { lStats = {}; }
+      try { lStats = pStats(leaverName); } catch { lStats = {}; }
       const loyalty = lStats.loyalty ?? 5;
       const bold = lStats.boldness ?? 5;
       const chance = Math.max(0, Math.min(0.38,
@@ -4547,7 +4550,7 @@ export function simulateBBWeek(options = {}) {
          spend it, and the archetypes that never scheme never take it. */
       const quiet = (() => {
         let st = {};
-        try { st = pStats(leaverName) || {}; } catch { st = {}; }
+        try { st = pStats(leaverName); } catch { st = {}; }
         let arch = '';
         try { arch = (players.find(pp => pp.name === leaverName) || {}).archetype || ''; } catch { arch = ''; }
         // A nice archetype may keep a quiet plan too, from nothing: only a strategic one with loyalty to spare
@@ -5382,6 +5385,7 @@ export function simulateBBWeek(options = {}) {
     // rather than a win — the alumnus still has to beat the room. Read from the
     // franchise's own finished players so the person who walks in is somebody
     // this show actually has.
+    /** @type {Record<string, any>} */
     let mysteryGuest = null;
     if (!compressed) {
       try {
@@ -6228,7 +6232,7 @@ export function simulateBBWeek(options = {}) {
       //
       // The one power on the shelf that can empty a block ought to ask who is
       // standing on it.
-      const cst = pStats(coup.holder) || {};
+      const cst = pStats(coup.holder);
       const coupNeed = nominees.includes(coup.holder) ? 0.98
         : Math.max(0, ...nominees.map(n => {
           try { return allyStake(coup.holder, n); } catch { return 0; }
@@ -6553,7 +6557,7 @@ export function simulateBBWeek(options = {}) {
       // BB26: the JANKIE Veto is only usable by a holder who beats JANKIE's Knock-Em Down at the
       // meeting. The house watches them try; a miss leaves the block as it is.
       if (extra.task === 'jankie') {
-        const ts = pStats(extra.holder) || {};
+        const ts = pStats(extra.holder);
         const beat = rng() < Math.min(0.8, Math.max(0.15, 0.2 + (ts.physical || 5) * 0.035 + (ts.intuition || 5) * 0.02));
         week.jankieTask = { holder: extra.holder, passed: beat };
         if (!beat) {
@@ -6683,6 +6687,7 @@ export function simulateBBWeek(options = {}) {
         const bondHit = -(0.8 + (10 - temper) * 0.08);
         _cappedBondWindow(() => addBond(replacement, namer, bondHit));
         try { rememberStrategy(replacement, namer, 'renomination', week.num, 2, { act: 'veto-ceremony', diamond }); } catch { /* memory is texture */ }
+        /** @type {{ kind: string, text: string, delta?: number }[]} */
         const effects = [{ kind: 'bond', text: `${replacement} & ${namer} ${bondHit.toFixed(1)}`, delta: bondHit }];
         // The hotter the head, the more likely the week now has a mission.
         if (rng() < ((10 - temper) / 10) * 0.5) {
@@ -6986,6 +6991,7 @@ export function simulateBBWeek(options = {}) {
   // ballot as `preference` so eviction night can replay the whole chain —
   // what they wanted, what a room asked of them, what they claimed, what
   // they cast.
+  /** @type {BB.Ballot[]} */
   const ballots = voters.map(voter => {
     const pref = initialVotePreference(voter, nominees, rng);
     return { voter, ...pref, preference: pref.evict, changed: false };

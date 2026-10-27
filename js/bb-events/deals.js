@@ -105,6 +105,7 @@ function _pitchPair(house, ctx) {
 // What a broken promise WAS, the way the one it was made to says it ("You told me ___"), and when: the scene
 // that confronts it names both (the user, 2026-10-25: "can they be more clear what are they talking about its so
 // vague": "You told me. To my face. You said I had your vote", about nothing the viewer could place).
+/** @type {[RegExp, (m: RegExpMatchArray) => string][]} */
 const PROMISE_SAID = [
   [/my vote|a vote to keep/i, () => 'I had your vote'],
   [/week of safety|safety/i, () => 'I was safe'],

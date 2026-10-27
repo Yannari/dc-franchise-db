@@ -318,6 +318,7 @@ function _bbResultText(result, salt = '') {
  * names a result does not carry (who a note was about, the decoy in a fake
  * vote, who started a lie) come from the event in `extra`. Null for a result
  * this file has no words for, which keeps the beat's old sentence.
+ * @returns {[string, any, any] | null} [kind, who, data]
  */
 function _sceneOf(r, extra = {}) {
   const p = r.players || [];

@@ -102,7 +102,7 @@ export function chiefMourner(week = lastCompletedWeek()) {
  * out was voting together — plus, decisively, whatever anybody has actually
  * told them. The truth itself is not an input.
  *
- * @returns {{blamed:string, correct:boolean, why:string, confidence:number}|null}
+ * @returns {{blamed:string, correct:boolean, why:string, confidence:number, reasons?:string[]}|null}
  */
 export function assignBlame(mourner, week = lastCompletedWeek()) {
   if (!mourner || !week?.evicted) return null;

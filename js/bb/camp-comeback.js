@@ -52,7 +52,7 @@ export const isCamper = name => campers().includes(name);
  *
  * @returns {object|null} the act, or null when camp is full or off
  */
-export function sendToCamp({ week, evicted, house = [], rng = Math.random } = {}) {
+export function sendToCamp({ week = undefined, evicted = undefined, house = [], rng = Math.random } = {}) {
   if (!evicted) return null;
   const camp = store();
   const living = campers();
@@ -93,7 +93,7 @@ const RETURN_MIX = { endurance: 0.32, mental: 0.26, physical: 0.24, temperament:
  *
  * @returns {object|null} the act, or null when camp is not full
  */
-export function runCampComeback({ week, house = [], rng = Math.random } = {}) {
+export function runCampComeback({ week = undefined, house = [], rng = Math.random } = {}) {
   const camp = store();
   const living = campers();
   if (living.length < CAMP_SIZE) return null;

@@ -135,7 +135,7 @@ export function punishedHaveNots(week) {
  * whichever twist happened to reach for it.
  *
  * @param {function} rng
- * @param {function} [allow] filter, e.g. costumes only
+ * @param {(punishment: any) => boolean} [allow] filter, e.g. costumes only
  */
 export function drawPunishment(rng = Math.random, allow = () => true) {
   const pool = Object.values(BB_PUNISHMENTS).filter(allow);

@@ -238,7 +238,7 @@ export function bbxMusicLevel(v) {
     const inp = l.querySelector('input'); if (inp && inp !== document.activeElement) inp.value = String(Math.round(lvl * 100));
   });
   // the opening and closing titles are music too
-  document.querySelectorAll('.bbt video').forEach(el => { try { el.volume = Math.max(0, Math.min(1, (window.audio?.getVolume?.() ?? 0.7) * lvl)); } catch { /* defaults */ } });
+  /** @type {NodeListOf<HTMLVideoElement>} */ (document.querySelectorAll('.bbt video')).forEach(el => { try { el.volume = Math.max(0, Math.min(1, (window.audio?.getVolume?.() ?? 0.7) * lvl)); } catch { /* defaults */ } });
 }
 // the bar follows the step: the play button, the seek bar, the count
 function barSync(uid, R) {
@@ -246,7 +246,7 @@ function barSync(uid, R) {
   const S = R.screens[R.si];
   const play = document.getElementById(`bbx-auto-${uid}`);
   if (play && play.dataset.st !== (R.auto ? 'pause' : 'play')) { play.innerHTML = R.auto ? ICON.pause : ICON.play; play.dataset.st = R.auto ? 'pause' : 'play'; play.classList.toggle('on', !!R.auto); play.title = R.auto ? 'Pause (Space)' : 'Play (Space)'; }
-  const seek = document.getElementById(`bbx-seek-${uid}`);
+  const seek = /** @type {HTMLInputElement} */ (document.getElementById(`bbx-seek-${uid}`));
   if (seek && !R.seeking) seek.value = String(Math.max(0, R.idx + 1));
   const sp = document.getElementById(`bbx-speed-${uid}`);
   if (sp) sp.textContent = speedLabel(R.speed || 1);
@@ -348,7 +348,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const taken = new Set();
   const forSlots = slots => (slots || []).flatMap(t => legacy.filter(L => !taken.has(L) && !REPLACED.test(L.id) && slotMatch(t)(L)))
     .filter(L => (taken.has(L) ? false : (taken.add(L), true)));
-  const lead = forSlots(steps.leadingSlots);
+  const lead = forSlots(/** @type {any} */ (steps).leadingSlots);
   const slotted = steps.map(S => forSlots(S.slotsAfter));
   const boards = legacy.filter(L => steps.some(S => S.legacy && S.legacy.test(L.id)));
   for (const k of Object.keys(after)) after[k] = after[k].filter(L => !taken.has(L) && !boards.includes(L));
@@ -496,7 +496,7 @@ function paint(uid, fresh) {
     const i = Number(ln.dataset.s);
     ln.classList.toggle('vis', i <= R.idx); ln.classList.toggle('now', i === R.idx);
   });
-  if (fresh && script) { const ln = script.querySelector(`[data-s="${R.idx}"]`); if (ln) script.scrollTop = ln.offsetTop - script.offsetTop - 40; }
+  if (fresh && script) { const ln = /** @type {HTMLElement} */ (script.querySelector(`[data-s="${R.idx}"]`)); if (ln) script.scrollTop = ln.offsetTop - script.offsetTop - 40; }
   const side = document.getElementById(`bbx-side-${uid}`);
   if (side) side.innerHTML = sideHtml(out.ledger, S);
   // the Intel drawer follows the step; a new thought in their heads lights its button while it is shut
@@ -732,7 +732,7 @@ export function bbxReset(uid) { const R = sync(uid); if (!R) return; stopAuto(R)
 // Opened again, a screen kept from before is drawn where it was left; and the episode remembers
 // which screen it is on.
 if (typeof document !== 'undefined') document.addEventListener('vp:screen', e => {
-  const id = e?.detail?.id;
+  const id = /** @type {CustomEvent} */ (e)?.detail?.id;
   if (lastBuilt && id && lastBuilt.ids.includes(id)) watchSave(lastBuilt.fp, w => { w.at = id; });
   document.querySelectorAll('#vp-screen-content .bbx[data-uid]').forEach(root => {
     const R = reg()[root.dataset.uid];
@@ -860,7 +860,7 @@ export function bbxIntelClick(uid, e) {
 }
 if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   const root = document.querySelector('.bbx[data-uid]');
-  if (!root || e.ctrlKey || e.metaKey || e.altKey || /input|textarea|select/i.test(e.target?.tagName || '')) return;
+  if (!root || e.ctrlKey || e.metaKey || e.altKey || /input|textarea|select/i.test(/** @type {HTMLElement} */ (e.target)?.tagName || '')) return;
   const vp = document.getElementById('visual-player');
   const shown = !vp || vp.style.display !== 'none';
   const uid = root.dataset.uid;

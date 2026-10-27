@@ -89,7 +89,7 @@ function _threatToHolder(name, { holder, nominees, hoh }) {
  *          instance stays live for the rest of its window.
  */
 export function applyVetoDrawTwist({
-  week, players = [], house = [], hoh = null, nominees = [], rng = Math.random,
+  week = undefined, players = [], house = [], hoh = null, nominees = [], rng = Math.random,
 } = {}) {
   const spec = resolveVetoDrawRules(week);
   if (!spec.redraw && spec.replace < 1) return null;
@@ -180,7 +180,7 @@ export function applyVetoDrawTwist({
  * veto and which three of them were luck.
  */
 function _act({ kind, week, hoh, nominees, holder, anonymous, selfSeat,
-  before, after, lost, gained, kept, changed, better }) {
+  before, after, lost, gained, kept, changed, better = undefined }) {
   const beats = [];
   const nom = nominees.filter(Boolean);
   const who = anonymous ? 'Somebody in this house' : holder;
@@ -279,7 +279,7 @@ function _act({ kind, week, hoh, nominees, holder, anonymous, selfSeat,
 }
 
 function _pack({ kind, week, hoh, nom, holder, anonymous, selfSeat, before, after,
-  lost, gained, kept, changed, beats, better }) {
+  lost, gained, kept, changed, beats, better = undefined }) {
   return {
     type: 'veto-draw-twist', kind, holder: holder || null, anonymous: !!anonymous,
     selfSeat: !!selfSeat, better: !!better,

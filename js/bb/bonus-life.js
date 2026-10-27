@@ -93,7 +93,7 @@ function spendRead(instance, evicted, week, rng) {
  * Called AFTER the eviction is on the books, for the same reason the battle
  * back is: the person it saves is the person who just lost the vote.
  */
-export function resolveBonusLife({ week, evicted, rng = Math.random } = {}) {
+export function resolveBonusLife({ week = undefined, evicted = undefined, rng = Math.random } = {}) {
   if (!evicted) return null;
   const weekNum = Number(week?.num) || (gs.bb?.weeks?.length || 0) + 1;
   const live = activePowersAt('eviction-night', weekNum, 'bonus-life');

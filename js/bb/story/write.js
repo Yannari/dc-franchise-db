@@ -341,6 +341,7 @@ function shuffled(list, salt) {
 // necessary location"): a scene that opens "Storage room." or happens at the bathroom mirror,
 // over the slop, or while making breakfast is played in that room, whatever the event recorded.
 // The opening line naming a room wins; then what they are doing.
+/** @type {[string, RegExp, RegExp?][]} */
 const ROOM_WORDS = [
   ['storage-room', /^(the )?(storage room|pantry)\b/i, /\b(storage room|the pantry|the shelves|restacking|cereal box)\b/i],
   ['bathroom', /^(the )?(bathroom|washroom)\b/i, /\b(the mirror|brushing (?:their|his|her|my) teeth|the shower|bathroom|washroom|the sink in the bathroom)\b/i],
@@ -419,7 +420,7 @@ export function writeWitnessAfter(w, ctx, at) {
   const other = w.stance === 'out' ? w.b : w.a;
   const present = ctx.present || [];
   if (![letDown, w.name, other].every(n => present.includes(n))) return null;
-  const s = pStats(w.name) || {};
+  const s = pStats(w.name);
   const roll = stableRng(gs.bb?.seasonSalt || 0, 'witness-after', ctx.week?.num || 0, w.name, letDown)();
   const lean = ((s.loyalty ?? 5) * 0.5 + (s.temperament ?? 5) * 0.4 - (s.boldness ?? 5) * 0.3) + (w.stance === 'turned' ? 1 : 0) + (roll - 0.5) * 2;
   const outcome = lean >= 3.6 ? 'sorry' : 'stand';
@@ -437,7 +438,7 @@ export function writeWitnessAfter(w, ctx, at) {
     room = ROTA[[...salt].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7) % ROTA.length];
   }
   const lines = render(entry, who, ctx, { x: other });
-  const sc = { id: `wa:${ctx.week?.num || 0}:${ctx.stretch}:${letDown}>${w.name}`, line: null, type: 'feud', step: 'witness-after', outcome,
+  /** @type {BB.Scene} */ const sc = { id: `wa:${ctx.week?.num || 0}:${ctx.stretch}:${letDown}>${w.name}`, line: null, type: 'feud', step: 'witness-after', outcome,
     room, roomName: sp?.label || ROOM[room] || 'Kitchen', ...(sp ? { spot: sp.spot } : {}), cast: [letDown, w.name], mood: 'drama', at,
     fixedRoom: false, recap: false, lineId: entry.id,
     why: [w.stance === 'out' ? `${w.name} stayed out of ${letDown}'s fight with ${other}.` : `${w.name} took ${other}'s side against ${letDown}.`] };
@@ -477,7 +478,7 @@ function writeKeyed(key, t, ctx, at, o) {
   const lines = render(entry, who, ctx, data);
   // on stage: who speaks, or who a stage direction names (an optional third person who says nothing is not there)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  const sc = { id: o.id, line: null, type: 'talk', step: o.step, outcome: 'any',
+  /** @type {BB.Scene} */ const sc = { id: o.id, line: null, type: 'talk', step: o.step, outcome: 'any',
     room, roomName: (sp && room === sp.room ? sp.label : null) || ROOM[room] || 'Living Room', ...(sp && room === sp.room ? { spot: sp.spot } : {}),
     cast: used.length ? used : cast, mood: o.mood, at, fixedRoom: !!entry.room, recap: false, lineId: entry.id, why: t.why || [] };
   const shut = /door|whisper|tap|leans in/i.test(JSON.stringify(entry.turns));
@@ -680,7 +681,7 @@ function writeStoryScene0(line, step, ctx) {
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
+  /** @type {BB.Scene} */ const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
   if (!ctx.inSet || base.ownRoom) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   if (recap.length) lines = lines.filter(l => !(l.kind === 'beat' && /^(Earlier|Last week|Yesterday|The other day|Since)\b/.test(String(l.text || ''))));
   sc.lines = [...recap, ...lines];
@@ -736,7 +737,7 @@ function writeGameTalk0(talk, ctx, at) {
   // against Chase", with Chase in the cast while Ripper says "I told Chase I'd never come after him")
   const spokenOf = n => lines.some(l => l.kind !== 'beat' && l.by !== n && nameIn(n, l.text));
   const used = cast.filter(n => lines.some(l => l.by === n) || (lines.some(l => l.kind === 'beat' && nameIn(n, l.text)) && !spokenOf(n)));
-  const sc = { ...base, room, roomName: sp?.label || ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id,
+  /** @type {BB.Scene} */ const sc = { ...base, room, roomName: sp?.label || ROOM[room] || 'Living Room', cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: false, lineId: entry.id,
     ...(sp ? { spot: sp.spot } : {}) };
   // private talk is private: the room around it only where people would be (never a shut door)
   // (an alliance settling its vote is private whatever its words say: "making a sandwich very slowly, so she can stay
@@ -837,6 +838,7 @@ export function writeCampaignScene(beat, ctx, at, salt) {
 // blame after a vote — every one aired 0% of the time, because none of them is a storyline
 // step. They carry their own words (the engine wrote them), so they air as they are: a short
 // scene in the room it happened in, with the panel saying what it was.
+/** @type {[RegExp, string][]} */
 const FAMILY_WHY = [
   [/campaign|vote-pitch|nom-eve/, 'Campaigning: somebody working a vote before Thursday.'],
   [/^bloc-/, 'Alliance planning: who the group is voting for, and who it needs.'],
@@ -901,7 +903,7 @@ function writeEngineScene0(beat, ctx, at) {
   const fam = FAMILY_WHY.find(([re]) => re.test(id))?.[1];
   const badge = beat.badgeText ? `${String(beat.badgeText).charAt(0)}${String(beat.badgeText).slice(1).toLowerCase()}.` : null;
   const why = [...(badge ? [badge] : []), ...(fam ? [fam] : []), ...standings(cast)];
-  const sc = { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
+  /** @type {BB.Scene} */ const sc = { id: `ev:${ctx.week?.num || 0}:${ctx.stretch}:${id}:${cast.join('>')}`, line: null, type: 'event', step: id, outcome: 'any',
     room, roomName: (sp && room === sp.room ? sp.label : null) || ROOM[room] || 'Living Room', ...(sp && room === sp.room ? { spot: sp.spot } : {}), cast, mood: /blow|grudge|confront|fight/.test(id) ? 'drama' : /^scheme-/.test(id) ? 'scheming' : /^bloc-|^plan-/.test(id) ? 'plan' : 'deals', at, fixedRoom: true, recap: false,
     lineId: beat.lineId || null, why, lines };
   if (/alliance-formed|alliance-forms/.test(id) && beat.allianceName) sc.title = titleOf(beat.allianceName, cast);

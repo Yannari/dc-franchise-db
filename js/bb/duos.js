@@ -309,7 +309,7 @@ export function duoNominees(target, house = gs.activePlayers || [], fallback = n
  * two-name block, which is the honest thing to do with a rule that has run out
  * of pairs.
  */
-export function duoBlock({ plan = {}, house = gs.activePlayers || [], protectedNames = [],
+export function duoBlock({ plan = /** @type {any} */ ({}), house = gs.activePlayers || [], protectedNames = [],
   hoh = null, rng = Math.random } = {}) {
   const st = duoState();
   if (!st || st.over) return null;
@@ -489,7 +489,7 @@ const KEY_LINES = [
  * runs. All this does is hand the survivor a status. In pairs mode it does
  * nothing at all — see `repairOrphans` for what happens instead.
  */
-export function grantGoldenKey({ week, evicted, house = gs.activePlayers || [] } = {}) {
+export function grantGoldenKey({ week = undefined, evicted = undefined, house = gs.activePlayers || [] } = {}) {
   const st = duoState();
   if (!st || st.over || st.keysExpired || !evicted) return null;
   if (st.goldenKey === false) return null;
@@ -526,7 +526,7 @@ export function grantGoldenKey({ week, evicted, house = gs.activePlayers || [] }
  * full of people who have not competed for weeks and are all suddenly
  * nominatable together.
  */
-export function expireKeys({ week, house = gs.activePlayers || [] } = {}) {
+export function expireKeys({ week = undefined, house = gs.activePlayers || [] } = {}) {
   const st = duoState();
   if (!st || st.keysExpired || st.goldenKey === false) return null;
 
@@ -588,7 +588,7 @@ const REPAIR_LINES = [
  * logic to it, but nobody gets a say. An odd orphan waits for the next
  * eviction, and while they wait they are the easiest name on the wall.
  */
-export function repairOrphans({ week, house = gs.activePlayers || [], rng = Math.random } = {}) {
+export function repairOrphans({ week = undefined, house = gs.activePlayers || [], rng = Math.random } = {}) {
   const st = duoState();
   if (!st || st.over || st.goldenKey !== false) return null;
 

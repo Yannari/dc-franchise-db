@@ -94,7 +94,7 @@ const ROAD = [
  * a reason not to hand somebody the only power in the building.
  */
 function electability(name, house) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   const others = house.filter(o => o !== name);
   const warmth = others.length
     ? others.reduce((sum, o) => {
@@ -121,7 +121,7 @@ function electability(name, house) {
  * arbitrary, and the house will spend six weeks assuming it was not.
  */
 function banishScore(director, name, rng) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   let bond = 0;
   try { bond = getPerceivedBond(director, name); } catch { bond = 0; }
   const threat = ((st.physical ?? 5) + (st.endurance ?? 5)) / 2;

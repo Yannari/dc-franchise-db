@@ -95,7 +95,7 @@ const TORN = [
  * the board entirely. On a field of three, two people can still walk away with
  * nothing at all.
  */
-export function runDerby({ entrants = [], rng, week, game } = {}) {
+export function runDerby({ entrants = [], rng = undefined, week = undefined, game = undefined } = {}) {
   const field = entrants.filter(Boolean);
   const results = {};
   const beats = [];
@@ -171,7 +171,7 @@ export function derbySlotHolders(week) {
  *
  * @returns {object|null} the act, or null when nobody holds a slot
  */
-export function placeDerbyBets({ week, slots = [], vetoPlayers = [], rng } = {}) {
+export function placeDerbyBets({ week = undefined, slots = [], vetoPlayers = [], rng = undefined } = {}) {
   const holders = slots.filter(Boolean);
   const six = vetoPlayers.filter(Boolean);
   if (!holders.length || six.length < 2) return null;
@@ -213,7 +213,7 @@ export function placeDerbyBets({ week, slots = [], vetoPlayers = [], rng } = {})
  * bet had to learn: written back into the placement act, the result appears on
  * a screen drawn before the event that decided it.
  */
-export function resolveDerbyBets(act, vetoWinner, { rng } = {}) {
+export function resolveDerbyBets(act, vetoWinner, { rng = undefined } = {}) {
   if (!act || act.settled || !vetoWinner) return null;
   const draw = rng || stableRng('derby-bet-settle', gs?.bb?.seasonSalt || 0, act.week || 0);
   const settlement = {

@@ -129,7 +129,7 @@ function houseSentiment(house, nominees) {
  *
  * @returns {object|null} the act, or null when nobody bet
  */
-export function runSideBets({ week, house = [], nominees = [], rng } = {}) {
+export function runSideBets({ week = undefined, house = [], nominees = [], rng = undefined } = {}) {
   const room = house.filter(Boolean);
   const noms = nominees.filter(Boolean);
   // Two names to choose between, or there is nothing to have an opinion about.
@@ -219,7 +219,7 @@ export function runSideBets({ week, house = [], nominees = [], rng } = {}) {
  * Placing a bet and collecting on it are two scenes on two different nights.
  * They are two acts now, and the caller pushes this one AFTER the eviction.
  */
-export function settleSideBets(act, evicted, { rng } = {}) {
+export function settleSideBets(act, evicted, { rng = undefined } = {}) {
   if (!act || act.settled || !evicted) return null;
   const draw = rng || stableRng('side-bet-settle', gs?.bb?.seasonSalt || 0, act.week || 0);
   const settlement = {

@@ -47,7 +47,8 @@
     "avatars:check": "node tools/gen-avatar-manifest.mjs --check",
     "avatars:files": "node tools/gen-avatar-manifest.mjs --write-files --check",
     "d1:exec": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file",
-    "d1:migrate:portraits": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/live_season_migration_portrait.sql"
+    "d1:migrate:portraits": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/live_season_migration_portrait.sql",
+    "typecheck:bb": "node scripts/typecheck-bb.mjs"
   },
   "repository": {
     "type": "git",
@@ -65,6 +66,7 @@
     "@playwright/test": "^1.59.1",
     "jsdom": "^29.0.2",
     "playwright": "^1.59.1",
+    "typescript": "5.9.2",
     "vitest": "^4.1.4",
     "wrangler": "^4.120.0"
   },

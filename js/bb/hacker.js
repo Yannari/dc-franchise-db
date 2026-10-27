@@ -82,7 +82,7 @@ export function chooseHackerBlockHack({ hacker, nominees = [], house = [], hoh, 
   // their own nominations. They keep the other two authorities, which are
   // about the veto field and the count and are worth having.
   if (hacker && hoh && hacker === hoh) {
-    return { down: null, up: null, used: false, reason: { ...reason, ownBlock: true },
+    return { use: false, down: null, up: null, reason: { ...reason, ownBlock: true },
       why: `${hacker} is holding a power whose first use would be undoing ${hacker}'s own nominations. `
         + 'The block stands, because it is already the block they wanted.' };
   }
@@ -209,9 +209,15 @@ export function chooseHackerVetoHack({ hacker, house = [], playing = [], nominee
  * than spend it on a gesture — an unexplained missing vote with no consequence
  * is a free clue handed to the house.
  *
- * @param {Array} ballots  [{ voter, evict }] as they will actually be cast
+ * @param {object} opts
+ * @param {string} [opts.hacker]
+ * @param {{ voter: string, evict: string }[]} [opts.ballots]  as they will actually be cast
+ * @param {string[]} [opts.nominees]
+ * @param {string} [opts.hoh]
+ * @param {string[]} [opts.house]
+ * @param {() => number} [opts.rng]
  * @returns {{voter:string|null, saved:string|null, flips:boolean, why:string,
- *   reason:object}}
+ *   reason:object, levels?:object}}
  */
 export function chooseHackerVoteHack({ hacker, ballots = [], nominees = [], hoh, house = [], rng }) {
   const rand = typeof rng === 'function' ? rng : Math.random;

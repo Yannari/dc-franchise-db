@@ -137,7 +137,7 @@ const DELIVERY = [
  *
  * @returns {object|null} the act, or null when there is nobody left to give to
  */
-export function runCarePackage({ week, house, hoh, rng = Math.random, forced = null } = {}) {
+export function runCarePackage({ week = undefined, house = undefined, hoh = undefined, rng = Math.random, forced = null } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 4) return null;
   const delivered = store();
@@ -319,11 +319,17 @@ export function carePackageBribe({ act, ballots, nominees, house, rng = Math.ran
  * roughly equal numbers across a season and neither outcome ever feels like
  * the default.
  *
- * @param {string[]} shelf  power ids a win may pay out
- * @param {string[]} rack   punishment ids a loss may hand over
+ * @param {object} [opts]
+ * @param {*}        [opts.week]
+ * @param {string[]} [opts.house]
+ * @param {string}   [opts.hoh]
+ * @param {() => number} [opts.rng]
+ * @param {string[]} [opts.shelf]  power ids a win may pay out
+ * @param {string[]} [opts.rack]   punishment ids a loss may hand over
+ * @param {*}        [opts.forcedChallenge]
  * @returns {object|null} the act, or null when nobody is eligible
  */
-export function runTimeCapsule({ week, house, hoh, rng = Math.random,
+export function runTimeCapsule({ week = undefined, house = undefined, hoh = undefined, rng = Math.random,
   shelf = null, rack = null, forcedChallenge = null } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 4) return null;

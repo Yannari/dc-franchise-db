@@ -122,7 +122,7 @@ export const CHAIN_FLOOR = 3;
  */
 function pickTarget(picker, pool, rng) {
   if (!pool.length) return null;
-  const st = pStats(picker) || {};
+  const st = pStats(picker);
   const loyal = (st.loyalty || 5) / 10;
   const strategic = (st.strategic || 5) / 10;
   const scored = pool.map(name => {
@@ -144,7 +144,7 @@ function pickTarget(picker, pool, rng) {
     // it — saving the strongest player in the house is a gift you cannot get
     // back, and the better a player is at this game the less likely they are
     // to hand one over.
-    const th = pStats(name) || {};
+    const th = pStats(name);
     const threat = ((th.physical || 5) + (th.mental || 5) + (th.strategic || 5)) / 30;
     s -= threat * strategic * 3.4;
     return { name, s: s + (rng() - 0.5) * 3.2 };
@@ -160,7 +160,7 @@ function pickTarget(picker, pool, rng) {
  * small for a chain to mean anything (at five, "the last three" is most of the
  * room and the twist stops being a selection).
  */
-export function runChainOfSafety({ week, house, hoh, rng = Math.random,
+export function runChainOfSafety({ week = undefined, house = undefined, hoh = undefined, rng = Math.random,
   variant = 'safety-comp', style = 'canada', skip = [], startWith = null } = {}) {
   // Québec runs the chain down to ONE person left unchosen; Canada stops at
   // three so they have a field to compete in.

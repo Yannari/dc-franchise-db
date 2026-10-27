@@ -86,6 +86,19 @@ Each entry carries the measurement that found it.
 - Modules import from each other; no circular dependencies
 - `core.js` is a leaf — imports nothing from the project
 
+### Type checking (Big Brother)
+`npm run typecheck:bb` checks `js/bb/`, `js/bb-events/` and `js/vp-bb-ep/` with
+TypeScript, from JSDoc comments — no build step, the files stay plain `.js`, and
+CI runs it on every push. Shapes live in `types/`: `DC.Stat`, `DC.Archetype`,
+`DC.Pronouns` (every show) and `BB.Step`, `BB.Scene`, `BB.Ballot` (Big Brother).
+Keep it at zero errors. Two traps:
+- In `function f({ week, act = 'house' } = {})` the checker DROPS an option that
+  has no default, then reports callers passing it as an error. Write
+  `week = undefined` (identical at runtime). Do not delete the argument: the
+  function reads it.
+- A step's `k` and an archetype string are not typed (plain JS widens them);
+  `tests/bb-source-literals.test.js` checks both in the source instead.
+
 ## Non-Negotiable Rules
 
 ### Valid Stats

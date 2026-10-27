@@ -30,8 +30,9 @@ import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
+import { pronounsOf } from '../pronouns-of.js';
 
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 const round2 = v => Math.round(v * 100) / 100;
 

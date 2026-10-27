@@ -26,7 +26,7 @@ const word = n => W[n] || String(n);
 
 /** fiery · strategist · warm · loyal · nervous · carefree · competitor · villain */
 export function voiceOf(n) {
-  const a = archOf(n), s = pStats(n) || {};
+  const a = archOf(n), s = pStats(n);
   if (a === 'villain' || a === 'schemer') return 'villain';
   if (a === 'mastermind' || a === 'perceptive-player') return 'strategist';
   if (a === 'hothead' || a === 'chaos-agent' || (s.temperament || 5) <= 3) return 'fiery';
@@ -242,7 +242,7 @@ export function addInsight(sc, kindText, weekNum) {
   // fun, and I like fun people" closed "I just have to hope Beth meant that")
   const forming = /formed|forms|final-t|pact/.test(String(kindText || ''));
   const mending = /apolog|makeup|make-up|reconcil|truce|repair|sorry|forgive/.test(String(kindText || ''));
-  const voiced = kind === 'life' || kind === 'game' || (kind === 'ally' && !forming) || (kind === 'feud' && mending) || !spoke(o) || !spoke(me) ? [] : res.voiced;
+  const voiced = kind === 'game' || (kind === 'ally' && !forming) || (kind === 'feud' && mending) || !spoke(o) || !spoke(me) ? [] : res.voiced;
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'voice', sc.id || '', me);
   const led = gs.bb ? (gs.bb.voiceUsed ||= {}) : {};
   const re = NAMES_RE();

@@ -67,8 +67,8 @@ export function selfExposure(holder, ballots = []) {
  * on the way out, a week that went badly, and — uniquely — what the holder's
  * own ballot says about them once it is read aloud.
  */
-export function rewindPull({ holder, evicted, ballots = [], weeksLeft = 0, hoh = null } = {}) {
-  const st = pStats(holder) || {};
+export function rewindPull({ holder = undefined, evicted = undefined, ballots = [], weeksLeft = 0, hoh = null } = {}) {
+  const st = pStats(holder);
   const nerve = (st.boldness || 5) / 10;
   const selfSave = evicted === holder;
   let need = selfSave ? 0.99 : Math.min(0.85, stake(holder, evicted));
@@ -96,7 +96,7 @@ export function rewindPull({ holder, evicted, ballots = [], weeksLeft = 0, hoh =
  *
  * @returns {object|null} the act, or null when the night proceeds
  */
-export function resolveRewind({ week, evicted, nominees = [], hoh, house = [],
+export function resolveRewind({ week = undefined, evicted = undefined, nominees = [], hoh = undefined, house = [],
   ballots = [], rng = Math.random } = {}) {
   if (!evicted) return null;
   const weekNum = Number(week?.num) || 0;

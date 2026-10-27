@@ -242,6 +242,7 @@ function _worldMoved(before) {
       players: [a, b], delta });
   }
   moved.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+  /** @type {{ kind: string, text: string, players: string[], delta?: number }[]} */
   const out = moved.slice(0, 5);
 
   // Somebody joined something. An alliance recruitment came back with no
@@ -358,6 +359,7 @@ const _CATEGORY_ROOMS = {
  * The writing is the authority. Ordered most specific first, because "the
  * storage room off the kitchen" is the pantry, not the kitchen.
  */
+/** @type {[string, RegExp][]} */
 const _ROOM_WORDS = [
   ['diary-room', /\bdiary room\b/i],
   ['hoh-room', /\bHOH(?:'s)? room\b|\bHead of Household(?:'s)? room\b|\bupstairs\b/i],

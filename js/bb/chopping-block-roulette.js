@@ -121,7 +121,7 @@ const stat = (st, key) => st?.[key] ?? 5;
  * and the week is exactly where they left it.
  */
 function rollScore(name, rng) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   const read = stat(st, 'mental') * W_MENTAL
     + stat(st, 'intuition') * W_INTUITION
     + stat(st, 'boldness') * W_BOLDNESS;
@@ -134,11 +134,12 @@ function rollScore(name, rng) {
 /**
  * The spin. Uniform. No weighting. Do not "improve" this.
  *
- * @param {string[]} eligible everybody legally able to take the chair
- * @param {function} rng      one draw, and only one
+ * @param {object} [opts]
+ * @param {string[]} [opts.eligible] everybody legally able to take the chair
+ * @param {() => number} [opts.rng] one draw, and only one
  * @returns {string|null}     a name, or null when the board is empty
  */
-export function spinReplacement({ eligible = [], rng } = {}) {
+export function spinReplacement({ eligible = [], rng = undefined } = {}) {
   const pool = (eligible || []).filter(Boolean);
   if (!pool.length) return null;
   // Clamped because an rng that ever returns exactly 1 would index off the end
@@ -331,14 +332,15 @@ const pron = name => {
  * objects: the caller stores this on `gs` and `gs` goes through
  * `JSON.stringify` every week.
  *
- * @param {string[]} entrants       everybody who paid to sit down, in the order
- *                                  they walked in
- * @param {string[]} house          everybody still playing
- * @param {string[]} nominees       the INITIAL nominees
- * @param {string}   hoh            the Head of Household
- * @param {string[]} protectedNames everybody the week has already made safe —
- *                                  the same list the veto ceremony builds
- * @param {function} rng            seeded; never Math.random
+ * @param {object}   [opts]
+ * @param {string[]} [opts.entrants]       everybody who paid to sit down, in the order
+ *                                         they walked in
+ * @param {string[]} [opts.house]          everybody still playing
+ * @param {string[]} [opts.nominees]       the INITIAL nominees
+ * @param {string}   [opts.hoh]            the Head of Household
+ * @param {string[]} [opts.protectedNames] everybody the week has already made safe —
+ *                                         the same list the veto ceremony builds
+ * @param {() => number} [opts.rng]        seeded; never Math.random
  * @returns {{winner:(string|null), removed:(string|null), replacement:(string|null),
  *            results:object, beats:object[]}}
  *          `results` is keyed by entrant: `{won, score, removed, replacement}`.
@@ -349,7 +351,7 @@ const pron = name => {
  * has crashed a real season doing it.
  */
 export function runRoulette({ entrants = [], house = [], nominees = [], hoh = null,
-  protectedNames = [], rng } = {}) {
+  protectedNames = [], rng = undefined } = {}) {
   const draw = typeof rng === 'function' ? rng : Math.random;
   const field = (entrants || []).filter(Boolean);
   const room = (house || []).filter(Boolean);
@@ -465,8 +467,8 @@ export function runRoulette({ entrants = [], house = [], nominees = [], hoh = nu
  * the rule is different for a field of one, so this is a thin wrapper and not a
  * second implementation of the game.
  */
-export function playRoulette({ name, house = [], nominees = [], hoh = null,
-  protectedNames = [], rng } = {}) {
+export function playRoulette({ name = undefined, house = [], nominees = [], hoh = null,
+  protectedNames = [], rng = undefined } = {}) {
   const out = runRoulette({ entrants: [name], house, nominees, hoh, protectedNames, rng });
   return {
     won: !!out.results[name]?.won,
@@ -484,7 +486,7 @@ export function playRoulette({ name, house = [], nominees = [], hoh = null,
  * and gets back a per-name result map plus the night's beats.
  */
 export function rouletteResolver({ entrants = [], house = [], nominees = [], hoh = null,
-  protectedNames = [], rng } = {}) {
+  protectedNames = [], rng = undefined } = {}) {
   const room = house.length ? house : (players || []).map(pl => pl.name);
   return runRoulette({ entrants, house: room, nominees, hoh, protectedNames, rng });
 }

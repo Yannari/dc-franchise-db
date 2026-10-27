@@ -108,7 +108,7 @@ function electChampion(house, mix, rng) {
  * walked out tonight is in the field — which is how both aired versions did
  * it. The winner re-enters with no safety and a very long memory.
  */
-export function runBattleBack({ week, rng = Math.random, style = 'gauntlet', competition = null, cap = 0 } = {}) {
+export function runBattleBack({ week = undefined, rng = Math.random, style = 'gauntlet', competition = null, cap = 0 } = {}) {
   const field = battleBackField({ cap });
   // Two people minimum, or there is no competition to run — and a house that
   // has not evicted anybody yet cannot hold one at all.

@@ -93,6 +93,7 @@ function ensure() {
 // turned a forty-season probe from ninety seconds into something that did not
 // finish. The signature is deliberately cheap and covers everything _measure
 // reads: who is alive, which groups exist, and who is in them.
+/** @type {{ key?: string, blocs?: any }} */
 let _cache = { key: '', blocs: null };
 
 function _signature() {

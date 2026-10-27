@@ -1,0 +1,28 @@
+{
+  // Type-checks the Big Brother code without a build step: the files stay the
+  // plain .js the browser loads, and the types live in JSDoc comments and in
+  // types/*.d.ts. `npm run typecheck:bb` reads this (scripts/typecheck-bb.mjs).
+  //
+  // The files below import shared Total Drama code (js/chal/, vp-screens.js...),
+  // which is parsed so its exports have types, but its own errors are not
+  // reported: the script only reports files under CHECKED. Widen a show at a
+  // time by adding its folders to both lists.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "strict": false,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": [
+    "types/**/*.d.ts",
+    "js/bb/**/*.js",
+    "js/bb-events/**/*.js",
+    "js/vp-bb-ep/**/*.js"
+  ]
+}

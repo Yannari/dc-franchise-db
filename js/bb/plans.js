@@ -24,6 +24,7 @@ import { getRelationshipDimensions } from '../relationships.js';
 import { evaluateEndgameBeatability } from '../intentions.js';
 import { bbThreatProfile, bbHeat, knownPowersOf } from './shared-strategy.js';
 import { recordBBTarget, believedHunters } from './knowledge.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp01 = n => Math.max(0, Math.min(1, n));
 
@@ -405,7 +406,7 @@ export function reviseHousePlans({ house = houseNow(), week = null, trigger = 'w
     // These reasons print after the owner's name ("Laurie: ..."), so the owner
     // is the subject and has to be referred to as themself. A bare "they" read
     // as a third person: "Laurie: Paige Turner became somebody they rely on."
-    let me = { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' };
+    let me = pronounsOf('nb');
     try { me = pronouns(name) || me; } catch { /* harness without a cast */ }
     const isAre = me.sub === 'they' ? 'are' : 'is';
     const hasHave = me.sub === 'they' ? 'have' : 'has';

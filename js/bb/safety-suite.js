@@ -59,7 +59,7 @@ const used = () => { gs.bb ||= {}; gs.bb.safetySuiteUsed ||= []; return gs.bb.sa
  *
  * @returns {object|null} the act, or null when nobody is left who can enter
  */
-export function runSafetySuite({ week, house, hoh, rng = Math.random } = {}) {
+export function runSafetySuite({ week = undefined, house = undefined, hoh = undefined, rng = Math.random } = {}) {
   const room = (house || []).filter(Boolean);
   if (room.length < 5) return null;
   const spent = used();

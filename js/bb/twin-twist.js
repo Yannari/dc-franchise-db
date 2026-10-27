@@ -59,11 +59,12 @@ import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, setBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
 import { makeEndgameDeal } from './deals.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 // the verb only, agreeing with the person ("goes", "has", "watches"); the caller writes the pronoun.
 // It used to include the pronoun too, and most callers wrote one as well: "she she gos".
 const has = (name, verb) => (P(name).sub === 'they' ? verb : verb === 'have' ? 'has' : verb === 'go' ? 'goes' : verb === 'do' ? 'does' : /(s|sh|ch|x|z)$/.test(verb) ? `${verb}es` : `${verb}s`);

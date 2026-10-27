@@ -31,6 +31,7 @@ export const SECRET_POWER_DOORS = 3;
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 // Beats are plain facts with a `part`; the words are written by
 // bb/script/ceremony.js from lines/spact.js.
+/** @type {(text: string, players: string[], badgeText: string, badgeClass: string, part?: string, extra?: object) => Record<string, any>} */
 const beat = (text, players, badgeText, badgeClass, part = null, extra = {}) =>
   ({ text, players: [...(players || [])], badgeText, badgeClass, ...(part ? { part } : {}), ...extra });
 
@@ -42,7 +43,7 @@ const beat = (text, players, badgeText, badgeClass, part = null, extra = {}) =>
  * strategic, and anybody who can feel the week turning against them.
  */
 function pull(name, { nominatedRecently = false } = {}) {
-  const s = pStats(name) || {};
+  const s = pStats(name);
   const athletic = ((s.physical || 0) + (s.endurance || 0)) / 2;
   const scheming = ((s.strategic || 0) + (s.intuition || 0)) / 2;
   // Somebody who wins competitions has less reason to gamble the one in front
@@ -56,7 +57,7 @@ function pull(name, { nominatedRecently = false } = {}) {
 
 /** Which door appeals, given what the power actually does for this person. */
 function doorFor(name, doors, rng) {
-  const s = pStats(name) || {};
+  const s = pStats(name);
   const scored = doors.map(id => {
     const def = BB_POWER_DEFINITIONS[id];
     let score = 4 + (rng() - 0.5) * 3;
@@ -84,7 +85,7 @@ function doorFor(name, doors, rng) {
  * and the week keeps the ordinary Head of Household it already has.
  */
 export function runSecretPowerComp({
-  week, house = [], outgoingHoh = null, results = [], offered = [], rng = Math.random,
+  week = undefined, house = [], outgoingHoh = null, results = [], offered = [], rng = Math.random,
 } = {}) {
   const doors = [...new Set((offered || []).filter(id => BB_POWER_DEFINITIONS[id]))]
     .slice(0, SECRET_POWER_DOORS);

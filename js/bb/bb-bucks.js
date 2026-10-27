@@ -202,7 +202,7 @@ function drawWeighted(pool, n, rng) {
  *
  * @returns {object|null} the act, or null in a house too small for tiers
  */
-export function awardWeeklyBucks({ week, house = [], amounts = null,
+export function awardWeeklyBucks({ week = undefined, house = [], amounts = null,
   rng = stableRng('bb-bucks', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   // a theme may pay the broadcast's own figures ([top, middle, floor]: BB23 paid 100 / 75 / 50)
   const TIERS = amounts ? PAYOUT_TIERS.map((t, i) => ({ ...t, amount: amounts[i] ?? t.amount })) : PAYOUT_TIERS;

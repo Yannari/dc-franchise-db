@@ -84,6 +84,7 @@ export const islandOf = z => (ISLAND[z] ? z : 'resort');
 const PUBLIC = ['living', 'lsofas', 'kitchen', 'kstove', 'pool', 'gym', 'wing', 'bar', 'library', 'dining', 'dtable', 'beach'];
 
 // a plate's room on the blueprint
+/** @type {[RegExp, string][]} */
 const ZONE_OF_PLATE = [[/^living-/, 'living'], [/^library-/, 'library'], [/^confessional$/, 'dr'], [/^nom-table$/, 'noms'], [/^dining-/, 'dining'],
   [/^kitchen-/, 'kitchen'], [/^bar-/, 'bar'], [/^bedroom-/, 'wing'], [/^bathroom$/, 'bathroom'], [/^(hallway|purple-hall)$/, 'hallway'],
   [/^hoh-/, 'hoh'], [/^storage/, 'pantry'], [/^havenot$/, 'lounge'], [/^foyer$/, 'foyer'], [/^studio-/, 'studio'],

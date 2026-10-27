@@ -430,7 +430,7 @@ export function hohWeekFor(week, ctx, clock, talked, lastGone) {
   // told the truth.
   const fisher = real;
   if (fisher && fisher !== hoh) {
-    const s = pStats(hoh) || {};
+    const s = pStats(hoh);
     const lie = ((s.strategic || 5) / 10) * (1 - (s.loyalty || 5) / 20)
       * (NICE.has(archOf(hoh)) ? 0.5 * (s.strategic || 5) / 10 : 1);
     const honest = bd ? 0 : ((s.boldness || 5) / 10) * ((s.loyalty || 5) / 10);

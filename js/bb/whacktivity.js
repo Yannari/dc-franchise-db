@@ -163,7 +163,7 @@ function appeal(name, powerId, { nominees = [], hoh = null, rng = Math.random } 
  * Format Designer, so any power added to the registry can be competed for
  * with no new code.
  */
-export function runWhacktivity({ week, house, hoh, nominees = [], rng = Math.random, offered = [], open = null } = {}) {
+export function runWhacktivity({ week = undefined, house = undefined, hoh = undefined, nominees = [], rng = Math.random, offered = [], open = null } = {}) {
   const room = (house || []).filter(Boolean);
   // Deduped, because the doors are authored one at a time now and the same
   // power standing behind two of them would collapse two rooms into one set

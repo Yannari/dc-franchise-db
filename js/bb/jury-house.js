@@ -35,10 +35,11 @@ import { seatedJurors, juryOpensAt, evictionSeatsAJuror } from './jury.js';
 import { reconcileBBJury, believedVoters, stableRng, knowsVote } from './knowledge.js';
 import { seedJurorReads, moveRead, readOf, stanceOf } from './jury-sentiment.js';
 import { entranceOf, newsByLens, chooseNight, lensCase, reasonLine } from './jury-house-scenes.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const archetypeOf = name => players.find(p => p.name === name)?.archetype || 'floater';
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 // 'is' or 'are' for whoever the pronoun is ('They is not impressed' was printed)
 const IS = name => (P(name).sub === 'they' ? 'are' : 'is');
 const COUNT_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
@@ -786,6 +787,7 @@ export function generateBBJuryHouse(week, rngIn) {
   const full = residents.length >= 2 && (residents.length % 3 === 0 || remaining <= 4);
 
   const out = { blowupsRelitigated: [], weekObj: week };
+  /** @type {any[]} */
   const acts = [];
   // Where the room stood before tonight, so the screen can show the board
   // moving instead of only where it ended up. Without this the reads panel

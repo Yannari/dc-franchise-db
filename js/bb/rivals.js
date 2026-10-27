@@ -40,11 +40,12 @@ import { pStats, pronouns } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { rememberStrategy } from '../strategy-memory.js';
 import { BB_TWIST_CONTRACTS } from './twist-contract.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const round2 = v => Math.round(v * 100) / 100;
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
-const P = name => { try { return pronouns(name); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', pos: 'theirs', Sub: 'They' }; } };
+const P = name => { try { return pronouns(name); } catch { return pronounsOf('nb'); } };
 
 /** The rivals record, or null when the season is not running one. */
 export function rivalsState() {

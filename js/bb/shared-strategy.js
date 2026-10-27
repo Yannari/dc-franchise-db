@@ -333,7 +333,7 @@ function _bbThreatProfile(name) {
     const partner = duoPartnerFor(name);
     if (partner) {
       const pr = gs.bb?.stats?.[partner] || {};
-      const ps = pStats(partner) || {};
+      const ps = pStats(partner);
       const partnerSeen = (pr.hohWins || 0) * 0.8 + (pr.vetoWins || 0) * 0.55
         + (pr.blockBusterWins || 0) * 0.6;
       // Competitions everybody watched carry nearly their full weight; raw
@@ -445,8 +445,8 @@ export function bbThreat(name) {
 function blowbackRisk(observer, candidate) {
   if (!observer || !candidate || observer === candidate) return 0;
   const rec = gs.bb?.stats?.[candidate] || {};
-  const st = pStats(candidate) || {};
-  const me = pStats(observer) || {};
+  const st = pStats(candidate);
+  const me = pStats(observer);
 
   // 1. How likely they are to still be here. A veto win is the loudest
   // evidence that a nomination does not stick to this person.
@@ -1451,6 +1451,7 @@ export function resolveBBCampaignAct({ nominees = [], ballots = [], house = gs.a
   gs._pitchCounterplay = {};
   const eligibleVoters = ballots.length;
   const majority = Math.floor(eligibleVoters / 2) + 1;
+  /** @type {any[]} */
   const pitches = nominees.map(nominee => {
     // Two chairs: campaign against the only other person there. Three chairs
     // (the international double vote): campaign against the rival you most

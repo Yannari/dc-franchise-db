@@ -23,7 +23,7 @@ const Cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 // as the week opens: the stats already hold this week's wins (read 2026-10-15: "I've won three competitions",
 // on the morning before the third)
 let THIS = null;
-const winsOf = n => { const s = gs.bb?.stats?.[n] || {}; const now = THIS ? (THIS.hoh === n) + (THIS.vetoWinner === n) : 0;
+const winsOf = n => { const s = gs.bb?.stats?.[n] || {}; const now = THIS ? Number(THIS.hoh === n) + Number(THIS.vetoWinner === n) : 0;
   return Math.max(0, (s.hohWins || 0) + (s.vetoWins || 0) + (s.blockBusterWins || 0) - now); };
 const winSay = n => { const k = winsOf(n); return k === 0 ? 'nothing' : k === 1 ? 'one competition' : `${word(k)} competitions`; };
 

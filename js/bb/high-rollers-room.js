@@ -250,7 +250,7 @@ function entryNeed(name, { house = [], nominees = [], vetoHolder = null } = {}) 
  * and not a gate — a calm houseguest on the block still plays.
  */
 function nerveFor(name) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   const bold = st.boldness ?? 5;
   const temp = st.temperament ?? 5;
   return clamp((bold * 0.7 + (10 - temp) * 0.3) / 10, 0, 1);
@@ -266,7 +266,7 @@ function nerveFor(name) {
  * nothing.
  */
 function defaultPlay({ name, rng }) {
-  const st = pStats(name) || {};
+  const st = pStats(name);
   const read = ((st.mental ?? 5) + (st.intuition ?? 5)) / 20;   // 0..1
   const chance = clamp(0.16 + read * 0.16 + (rng() - 0.5) * 0.08, 0.08, 0.45);
   return rng() < chance;
@@ -383,7 +383,7 @@ const beat = (text, who, badgeText, badgeClass = 'twist') =>
  *                  the replay guards catch.
  * @returns {object|null} the act, or null on a night nobody went near the door
  */
-export function openRoom({ week, house = [], hoh = null, nominees = [], vetoHolder = null,
+export function openRoom({ week = undefined, house = [], hoh = null, nominees = [], vetoHolder = null,
   protectedNames = [], game = ROOM_GAMES[0], play = null,
   rng = stableRng('high-rollers-room', gs?.bb?.seasonSalt || 0, week?.num || 0) } = {}) {
   const room = house.filter(Boolean);

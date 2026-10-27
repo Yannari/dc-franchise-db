@@ -86,7 +86,7 @@ function shown(inst, timing, detail) {
  * already suspected the holder is far more likely to land it, which is what
  * makes the secrecy worth keeping in the weeks before this.
  */
-export function playInterrogation({ week, house = [], hoh, rng = Math.random } = {}) {
+export function playInterrogation({ week = undefined, house = [], hoh = undefined, rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('usurpHoh', weekNum);
   if (!inst || !hoh || inst.holder === hoh || !house.includes(inst.holder)) return null;
@@ -142,7 +142,7 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   }
   const need = Math.max(selfNeed, allyNeed);
   const forAlly = allyNeed > selfNeed && !!protecting;
-  const s = pStats(inst.holder) || {};
+  const s = pStats(inst.holder);
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
     nerve: (s.boldness || 5) / 10,
@@ -221,7 +221,7 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
   const bond = (a, b) => { try { return getBond(a, b); } catch { return 0; } };
   for (const name of house) {
     if (name === hoh) continue;
-    const st = pStats(name) || {};
+    const st = pStats(name);
     let knows = false;
     try { knows = believesPowerHeld(name, inst.holder, inst.powerId); } catch { knows = false; }
     const loyalToHolder = bond(name, inst.holder) >= 3;
@@ -272,7 +272,7 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
 
   // ── the name ──
   const ranked = [...weights.entries()].sort((a, b) => b[1] - a[1]);
-  const d = pStats(hoh) || {};
+  const d = pStats(hoh);
   // The room's best answer, tempered by whether this Head of Household can read
   // one. A poor read talks themselves out of a correct room.
   const trust = clamp(0.3 + ((d.intuition || 5) / 10) * 0.55, 0.2, 0.9);
@@ -340,7 +340,7 @@ export function playInterrogation({ week, house = [], hoh, rng = Math.random } =
 const seasonOf = pick => (pick && typeof pick === 'object' && pick.seasonName) || null;
 
 
-export function playMysteryCompetitor({ week, nominees = [], players = [], alumni = [],
+export function playMysteryCompetitor({ week = undefined, nominees = [], players = [], alumni = [],
   library = [], hoh = null, house = [], rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('vetoProxy', weekNum);
@@ -376,7 +376,7 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
   //
   // Weighted rather than a hard best-pick: the house is summoning who it wants,
   // and the best available player is not always the one somebody thinks of.
-  const statsOf = a => (a && typeof a === 'object' && a.stats) || pStats(a?.name) || {};
+  const statsOf = a => (a && typeof a === 'object' && a.stats) || pStats(a?.name);
   const fitOf = a => Object.entries(comp0.stats || {})
     .reduce((sum, [stat, w]) => sum + (statsOf(a)[stat] || 0) * w, 0);
   // ── YOU CALL SOMEBODY WHO CAN WIN THIS ONE ──
@@ -475,7 +475,7 @@ export function playMysteryCompetitor({ week, nominees = [], players = [], alumn
  * the person who paid for them — which is the power — and losing is a real
  * loss to a real room.
  */
-export function mysteryCompetitorResult({ act, competition, winner } = {}) {
+export function mysteryCompetitorResult({ act = undefined, competition = undefined, winner = undefined } = {}) {
   if (!act?.guest) return null;
   const { guest, holder } = act;
   const scores = competition?.scores || {};
@@ -526,7 +526,7 @@ export function mysteryCompetitorResult({ act, competition, winner } = {}) {
  * which is what makes it more than a self-save: it can take somebody else off
  * a block that was already settled.
  */
-export function playMysteryVeto({ week, nominees = [], house = [], library = [],
+export function playMysteryVeto({ week = undefined, nominees = [], house = [], library = [],
   rng = Math.random } = {}) {
   const weekNum = Number(week?.num) || 0;
   const inst = livePower('soloVetoComp', weekNum);
@@ -553,7 +553,7 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
   // you end up having spent the biggest thing you had on a stranger. Sitting on
   // the block yourself is not a dilemma, so it is very nearly one.
   const need = onBlock ? 0.98 : Math.min(0.78, (ally?.b || 0) * 0.92);
-  const st = pStats(inst.holder) || {};
+  const st = pStats(inst.holder);
   const pull = spendPull({ need,
     weeksLeft: Math.max(0, inst.expiresAfterWeek - weekNum),
     nerve: (st.boldness || 5) / 10,
@@ -582,7 +582,7 @@ export function playMysteryVeto({ week, nominees = [], house = [], library = [],
     : { id: 'solo-veto', name: 'a course in the dark', stats: { physical: .4, mental: .3, endurance: .3 } };
 
   const score = name => {
-    const st = pStats(name) || {};
+    const st = pStats(name);
     return Object.entries(comp.stats || {})
       .reduce((sum, [stat, weight]) => sum + (st[stat] || 0) * weight, 0);
   };

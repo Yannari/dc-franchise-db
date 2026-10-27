@@ -30,6 +30,7 @@ import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 import { stableRng } from './knowledge.js';
 import { activeSeasons, seasonKeyParts } from '../franchise-meta.js';
+import { pronounsOf } from '../pronouns-of.js';
 
 /**
  * The resort's concierge. BB27's was Tyler Crispen, a runner-up and fan
@@ -72,7 +73,7 @@ const stat = (name, key) => {
 };
 const P = name => {
   try { return pronouns(name); } catch {
-    return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They' };
+    return pronounsOf('nb');
   }
 };
 

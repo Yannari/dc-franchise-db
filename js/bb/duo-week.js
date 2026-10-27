@@ -57,7 +57,7 @@ function wouldSellOut(name) {
   const arch = archetypeOf(name);
   if (VILLAINOUS.includes(arch)) return true;
   if (!NEUTRAL.includes(arch)) return false;
-  const st = pStats(name) || {};
+  const st = pStats(name);
   return (st.strategic || 0) >= 6 && (st.loyalty || 0) <= 4;
 }
 
@@ -194,7 +194,7 @@ export function openDuoWeek(week, { house = gs.activePlayers || [], hoh = null, 
  * name they land on drags a second one up with it, and they have to find two
  * of those instead of two people.
  */
-export function duoWeekNominees(week, { plan = {}, house = gs.activePlayers || [], untouchable = [], hoh = null, rng = Math.random } = {}) {
+export function duoWeekNominees(week, { plan = /** @type {any} */ ({}), house = gs.activePlayers || [], untouchable = [], hoh = null, rng = Math.random } = {}) {
   const st = duoWeekState(week);
   if (!st) return null;
 
@@ -286,7 +286,7 @@ export function duoWeekSecondEvictee(week, evicted, house = gs.activePlayers || 
  * ordinary vote and reads as one on the eviction screen. This is the part
  * after it, where the second name is read and nobody voted for it.
  */
-export function duoWeekEviction(week, { evicted, taken, votes = {} } = {}) {
+export function duoWeekEviction(week, { evicted = undefined, taken = undefined, votes = {} } = {}) {
   if (!evicted || !taken) return null;
   const v = votes[taken] || 0;
   const gotNothing = v === 0;

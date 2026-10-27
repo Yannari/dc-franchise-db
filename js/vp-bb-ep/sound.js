@@ -140,7 +140,7 @@ function loadSting(ctx, name) {
   if (buffers[name] || typeof fetch !== 'function') return;
   buffers[name] = [];
   for (const file of BB_STINGS[name].files) {
-    fetch(file).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    fetch(file).then(r => { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); })
       .then(b => ctx.decodeAudioData(b)).then(buf => { buffers[name].push(buf); }).catch(() => { /* missing file: silence */ });
   }
 }

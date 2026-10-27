@@ -185,6 +185,7 @@ function _playerNamed(name) {
   const hit = i == null ? null : players[i];
   return hit && hit.name === name ? hit : players.find(q => q?.name === name);
 }
+/** @returns {Record<DC.Stat, number>} the nine stats, defaults filled in */
 export function pStats(name) {
   const p = _playerNamed(name);
   if (p?.stats) return { ...DEFAULT_STATS, ...p.stats };

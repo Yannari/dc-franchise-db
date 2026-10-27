@@ -27,8 +27,9 @@ import { getBond, getPerceivedBond } from '../bonds.js';
 import { juryValueProfile } from '../finale.js';
 import { stableRng } from './knowledge.js';
 import { readOf } from './jury-sentiment.js';
+import { pronounsOf } from '../pronouns-of.js';
 
-const P = n => { try { return pronouns(n); } catch { return { sub: 'they', obj: 'them', posAdj: 'their', Sub: 'They', Obj: 'Them' }; } };
+const P = n => { try { return pronouns(n); } catch { return pronounsOf('nb'); } };
 const W = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 const word = n => W[n] || String(n);
 const Cap = t => String(t).charAt(0).toUpperCase() + String(t).slice(1);
@@ -317,6 +318,7 @@ export function chooseNight({ week, residents, newcomer, full, lastKinds = [], g
   if (!residents.length || !alive.length) return { acts: [], kinds: [] };
   const rng = stableRng('jhnight', week?.num || 0, residents.join('|'));
   const others = residents.filter(n => n !== newcomer);
+  /** @type {[string, number, () => any][]} */
   const pool = [
     ['confessional', 3, () => { const js = residents.slice().sort(() => rng() - 0.5).slice(0, residents.length >= 4 ? 2 : 1); return js.flatMap(j => confessional(j, alive, newcomer, rng) || []); }],
     ['footage', residents.length >= 2 ? 2.5 : 0, () => footage(week, residents, alive, newcomer, rng)],

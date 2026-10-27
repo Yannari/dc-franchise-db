@@ -19,7 +19,8 @@ const SETS = {
   nb: { sub: 'they', obj: 'them', pos: 'theirs', posAdj: 'their', ref: 'themselves', Sub: 'They', Obj: 'Them', PosAdj: 'Their' },
 };
 
-/** Pronouns for a gender: 'm', 'f', or anything else. */
+/** Pronouns for a gender: 'm', 'f', or anything else.
+ *  @returns {DC.Pronouns} */
 export function pronounsOf(gender) {
   return SETS[gender] || SETS.nb;
 }

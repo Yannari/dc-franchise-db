@@ -4061,3 +4061,93 @@ than an empty filter. Adding a spin-off therefore costs the navbar nothing.
 
 The worker imports `js/shows.js`: a spin-off cannot be published until the
 worker is redeployed with the new registry.
+
+## 24. Rankings: every show gets a board, a calculator and its own trivia (2026-10-27)
+
+A show is not finished when its first season publishes: the rankings page,
+the player page's trivia and the simulator's calculator all have to know it.
+Drag Race went eleven seasons of work with none of the three, and The
+Challenge's seasons would have been applied into Total Drama's board. This is
+the checklist.
+
+### 24.1 The pieces, and where each lives
+
+| piece | file | what a new show supplies |
+|---|---|---|
+| board file | `js/ranking-boards.js` `BOARD_FILES` | `'<slug>': 'rankings_<prefix>.json'`. ONE board per family: a spin-off falls back to its family's board (`boardFile` → `familyOf`). Never Total Drama's `rankings_database.json` |
+| rubric | `js/rankings-update.js` `RU_SHOW['<slug>']` | `comp1`/`comp2`/`comp3` (label, weight, title), `adv` (or `null`), `strat`, `social`, and `read(p, json)` — the one place that knows where this show keeps its numbers in a published season |
+| season builder | `ruSeasonDocument(game, config)` | a branch on `engineFormat(config)` that turns the live save into the published season document, so "Use current season" works without a download. It throws a sentence naming what is missing (no finale yet, no ledger record) |
+| trivia words | `js/player-trivia.js` `WORDS` | the player noun, the win phrase, the comp names, and `ordinals(won)` — a show with no vote never prints "votes" |
+| card stat | `js/shows.js` `words.socialStat` | a show with no vote names what replaces "Votes Against" on the card and in the sort (Drag Race: `'In the bottom'`) |
+| board server | `worker/worker-studio.js` `rankingsPathFor` | nothing, if the board is in `BOARD_FILES`: it resolves through `familyOf`. Redeploy the worker (`npm run deploy`) after adding a show — it imports `js/shows.js` |
+
+The calculator's scoring is pure and shared: `ruRowsFromDoc(json)` reads a
+season document into rows, `ruScoreRows(rows, {board, castSize, format})`
+scores them, `ruApplyResults(board, results, {seasonNum, format})` merges, and
+`ruRankBoard(board, format)` re-ranks. A board built by a script and one built
+in the tool are the same calls — never re-implement a scorer in a tool script.
+`ruEmptyBoard(format)` starts a show's first board.
+
+A spin-off gets its rubric for free: the alias loop after `RU_SHOW` copies the
+family's entry to every member that declares none.
+
+### 24.2 Pricing a currency: measure it, and prefer the show's own number
+
+§14.9 is the rule: a count that grows with rounds survived is placement
+measured twice. Two things the Drag Race board added:
+
+- **Use the fandom's own per-episode number when the show has one.** Drag
+  Race's points per episode (WIN 5 / HIGH 4 / SAFE 3 / LOW 2 / BTM 1 / ELIM 0,
+  `ppeFor` in `js/dr/grid.js`, averaged over the episodes she competed in)
+  sits in the `strat` slot: `{ weight: 4, scale: 5, center: 3, zeroIsScore: true }`.
+  Centred on an average week, so a quiet run adds nothing; averaged, so a long
+  run is not charged for its length; and it is the one number that charges a
+  bottom. `zeroIsScore` exists because a first boot's 0 is a real score, not
+  an empty column — without it `_stratAdj` skips her.
+- **Count only what the achievement is.** A lip sync won FOR THE WIN, for a
+  legacy, on a no-elimination night or in a tournament final is already the
+  week's WIN; `NOT_FOR_LIFE` in `js/dr/export.js` keeps it out of
+  `lipsyncWins`. Counting both paid one achievement twice (two queens' totals
+  were wrong on the first board).
+- **A competition the format plays once is still a competition.** The
+  Smackdown (Lalaparuza) was not exported at all — the published season could
+  not say who won it. It now exports `ep.smackdown {winner, title, duels}`,
+  `dragCareerStats` counts `smackdownWins`/`smackdownCrowns`, and the crown is
+  `comp3`, priced as a maxi win.
+- **Read every spelling of the fan-favourite award** (`awards.fanFavorite`,
+  `fanFavourite`, `congeniality`): Miss Congeniality was never paid until
+  `ffRaw` read the third.
+- **A show with one competition column** leaves `comp2` null; `computeScore`
+  and the breakdown guard it (The Circle and Perfect Match crashed the
+  calculator before).
+
+A rubric priced before any season was measured says so in its comment
+(PROVISIONAL) — The Circle's and Perfect Match's still do.
+
+### 24.3 The first board
+
+Build it from the published season (`data/seasons/<prefix>-1-data.json`) with
+the calculator functions, then WRITE each player's reasoning from their actual
+season — the generated sentence is a fallback, not the board's voice. Check it
+on `rankings.html` (both the show tab and All) and on two player pages. If the
+season document is missing a stat the rubric reads, fix the EXPORTER and
+repair the published file from the user's save; never hand-edit a number
+into the board.
+
+### 24.4 The honours shelf
+
+A show's distinctions belong on `player.html`'s honours line, from the
+season's own stats: 🎤 Lip Sync Assassin (3+ lip syncs for your life in a
+season), 💋 Lip Sync Smackdown champion, 🌟 Hall of Fame (§23.4). Add the
+show's equivalents when its board ships.
+
+### 24.5 Status
+
+| show | board | builder | trivia | notes |
+|---|---|---|---|---|
+| Total Drama, Big Brother, The Traitors | yes | yes | yes | |
+| Drag Race (+ All Stars) | `rankings_dr.json` | yes | yes | PPE + Smackdown |
+| The Challenge | file mapped, no season yet | yes | yes | |
+| The Circle | file mapped, not built | yes | yes | rubric provisional (Influencer 0.3) |
+| Perfect Match | none | — | — | rubric provisional |
+| The Ridonculous Race | none | — | — | no rubric yet |

@@ -13,7 +13,7 @@ import { simulateBBEpisode } from '../js/bb-run.js';
 import { POOLS } from '../js/bb/script/lines/index.js';
 import { BB_FACT_KEYS } from '../js/bb/script/facts.js';
 import { makeScene, witness, learnFrom } from '../js/bb/script/scene.js';
-import { fill } from '../js/bb/script/write.js';
+import { fill, said } from '../js/bb/script/write.js';
 import { withSeededRandom } from './helpers/rng.js';
 
 const ROLES = new Set(['a', 'b', 'c', 'hoh']);
@@ -180,6 +180,26 @@ describe('fill', () => {
     gs.activePlayers = ['Ann', 'Bo'];
     expect(fill('{a} told {b} that {a.sub} had had enough. There are {count} of us.', { a: 'Ann', b: 'Bo' }))
       .toBe(`Ann told Bo that ${pronouns('Ann').sub} had had enough. There are two of us.`);
+  });
+
+  // the user, 2026-10-26: "Dominic has a theory... Dominic has been checking bags. Dominic might be losing it."
+  // — "just use pronouns to avoid repetition"
+  it('turns a name that opens sentence after sentence into a pronoun, when nobody else could be meant', () => {
+    setGs(null);
+    setPlayers([{ name: 'Ann', gender: 'f' }, { name: 'Bo', gender: 'm' }, { name: 'Cy', gender: 'nb' }, { name: 'Di', gender: 'f' }]);
+    initGameState();
+    const she = pronouns('Ann'), they = pronouns('Cy');
+    const cap = s => s[0].toUpperCase() + s.slice(1);
+    expect(said('dr', 'Ann has a theory about the toilet paper. Ann has been checking bags. Ann might be losing it.'))
+      .toBe(`Ann has a theory about the toilet paper. ${cap(she.sub)} has been checking bags. ${cap(she.sub)} might be losing it.`);
+    expect(said('dr', "I watched Ann all day. Ann's story keeps changing.")).toBe(`I watched Ann all day. ${cap(she.posAdj)} story keeps changing.`);
+    // two people who would take the same pronoun: the name stays
+    expect(said('dr', 'Ann and Di were whispering. Ann went quiet when I walked in.')).toBe('Ann and Di were whispering. Ann went quiet when I walked in.');
+    // a "they" keeps the name before a verb that would have to change for it
+    if (they.sub === 'they') {
+      expect(said('dr', 'Cy is up to something. Cy has been in the storage room all day.')).toBe('Cy is up to something. Cy has been in the storage room all day.');
+      expect(said('dr', 'Cy is up to something. Cy went to the storage room twice.')).toBe('Cy is up to something. They went to the storage room twice.');
+    }
   });
 
   // read 2026-10-25: "I was saving that for later. yesterday, Beth ate it."

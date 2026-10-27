@@ -95,7 +95,32 @@ function beatRepeats(text) {
     return sent;
   }).join(' ');
 }
-export const said = (kind, text) => sIs(kind === 'beat' ? beatRepeats(tidyNames(text)) : tidySpoken(text));
+// ...and across sentences: a name that opens the sentence after one that was only about them becomes a pronoun
+// (the user, 2026-10-26, on "Dominic has a theory that someone is hoarding toilet paper. Dominic has been checking
+// bags. Dominic might be losing it.": "just use pronouns to avoid repetition"). Only when that sentence named
+// nobody else, so the pronoun has one person to point at; a "they" only before a verb that does not change for it.
+const THEY_SAFE = /^(can|could|will|would|might|must|should|did|didn't|can't|won't|wouldn't|couldn't|shouldn't|said|told|went|got|made|thought|knew|kept|left|took|gave|[a-z]+ed)$/;
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
+function acrossSentences(text) {
+  const cast = new Set((players || []).map(p => p?.name).filter(Boolean));
+  if (!cast.size) return text;
+  const parts = String(text).split(/(?<=[.!?]["”’]?)(\s+)/);
+  let only = null;
+  return parts.map(part => {
+    if (/^\s+$/.test(part)) return part;
+    const named = [...cast].filter(n => new RegExp(`\\b${escRe(n)}\\b`).test(part));
+    let out = part;
+    const m = part.match(/^(["“'‘]?)([A-Z][\w-]*)(['’]s)?\s+([a-z']+)/);
+    if (m && only && m[2] === only && named.length === 1) {
+      const p = pronouns(only) || {};
+      if (m[3] && p.posAdj) out = m[1] + capFirst(p.posAdj) + part.slice(m[1].length + m[2].length + m[3].length);
+      else if (!m[3] && p.sub && (p.sub !== 'they' || THEY_SAFE.test(m[4]))) out = m[1] + capFirst(p.sub) + part.slice(m[1].length + m[2].length);
+    }
+    only = named.length === 1 ? named[0] : null;
+    return out;
+  }).join('');
+}
+export const said = (kind, text) => acrossSentences(sIs(kind === 'beat' ? beatRepeats(tidyNames(text)) : tidySpoken(text)));
 
 /**
  * For tests only: muted, a scene is not written at all (no pick, no ledger).

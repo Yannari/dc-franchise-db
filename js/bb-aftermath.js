@@ -22,6 +22,8 @@ import { gs, seasonConfig, players } from './core.js';
 import { HOSTS_BY_FORMAT } from './shows.js';
 import { evictionSeatsAJuror, jurorOrdinalFor } from './bb/jury.js';
 import { pronouns, pStats } from './players.js';
+import { dealBetween, tierOf } from './bb/deals.js';
+import { feudHistory } from './bb/witness.js';
 import {
   bond, perceived, trusts, grudge, remembers, targetOf, sharesAlliance,
   deFactoAllies, isNice, isVillainous, willScheme, dislikes,
@@ -92,12 +94,12 @@ function hostQuestion(style, kind, v, rng) {
       balanced: [`"${v.name} — that was a ${v.vote} vote. Did you have any idea?"`, `"When did you first feel that vote moving away from you?"`],
       warm: [`"${v.name}, take a breath. That was a ${v.vote} vote. How surprised are you right now?"`, `"I know that exit happened quickly. When did you realise you might be in trouble?"`],
       incisive: [`"${v.name}, you said you had the votes. You lost ${v.vote}. Where did your read fail?"`, `"That was not close. Who lied to you most convincingly?"`],
-      playful: [`"${v.name}, your vote count and the house's vote count were apparently using different maths. What happened?"`, `"That door opened before your face got the memo. How blindsided were you?"`],
+      playful: [`"${v.name}, you thought you had the votes and the house didn't agree. What happened?"`, `"That door opened before your face got the memo. How blindsided were you?"`],
     },
     close: {
       balanced: [`"${v.name}, that vote was close. Did you think you had it?"`, `"One vote separated the chairs from the front door. Where did you think it was landing?"`],
       warm: [`"${v.name}, you came within a vote of staying. How certain did you feel before the result?"`, `"That was painfully close. Did you believe you had survived it?"`],
-      incisive: [`"${v.name}, you needed one more vote. Whose vote did you miscount?"`, `"Close only matters if you know where the missing vote was. Did you?"`],
+      incisive: [`"${v.name}, you needed one more vote. Whose vote did you think you had?"`, `"Close only matters if you know where the missing vote was. Did you?"`],
       playful: [`"${v.name}, one vote just ruined your evening. Which houseguest owes you an explanation?"`, `"You were one conversation away. Which conversation are you replaying first?"`],
     },
     blame: {
@@ -252,6 +254,84 @@ function readOfTheRoom(evictee, week, house) {
  * completely honest, because the person they are talking to cannot use it. That
  * makes them the cruellest thing in the show and the most informative.
  */
+const NUM_WORD = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen'];
+const weekWords = n => `week ${NUM_WORD[n] || n}`;
+
+/**
+ * What `name` and the evictee actually went through, as `name` says it to them in a goodbye: a veto one used on
+ * the other, a nomination, a deal, a feud and how long, the alliance by name, the comps the evictee won. Each fact
+ * has a line for a friend and one for somebody who voted them out. Most specific first.
+ * (The user, 2026-10-27: "the recording for the evicted are very repetitive and shallow and boring": every line in
+ * the pools below was sayable by anybody about anybody.)
+ */
+function sharedHistory(name, evictee, week, against) {
+  const now = Number(week?.num) || 0;
+  const past = (gs.bb?.weeks || []).filter(w => w && Number(w.num) > 0 && Number(w.num) < now);
+  const out = [];
+  const add = (key, warm, cold) => out.push({ key, text: against ? cold : warm });
+  for (const w of past) {
+    const n = weekWords(w.num);
+    if (w.vetoWinner === name && w.vetoUsed && w.vetoSaved === evictee) add(`vs:${w.num}`,
+      `I took you off the block in ${n}. I'd do it again.`,
+      `I took you off the block in ${n}, and tonight I voted you out. I know how that looks.`);
+    if (w.vetoWinner === evictee && w.vetoUsed && w.vetoSaved === name) add(`vm:${w.num}`,
+      `You took me off the block in ${n}. I never forgot that, and I never will.`,
+      `You took me off the block in ${n}, and I still voted you out. I'm not proud of that part.`);
+  }
+  for (const w of past) {
+    const n = weekWords(w.num);
+    const ballots = Array.isArray(w.ballots) ? w.ballots : [];
+    const mine = ballots.find(b => b.voter === name), theirs = ballots.find(b => b.voter === evictee);
+    if (theirs && theirs.evict === name) add(`va:${w.num}`,
+      `You voted to evict me in ${n}. We got past it, and I never held it against you.`,
+      `You voted to evict me in ${n}. I remembered.`);
+    if (mine && mine.evict === evictee) add(`vb:${w.num}`,
+      `I voted against you in ${n}. I'd like to think we got past it.`,
+      `I voted against you in ${n} too. This time it worked.`);
+    const blk = w.finalNominees || [];
+    if (blk.includes(name) && blk.includes(evictee)) add(`bl:${w.num}`,
+      `We sat on the block together in ${n}. I'm glad we both got up from it.`,
+      `We sat on the block together in ${n}. One of us was always going to go home in the end.`);
+  }
+  const votedAlike = past.filter(w => {
+    const bs = Array.isArray(w.ballots) ? w.ballots : [];
+    const a = bs.find(b => b.voter === name), b = bs.find(x => x.voter === evictee);
+    return a && b && a.evict === b.evict;
+  }).length;
+  if (votedAlike >= 2) add('alike', `We voted the same way ${NUM_WORD[votedAlike] || votedAlike} times. I'm going to miss knowing where one vote was.`,
+    `We voted the same way ${NUM_WORD[votedAlike] || votedAlike} times. Tonight I voted you out.`);
+  const deal = dealBetween(name, evictee);
+  if (deal) {
+    const d = ({ 'final-two': 'a final two', 'final-three': 'a final three' })[tierOf(deal)] || 'a deal to work together';
+    add('deal', `We had ${d}. I meant every word of it.`,
+      `We had ${d}, and I broke it tonight. You'll hear that from everybody, so hear it from me first.`);
+  }
+  for (const w of past) {
+    const n = weekWords(w.num);
+    const noms = [...(w.initialNominees || []), ...(w.finalNominees || [])];
+    if (w.hoh === name && noms.includes(evictee)) add(`in:${w.num}`,
+      `I put you on the block in ${n}, and you still talked to me after. Not everybody would have.`,
+      `I put you on the block in ${n}. Tonight I finished what I started.`);
+    if (w.hoh === evictee && noms.includes(name)) add(`yn:${w.num}`,
+      `You put me on the block in ${n}. We got past it, and I'm glad we did.`,
+      `You put me on the block in ${n}. I didn't forget it.`);
+  }
+  try {
+    const h = feudHistory(name, evictee, now + 1);
+    if (h.weeks >= 2) add('feud', `We've been at each other since ${h.since}. It's going to be quiet in here without you.`,
+      `We've been fighting since ${h.since}. One of us was always going to go first.`);
+  } catch { /* storylines are texture here */ }
+  const al = (gs.namedAlliances || []).find(a => a?.name && a.active !== false && !a.dissolved
+    && (a.members || []).includes(name) && (a.members || []).includes(evictee));
+  if (al) add('al', `${al.name} isn't the same without you in it.`,
+    `${al.name} lost somebody tonight, and I'm the one who made it you.`);
+  const rec = gs.bb?.stats?.[evictee] || {};
+  const comps = (rec.hohWins || 0) + (rec.vetoWins || 0) + (rec.blockBusterWins || 0);
+  if (comps >= 2) add('comps', `You won ${NUM_WORD[comps] || comps} competitions in here, and you never once made anybody feel small about it.`,
+    `You won ${NUM_WORD[comps] || comps} competitions in here. Nobody wanted to face you in the next one.`);
+  return out;
+}
+
 function goodbyeMessages(evictee, house, week, rng) {
   const votedAgainst = new Set((week.ballots || []).filter(b => b.evict === evictee).map(b => b.voter));
   // ── a goodbye can only claim the vote its author actually had ──
@@ -291,10 +371,16 @@ function goodbyeMessages(evictee, house, week, rng) {
   // cast repeats fast, and a repeated goodbye reads as copy-paste, which is
   // the one thing a farewell must never be.
   const used = new Set();
+  // ...and never one this season has already played, while another fits: a goodbye heard in week three and again
+  // in week seven reads as the same tape (the user, 2026-10-27: "very repetitive")
+  const season = gs.bb ? (gs.bb.goodbyeLines ||= {}) : {};
   const pickFresh = pool => {
     const fresh = pool.filter(line => !used.has(line));
-    const line = _pick(rng, fresh.length ? fresh : pool);
+    const from = fresh.length ? fresh : pool;
+    const least = Math.min(...from.map(line => season[line] || 0));
+    const line = _pick(rng, from.filter(line => (season[line] || 0) === least));
     used.add(line);
+    season[line] = (season[line] || 0) + 1;
     return line;
   };
   const messages = featured.map(name => {
@@ -337,10 +423,13 @@ function goodbyeMessages(evictee, house, week, rng) {
 
     const unapologetic = [
       `"I voted to evict you because keeping you gave me one more person I couldn't trust and one fewer path to the end. You were good at this game. That was the problem."`,
-      `"I didn't write your name down because you played badly. I wrote it down because another week with you in this house was worse for my game than a week without you."`,
+      `"I didn't vote you out because you played badly. I voted you out because another week with you in this house was worse for my game than a week without you."`,
       `"We never found a way to work together, and eventually that stops being awkward and starts being dangerous. Tonight I chose my game over yours."`,
       `"You made people change their plans around you. I wasn't giving you another week to make me change mine."`,
       `"I'm not going to call it personal. I wanted a house where you had less influence, and voting you out was the cleanest way to get one."`,
+      `"I had to pick between you and somebody I'm working with. It was never going to be you."`,
+      `"You were always going to be a problem for me later. I'd rather deal with it now."`,
+      `"I liked talking to you. I didn't like what you were doing with the votes. That's the whole reason."`,
     ];
     if (cameForMe) unapologetic.push(
       `"You put my name into the game, took a shot and left me here to answer it. This vote was the answer."`,
@@ -348,16 +437,15 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
     if (ranVote) unapologetic.push(
       `"I helped put this vote together. You were too connected, too difficult to control and too dangerous to leave for next week. I own all of it."`,
-      `"This wasn't a vote I followed. I wanted you out, I found the numbers, and I made sure they stayed there. You deserved the truth before I asked for your jury vote."`,
+      `"This wasn't a vote I followed. I wanted you out, I got the votes together, and I made sure nobody changed their mind. You deserved to hear that from me."`,
     );
     if (enemy) unapologetic.push(
       `"Neither of us is going to pretend. You didn't like me, I didn't like you, and one of us was always going to get to do this first."`,
       `"I'd tell you this was nothing personal, but you'd know I was lying and I'd know you knew."`,
-      `"You wanted me gone since about week two. You just weren't as good at it."`,
     );
     if (scaredOf) unapologetic.push(
       `"I was frightened of you. That's the whole message. Every week you were still here was a week I spent working out what you were doing."`,
-      `"I never once felt safe with you in this house, and I have thirty-odd days of not sleeping to prove it."`,
+      `"I never once felt safe with you in this house. Not for a single night."`,
     );
     if (rated && !enemy) unapologetic.push(
       `"You're the best player I've sat in a room with. That is not a compliment I can afford to keep paying past tonight."`,
@@ -365,20 +453,28 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
     if (allied) unapologetic.push(
       `"We were on the same side of this house, right up until the side got too crowded. I picked the version of it that had me in it."`,
-      `"An alliance is four people agreeing about a fifth. Eventually you run out of fifths, and tonight we ran out."`,
+      `"We were in it together, and then the numbers came down to us. I'm sorry it was you."`,
+    );
+    if ((Number(week?.num) || 0) >= 3) unapologetic.push(
+      `"You were on my list from the first week. Tonight I finally got the chance."`,
     );
     if (villainous) unapologetic.push(
+      `"You'd have done it to me if you'd had the chance. I just got there first."`,
+      `"I'm not going to pretend I feel bad. I don't."`,
+    );
+    if (villainous && toJury) unapologetic.push(
       `"I'd apologise, but you'd only use it against me on the jury, and I'd deserve that."`,
-      `"You'd have done it to me. The difference between us is about four days and one competition."`,
     );
     if (toJury) unapologetic.push(
       `"You get a vote at the end of this, and I'd rather you cast it hating me for something I actually did than for a version somebody else tells you about."`,
     );
 
     const confession = [
-      `"I wrote your name down. I've been sitting on that for three days and I couldn't say it to your face, which probably tells you everything about how I'm playing this."`,
+      `"I voted to evict you. I couldn't say it to your face this week, which probably tells you everything about how I'm playing this."`,
       `"You were my closest friend in here and I still did it, and I'd like to say I'm sorry but I think I'd do it again."`,
       `"If you're watching this you already know it was me. I hope you understand it eventually. I'd understand if you didn't."`,
+      `"I told you I was voting to keep you. I wasn't. I'm sorry I lied to your face."`,
+      `"I went back and forth on this all day. In the end I picked my game over you, and I hate that I did."`,
     ];
     if (allied) confession.push(
       `"We built something in here and I took it apart from the inside, in a room you weren't in, with people you trusted less than you trusted me."`,
@@ -386,7 +482,7 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
     if (showmance) confession.push(
       `"There is no version of this where I come out of it well. I know what we were. I did it anyway and I'm going to have to watch this back one day."`,
-      `"I'm going to see you in about four weeks and neither of us knows what that conversation is yet. I'm sorry. I did it and I'm sorry."`,
+      `"I'm going to see you again when this is over, and neither of us knows what that conversation is yet. I'm sorry. I did it and I'm sorry."`,
     );
     if (neverSawIt) confession.push(
       `"You never saw it coming and that was the point. I worked at that. Sitting here saying it out loud is the first honest thing I've done all week."`,
@@ -397,13 +493,16 @@ function goodbyeMessages(evictee, house, week, rng) {
       `"I'm going to be honest because you've earned it: I have felt sick about this since the moment I decided."`,
     );
     if (ranVote) confession.push(
-      `"It was mine. Not the house's, not the numbers', mine. I counted it, I built it, and I let you hug me on the way to the chair."`,
+      `"It was mine. Not the house's, mine. I got the votes together, and I let you hug me on the way to the chair."`,
     );
 
     const warm = [
       `"This house is going to be a lot worse without you in it, and I mean that."`,
       `"You made this house feel less like a set. I'm going to miss that more than I can say on camera."`,
       `"Watch my season for me. Yell at the screen when I do something stupid. You'll know when."`,
+      `"You were the first person I'd look for when something happened in here. I'm going to keep looking for a few days."`,
+      `"I'm going to play the rest of this for both of us. I'm sorry I couldn't keep you here."`,
+      `"Nobody in here made me laugh like you did. It's going to be a very quiet kitchen."`,
     ];
     if (keptThem(name)) warm.push(
       `"I fought for you. I lost. I'm sorry — genuinely, I'm sorry."`,
@@ -433,13 +532,20 @@ function goodbyeMessages(evictee, house, week, rng) {
       `"Go and be brilliant on that jury. Ask the questions I won't be there to ask."`,
     );
 
+
+    let feuding = false;
+    try { feuding = feudHistory(name, evictee, (Number(week?.num) || 0) + 1).weeks >= 2; } catch { feuding = false; }
     const polite = [
       `"Good game. I mean that — you made this a lot harder than it needed to be."`,
-      `"I don't think we ever really got each other, but I never had a problem with you."`,
-      `"Take care out there. Say hello to the jury for me, if it comes to that."`,
+      ...(feuding ? [] : [`"I don't think we ever really got each other, but I never had a problem with you."`]),
+      `"Take care out there. I mean that."`,
       `"We never got our chapter, did we. Maybe outside the walls."`,
-      `"You always kept your area of the kitchen clean, and honestly that is more than most."`,
+      `"We didn't talk much. I wish we had. You were easy to be around."`,
+      `"I think we'd have got on outside. In here there was always somebody in the way."`,
     ];
+    if (toJury) polite.push(
+      `"I'll see you at the end, on the jury. Be fair to me."`,
+    );
     if (rated) polite.push(
       `"We barely spoke and I still spent half my week thinking about what you were doing. Take that as the compliment it is."`,
     );
@@ -456,10 +562,17 @@ function goodbyeMessages(evictee, house, week, rng) {
       `"You were the one I was watching. I don't think you ever noticed me at all, and that was probably my best week in here."`,
     );
 
-    const text = betrayedAFriend ? pickFresh(confession)
+    let text = betrayedAFriend ? pickFresh(confession)
       : against ? pickFresh(unapologetic)
         : close ? pickFresh(warm)
           : pickFresh(polite);
+    // ...and then what the two of them actually went through: the most specific fact this pair has, said once a
+    // segment (a fact two people share is said by one of them)
+    const story = sharedHistory(name, evictee, week, against).filter(f => !used.has(`fact:${f.key}`) && !used.has(f.text));
+    if (story.length) {
+      used.add(`fact:${story[0].key}`); used.add(story[0].text);
+      text = `${text.replace(/"$/, '')} ${story[0].text}"`;
+    }
 
     // What this person's seat was on the night, for the label beside the
     // message: the Head of Household and the other nominee held no ballot, so
@@ -534,7 +647,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     analytical: [
       `"No. I had a structure in my head and every piece of it was real except the votes. That is a fairly important exception."`,
       `"I saw the warning signs and explained every one of them away. That is worse than not seeing them."`,
-      `"My count was internally consistent and completely fictional. Somebody did excellent work."`,
+      `"Everybody I asked told me they were with me. Somebody did excellent work."`,
     ],
     defiant: [
       `"Blindsided, yes. Beaten? For tonight. Those are different things."`,
@@ -566,7 +679,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       `"I am hurt. That is the honest answer. The game answer can come after I sleep."`,
     ],
     guarded: [
-      `"No. And I counted this morning, then counted again before the vote. I had it both times."`,
+      `"No. I asked around this morning, and again before the vote. I had it both times."`,
       `"I knew something was wrong when nobody would look at me. I did not know how wrong."`,
       `"Apparently I was the last person in the house to receive the weekly update."`,
     ],
@@ -668,7 +781,7 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       stats.strategic >= 6
       ? [
         `"I should've made my move a week earlier. I thought I was safe enough to wait, and I wasn't."`,
-        `"I spent too much time counting votes and not enough time asking why people were avoiding me. I should've known something had changed."`,
+        `"I spent too much time asking people for votes and not enough time asking why they were avoiding me. I should've known something had changed."`,
         `"After the veto meeting, I let people tell me I was safe and stopped checking. I needed to keep having those conversations right up to the vote."`,
         `"I kept talking to the same people because they were giving me the answers I wanted. I should've gone to the people I wasn't comfortable with."`,
       ]

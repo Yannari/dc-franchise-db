@@ -10,7 +10,7 @@
 // touches a listener count or a follower.
 
 import * as L from './kristal-exit-lines.js';
-import { seasonId } from './shows.js';
+import { seasonId, familyOf } from './shows.js';
 
 function hash(key) {
   let h = 2166136261;
@@ -167,9 +167,10 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const guest = ep.guestName || r.guest;
   const pr = ep.pronouns || PRONOUNS.other;
   const fmt = ep.season?.format || r.show || 'big-brother';
-  const place = PLACE[fmt] || PLACE['big-brother'];
+  // A spin-off (Drag Race All Stars) is interviewed in its family's words.
+  const place = PLACE[fmt] || PLACE[familyOf(fmt)] || PLACE['big-brother'];
   // Shared lines, then this show's own (L.SHOW) on top.
-  const S = L.SHOW?.[fmt] || {};
+  const S = L.SHOW?.[fmt] || L.SHOW?.[familyOf(fmt)] || {};
   const B = (name, ...path) => {
     let a = L[name], b = S[name];
     for (const k of path) { a = a?.[k]; b = b?.[k]; }

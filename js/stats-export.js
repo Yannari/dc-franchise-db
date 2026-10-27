@@ -9,7 +9,7 @@ import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.j
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
 import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT } from './shows.js';
-import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT } from './shows.js';
+import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
@@ -171,9 +171,10 @@ export function _tagSeasonDetail(detail, format = DEFAULT_FORMAT) {
   // which show it is from. Asked of the registry rather than of Big Brother by
   // name: the hardcoded version let a `tr` block through onto a Total Drama
   // appearance, which is the same split brain one show further along.
-  const mine = SHOWS[format]?.prefix;
+  // The block is the ENGINE's: a Drag Race All Stars appearance carries `dr`.
+  const mine = SHOWS[engineOf(format)]?.prefix;
   for (const [other, show] of Object.entries(SHOWS)) {
-    if (other === format || show.prefix === mine) continue;
+    if (other === format || show.prefix === mine || engineOf(other) === engineOf(format)) continue;
     if (detail[show.prefix]) {
       throw new Error(
         `Season detail for season ${detail.season} carries a ${show.name} stat block ` +
@@ -2479,9 +2480,11 @@ export function mergeBigBrotherSeasonsDatabase(existing, seasonDoc) {
  * and are additional, exactly as the arena is for the house.
  */
 export function mergeDragSeason(existing, seasonDoc) {
-  if (!seasonDoc || seasonDoc.format !== DRAG_FORMAT) {
+  // Drag Race or its All Stars: the SHOW is the document's, the rules are one.
+  if (!seasonDoc || familyOf(seasonDoc.format) !== DRAG_FORMAT) {
     throw new Error(`mergeDragSeason expects a ${DRAG_FORMAT} season document`);
   }
+  const fmt = seasonDoc.format;
   const seasonNum = seasonDoc.seasonNumber;
   if (!seasonNum) throw new Error('Drag Race season document has no seasonNumber');
 
@@ -2490,7 +2493,7 @@ export function mergeDragSeason(existing, seasonDoc) {
 
   // Take this season off everybody first, so a queen dropped from a re-exported
   // cast does not keep the appearance, the season count and the fame with it.
-  _stripSeasonFromAll(db, seasonNum, DRAG_FORMAT);
+  _stripSeasonFromAll(db, seasonNum, fmt);
 
   for (const entry of seasonDoc.placements || []) {
     const name = entry.name;
@@ -2511,7 +2514,7 @@ export function mergeDragSeason(existing, seasonDoc) {
     if (!player.seasonDetails) player.seasonDetails = [];
     if (!player.seasons) player.seasons = [];
     if (entry.emoji && entry.emoji !== '[AI_FILL]') player.emoji = entry.emoji;
-    _stripSeasonFromPlayer(player, seasonNum, DRAG_FORMAT);
+    _stripSeasonFromPlayer(player, seasonNum, fmt);
 
     if (!player.seasons.includes(seasonNum)) player.seasons.push(seasonNum);
     if (entry.status === 'Winner') player.wins = (player.wins || 0) + 1;
@@ -2557,7 +2560,7 @@ export function mergeDragSeason(existing, seasonDoc) {
       gameplayStyle: _clean(entry.gameplayStyle),
       keyMoments: Array.isArray(entry.keyMoments) ? entry.keyMoments
         : (_clean(entry.keyMoments) ? [entry.keyMoments] : []),
-    }, DRAG_FORMAT));
+    }, fmt));
 
     const places = player.seasonDetails.map(sd => sd.placement).filter(x => x && x < 99);
     player.avgPlacement = places.length
@@ -2569,8 +2572,8 @@ export function mergeDragSeason(existing, seasonDoc) {
 
     if (entry.status === 'Winner') {
       player.badges = player.badges || [];
-      // DR1 Winner. The bare number is Total Drama's, permanently.
-      const badge = _winnerBadge(seasonNum, DRAG_FORMAT);
+      // DR1 Winner, DRAS1 Winner. The bare number is Total Drama's, permanently.
+      const badge = _winnerBadge(seasonNum, fmt);
       if (!player.badges.includes(badge)) player.badges.push(badge);
     }
   }
@@ -2602,8 +2605,8 @@ export function mergeDragSeason(existing, seasonDoc) {
     const judge = db.players.find(x => x.id === slug);
     if (!judge) continue;                       // not a franchise player, no credit
     judge.judged = (judge.judged || [])
-      .filter(j => !(j && j.format === DRAG_FORMAT && Number(j.season) === seasonNum));
-    judge.judged.push({ format: DRAG_FORMAT, season: seasonNum, episodes });
+      .filter(j => !(j && j.format === fmt && Number(j.season) === seasonNum));
+    judge.judged.push({ format: fmt, season: seasonNum, episodes });
   }
 
   db.franchise = db.franchise || {};
@@ -2619,25 +2622,28 @@ export function mergeDragSeason(existing, seasonDoc) {
  * and Big Brother 1 exactly where they were.
  */
 export function mergeDragSeasonsDatabase(existing, seasonDoc) {
-  if (!seasonDoc || seasonDoc.format !== DRAG_FORMAT) {
+  if (!seasonDoc || familyOf(seasonDoc.format) !== DRAG_FORMAT) {
     throw new Error(`mergeDragSeasonsDatabase expects a ${DRAG_FORMAT} season document`);
   }
+  const fmt = seasonDoc.format;
   const seasonNum = seasonDoc.seasonNumber;
   if (!seasonNum) throw new Error('Drag Race season document has no seasonNumber');
 
   const db = JSON.parse(JSON.stringify(existing || {}));
   if (!db.seasons) db.seasons = [];
-  // Read off the episodes the way js/dr/grid.js shapeOf does, plus the finale
-  // row, which is the only one a Save-rule All Stars marks.
-  const allStars = (seasonDoc.dr?.episodes || []).some(e => e?.dr?.allStars || e?.allStars || e?.dr?.finale?.allStars);
-  const airWindow = _airWindowFor(db, DRAG_FORMAT, seasonNum, { allStars });
+  /* ALL STARS IS ITS OWN SHOW: the document says so in `format`, and the row
+     is keyed on (format, number), so dras-1 and dr-1 are two rows. Its winner
+     is inducted into the Hall of Fame — `hallOfFame` on the row says this
+     season's crown is that one. */
+  const hallOfFame = !!SHOWS[fmt]?.spinOff;
+  const airWindow = _airWindowFor(db, fmt, seasonNum);
   // Read before the filter: the row is rebuilt from the document, so anything
   // the document does not carry would not survive a re-publish.
   const priorRatings = (db.seasons.find(x =>
-    x.seasonNumber === seasonNum && x.format === DRAG_FORMAT) || {}).ratings || null;
+    x.seasonNumber === seasonNum && x.format === fmt) || {}).ratings || null;
 
   db.seasons = db.seasons.filter(x =>
-    !(x.seasonNumber === seasonNum && x.format === DRAG_FORMAT));
+    !(x.seasonNumber === seasonNum && x.format === fmt));
 
   const awards = seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {};
   const named = a => (a?.name ? { name: a.name, playerSlug: a.playerSlug || _slug(a.name) } : null);
@@ -2649,10 +2655,10 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
   db.seasons.push({
     ratings: seasonDoc?.ratings || priorRatings || undefined,
     seasonNumber: seasonNum,
-    format: DRAG_FORMAT,
-    seasonId: seasonId(DRAG_FORMAT, seasonNum),
-    ...(allStars ? { allStars: true } : {}),
-    title: _clean(seasonDoc.title, `${SHOWS[DRAG_FORMAT].name} ${seasonNum}`),
+    format: fmt,
+    seasonId: seasonId(fmt, seasonNum),
+    ...(hallOfFame ? { hallOfFame: true } : {}),
+    title: _clean(seasonDoc.title, `${SHOWS[fmt].name} ${seasonNum}`),
     subtitle: _clean(seasonDoc.subtitle),
     castSize: seasonDoc.castSize,
     episodeCount: seasonDoc.episodeCount,
@@ -2685,7 +2691,7 @@ export function mergeDragSeasonsDatabase(existing, seasonDoc) {
     },
     theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
     status: 'Complete',
-    castPhotoPath: `assets/cast/${seasonId(DRAG_FORMAT, seasonNum)}-cast.png`,
+    castPhotoPath: `assets/cast/${seasonId(fmt, seasonNum)}-cast.png`,
     emoji: _clean(seasonDoc.emoji),
     // Kristal-talKs' in-season exit interviews (js/exit-interview/aired.js).
     exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
@@ -3351,7 +3357,8 @@ export function registerSeasonExporter(format, build) {
 
 /** The builder for a format, or the default show's. Exported for the guard. */
 export function seasonExporterFor(format) {
-  return SEASON_EXPORTERS.get(format) || exportAndFillNarratives;
+  // A spin-off is exported by its engine's exporter (All Stars by Drag Race's).
+  return SEASON_EXPORTERS.get(format) || SEASON_EXPORTERS.get(engineOf(format)) || exportAndFillNarratives;
 }
 
 /**
@@ -3740,13 +3747,17 @@ export async function exportDragRaceSeason(onStatus) {
   const seasonNum = _getSeasonNumber();
   if (!seasonNum) return;
 
+  // The SHOW this season is (Drag Race, or All Stars on the same engine).
+  const fmt = seasonFormat(seasonConfig);
   const doc = buildDragSeasonDocument(rows, {
     seasonNumber: seasonNum,
     twists: (seasonConfig.drSchedule || []).filter(Boolean),
     congeniality: gs.dr?.congeniality || null,
+    format: fmt,
   });
+  // Recorded under the engine's key while it aired (js/exit-interview/aired.js).
   doc.exitInterviews = publishedExits('drag-race');
-  _rateSeason(doc, rows, DRAG_FORMAT);
+  _rateSeason(doc, rows, fmt);
 
   _status(`Built ${doc.seasonId}: ${doc.castSize} queens, ${doc.episodeCount} episodes.`);
 
@@ -3786,7 +3797,7 @@ export async function exportDragRaceSeason(onStatus) {
      nothing, and reports it as somebody else's problem. */
   const published = await _publishSeasonToSite({
     seasonNumber: seasonNum,
-    format: DRAG_FORMAT,
+    format: fmt,
     season: doc,
     players: playersDb,
     seasons: seasonsDb,
@@ -3797,7 +3808,7 @@ export async function exportDragRaceSeason(onStatus) {
   // rather than vanishing. The filename comes from the registry, never a
   // typed-out prefix.
   _status('Downloading files...');
-  _downloadJSON(doc, `${seasonId(DRAG_FORMAT, seasonNum)}-data.json`);
+  _downloadJSON(doc, `${seasonId(fmt, seasonNum)}-data.json`);
   if (playersDb) setTimeout(() => _downloadJSON(playersDb, 'players_database.json'), 500);
   if (seasonsDb) setTimeout(() => _downloadJSON(seasonsDb, 'seasons_database.json'), 1000);
   _status('Done.');

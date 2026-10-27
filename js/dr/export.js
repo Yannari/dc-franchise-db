@@ -21,17 +21,19 @@
 // no vote, and every existing reader of `eliminated` in this codebase means
 // "the person the house voted out". Writing a name there would make a drag
 // season read as a Big Brother eviction in half the site.
-import { SHOWS, showWords, seasonRounds, DRAG_FORMAT } from '../shows.js';
+import { SHOWS, showWords, seasonRounds, DRAG_FORMAT, formatPrefix } from '../shows.js';
 import { edgesOf } from './family.js';
 
 // Re-exported so this module's own readers need one import, not two.
 export { DRAG_FORMAT };
 
-const PREFIX = SHOWS[DRAG_FORMAT].prefix;
+/* WHICH SHOW'S FILES. Drag Race by default; Drag Race All Stars plays on this
+   engine and keeps its own files (dras-1), so every key takes the show. */
+const prefixOf = (format = DRAG_FORMAT) => formatPrefix(format);
 
-export const seasonFilePath = n => `data/seasons/${PREFIX}-${n}-data.json`;
-export const episodeStoreKey = (n, e) => `${PREFIX}_episode_s${n}_e${e}`;
-export const analyticsKey = n => `AI_ANALYTICS_${PREFIX}-${n}`;
+export const seasonFilePath = (n, format) => `data/seasons/${prefixOf(format)}-${n}-data.json`;
+export const episodeStoreKey = (n, e, format) => `${prefixOf(format)}_episode_s${n}_e${e}`;
+export const analyticsKey = (n, format) => `AI_ANALYTICS_${prefixOf(format)}-${n}`;
 
 const slugOf = name => String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -249,7 +251,7 @@ export function dragShowmance(rows, name) {
   return null;
 }
 
-export function dragSeasonDetails(rows, seasonNumber, name, congeniality = null) {
+export function dragSeasonDetails(rows, seasonNumber, name, congeniality = null, format = DRAG_FORMAT) {
   const placements = dragPlacements(rows);
   const row = placements.find(p => p.name === name);
   const stats = dragCareerStats(rows, name, congeniality);
@@ -262,7 +264,7 @@ export function dragSeasonDetails(rows, seasonNumber, name, congeniality = null)
   const partner = dragShowmance(rows, name);
   return {
     season: seasonNumber,
-    format: DRAG_FORMAT,
+    format,
     placement: row?.placement ?? null,
     status: row?.status ?? null,
     challengeWins: stats.wins,
@@ -316,7 +318,7 @@ function craftOf(rows, name) {
   return null;
 }
 
-export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], congeniality = null } = {}) {
+export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], congeniality = null, format = DRAG_FORMAT } = {}) {
   const episodes = dragEpisodes(rows);
   const placements = dragPlacements(rows);
   const last = rows[rows.length - 1] || {};
@@ -349,8 +351,9 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
 
   return {
     seasonNumber,
-    format: DRAG_FORMAT,
-    seasonId: `${PREFIX}-${seasonNumber}`,
+    // The SHOW, which for All Stars is not the engine that played it.
+    format,
+    seasonId: `${prefixOf(format)}-${seasonNumber}`,
     castSize: cast.length,
     episodeCount: episodes.length,
     winner: winnerName ? { name: winnerName, playerSlug: slugOf(winnerName), vote: '' } : null,

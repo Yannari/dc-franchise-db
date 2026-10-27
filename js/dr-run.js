@@ -948,6 +948,7 @@ function _airDragRow(row) {
       const num = Number(gs.seasonNumber || seasonConfig?.seasonNumber);
       const rows = (gs.episodeHistory || []).filter(r => r && r.dr);
       const rec = drLedgerRecord(rows, { seasonName: seasonConfig?.name || null,
+        format: seasonFormat(seasonConfig),
         archetypeOf: n => (players || []).find(p => p?.name === n)?.archetype || null });
       if (rec && num && recordBuiltSeason(rec, num)) {
         if (typeof window !== 'undefined') window.persistFranchiseLedger?.();

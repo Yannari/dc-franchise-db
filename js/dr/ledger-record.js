@@ -23,13 +23,14 @@ import { DRAG_FORMAT } from '../shows.js';
 
 const ALLY = 6, RIVAL = -4;
 
-export function drLedgerRecord(rows = [], { cast = null, seasonName = null, archetypeOf = () => null } = {}) {
+export function drLedgerRecord(rows = [], { cast = null, seasonName = null, archetypeOf = () => null, format = DRAG_FORMAT } = {}) {
   if (!rows.length) return null;
   const placed = dragPlacements(rows, cast);
   const names = cast && cast.length ? cast : placed.map(p => p.name);
   const byName = new Map(placed.map(p => [p.name, p]));
   const families = dragFamilies(rows);
-  const rec = { seasonName: seasonName || 'Drag Race', format: DRAG_FORMAT, fanFavorite: null, ratings: null, players: {} };
+  // The SHOW (Drag Race, or its All Stars), so the ledger keys it dr-N or dras-N.
+  const rec = { seasonName: seasonName || 'Drag Race', format, fanFavorite: null, ratings: null, players: {} };
   for (const n of names) {
     const p = byName.get(n);
     const partner = dragShowmance(rows, n);

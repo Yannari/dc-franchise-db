@@ -31,6 +31,7 @@
 import { BEATS, MOMENT_BEATS, NUMBERS, NUMBER_A, COLD, ADVICE_Q, ADVICE, RAPID, MOOD, LIFE, LIFE_PRESS,
   LIFE_CRACK, FUTURE_Q, FUTURE_A } from './kristal-lines.js';
 import { PLAYBACK_Q, PLAYBACK_A } from './kristal-exit-lines.js';
+import { familyOf } from './shows.js';
 
 // Deterministic pick — the same episode reads the same way forever.
 function hash(key) {
@@ -290,7 +291,7 @@ function exchangeFor(b, ctx, pressed = false) {
   const { story, style, voice, key, words } = ctx;
   const facts = {
     x: b.x, guest: story.guest, season: story.season, place: story.place,
-    exitNight: EXIT_NIGHT[story.format] || 'the night you went home',
+    exitNight: EXIT_NIGHT[story.format] || EXIT_NIGHT[familyOf(story.format)] || 'the night you went home',
     players: words.players || 'players', player: words.player || 'player',
     status: b.status, quote: b.quote,
     ep: b.moment?.ep, moment: b.moment?.text,

@@ -1002,8 +1002,21 @@ export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
   if (type === 'afternoms') lead.push(...(ctx.nominees || []).slice(0, 2), ...(ctx.hoh ? [ctx.hoh] : []));
   const insiders = inside.flatMap(sc => sc.cast);
   const order = [...new Set([...lead, ...insiders, ...shuffled(present, salt)])].filter(n => present.includes(n));
+  // Eviction night is cast from the vote: {c} is whoever was closest to {gone} and did not vote them out (the sad
+  // one), {d} somebody who voted {gone} out and did not like them (the glad one, result 'glad'), so "I'll miss
+  // {gone}" and "I'm not sad about it" come from the people they are true of (the user, 2026-10-27)
+  let glad = null;
+  if (type === 'evictnight' && gone) {
+    const bs = Array.isArray(ctx.week?.ballots) ? ctx.week.ballots : [];
+    const evictors = order.filter(n => bs.some(b => b.voter === n && b.evict === gone));
+    glad = evictors.filter(n => getBond(n, gone) <= 0).sort((x, y) => getBond(x, gone) - getBond(y, gone))[0] || null;
+    const sad = order.filter(n => n !== glad && !evictors.includes(n)).sort((x, y) => getBond(y, gone) - getBond(x, gone))[0] || null;
+    const rest = order.filter(n => n !== glad && n !== sad);
+    if (sad && order.length >= 3) { rest.splice(2, 0, sad); if (glad) rest.splice(3, 0, glad); order.splice(0, order.length, ...rest); }
+    else glad = null;
+  }
   const who = Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f'].map((r, i) => [r, order[i]]).filter(([, n]) => n));
-  const data = gone ? { gone } : {};
+  const data = gone ? { gone, ...(glad && who.d === glad ? { result: 'glad' } : {}) } : {};
   const sctx = { ...ctx, inSet: true };
   const open = pick([`set.${type}.open`], who, data, sctx, room, `${salt}|open`);
   if (!open) return null;

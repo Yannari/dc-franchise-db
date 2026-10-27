@@ -114,8 +114,43 @@ export default {
   ],
 
   // ── the HOH room reveal ─────────────────────────────────────────────
+  // The room is a discovery in the first weeks only (early: the bed, the basket, the shower); after that everybody
+  // has seen it, and what is new is THIS Head of Household's: the photos, the letter, the snacks, the song.
   'set.hohroom.open': [
-    { id: 'sh.o1', room: 'hoh-room', turns: [
+    { id: 'sh.o7', room: 'hoh-room', when: { early: false }, turns: [
+      { beat: 'The house troops up the stairs behind {a} again. Nobody looks at the bed any more. They want to see what {a} got.' },
+      { by: 'b', say: "Okay. Photos. Who's on the wall?" },
+      { by: 'a', say: "People from home. Don't make me talk about them or I'll cry." },
+      { by: 'c', say: "What did you ask for in the basket?" },
+      { by: 'a', say: "The sour sweets. Nobody touch the sour sweets." },
+      { by: 'd', say: "And the letter?" },
+      { beat: '{a} opens the letter from home, reads the first line, and puts it face down on the bed.' },
+      { by: 'a', say: "Later. I'll read it on my own." },
+      { by: 'e', dr: "We've all been up here before. Nobody cares about the bed now. We came up to see who {a} is with the keys." },
+    ] },
+    { id: 'sh.o8', room: 'hoh-room', when: { early: false }, turns: [
+      { beat: 'HOH room. The song {a} picked is playing too loud. Half the house is on the bed and the other half is at the snack basket.' },
+      { by: 'b', say: "What is this song?" },
+      { by: 'a', say: "My song. I picked it. It's my week." },
+      { by: 'c', say: "Who picks rice cakes for the basket?" },
+      { by: 'a', say: "Somebody who doesn't want you eating them." },
+      { by: 'd', say: "Read us the letter." },
+      { by: 'a', say: "No. The letter's mine." },
+      { by: 'a', dr: "Everybody's seen this room. The room hasn't changed. What's changed is whose name is on the door, and they're all up here working out what that means for them." },
+    ] },
+    { id: 'sh.o9', room: 'hoh-room', when: { early: false }, turns: [
+      { beat: 'The HOH room again. {b} goes straight to the photos.' },
+      { by: 'b', say: "Okay, who's this?" },
+      { by: 'a', say: "That's from home. Leave it." },
+      { by: 'c', say: "You've moved the bed round." },
+      { by: 'a', say: "I wanted it facing the screen." },
+      { by: 'd', say: "So you can watch us." },
+      { by: 'a', say: "So I can watch everybody." },
+      { by: 'e', say: "Are you going to tell us who's going up?" },
+      { by: 'a', say: "Not tonight." },
+      { by: 'e', dr: "Same room, new name on the door. Every HOH says they haven't decided yet. Most of them have." },
+    ] },
+    { id: 'sh.o1', room: 'hoh-room', when: { early: true }, turns: [
       { beat: 'The whole house troops up the stairs behind {a}. The door opens on the HOH room.' },
       { by: 'b', say: "Oh my god. There's a bed. A real bed." },
       { by: 'c', say: "There's a basket. Is that a snack basket?" },
@@ -127,7 +162,7 @@ export default {
       { beat: 'Everybody hugs {a}. It is a lot of hugs.' },
       { by: 'c', dr: "Everybody was crying with {a}. Everybody was also looking at the photos on the wall, working out who {a} cares about. Nobody misses anything in here." },
     ] },
-    { id: 'sh.o2', room: 'hoh-room', turns: [
+    { id: 'sh.o2', room: 'hoh-room', when: { early: true }, turns: [
       { beat: 'HOH room. {a} stands in the middle of it while everyone else piles onto the bed.' },
       { by: 'a', say: "Okay, everybody, this is my room, please get your shoes off my bed." },
       { by: 'b', say: "Our bed." },
@@ -152,7 +187,7 @@ export default {
       { by: 'a', say: "It's not code! It's just thinking!" },
       { by: 'b', dr: "'I need to think.' {a} means 'I need to work out who's going on the block'. Twenty minutes, and then one of us is a target." },
     ] },
-    { id: 'sh.o4', room: 'hoh-room', turns: [
+    { id: 'sh.o4', room: 'hoh-room', when: { early: true }, turns: [
       { beat: 'HOH room. {a} is lying on the big bed. The whole house is somehow also on the big bed.' },
       { by: 'c', say: "This is the comfiest thing I've ever touched." },
       { by: 'a', say: "It's lovely. Please leave." },
@@ -176,7 +211,7 @@ export default {
       { by: 'e', say: "Right. Of course. Ignore me." },
       { by: 'c', dr: "One person said it out loud. Everybody else was thinking it. 'So, are we safe?' Brilliant timing." },
     ] },
-    { id: 'sh.o6', room: 'hoh-room', turns: [
+    { id: 'sh.o6', room: 'hoh-room', when: { early: true }, turns: [
       { beat: 'HOH room. The letter has been read. The chocolate is half gone. Somebody is jumping on the bed.' },
       { by: 'a', say: "Can people please stop jumping on my bed?" },
       { by: 'b', say: "It's so bouncy!" },
@@ -359,14 +394,23 @@ export default {
       { beat: 'Nobody answers. A couple of people look at the floor.' },
       { by: 'b', dr: "Somebody in this room voted to keep {gone}, and nobody's owning up to it. By tomorrow that's going to be a problem." },
     ] },
-    { id: 'en.o2', room: 'kitchen', turns: [
+    { id: 'en.o2', room: 'kitchen', when: { result: 'glad' }, turns: [
       { beat: 'The kitchen. Somebody has put the kettle on because nobody knows what else to do.' },
       { by: 'c', say: "I hate eviction nights." },
       { by: 'a', say: "Everybody hates eviction nights." },
       { by: 'c', say: "{gone} hugged me on the way out. Like, a real hug." },
       { by: 'b', say: "{gone} hugged everybody." },
       { by: 'c', say: "Not like that." },
-      { by: 'd', dr: "{gone} is gone. Half the house is pretending to be sad, and the other half really is. I can tell which is which." },
+      { by: 'd', dr: "I voted {gone} out, and I'm not going to pretend I'm sad about it. Half this kitchen is putting on a face. {c} is the only one who means it." },
+    ] },
+    { id: 'en.o2b', room: 'kitchen', turns: [
+      { beat: 'The kitchen. Somebody has put the kettle on because nobody knows what else to do.' },
+      { by: 'c', say: "I hate eviction nights." },
+      { by: 'a', say: "Everybody hates eviction nights." },
+      { by: 'c', say: "{gone} hugged me on the way out. Like, a real hug." },
+      { by: 'b', say: "{gone} hugged everybody." },
+      { by: 'c', say: "Not like that." },
+      { by: 'c', dr: "{gone} was my person in here. I don't know who I talk to tomorrow morning." },
     ] },
     { id: 'en.o3', room: 'living-room', turns: [
       { beat: 'The living room. The cushion {gone} sat on during the vote is still squashed.' },
@@ -445,7 +489,9 @@ export default {
   'set.evictnight.close': [
     { id: 'en.c1', turns: [{ beat: 'The lights go down. Nobody sleeps much.' }, { by: 'b', dr: "I keep thinking about {gone}'s face when the votes were read out." }] },
     { id: 'en.c2', turns: [{ beat: 'People go to bed in twos, talking quietly about the vote.' }, { by: 'a', dr: "Somebody lied to me tonight about how they were voting. I'm going to find out who." }] },
-    { id: 'en.c3', turns: [{ beat: "The house goes quiet. {gone}'s mug is still on the draining board." }, { by: 'c', dr: "I'll miss {gone}. I also know {gone} would have voted me out next week." }] },
+    { id: 'en.c3', turns: [{ beat: "The house goes quiet. {gone}'s mug is still on the draining board." }, { by: 'c', dr: "I'll miss {gone}. This house got a lot lonelier for me tonight." }] },
+    { id: 'en.c7', when: { result: 'glad' }, turns: [{ beat: 'One by one, the lights go off.' }, { by: 'd', dr: "I wanted {gone} out, and {gone} is out. I'm going to sleep well tonight." }] },
+    { id: 'en.c8', when: { result: 'glad' }, turns: [{ beat: 'The house goes to bed. {d} is the last one still smiling.' }, { by: 'd', dr: "Everybody's sad about {gone}. I'm not. One less person in here coming after me." }] },
     { id: 'en.c4', turns: [{ beat: 'One by one, the lights go off.' }, { by: 'd', dr: "That vote told me a lot about who's working with who. I'm going to sleep on it." }] },
     { id: 'en.c5', turns: [{ beat: "Somebody turns off the living room lights. {gone}'s spot on the sofa stays empty." }, { by: 'a', dr: "That vote changed things. I'm just not sure yet who it changed them for." }] },
     { id: 'en.c6', turns: [{ beat: 'The house finally goes to bed, still talking in whispers about the vote.' }, { by: 'e', dr: "Everybody's whispering about who voted which way. By breakfast it'll be a fight." }] },

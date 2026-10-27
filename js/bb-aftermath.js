@@ -1016,12 +1016,19 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   const juryNumber = jurorOrdinalFor(house.length);
 
   const hostLines = {
-    truth: _pick(rng, {
+    // an evictee who named the right person is told so, not that the read "was incomplete" (the user, 2026-10-27:
+    // "Michele organised it", and Alexander had said exactly that)
+    truth: _pick(rng, (read.correct ? {
+      balanced: ['"You had it right. Let me show you how it came together."', '"You read the week correctly. Here is the part you could not see."'],
+      warm: ['"You saw it coming. Here is how the rest of it happened."', '"You were right about who. Let me show you the rest."'],
+      incisive: ['"You named the right person. Now let us see who went with them."', '"Your read was right. Here is the rest of it."'],
+      playful: ['"Good news: you were right. Bad news: being right did not help."', '"We checked the tapes. Your guess holds up."'],
+    } : {
       balanced: ['"Before the goodbyes, there are a couple of things you should know."', '"Let me show you the part of the week you could not see."'],
       warm: ['"Some of this may be hard to hear, but you deserve to leave with the truth."', '"Before the messages, I want to give you the missing pieces."'],
       incisive: ['"Your read was incomplete. Here is what actually happened."', '"You named the move. Now let us name the people who made it."'],
       playful: ['"We have checked the tapes, and the tapes brought receipts."', '"Time for the least enjoyable answer key in television."'],
-    }[style]),
+    })[style]),
     goodbyes: _pick(rng, {
       balanced: ['"Your housemates recorded some messages in case tonight went this way."', '"The people still inside had a chance to say goodbye."'],
       warm: ['"Some people in that house care about you very much. Let us hear from them."', '"Your housemates left messages for you. Take all the time you need."'],

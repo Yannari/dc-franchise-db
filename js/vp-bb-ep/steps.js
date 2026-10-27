@@ -782,9 +782,11 @@ function voteReason(b, c, noms, salt, used = new Set()) {
     `Somebody asked me for this vote, and I said yes. So it's ${b.evict}.`,
     `I made a promise this week, and tonight I'm keeping it.`,
   ]);
+  // who asked, and for what: the asking was often off camera, so the Diary Room says it whole (the user, 2026-10-27:
+  // "A week ago I didn't care about this vote. Sawyer changed that": "we didn't even see this happen")
   if (b.recruitedBy) return pick([
-    `${b.recruitedBy} came to me this week and asked. I said yes, and I meant it.`,
-    `A week ago I didn't care about this vote. ${b.recruitedBy} changed that.`,
+    `${b.recruitedBy} came to me this week and asked me to vote ${b.evict} out. I said yes, and I meant it.`,
+    `${b.recruitedBy} pulled me aside this week and asked for my vote against ${b.evict}. I wasn't going to say no to ${b.recruitedBy}.`,
   ]);
   if (b.bandwagon) return pick([
     `Everybody's voting ${b.evict}. I'm not going to be the one vote on the wrong side.`,
@@ -793,9 +795,9 @@ function voteReason(b, c, noms, salt, used = new Set()) {
     `I'm not going to be the odd vote out. It's ${b.evict}.`,
   ]);
   if (b.assignment?.by && b.assignment.target === b.evict) return pick([
-    `We counted the votes this afternoon. ${b.evict} is the plan, and I'm sticking to it.`,
+    `We went through everybody's vote this afternoon. ${b.evict} is the plan, and I'm sticking to it.`,
     `${b.assignment.by} asked for ${b.evict}. I said yes. Here it is.`,
-    `The numbers were set days ago. I'm one of them.`,
+    `${b.assignment.by} lined up the votes days ago. Mine is one of them.`,
     `I'm not going rogue tonight. ${b.evict} is the vote.`,
     `Everyone I trust is voting ${b.evict}. I'm not going to be the surprise.`,
   ]);

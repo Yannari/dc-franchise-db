@@ -1,6 +1,6 @@
 // js/players.js - Player stats, pronouns, threat scoring, challenge records
 import { CIRCLE_CATEGORIES } from './ci/categories.js';
-import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig, seasonFormat } from './core.js';
+import { gs, players, STATS, THREAT_TIERS, ARCHETYPES, DEFAULT_STATS, seasonConfig, seasonFormat, engineFormat } from './core.js';
 import {
   resolvePortrait, avatarUrl as registryAvatarUrl, legacyPortraitSelection,
   loadPortraitCatalog, portraitOptions, hasShowPortraits,
@@ -70,7 +70,7 @@ export function pronouns(nameOrPlayer) {
   // (somebody outside this cast, an alumnus hosting the Aftermath, is who the roster says they are)
   const p = typeof nameOrPlayer === 'string' ? (players.find(x => x.name === nameOrPlayer) || DEFAULT_ROSTER.find(x => x.name === nameOrPlayer)) : nameOrPlayer;
   // In drag, every queen is she/her on the main stage.
-  try { if (seasonFormat(seasonConfig) === DRAG_FORMAT) return pronounsOf('f'); } catch {}
+  try { if (engineFormat(seasonConfig) === DRAG_FORMAT) return pronounsOf('f'); } catch {}
   return pronounsOf(p?.gender || 'nb');
 }
 

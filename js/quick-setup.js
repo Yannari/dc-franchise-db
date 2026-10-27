@@ -18,7 +18,7 @@
 // jsdom smoke tests never depend on the full app being wired up.
 // ══════════════════════════════════════════════════════════════════════
 
-import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, formatIsRunnable, formatName } from './core.js';
+import { TWIST_CATALOG, twistModeClashes, seasonConfig, players, seasonFormat, engineFormat, formatIsRunnable, formatName } from './core.js';
 import { SEASON_SETTINGS, settingsForFormat, defaultSettingFor } from './settings.js';
 import { SHOWS as SHOW_REGISTRY, showName, showIcon, showWords, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT, engineOf } from './shows.js';
 import { houseStructure } from './bb-run.js';
@@ -54,7 +54,7 @@ export function blueprintFor(config = {}, castSize = 0) {
   const N = Number(castSize) || 0;
   const house = seasonFormat(config) === 'big-brother';
   const castle = seasonFormat(config) === 'traitors';
-  const stage = seasonFormat(config) === 'drag-race';
+  const stage = engineFormat(config) === 'drag-race';
   const villa = seasonFormat(config) === 'perfect-match';
   const segs = [];
 
@@ -1362,11 +1362,12 @@ const CONFIG_SCOPE = {
        enforces is that an id naming a show must be claimed by exactly one,
        and "its parent happens to be scoped" is how the next one of these
        goes unnoticed. */
-    'cfg-dr-all-stars':      ['drag-race'],
-    'cfg-dr-as-twist':       ['drag-race'],
-    'cfg-dr-as-twist-when':  ['drag-race'],
-    'cfg-dr-as-twist-ep':    ['drag-race'],
-    'cfg-dr-as-jury':        ['drag-race'],
+    // Only on the All Stars show: on Drag Race the mode no longer exists.
+    'cfg-dr-all-stars':      ['drag-race-all-stars'],
+    'cfg-dr-as-twist':       ['drag-race-all-stars'],
+    'cfg-dr-as-twist-when':  ['drag-race-all-stars'],
+    'cfg-dr-as-twist-ep':    ['drag-race-all-stars'],
+    'cfg-dr-as-jury':        ['drag-race-all-stars'],
     'cfg-dr-double-shantay': ['drag-race'],
     'cfg-dr-double-sashay':  ['drag-race'],
     'cfg-dr-immunity':       ['drag-race'],

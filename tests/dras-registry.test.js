@@ -2,7 +2,7 @@
 // Plan: docs/superpowers/plans/2026-10-27-drag-race-all-stars-own-show.md (Task 1)
 import { describe, it, expect } from 'vitest';
 import { parseSeasonRef, seasonId, showWords, engineOf, familyOf, familyMembers,
-  seasonRowFormat } from '../js/shows.js';
+  seasonRowFormat, HOSTS_BY_FORMAT } from '../js/shows.js';
 import { twistsForFormat, engineFormat } from '../js/core.js';
 import { settingsForFormat } from '../js/settings.js';
 import { words as socialWords } from '../js/social/adapter.js';
@@ -38,6 +38,10 @@ describe('Drag Race All Stars in the registry', () => {
   it("takes its engine's venue and its family's social words", () => {
     expect(settingsForFormat('drag-race-all-stars')).toEqual(settingsForFormat('drag-race'));
     expect(socialWords('drag-race-all-stars')).toBe(socialWords('drag-race'));
+  });
+
+  it('is hosted by the drag hosts', () => {
+    expect(HOSTS_BY_FORMAT['drag-race-all-stars']).toBe(HOSTS_BY_FORMAT['drag-race']);
   });
 
   it('reads a legacy all-stars row as the spin-off', () => {

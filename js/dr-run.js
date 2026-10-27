@@ -36,7 +36,8 @@
 // `formatIsRunnable()` reads to decide whether the show can be started at all.
 // Drop the import from js/main.js and the show silently un-ships with every
 // test still green.
-import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat } from './core.js';
+import { gs, gsCheckpoints, players, relationships, seasonConfig, seasonFormat, twistsForFormat,
+  engineFormat, isSpinOffSeason } from './core.js';
 import { DRAG_FORMAT } from './shows.js';
 import { dealUnseen, noteShown } from './seen-episodes.js';
 import { activeSeasons, seasonKeyParts, recordBuiltSeason } from './franchise-meta.js';
@@ -57,7 +58,15 @@ import { updateEditLayer } from './edit-layer.js';
 
 import { airedEpisode } from './exit-interview/aired.js';
 import { airedAdapter } from './exit-interview/shows.js';
-export const isDragSeason = () => seasonFormat(seasonConfig) === 'drag-race';
+export const isDragSeason = () => engineFormat(seasonConfig) === DRAG_FORMAT;
+
+/* ALL STARS IS A SHOW NOW, NOT A SWITCH. The engine still reads
+   `config.drAllStars`, but what sets it is which show the season is: Drag Race
+   All Stars always plays the mode and Drag Race never does, whatever a hidden
+   dropdown or an older save still says. */
+export function drAllStarsFor(config) {
+  return engineFormat(config) === DRAG_FORMAT && isSpinOffSeason(config);
+}
 
 function _seed() {
   if (!gs._drSeed) {
@@ -632,7 +641,7 @@ function _config() {
        stored seasons a returning queen's real record is read out of. Passed
        here or the dropdown is decoration, which is what tests/dr-config-reach
        exists to catch and did catch, on this key, the day it was added. */
-    drAllStars: !!seasonConfig.drAllStars,
+    drAllStars: drAllStarsFor(seasonConfig),
     drAllStarsRule: seasonConfig.drAllStarsRule || 'legacy',
     drAllStarsTwist: seasonConfig.drAllStarsTwist || 'none',
     drAllStarsJury: !!seasonConfig.drAllStarsJury,

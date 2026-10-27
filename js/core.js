@@ -1,4 +1,4 @@
-import { SHOWS, showName, DEFAULT_FORMAT, engineOf } from './shows.js';
+import { SHOWS, showName, DEFAULT_FORMAT, engineOf, seasonRowFormat } from './shows.js';
 // The castle's own state module. `js/tr/state.js` imports js/alumni.js, which
 // imports js/shows.js — both leaves — so this adds no cycle and core stays
 // importable from anywhere. It is here so that the ONE pair of functions every
@@ -2095,7 +2095,17 @@ export const SEASON_FORMATS = Object.keys(SHOWS);
 /** Which show is this season? Accepts a config, a season record, or a bare tag. */
 export function seasonFormat(source) {
   const raw = typeof source === 'string' ? source : source?.format;
-  return SEASON_FORMATS.includes(raw) ? raw : DEFAULT_FORMAT;
+  if (!SEASON_FORMATS.includes(raw)) return DEFAULT_FORMAT;
+  /* A CONFIG WRITTEN BEFORE ALL STARS HAD A SHOW OF ITS OWN said
+     `{ format: 'drag-race', drAllStars: true }`. That season is Drag Race All
+     Stars, and reading it here — the one door every reader comes through —
+     means an old save, a live slot or a preset opens as the right show
+     without anything having to find and rewrite it. Only the config key:
+     episode rows nest their own `allStars` flags and are never re-filed. */
+  if (source && typeof source === 'object' && source.drAllStars === true) {
+    return seasonRowFormat({ format: raw, allStars: true });
+  }
+  return raw;
 }
 
 /** Which show does this twist belong to? */
@@ -2112,6 +2122,11 @@ export function twistFormat(twist) {
  */
 export function engineFormat(source) {
   return engineOf(seasonFormat(source));
+}
+
+/** Is this season a spin-off playing on another show's engine (Drag Race All Stars)? */
+export function isSpinOffSeason(source) {
+  return !!SHOWS[seasonFormat(source)]?.spinOff;
 }
 
 /** The twists a given season is allowed to draw — a show never offers another's. */

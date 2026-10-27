@@ -1076,3 +1076,7 @@ export const HOSTS_BY_FORMAT = {
     { value: 'Don', label: 'Don' },
   ],
 };
+// A spin-off is presented by its family's hosts: All Stars is RuPaul's too.
+for (const fmt of Object.keys(SHOWS)) {
+  if (!HOSTS_BY_FORMAT[fmt] && HOSTS_BY_FORMAT[familyOf(fmt)]) HOSTS_BY_FORMAT[fmt] = HOSTS_BY_FORMAT[familyOf(fmt)];
+}

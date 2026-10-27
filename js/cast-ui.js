@@ -6,7 +6,7 @@ import { DEFAULT_ROSTER } from './roster-data.js';
 import { audio } from './audio.js';
 // Only the helper — `seasonConfig` is a live global here (it is reassigned
 // wholesale in saveConfig, which an import binding would not allow).
-import { seasonFormat, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile, kinshipPairs } from './core.js';
+import { seasonFormat, engineFormat, isSpinOffSeason, formatIsRunnable, formatName, TWIST_CATALOG, downloadFile, kinshipPairs } from './core.js';
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
@@ -1377,6 +1377,11 @@ export function renderRandomMurderTwists() {
 
 export function saveConfig() {
   const g = id => document.getElementById(id);
+  // Is the show picked in the Show select a drag spin-off (Drag Race All Stars)?
+  const _drAllStarsShow = () => {
+    const f = seasonFormat(g('cfg-format')?.value);
+    return engineFormat(f) === DRAG_FORMAT && isSpinOffSeason(f);
+  };
   // what a coach may find is only on screen while the coaches section shows its list: saved from boxes that
   // aren't there, every power came back off (the user, 2026-10-11: all twelve unticked). Keep them as they were.
   const _coachAdvPrev = seasonConfig?.coachAdvantages || null;
@@ -1485,8 +1490,12 @@ export function saveConfig() {
     /* One control, two keys: the dropdown reads "off" or a rule name, and the
        engine wants a flag and a rule. Kept as two because the rule has to
        survive the mode being turned off and on again. */
-    drAllStars:     (g('cfg-dr-all-stars')?.value || 'off') !== 'off',
-    drAllStarsRule: (g('cfg-dr-all-stars')?.value || 'off') === 'save' ? 'save' : 'legacy',
+    /* ALL STARS IS THE SHOW, NOT THE DROPDOWN. The flag follows the Show
+       select (Drag Race All Stars plays the mode, Drag Race never does); the
+       dropdown, offered only on All Stars, picks which rule. A hidden select
+       still holding "legacy" can no longer turn a Drag Race season into one. */
+    drAllStars:     _drAllStarsShow(),
+    drAllStarsRule: g('cfg-dr-all-stars')?.value === 'save' ? 'save' : 'legacy',
     drDoubleShantay: g('cfg-dr-double-shantay') ? g('cfg-dr-double-shantay').checked : true,
     drDoubleSashay:  g('cfg-dr-double-sashay')?.checked || false,
     drImmunity:      g('cfg-dr-immunity')?.checked || false,
@@ -1503,7 +1512,7 @@ export function saveConfig() {
        is forced off rather than left set behind a hidden control — a season
        that quietly ran a dunk tank because the dropdown still said so would
        be the worst kind of surprise. */
-    drSave: (g('cfg-dr-all-stars')?.value || 'off') !== 'off'
+    drSave: _drAllStarsShow()
       ? 'none' : (g('cfg-dr-save')?.value || 'none'),
     // The mode's own season-wide twist (js/dr/season.js).
     drAllStarsTwist: g('cfg-dr-as-twist')?.value || 'none',
@@ -1709,8 +1718,7 @@ export function renderConfig() {
   try { if (typeof window.renderDragJudges === 'function') window.renderDragJudges(); } catch (e) { /* optional chrome */ }
   set('cfg-dr-premiere', seasonConfig.drPremiere || 'standard');
   set('cfg-dr-finale', seasonConfig.drFinale || 'top4');
-  set('cfg-dr-all-stars', seasonConfig.drAllStars
-    ? (seasonConfig.drAllStarsRule === 'save' ? 'save' : 'legacy') : 'off');
+  set('cfg-dr-all-stars', seasonConfig.drAllStarsRule === 'save' ? 'save' : 'legacy');
   // Defaults ON, so the read has to be an explicit !== false rather than a
   // truthiness test: an unset value here means "allowed", not "off".
   if (g('cfg-dr-double-shantay')) g('cfg-dr-double-shantay').checked = seasonConfig.drDoubleShantay !== false;
@@ -2137,7 +2145,7 @@ export function importDragFamilies({ announce = false } = {}) {
 function renderDragFamilies() {
   const box = document.getElementById('rel-families');
   if (!box) return;
-  const drag = (seasonConfig.format || DEFAULT_FORMAT) === DRAG_FORMAT;
+  const drag = engineFormat(seasonConfig) === DRAG_FORMAT;
   box.style.display = drag ? '' : 'none';
   const btn = document.getElementById('rel-import-fams');
   if (btn) btn.style.display = drag ? '' : 'none';
@@ -2594,7 +2602,9 @@ export function updateShieldUI() {
    row whose whole job is to state the rules the author cannot change has to
    change when they do. */
 export function drVerdictUI() {
-  const mode = document.getElementById('cfg-dr-all-stars')?.value || 'off';
+  // The mode is the show; the dropdown (All Stars only) is which rule it runs.
+  const mode = isSpinOffSeason(seasonConfig) && engineFormat(seasonConfig) === DRAG_FORMAT
+    ? (document.getElementById('cfg-dr-all-stars')?.value === 'save' ? 'save' : 'legacy') : 'off';
   /* ── THE SAVE AND THE MODE ANSWER THE SAME QUESTION ──
      All Stars already decides who is spared and by whom — the lipstick, or
      the Beaver its `save` rule deals itself — so the flagship save dropdown
@@ -2603,7 +2613,7 @@ export function drVerdictUI() {
   const twist = document.getElementById('grp-dr-as-twist');
   // Only on a drag season: CONFIG_SCOPE hides the group on every other show,
   // and this ran after it, so the save sat on every setup page.
-  const drag = seasonFormat(seasonConfig) === DRAG_FORMAT;
+  const drag = engineFormat(seasonConfig) === DRAG_FORMAT;
   if (save) save.style.display = drag && mode === 'off' ? '' : 'none';
   if (twist) twist.style.display = mode === 'off' ? 'none' : '';
   // ...and WHEN it happens is only a question once one is picked.

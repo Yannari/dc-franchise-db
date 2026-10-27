@@ -50,7 +50,7 @@ import { SONGS as DR_SONGS } from './dr/data/songs.js';
 import { GROUP_THEMES as DR_GG_THEMES } from './dr/chal/girl-group.js';
 import { roundExits, exitVerbs, SHOWS, showWords, showName, DEFAULT_FORMAT, DRAG_FORMAT, TRAITORS_FORMAT,
   PERFECT_MATCH_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
-import { seasonFormat, hasCheckpoint, checkpointKeys, dropCheckpoint, loadCheckpoint } from './core.js';
+import { seasonFormat, engineFormat, hasCheckpoint, checkpointKeys, dropCheckpoint, loadCheckpoint } from './core.js';
 import { loadRankingBoards } from './ranking-boards.js';
 import { TRAITORS_SCREENS } from './vp-tr/screens.js';
 
@@ -313,8 +313,9 @@ const _isStageRow = ep => !!ep && ep.format === DRAG_FORMAT;
    lives in more than one shape on the config. */
 function _isDragSeason() {
   try {
-    return (typeof seasonFormat === 'function'
-      ? seasonFormat(seasonConfig) : seasonConfig && seasonConfig.format) === DRAG_FORMAT;
+    // The ENGINE: Drag Race All Stars is a drag season too.
+    return (typeof engineFormat === 'function'
+      ? engineFormat(seasonConfig) : seasonConfig && seasonConfig.format) === DRAG_FORMAT;
   } catch { return false; }
 }
 
@@ -3264,8 +3265,8 @@ export function buildEpisodeMap() {
      showed the same eleven either way.
      One elimination per week, plus a week for each free one, minus a week for
      each double, plus the smackdown if it is booked, plus the crowning. */
-  const _drFmt = (typeof seasonFormat === 'function'
-    ? seasonFormat(seasonConfig) : seasonConfig.format) === DRAG_FORMAT;
+  const _drFmt = (typeof engineFormat === 'function'
+    ? engineFormat(seasonConfig) : seasonConfig.format) === DRAG_FORMAT;
   if (_drFmt) {
     const size = { top4: 4, top3: 3, top2: 2, 'perform-then-lipsync': 4, 'perform-then-lipsync-3': 3 };
     const finale = size[seasonConfig.drFinale] || 4;

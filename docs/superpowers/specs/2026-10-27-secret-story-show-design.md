@@ -92,7 +92,9 @@ The user agreed the order. Each part gets its own design before it is built.
 | own show, Big Brother family | own wiki, players, numbering; tab under Big Brother, not a new top-level button |
 | cast | a mix, "mostly often newbies" |
 | newbie secrets | drawn from a written pool by default, shown on the cast screen to keep, reroll or replace with your own; your own needs a kind picked so it has clues; canon once the season starts |
-| returning faces | secrets from their real history (v1's kin pairs and careers), as the real show did (S9's "I'm a former candidate") |
+| returning faces | a secret from their real history (v1's kin pairs and careers, S9's "I'm a former candidate") is an OPTION, not the rule: the cast screen offers it beside the pool and write-your-own |
+| being recognised | a known face is a risk to their secret: on launch night and in the first days, housemates who know them (played with them, or the franchise made them famous) can recognise them, and the dialogue says from where. Recognition is knowledge in the house, so it feeds the hunt (part 2) and the scenes (part 3) |
+| fame | an already-popular face starts with a small public-vote advantage, bounded, from their franchise popularity; priced in part 2 |
 | roles from the Voice | fake couple, fake siblings, impostors, accomplice, thieves… are missions, not biography; never stored on the character |
 | gendered nominations | optional, a season setting |
 | variety | recurring tools may recur; whole seasons may never feel the same (part 2) |
@@ -170,9 +172,15 @@ plain picker and a "random" option.
   nominate when the season's nominations are gendered, with a sentence).
 - Cast size 15–18 by default (the real seasons ran 15–20).
 - **The secret column on the cast screen.** Each housemate shows their
-  secret. Returning faces: the real-history secret v1 already derives (kin in
-  the house, a past win or career). Newbies with a canon secret: theirs,
-  locked. Newbies without one: a draw from the pool that fits them, with
+  secret. Returning faces: a pool draw by default, with the real-history
+  secret v1 derives (kin in the house, a past win or career) offered as an
+  option. Anyone with a canon secret from an earlier Secret Story season:
+  theirs, locked.
+- **Who would recognise whom** is computed at casting from the franchise
+  ledger (shared seasons, kin) and franchise popularity, stored on the season
+  as plain data (`recognises: [{ who, whom, from: 'td-3' | 'famous' }]`), so
+  part 2's hunt and part 3's launch-night lines read one truth. Part 1 only
+  computes and stores it. Newbies without one: a draw from the pool that fits them, with
   Keep / Reroll / Write my own. Write my own asks for a *kind* (the pool's
   categories) so clues and tells can be generated.
 - Voice roles (fake couple, fake siblings…) stay v1's job at season start

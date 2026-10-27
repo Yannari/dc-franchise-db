@@ -24,7 +24,7 @@ const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
 // Who a kind casts beyond {a} and {b}, and what fills {about}.
 const THREE = new Set([
-  'movie-after', 'postcard', 'enemy-bitch', 'enemy-freeze', 'enemy-snipe', 'enemy-clash', 'chal-buzz', 'chal-watch', 'chal-row', 'chal-spark', 'sports-pick', 'sports-race', 'knowing-q', 'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
+  'movie-after', 'postcard', 'enemy-bitch', 'enemy-freeze', 'enemy-snipe', 'enemy-clash', 'chal-buzz', 'chal-watch', 'chal-row', 'chal-spark', 'sports-pick', 'sports-race', 'knowing-q', 'goals-board', 'tower-fall', 'talent-act', 'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'dump-tie', 'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
   'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick']);
@@ -81,7 +81,7 @@ describe('a placeholder only where somebody fills it', () => {
       // {card}: the question frozen in the ice.
       if (/\{card\}/.test(x)) expect(k, tag(k, s, e)).toBe('icebreaker');
       // {d} is named only in the kinds that cast four.
-      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt', 'postcard', 'knowing-q', ...STORY_FOUR], tag(k, s, e)).toContain(k);
+      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt', 'postcard', 'knowing-q', 'goals-board', ...STORY_FOUR], tag(k, s, e)).toContain(k);
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });

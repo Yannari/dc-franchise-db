@@ -73,7 +73,7 @@ export const CHAL_PRIZE = build('chal-prize', {
       { when: { of: 'date' }, stage: "The winners' prize arrives by text: dinner for two on the terrace, tonight, away from everybody.", turns: [['a', "We actually won something!"], ['b', "I told you we would."]] },
       { when: { of: 'treat' }, stage: "The prize is a hamper and the hot tub to themselves for the afternoon.", turns: [['a', "Nobody else is allowed in. Those are the rules."], ['b', "I love these rules."]] },
       { when: { of: 'treat' }, stage: "The prize arrives: a cake, a bottle of something fizzy, and the terrace to themselves until dinner.", turns: [['a', "Is that a whole cake? For us?"], ['b', "We earned the whole cake."]] },
-      { when: { of: 'date' }, stage: "The winners get a text: a picnic on the hill above the villa, just the two of them.", turns: [['b', "A picnic! We're going on an actual date!"], ['a', "Our first one. I'll take it."]] },
+      { when: { of: 'date' }, stage: "The winners get a text: a picnic on the hill above the villa, just the two of them.", turns: [['b', "A picnic! We're going on an actual date!"], ['a', "I'll take it. Every time."]] },
       { when: { of: 'party' }, stage: "The prize is a party by the pool, and {a} gets carried round it on everybody's shoulders.", turns: [['a', "This is the best day I've had in here. I mean that."]] },
     ],
     talk: [

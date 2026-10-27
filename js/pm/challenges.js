@@ -120,12 +120,12 @@ function receipts(state, rng) {
 function lookWho(state, rng) {
   const quotes = [], used = new Set();
   for (const e of [...(state.history || [])].reverse()) {
-    if (e.ep < state.ep - 3 || e.ep >= state.ep || !e.hut?.script?.lines?.length) continue;
+    if (e.ep < state.ep - 5 || e.ep >= state.ep || !e.hut?.script?.lines?.length) continue;
     const who = e.hut.who, text = e.hut.script.lines[0].text;
     const about = e.players.find(n => n !== who && state.villa.includes(n) && text.includes(n));
     if (!about || !state.villa.includes(who) || used.has(who)) continue;
     quotes.push({ who, about, stance: e.hut.stance, text }); used.add(who);
-    if (quotes.length >= 3) break;
+    if (quotes.length >= 5) break;
   }
   if (quotes.length < 2) return [];
   return quotes.map(q => {
@@ -244,6 +244,18 @@ function coupleGoals(state, rng) {
     const tally = new Map();
     for (const { answer } of boards) tally.set(answer, (tally.get(answer) || 0) + 1);
     const [named, votes] = [...tally.entries()].sort((x, y) => y[1] - x[1])[0];
+    // The boards go round one couple at a time before the count (the show's
+    // suspense): two of them, the second either the same couple again or not.
+    // …the last of them one that names the couple the count will name.
+    const elsewhere = shuffle(rng, boards.filter(b => b.answer !== named))[0];
+    const winning = shuffle(rng, boards.filter(b => b.answer === named));
+    const shown = elsewhere ? [elsewhere, winning[0]] : winning.slice(0, 2);
+    let seen = null;
+    for (const b of shown) {
+      const again = seen && b.answer === seen;
+      out.push(scene(state, rng, 'goals-board', [...b.by, ...b.answer], { of: q, again: !!again, pop: {} }));
+      seen = b.answer;
+    }
     for (const n of named) {
       if (sign > 0) { feel(state, n, 'security', 1); feel(state, n, 'confidence', 0.5); }
       else { feel(state, n, 'security', -0.4 * votes); feel(state, n, 'stress', 0.4 * votes); }
@@ -378,6 +390,27 @@ function talentShow(state, rng) {
     for (const n of duet) feel(state, n, 'security', 0.5);
     out.push(scene(state, rng, 'talent-act', [...duet], { of: 'duet', pop: pop([duet[0], 0.4, 1.2], [duet[1], 0.4, 1.2]) }));
   }
+  // THE ACTS, before the vote (it used to show a duet, a flop and the
+  // winner): a song or a dance, a poem to a partner, and an impression of
+  // somebody they can't stand — who laughs, or doesn't.
+  const done = new Set([...(duet || []), flop, winner]);
+  const acts = shuffle(rng, state.villa.filter(n => !done.has(n))).slice(0, 4);
+  let poem = false, mimic = false;
+  for (const n of acts) {
+    const p = partnerOf(state, n);
+    const rival = state.villa.filter(o => o !== n && o !== p).sort((x, y) => getBond(n, x) - getBond(n, y))[0];
+    if (!poem && p && romance(n, p) >= 5) {
+      poem = true; addBond(n, p, 0.5); feel(state, p, 'security', 0.8);
+      out.push(scene(state, rng, 'talent-act', [n, p], { of: 'poem', pop: pop([n, 0.5, 1.2]) }));
+    } else if (!mimic && rival && getBond(n, rival) <= -1.5 && S(state, n).boldness >= 5) {
+      mimic = true;
+      const laughs = rng() < S(state, rival).temperament / 10;
+      if (laughs) addBond(rival, n, 0.4); else { addBond(rival, n, -0.8); addRelationshipDimension(rival, n, 'resentment', 0.6); }
+      out.push(scene(state, rng, 'talent-act', [n, rival], { of: laughs ? 'impression-laugh' : 'impression-sore', pop: pop([n, laughs ? 0.3 : -0.3, 1.5]) }));
+    } else {
+      out.push(scene(state, rng, 'talent-act', [n], { of: q[n] > 5 ? 'solo-good' : 'solo-mid', pop: pop([n, 0.2, 0.8]) }));
+    }
+  }
   if (flop !== winner) {
     feel(state, flop, 'confidence', -1);
     // The public like the one who tried.
@@ -440,9 +473,22 @@ function coupleOfSorts(state, rng) {
   const sorts = publicSorts(state, { rng });
   const out = [];
   // Where each couple stands is their own read of themselves.
-  const guess = [...state.couples].sort((x, y) => (coupleStrength(state, y[0], y[1]) + emo(state, y[0]).confidence / 10 + rng() * 0.3)
-    - (coupleStrength(state, x[0], x[1]) + emo(state, x[0]).confidence / 10 + rng() * 0.3));
+  // (Couples misjudge themselves: the confident stand high whatever the public think.)
+  const guess = [...state.couples].sort((x, y) => (coupleStrength(state, y[0], y[1]) + emo(state, y[0]).confidence / 6 + rng() * 0.8)
+    - (coupleStrength(state, x[0], x[1]) + emo(state, x[0]).confidence / 6 + rng() * 0.8));
   const top = sorts.favourite[0];
+  // The places, read out from the bottom up: each couple stood where they
+  // thought they'd be, and finds out where the public put them (the podium
+  // used to show the top, a wrong guess and the last, and nobody else).
+  const fav = sorts.favourite;
+  for (let i = fav.length - 1; i >= 1; i--) {
+    const c = fav[i];
+    const thought = guess.indexOf(c);
+    const of = thought < i ? 'lower' : thought > i ? 'higher' : 'right';
+    if (of === 'lower') for (const n of c) { feel(state, n, 'confidence', -0.6); }
+    if (of === 'higher') for (const n of c) { feel(state, n, 'confidence', 0.6); }
+    out.push(scene(state, rng, 'sorts-place', [...c], { of, place: i + 1, of2: fav.length, pop: {} }));
+  }
   out.push(scene(state, rng, 'sorts-podium', [...top], { of: 'top', guessed: guess[0] === top, pop: pop([top[0], 0.3, 1.5], [top[1], 0.3, 1.5]) }));
   for (const n of top) feel(state, n, 'confidence', 1.5);
   // A couple who stood on first and were placed last.

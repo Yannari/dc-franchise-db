@@ -15,7 +15,7 @@ import { makeEvent, partnerOf } from './events.js';
 import { romance, friendship, revealTruth, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, ickHit } from './chemistry.js';
 import { coupleStrength } from './ladder.js';
-import { feel, jealousyHit } from './emotions.js';
+import { feel, jealousyHit, emo } from './emotions.js';
 import { kissRound, roundSize } from './kiss-round.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -115,7 +115,8 @@ function lipService(state, rng) {
 function towerOfTruths(state, rng) {
   if (state.couples.length < 2) return [];
   const out = [];
-  for (const [p, q] of shuffle(rng, state.couples).slice(0, 4)) {
+  const turns = shuffle(rng, state.couples).slice(0, 5);
+  for (const [p, q] of turns) {
     const [asker, a] = rng() < 0.5 ? [p, q] : [q, p];
     const r = rng();
     const eye = eyeFor(state, a);
@@ -145,6 +146,30 @@ function towerOfTruths(state, rng) {
       if (hit > 0.3) { feel(state, asker, 'confidence', -0.5); nudgeAttraction(state, a, asker, -0.1); }
       out.push(scene(state, rng, 'tower-q', [a, asker], { of: hit > 0.3 ? 'ick' : 'no-ick', pop: pop([a, 0, 1]) }));
     }
+  }
+  // THE FALL: somebody's pull brings the tower down — the least steady hands
+  // (temper, nerves) — and the forfeit is the one question nobody wants:
+  // "Have you ever thought about leaving your partner for somebody in here?"
+  // Answered as the islander is built: the loyal truthfully, the rest maybe.
+  const players = turns.flat().filter(n => state.villa.includes(n) && partnerOf(state, n));
+  if (players.length) {
+    const shaky = n => (10 - S(state, n).temperament) + emo(state, n).stress + rng() * 6;
+    const t = [...players].sort((x, y) => shaky(y) - shaky(x))[0];
+    const pt = partnerOf(state, t), eye = eyeFor(state, t);
+    const tempted = eye && (attr(state, t, eye) ?? 0) >= romance(t, pt) - 1;
+    let of;
+    if (!tempted) { of = 'nobody'; feel(state, pt, 'security', 0.6); addBond(t, pt, 0.3); }
+    else if (rng() < 0.25 + 0.5 * S(state, t).loyalty / 10) {
+      of = 'honest';
+      revealTruth(state, pt, t); jealousyHit(state, pt, t, eye, 3, { confirmed: true });
+      addRelationshipDimension(pt, t, 'trust', -0.3); nudgeAttraction(state, eye, t, 0.3);
+    } else {
+      of = 'dodge';
+      feel(state, t, 'guilt', 0.6);
+      if (rng() < S(state, pt).intuition / 12) { addRelationshipDimension(pt, t, 'trust', -0.6); feel(state, pt, 'security', -0.6); }
+    }
+    out.push(scene(state, rng, 'tower-fall', [t, pt, ...(of === 'honest' ? [eye] : [])], { of,
+      pop: pop([t, of === 'honest' ? 0.3 : of === 'dodge' ? -0.2 : 0.2, 1.5], [pt, 0.2, 1]) }, of === 'honest' ? [t, pt] : []));
   }
   return out;
 }

@@ -24,7 +24,7 @@
 import { splitRecords, setSplit, exOf, rawness } from './just-friends.js';
 import { romance } from './feelings.js';
 import { feel, jealousOf } from './emotions.js';
-import { closedness } from './ladder.js';
+import { closedness, setStep } from './ladder.js';
 import { addBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { streamFor } from '../dr/rng.js';
@@ -93,6 +93,10 @@ export function recordSplit(state, { by, left, cause, about = null, publicly = f
     addBond(by, left, -1);
   }
   // A copy for the scene to keep: the record itself moves on (time heals, scenes are counted).
+  // Not closed off any more: the rung was the couple's, and it's over (season
+  // 3 read: a pair split on day 15 still read 'closed-off' the day after, and a
+  // triangle with one of them looked like a cheat).
+  for (const [x, y] of [[by, left], [left, by]]) if (closedness(state, x, y) > 0) setStep(state, x, y, 'coupled');
   return { ...rec };
 }
 

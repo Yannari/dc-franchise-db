@@ -56,8 +56,9 @@ const CARD = {
 };
 const card = (of, extra = {}) => ({ when: { of, ...extra } });
 
+// The card is always turned over: that is the game (season read 2026-10-26).
 export const RECEIPT = build('receipt', {
-  plans: { featured: ['read', 'answer', 'land?'], short: ['read', 'land'] },
+  plans: { featured: ['read', 'answer', 'land'], short: ['read', 'land'] },
   moves: {
     read: [
       ...Object.entries(CARD).flatMap(([of, text]) => [
@@ -86,7 +87,7 @@ export const RECEIPT = build('receipt', {
 });
 
 export const LOOK_WHO = build('look-who', {
-  plans: { featured: ['read', 'guess', 'land?'], short: ['read', 'guess'] },
+  plans: { featured: ['read', 'guess', 'land'], short: ['read', 'guess', 'land'] },
   moves: {
     read: [
       { stage: "{a} picks a card out of the box and reads it out: \"{quote}\"", turns: [] },
@@ -239,18 +240,33 @@ export const KNOWING_ROW = build('knowing-row', {
   },
 });
 
+// Acts added 2026-10-26 (solo-good · solo-mid · poem [a, b] · impression-laugh / impression-sore [a, b]).
 export const TALENT_ACT = build('talent-act', {
   plans: { featured: ['act', 'after?'], short: ['act'] },
+  // (b's lines in an impression are the one being impersonated.)
   moves: {
     act: [
       { when: { of: 'flop' }, stage: "The talent show. {a} gets up on the terrace to sing, and forgets every word after the first line.", turns: [['a', "Hang on. Hang on. It's coming back. It's not coming back."]] },
       { when: { of: 'flop' }, stage: "{a} attempts a backflip on the lawn. The lawn wins.", turns: [['a', "I'm fine! I'm fine. That was the routine. That was all part of it."]] },
       { when: { of: 'flop' }, stage: "{a}'s magic trick involves a card, a glass, and a lot of confidence. The card ends up in the pool.", turns: [['a', "Okay. So that's not where it was meant to end up."]] },
+      { when: { of: 'solo-good' }, stage: "{a} gets up on the terrace with a hairbrush for a microphone, and is actually good.", turns: [['a', "Thank you. Thank you. I'll be here all summer."]] },
+      { when: { of: 'solo-good' }, stage: "{a} does a dance routine on the lawn, every step of it, and the villa goes silent and then goes mad.", turns: [['a', "I've been practising that in the bathroom for a week."]] },
+      { when: { of: 'solo-good' }, stage: "{a} juggles three oranges, then four, then throws one at the daybeds.", turns: [['a', "That last one was a gift."]] },
+      { when: { of: 'solo-mid' }, stage: "{a} tells jokes. Two of them land. One of them really doesn't.", turns: [['a', "Tough crowd. Tough villa."]] },
+      { when: { of: 'solo-mid' }, stage: "{a} sings a song from school. Nobody else knows it, and {a} sings it anyway, all the way through.", turns: [['a', "That's three minutes none of you are getting back."]] },
+      { when: { of: 'solo-mid' }, stage: "{a}'s act is press-ups. Lots of press-ups. The villa counts along until it gets bored.", turns: [['a', "Forty! I said I'd get to forty!"]] },
+      { when: { of: 'poem' }, stage: "{a} unfolds a piece of paper and reads a poem, out loud, to {b}.", turns: [['a', "'I came in here thinking I knew what I wanted. Then you sat down next to me, and I stopped wanting anything else.'"], ['b', "Stop it. Stop it, I'm going to cry."]] },
+      { when: { of: 'poem' }, stage: "{a} has written {b} a poem. It doesn't rhyme. {a} reads it anyway, shaking.", turns: [['a', "'You're the first thing I look for in the morning, and the last thing I look at at night.'"], ['b', "That's the nicest thing anyone's ever said to me."]] },
+      { when: { of: ['impression-laugh', 'impression-sore'] }, stage: "{a}'s act is an impression of {b}. The walk, the voice, the hair flick. All of it.", turns: [['a', "'Oh my God, babe, I'm literally so loyal.'"]] },
+      { when: { of: ['impression-laugh', 'impression-sore'] }, stage: "{a} announces an impression, and then does {b}, perfectly, down to the way {b} sits.", turns: [['a', "'No, I'm not angry. I'm just disappointed. In all of you.'"]] },
       { when: { of: 'duet' }, stage: "{a} and {b} do a duet, with dance moves, and absolutely no rehearsal.", turns: [['b', "You were meant to come in on the second verse!"], ['a', "There was a second verse?"]] },
     ],
     after: [
       { when: { of: 'flop' }, turns: [['a', "Can I have a do-over? No? Right. I'm going to go and lie face down in the pool."]] },
       { when: { of: 'duet' }, turns: [['a', "I think we nailed it."], ['b', "We did not nail it. We did not even find it."]] },
+      { when: { of: 'impression-laugh' }, turns: [['b', "That's horrible. That's so horrible. Do it again."]] },
+      { when: { of: 'impression-sore' }, turns: [['b', "Is that meant to be funny?"], ['a', "Everyone else is laughing."], ['b', "I'm not."]] },
+      { when: { of: 'poem' }, turns: [], beat: "Half the villa says 'aww'. The other half pretends to be sick." },
     ],
   },
 });
@@ -400,6 +416,9 @@ export const TOWER_Q = build('tower-q', {
       { when: { of: 'other-honest' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Do you want the truth?"], ['b', "That's the game."], ['a', "{c}."]] },
       { when: { of: 'other-honest' }, turns: [['b', "'Who else in here do you find attractive?'"], ['a', "I'm not going to lie. {c}."], ['b', "At least you said it."]] },
       { when: { of: 'dodge' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. It's you, obviously. That's a trick question."], ['b', "Good answer."]] },
+      { when: { of: 'dodge' }, turns: [['b', "'If you weren't with me, who would you pick?'"], ['a', "I'd pick you again. Next block."], ['b', "Smooth."]] },
+      { when: { of: 'dodge' }, turns: [['b', "'Who else in here are you into?'"], ['a', "No one. I'm not even going to pretend to think about it."], ['b', "Okay. I'll take that."]] },
+      { when: { of: 'dodge' }, turns: [['b', "'Who would you go for, if you were single tomorrow?'"], ['a', "I wouldn't be single tomorrow. That's my answer."]] },
       { when: { of: 'dodge-seen' }, turns: [['b', "'Who would you go for in here, if you weren't with me?'"], ['a', "Nobody. You."], ['b', "You looked somewhere before you said that."]] },
       { when: { of: 'rate-high' }, turns: [['b', "'Out of ten, how happy are you with me?'"], ['a', "Ten. Easy."], ['b', "You didn't even think about it."], ['a', "I didn't have to."]] },
       { when: { of: 'rate-mid' }, turns: [['b', "'Out of ten, how happy are you with me?'"], ['a', "Honestly? A solid six. Maybe a seven. It's early."], ['b', "I'll take a solid six. For now."]] },
@@ -435,6 +454,16 @@ export const COURSE_PICK = build('course-pick', {
     pick: [
       { when: { of: 'partner' }, stage: "{a} reaches the end of the course and has to pick someone to rescue. No hesitation: {b}.", turns: [['b', "Took you long enough."], ['a', "I was literally running."]] },
       { when: { of: 'partner' }, stage: "{a} picks {b} to rescue, of course.", turns: [['a', "Was there ever going to be anyone else?"], ['b', "There'd better not have been."]] },
+      // (Two lines for up to three partner picks a course: the same exchange three times running, read 2026-10-26.)
+      { when: { of: 'partner' }, stage: "{a} comes off the last obstacle soaking wet and runs straight to {b}.", turns: [['b', "You're dripping on me."], ['a', "That's what you get for being picked."]] },
+      { when: { of: 'partner' }, stage: "{a} stops in front of the line, pretends to think about it for a second, then grabs {b}'s hand.", turns: [['b', "Don't ever do that pause again."], ['a', "You loved it."]] },
+      { when: { of: 'partner' }, stage: "{a} doesn't even slow down. {b} is picked before {a} has caught {a.posAdj} breath.", turns: [['a', "Come on. We're going."], ['b', "Where are we going?"], ['a', "Anywhere. You're rescued."]] },
+      { when: { of: 'partner' }, stage: "{a} points at {b} from halfway down the course, before even finishing it.", turns: [['b', "You haven't finished yet!"], ['a', "I'm just letting you know now, so you don't worry."]] },
+      { when: { of: 'partner' }, stage: "{a} reaches the line and picks {b} without a word, and the villa says 'aww' at the same time.", turns: [['b', "Everyone's looking at us."], ['a', "Let them."]] },
+      { when: { of: 'other' }, stage: "{a} runs past {c} and keeps going, all the way to {b}.", turns: [['c', "Oh. Okay. Right."], ['b', "I wasn't expecting that."], ['a', "Neither was I, to be fair."]] },
+      { when: { of: 'other' }, stage: "{a} hesitates at the end of the course, looks at {c}, then picks {b}.", turns: [['c', "You looked at me first. I saw you look at me first."]] },
+      { when: { of: 'single' }, stage: "{a} has nobody to rescue, so {a} picks the one {a} wants to.", turns: [['a', "{b}. Come on. You're mine for the afternoon."], ['b', "Am I?"], ['a', "You are now."]] },
+      { when: { of: 'single' }, stage: "{a} is single, takes a breath at the end of the course, and goes straight for {b}.", turns: [['b', "Me? Really?"], ['a', "I've been waiting all week for an excuse."]] },
       { when: { of: 'other' }, stage: "{a} gets to the end of the course and picks {b}. Not {c}.", turns: [['b', "Me? Okay! Okay, me."], ['c', "Interesting."]] },
       { when: { of: 'other' }, stage: "{a} doesn't look at {c}. {a} goes straight for {b}.", turns: [['a', "Strategy. It's all strategy."], ['c', "Is it?"]] },
       { when: { of: 'single' }, stage: "{a} is single, and picks {b}, and doesn't explain.", turns: [['b', "Why me?"], ['a', "Why not you?"]] },

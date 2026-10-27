@@ -98,6 +98,9 @@ import { LIE_WRITE, LIE_ROW } from './lie-detector.js';
 import { HIDEAWAY_TEXT, HIDEAWAY_VOTE, HIDEAWAY_WIN, HIDEAWAY_SNUB, HIDEAWAY, HIDEAWAY_MORNING } from './hideaway.js';
 import { SPORTS_PICK, SPORTS_RACE } from './sports-day.js';
 import { KNOWING_Q } from './knowing-q.js';
+import { GOALS_BOARD } from './goals-board.js';
+import { SORTS_PLACE } from './sorts-place.js';
+import { TOWER_FALL } from './tower-fall.js';
 import { CHAL_BUZZ, CHAL_WATCH, CHAL_PRIZE, CHAL_ROW, CHAL_SPARK } from './challenge-frame.js';
 import { ENEMY_SNIPE, ENEMY_BITCH, ENEMY_CLASH, ENEMY_FREEZE, ENEMY_TRUCE } from './enemies.js';
 import { MOVIE_TEXT, MOVIE_SEAT, MOVIE_REACT, MOVIE_ROW, MOVIE_SPLIT, MOVIE_CALLOUT, MOVIE_AFTER } from './movie-night.js';
@@ -148,7 +151,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   families: FAMILIES, notes: NOTES, 'heart-rate': HEART_RATE, 'snog-marry-pie': SNOG_MARRY_PIE,
   'casa-text': CASA_TEXT, 'casa-goodbye': CASA_GOODBYE, 'casa-return': CASA_RETURN, 'casa-react': CASA_REACT, 'casa-row': CASA_ROW,
   'photo-text': PHOTO_TEXT, photos: PHOTOS, 'photo-row': PHOTO_ROW, 'photo-split': PHOTO_SPLIT, 'postcard-text': POSTCARD_TEXT, postcard: POSTCARD,
-  'sports-pick': SPORTS_PICK, 'sports-race': SPORTS_RACE, 'knowing-q': KNOWING_Q,
+  'sports-pick': SPORTS_PICK, 'sports-race': SPORTS_RACE, 'knowing-q': KNOWING_Q, 'goals-board': GOALS_BOARD, 'sorts-place': SORTS_PLACE, 'tower-fall': TOWER_FALL,
   'chal-buzz': CHAL_BUZZ, 'chal-watch': CHAL_WATCH, 'chal-prize': CHAL_PRIZE, 'chal-row': CHAL_ROW, 'chal-spark': CHAL_SPARK,
   'enemy-snipe': ENEMY_SNIPE, 'enemy-bitch': ENEMY_BITCH, 'enemy-clash': ENEMY_CLASH, 'enemy-freeze': ENEMY_FREEZE, 'enemy-truce': ENEMY_TRUCE,
   'dump-nerves': DUMP_NERVES, 'recouple-nerves': RECOUPLE_NERVES, 'dump-plea': DUMP_PLEA,

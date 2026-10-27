@@ -77,6 +77,10 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'watched', 'started',
   // how a Sports Day event was won (clean · fall · cheat)
   'how',
+  // a Couple Goals board: the same couple named as the board before
+  'again',
+  // a placing read out (Couple of Sorts, the Blindfold Course): place, and out of how many
+  'place', 'of2',
   // the postcard a was sent from the other villa this Casa (pm/postcards.js): kiss · bed · pull · game · close · alone
   'postcard',
   // a talk file's own (pm/talk/*.js facts())

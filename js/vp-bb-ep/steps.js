@@ -788,6 +788,12 @@ function voteReason(b, c, noms, salt, used = new Set()) {
     `${b.recruitedBy} came to me this week and asked me to vote ${b.evict} out. I said yes, and I meant it.`,
     `${b.recruitedBy} pulled me aside this week and asked for my vote against ${b.evict}. I wasn't going to say no to ${b.recruitedBy}.`,
   ]);
+  // a coattail rider votes the way their anchor wants (bb/game-style.js), and says whose vote it really is
+  if (b.coattail) return pick([
+    `I'm voting the way ${b.coattail} wants. I've been with ${b.coattail} since the start, and I'm not stopping now.`,
+    `${b.coattail} wants ${b.evict} gone, so ${b.evict} is going. That's how this works for me.`,
+    `Wherever ${b.coattail} goes, I go. Tonight that means ${b.evict}.`,
+  ]);
   if (b.bandwagon) return pick([
     `Everybody's voting ${b.evict}. I'm not going to be the one vote on the wrong side.`,
     `I'm not sticking my neck out tonight. The house wants ${b.evict} gone, so do I.`,
@@ -4144,7 +4150,18 @@ const THEME_WORDS = {
     [/\bHEAD OF HOUSEHOLD\b/g, 'IMMUNITY'], [/\bHead of Household\b/g, 'immunity winner'],
     [/\bHOH Room\b/g, 'Bedroom'], [/\bHOH room\b/g, 'bedroom'], [/\bthe HOH bed\b/g, 'the big bed'], [/\bHOH bed\b/g, 'big bed'], [/\bthe HOH\b/g, 'the immunity winner'],
     [/\bwin HOH\b/g, 'win immunity'], [/\bwon HOH\b/g, 'won immunity'], [/\bHOH comp\b/g, 'immunity comp'], [/\bas HOH\b/g, 'with immunity'],
-    [/\ban HOH\b/g, 'an immunity winner'], [/\bHOH\b/g, 'immunity']],
+    [/\ban HOH\b/g, 'an immunity winner'], [/\bHOHs\b/g, 'immunity winners'], [/\bHOH\b/g, 'immunity'],
+    // Secret Story is its own show (2026-10-27): its house, its people, its exit.
+    // Scenes about a veto or a jury it does not have are part 3's to rewrite;
+    // these are the words a swap can honestly fix.
+    [/\bthe premiere of Big Brother\b/g, 'the premiere of Secret Story'], [/\bthe Big Brother house\b/g, 'the House of Secrets'],
+    [/\bBig Brother house\b/g, 'House of Secrets'], [/\bthe Big Brother voice\b/g, 'the Voice'], [/\bBig Brother\b/g, 'The Voice'],
+    [/\bHOUSEGUESTS\b/g, 'HOUSEMATES'], [/\bHouseguests\b/g, 'Housemates'], [/\bhouseguests\b/g, 'housemates'],
+    [/\bHouseguest\b/g, 'Housemate'], [/\bhouseguest\b/g, 'housemate'],
+    [/\beviction night\b/g, 'elimination night'], [/\bEviction night\b/g, 'Elimination night'],
+    [/\bEVICTION\b/g, 'ELIMINATION'], [/\bEVICTED\b/g, 'ELIMINATED'], [/\bEviction\b/g, 'Elimination'], [/\beviction(s?)\b/g, 'elimination$1'],
+    [/\bEvicted\b/g, 'Eliminated'], [/\bevicted\b/g, 'eliminated'], [/\bevicting\b/g, 'eliminating'], [/\bevicts\b/g, 'eliminates'], [/\bevict\b/g, 'eliminate'],
+    [/\bon the block\b/g, 'nominated']],
   'summer-camp': [[/\bThe Veto Redraw\b/g, 'The Chaos Power'], [/\bthe Veto Redraw\b/g, 'the Chaos Power'],
     [/\bThe Diamond Power of Veto\b/g, 'The Panic Power'], [/\bthe Diamond Power of Veto\b/g, 'the Panic Power']],
   'machine-summer': [[/\ba (?=(?:saboteur|Saboteur|SABOTEUR)\b)/g, 'an '], [/\bA (?=(?:saboteur|Saboteur)\b)/g, 'An '], [/\bBLOCK BUSTER\b/g, 'AI ARENA'], [/\bBlock Buster\b/g, 'AI Arena'], [/\bblock buster\b/g, 'AI Arena'],

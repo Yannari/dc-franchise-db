@@ -160,6 +160,20 @@ const slack = state => state._threadSlack || 0;
 
 const make = (state, type, fields, heat) => ({ id: `th${state.ep}-${state.threadSeq = (state.threadSeq || 0) + 1}`, type, ep: state.ep, last: null, beat: 0, over: false, heat, ...fields });
 
+/**
+ * A graft that starts from a kiss in a challenge (pm/challenge-frame.js): c
+ * kissed t in the game and felt something; t is with p. Only when neither is
+ * in a graft already and there is room for one more.
+ */
+export function seedGraft(state, c, t) {
+  const p = heartOf(state, t);
+  if (!p || p === c || !state.villa.includes(p)) return false;
+  if (inThread(state, c, 'graft') || inThread(state, t, 'graft')) return false;
+  if (live(state).filter(x => x.type === 'graft').length >= MAX.graft) return false;
+  state.threads.push(make(state, 'graft', { c, t, p, from: 'challenge' }, 0.8));
+  return true;
+}
+
 function openGrafts(state, rng) {
   if (live(state).filter(t => t.type === 'graft').length >= MAX.graft) return;
   const busy = busyElsewhere(state);

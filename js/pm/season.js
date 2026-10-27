@@ -132,7 +132,12 @@ function villaDayEvents(state, rng, entry, seed) {
   // A challenge that could not play (too few couples) leaves the afternoon
   // to the villa.
   if (!chal.length) out.push(...part('day', 3));
-  out.push(...part('evening', T.evening));
+  // What the game left behind opens the evening (pm/challenge-frame.js).
+  const after = chal.length ? state._chalEvening || [] : [];
+  state._chalEvening = null;
+  for (const e of after) queueReaction(state, e);
+  state.history.push(...after);
+  out.push(...after, ...part('evening', T.evening));
   return out;
 }
 
@@ -190,7 +195,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-26.6';
+export const PM_ENGINE = '2026-10-26.8';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -250,7 +255,9 @@ function restoreFromAired(state, rows, queues, seed) {
       (state.postcards ||= {})[e.players[0]] = { of: e.extra?.of, sev: { bed: 1.1, kiss: 1, pull: 0.6, game: 0.8, close: 0.3, alone: 0 }[e.extra?.of] ?? 0.5,
         about: e.players[1], with: e.players[3] || null, ep: r.num, misleading: !!e.extra?.misleading };
     }
-    if (r.moment === 'recoupling') state.lastRecouplingEp = r.num;
+    if (r.moment === 'recoupling') { state.lastRecouplingEp = r.num; state.casaSingles = []; }
+    // Casa's leftovers: the ones who stuck while their partner twisted (casa.js).
+    if (r.moment === 'stick-or-twist') state.casaSingles = (r.pm?.events || []).filter(e => e.kind === 'casa-return' && e.extra?.choice === 'stick' && e.extra?.theirs === 'twist').map(e => e.players[0]);
     if (r.moment === 'casa-open') state.splitEp = r.num;
   }
   const last = rows[rows.length - 1], P = last.pm || {};

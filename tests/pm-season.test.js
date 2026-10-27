@@ -30,8 +30,13 @@ describe('a whole Perfect Match season', () => {
     const { rows } = play(2);
     // The final is its dates, not a villa day (pm/journey.js): held to its own count below.
     for (const r of rows.filter(r => r.moment !== 'reunion' && r.moment !== 'final')) {
-      // …a story beat, or the day before the night talking about tonight (threads.js tonightBeats).
-      const beats = r.pm.events.filter(e => e.extra?.thread || ['pick-chat', 'vote-worry', 'stick-twist'].includes(e.kind)).length;
+      // …a story beat, or the day before the night talking about tonight (threads.js tonightBeats),
+      // or what the day's challenge left behind (pm/challenge-frame.js: the row, the spark), or a
+      // storyline that runs over episodes outside threads.js: a triangle, an arc (pm/arcs.js), a
+      // feud between enemies (pm/enemies.js). Seed 2's episode 22 had a grass, the villa parents,
+      // a told-confront and two enemy scenes, and counted one beat (2026-10-26).
+      const STORY = /^(pick-chat|vote-worry|stick-twist|chal-row|chal-spark|told-confront|triangle-|enemy-|betray-|grass-|parents-|exw-|redeem-|mugged-low|found-love|villa-happy)/;
+      const beats = r.pm.events.filter(e => e.extra?.thread || STORY.test(e.kind)).length;
       const lines = r.pm.events.filter(e => e.aired).reduce((s, e) => s + (e.script?.lines?.length || 0) + (e.hut?.script?.lines?.length || 0), 0);
       expect(beats, `episode ${r.num}: story beats`).toBeGreaterThanOrEqual(2);
       expect(lines, `episode ${r.num}: lines aired`).toBeGreaterThanOrEqual(120);

@@ -59,6 +59,17 @@ function keepSecrets(state, e, pairs) {
   }
 }
 
+// Free to be in a triangle over h: single, or coupled with h, or coupled with
+// somebody else but neither closed off with them nor feeling more for them than
+// for h (the graft rule, threads.js). Malik, exclusive with Ayesha, stood as
+// Anna's second suitor because he had once fancied her (user, season 1: "why
+// closed off if he had feelings for someone else").
+function freeFor(state, n, h) {
+  const p = heartOf(state, n);
+  if (!p || p === h) return true;
+  return closedness(state, n, p) === 0 && romance(n, h) > romance(n, p);
+}
+
 function detect(state, rng) {
   if (open(state).length >= MAX_ACTIVE) return null;
   const busy = new Set(open(state).flatMap(t => [t.h, t.x, t.y]));
@@ -67,8 +78,11 @@ function detect(state, rng) {
     if (busy.has(h)) continue;
     const suitors = state.villa.filter(n => n !== h && !busy.has(n) && compatible(state, n, h) && compatible(state, h, n)
       && (!state.split || state.casa.includes(n) === state.casa.includes(h))
-      && romance(n, h) >= 3 && (attr(state, h, n) ?? 0) >= 4);
+      && romance(n, h) >= 3 && (attr(state, h, n) ?? 0) >= 4 && freeFor(state, n, h));
     if (suitors.length < 2) continue;
+    // …and the one in the middle: torn only if not closed off with somebody else.
+    const hp = heartOf(state, h);
+    if (hp && !suitors.includes(hp) && closedness(state, h, hp) > 0) continue;
     suitors.sort((p, q) => romance(q, h) - romance(p, h));
     const [x, y] = suitors;
     // How torn: both pulls close together, and both real.
@@ -96,6 +110,8 @@ export function triangles(state, rng, entry = null) {
   for (const t of open(state)) {
     const here = n => state.villa.includes(n);
     if (!here(t.h)) { t.over = true; continue; }
+    // One of the two has closed off with somebody else since: it isn't a triangle any more.
+    if ([t.x, t.y].some(n => here(n) && heartOf(state, n) && heartOf(state, n) !== t.h && closedness(state, n, heartOf(state, n)) > 0)) { t.over = true; continue; }
     if (!here(t.x) || !here(t.y)) {
       const [w, l] = here(t.x) ? [t.x, t.y] : [t.y, t.x];
       t.over = true;

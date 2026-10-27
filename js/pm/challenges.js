@@ -25,6 +25,7 @@ import { CHALLENGE_NAMES } from './schedule.js';
 import { lieDetector } from './lie-detector.js';
 import { MORE_CHALLENGES } from './challenges-more.js';
 import { kissRound, roundSize } from './kiss-round.js';
+import { frameChallenge } from './challenge-frame.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -469,5 +470,10 @@ export function runChallenge(state, rng, id) {
   // (lines/challenge-rules.js). The text alone left the viewer asking what
   // was happening.
   const how = scene(state, rng, 'challenge-rules', [], { of: id, pop: {} });
-  return [text, how, ...events];
+  // …and the day around the game (pm/challenge-frame.js): who is dreading it,
+  // the faces of the partners watching, the prize, and — for the evening —
+  // what it left behind (season.js plays those first in the evening).
+  const f = frameChallenge(state, rng, id, events);
+  state._chalEvening = f.evening;
+  return [text, ...f.before, how, ...f.during];
 }

@@ -44,6 +44,7 @@ export const KIND_LABEL = {
   'movie-text': 'Movie Night', 'movie-seat': 'Taking their seats', 'movie-clip': 'Now showing', 'movie-react': 'The reaction',
   'movie-row': 'After the screening', 'movie-split': "It's over", 'movie-callout': 'Said behind your back', 'movie-after': 'After Movie Night',
   'casa-host': 'The Casa Amor recoupling', 'casa-react': 'The moment', 'casa-row': 'After the fire pit', 'photo-text': 'Post from Casa', 'postcard-text': "You've got post", postcard: 'The postcard',
+  'chal-buzz': 'Before the game', 'chal-watch': 'Watching', 'chal-prize': 'The prize', 'chal-row': 'After the challenge', 'chal-spark': 'That kiss',
   'enemy-snipe': 'A dig', 'enemy-bitch': 'Behind their back', 'enemy-clash': 'It kicks off', 'enemy-freeze': 'Frozen out', 'enemy-truce': 'Clearing the air',
   'photo-row': 'The photo', 'photo-split': "It's over",
   'casa-miss': 'Missing them', 'pair-text': 'I got a text!', 'ex-text': 'I got a text!', 'ex-reveal': 'The ex', 'ex-partner': 'You two know each other?', 'ex-confront': 'What are you doing here?', 'kin-entrance': 'Two new arrivals', 'kin-heart': 'Family', 'kin-vet': 'The once-over',
@@ -361,6 +362,7 @@ function fxFor(row, e, first) {
   if (k === 'movie-react' && e.extra?.of === 'called') fx.shake = true;
   if (k === 'movie-callout' && e.extra?.of !== 'sorry') fx.shake = true;
   if (k === 'enemy-clash') fx.shake = true;
+  if ((k === 'chal-watch' && e.extra?.of === 'fuming') || (k === 'chal-row' && e.extra?.of === 'storm')) fx.shake = true;
   if (k === 'movie-row' && e.extra?.of === 'deny') fx.shake = true;
   if (k === 'movie-split') { fx.neonDie = ["It's over", '#ff2e88']; fx.shake = true; }
   // The bombshell comes down the steps as a silhouette and lights up (stage.js).

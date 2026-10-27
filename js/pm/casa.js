@@ -169,7 +169,9 @@ export function stickOrTwist(state, { rng }) {
   // islanders walking back in one at a time — and the face of the one waiting.
   const events = returnCeremony(state, rng, decisions);
 
-  // Whoever stuck while their partner twisted is safe, and heartbroken.
+  // Whoever stuck while their partner twisted is safe, and heartbroken — until
+  // the next recoupling: a vote before one opens with it (moments.js voteNight).
+  state.casaSingles = [...singleSafe];
   for (const n of singleSafe) {
     const ex = partnerOf(state, n);
     if (ex) breakHeart(state, n, ex, (broken(state, n, ex) ? 2 : 6) * romance(n, ex) / 10);

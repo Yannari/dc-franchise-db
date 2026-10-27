@@ -73,6 +73,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'again', 'backNow',
   // a graft watched by the CHASER's partner: {c} went after {d}, not the other way round
   'chaser',
+  // a challenge's evening (pm/challenge-frame.js): how the partner took it at the time; a graft started from the kiss
+  'watched', 'started',
   // the postcard a was sent from the other villa this Casa (pm/postcards.js): kiss · bed · pull · game · close · alone
   'postcard',
   // a talk file's own (pm/talk/*.js facts())

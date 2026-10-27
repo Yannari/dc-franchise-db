@@ -506,7 +506,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   for (const [a, b] of r.couples) healOnReunion(state, a, b);
   // Who has been single and vulnerable since the last ceremony (below).
   const lastCeremony = state.lastRecouplingEp ?? 0;
-  if (dumpSingles) state.lastRecouplingEp = state.ep;
+  if (dumpSingles) { state.lastRecouplingEp = state.ep; state.casaSingles = []; }
   if (!dumpSingles || !r.single.length) return { events, exits: [], ballots: r.ballots };
   // The final recoupling: nobody single stays, whatever the pace.
   if (all) {
@@ -1199,6 +1199,25 @@ function voteNight(state, ctx) {
     // (The pace runs lower since the couples-only week took its own share of
     // the dumpings: at 0.8 every first vote at 22 islanders was forced.)
     const forced = firstCall && ctx.pace < 0.5;
+    // Nobody is single at a vote that sends a couple home (user, 2026-10-26,
+    // season 1 ep 15: Zara, Callum and Kevin came out of Casa single, and the
+    // top couple picked a couple to dump over their heads — "we need a
+    // recoupling first"). The night opens with one; whoever it still leaves
+    // single faces the public instead of a couple.
+    // Only Casa's leftovers (casa.js casaSingles): a bombshell who walked in this
+    // week is safe until the next recoupling, as on the show.
+    const loose = n => !partnerOf(state, n) && (state.casaSingles || []).includes(n) && !(state.split && state.casa.includes(n));
+    if (!forced && !(ctx.immune || []).length && state.villa.some(loose)) {
+      const rc = recoupleNight(state, ctx.rng, { dumpSingles: true, pace: ctx.pace, votesAhead: ctx.votesAhead || 0,
+        toCome: ctx.queues?.bombshell || [], surplus: ctx.surplus || 0 });
+      // A recoupling that sent the unpicked home WAS the night's dumping: a
+      // couple voted out after it sent five home in one night (season 1 ep
+      // 15: three singles and a couple), and nobody else until the semi-final.
+      if (rc.exits.length) return { events: rc.events, exits: rc.exits, ballots: rc.ballots || [], extra: { dumpFormat: null, recoupledFirst: true } };
+      const vote = coupleFormatNight(state, ctx, ctx.entry.dumpFormat);
+      return { events: [...rc.events, ...vote.events], exits: [...rc.exits, ...vote.exits], ballots: [...(rc.ballots || []), ...(vote.ballots || [])],
+        extra: { ...(vote.extra || {}), recoupledFirst: true } };
+    }
     // A DOUBLE DUMPING: a villa too full for the nights left sends two
     // couples home, as the real show does when it runs short of time. The
     // couples-only week can then keep to a couple a night; before this, a

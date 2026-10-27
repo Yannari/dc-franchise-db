@@ -772,7 +772,7 @@ const NARRATIVE_BRIEFS = {
         : 'no secret recorded';
       return `#${p.placement} ${p.name} (${p.status}${p.exitEpisode ? `, week ${p.exitEpisode}` : ''}) — `
         + `${secret}; found ${ss.secretsFound || 0} secret(s), ${ss.buzzesWrong || 0} wrong buzz(es); `
-        + `kitty ${ss.kitty ?? 0} euros; nominated ${p.bb?.timesNominated || 0}x`;
+        + `kitty $${ss.kitty ?? 0}; nominated ${p.bb?.timesNominated || 0}x`;
     },
     summaryExtras(t) {
       return {
@@ -789,12 +789,12 @@ THIS IS NOT TOTAL DRAMA AND IT IS NOT BIG BROTHER. There is no Head of
 Household, no veto, no block, no jury, no tribe and no idol. Never use those
 words. Players are HOUSEMATES; the place is the House of Secrets.
 How the house works:
-- Every housemate moves in hiding a SECRET and a kitty of 10,000 euros. Some
+- Every housemate moves in hiding a SECRET and a kitty of $10,000. Some
   secrets are personal, some are roles La Voix handed out (a fake couple, fake
   siblings, a mission).
 - La Voix, the unseen voice of the house, sets the rules and the missions.
 - THE BUZZ: a housemate who thinks they know somebody's secret presses the
-  buzzer in the confessional, stakes 5,000 euros, and names it. Right: they
+  buzzer in the confessional, stakes $5,000, and names it. Right: they
   take that person's whole kitty. Wrong: they lose the stake and the house
   learns who they suspected.
 - Housemates NOMINATE in the confessional; the PUBLIC votes to save, and the

@@ -8,7 +8,7 @@
 //
 //   · every housemate moves in with a SECRET, and the house is told there are
 //     secrets but not whose. Find somebody's and you take their money.
-//   · each housemate starts with a kitty (here €10,000). Pressing the buzzer
+//   · each housemate starts with a kitty (here $10,000; the user chose dollars, 2026-10-27). Pressing the buzzer
 //     and naming a secret costs a stake: right, and you take the target's whole
 //     kitty and the secret is out; wrong, and the stake goes to the person you
 //     wrongly accused, in front of everybody.
@@ -210,7 +210,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     type: 'ss-secrets', week: 1, secret: true,
     secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind })),
     kitty: KITTY_START, stake: BUZZ_STAKE,
-    beats: [{ text: `Every housemate moves in with a secret and ${KITTY_START.toLocaleString()} euros in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
+    beats: [{ text: `Every housemate moves in with a secret and $${KITTY_START.toLocaleString('en-US')} in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
   };
 }
 

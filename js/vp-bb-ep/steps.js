@@ -2651,7 +2651,8 @@ function americasCoupScreen(act, ctx) {
 // ── Secret Story (bb/secret-story.js) ───────────────────────────────────
 const SS_VOICE = 'The Voice';
 const ssv = (t, extra = {}) => ({ k: 'voice', own: true, by: SS_VOICE, t, ...extra });
-const euros = n => `€${Number(n || 0).toLocaleString('en-GB')}`;
+// Secret Story's money is dollars (the user, 2026-10-27); the name stays for the call sites.
+const euros = n => `$${Number(n || 0).toLocaleString('en-US')}`;
 
 function ssSecretsScreen(act, ctx) {
   /** @type {BB.Step[]} */ const steps = [
@@ -2666,7 +2667,7 @@ function ssSecretsScreen(act, ctx) {
   }
   return [{ id: 'bb-ss-secrets-v', kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '22:00',
     kicker: 'Live · Living room', title: 'The Secrets', label: 'The Secrets', sub: 'Everybody is hiding something', cast: [],
-    rules: [['A SECRET', 'every houseguest has one'], ['THE KITTY', euros(act.kitty)], ['THE BUZZER', `${euros(act.stake)} a guess`], ['NO HOH', 'the public evicts']],
+    rules: [['A SECRET', 'every housemate has one'], ['THE KITTY', euros(act.kitty)], ['THE BUZZER', `${euros(act.stake)} a guess`], ['NO HOH', 'the public evicts']],
     rulesTitle: 'SECRET STORY · HOW IT WORKS', steps }];
 }
 
@@ -2686,11 +2687,11 @@ function ssBuzzScreen(act, ctx) {
     steps.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'] }),
       ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
       { k: 'beat', t: `${t} finds out who buzzed, and why. So does everybody else.` },
-      { k: 'dr', by: a, t: pickBy(["I was so sure. Now the whole house knows I suspect them, and they got paid for it.", 'Five thousand euros to find out I was wrong. Cheap, if it stops me doing it again.'], `${ctx.week}|ssw|${a}`) });
+      { k: 'dr', by: a, t: pickBy(["I was so sure. Now the whole house knows I suspect them, and they got paid for it.", 'Five thousand dollars to find out I was wrong. Cheap, if it stops me doing it again.'], `${ctx.week}|ssw|${a}`) });
   }
   return { id: `bb-ss-buzz-${a}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '16:00',
     kicker: 'Cam 01 · Confessional', title: 'The Buzzer', label: 'The Buzzer', sub: `${a} buzzes on ${t}`, cast: [[a, 50]],
-    rules: [['THE STAKE', '€5,000'], ['RIGHT', "the target's whole kitty"], ['WRONG', 'the stake goes to the target']], rulesTitle: 'THE BUZZER · HOW IT WORKS', steps };
+    rules: [['THE STAKE', '$5,000'], ['RIGHT', "the target's whole kitty"], ['WRONG', 'the stake goes to the target']], rulesTitle: 'THE BUZZER · HOW IT WORKS', steps };
 }
 
 function ssNomScreen(act, ctx) {

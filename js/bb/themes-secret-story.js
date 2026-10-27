@@ -32,7 +32,7 @@ export default {
   },
 
   primer: {
-    what: 'Secret Story. Every housemate walks in carrying a secret and a kitty of 10,000 euros. Find somebody '
+    what: 'Secret Story. Every housemate walks in carrying a secret and a kitty of $10,000. Find somebody '
       + 'else\'s secret and their money is yours. The house nominates in the confessional, '
       + 'and the public decides who leaves and who wins.',
     who: 'The Voice. Nobody has ever seen it. It speaks from every room at once, calls housemates to the confessional, '
@@ -41,7 +41,7 @@ export default {
       'Every housemate has a secret, and the house is told only that the secrets exist. Some are real, two people the '
         + 'roster says are related or together, somebody who has played this franchise before. The rest are roles The '
         + 'Voice hands out: a fake couple, fake siblings, a secret mission.',
-      'Press the buzzer and name somebody\'s secret, staking 5,000 euros of your kitty. Right, and you take their whole '
+      'Press the buzzer and name somebody\'s secret, staking $5,000 of your kitty. Right, and you take their whole '
         + 'kitty and the secret is out. Wrong, and your stake goes to the person you accused, in front of everybody.',
       'Every week there is an immunity competition. The winner cannot be nominated.',
       'In the confessional the house nominates: one week the women name two men, the next the men name two women. The '

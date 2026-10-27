@@ -23,11 +23,11 @@ must be "enough".
 ## 0. What the game is, in one paragraph
 
 Fourteen to eighteen people move into the House of Secrets, each hiding a
-secret and holding a 10,000 euro kitty. They live together for ten to fifteen
+secret and holding a $10,000 kitty. They live together for ten to fifteen
 weeks under the Voice, who sets rules, missions, games and dilemmas. They hunt
 each other's secrets: clues arrive through games, missions, dilemmas and slips,
 suspicion grows, and a housemate who thinks they know presses the red buzzer in
-the confessional, faces the target in a confrontation, and stakes 5,000 euros:
+the confessional, faces the target in a confrontation, and stakes $5,000:
 right, they take the target's whole kitty; wrong, they lose the stake and the
 house learns who they suspected. Every week the confessional nominates and on
 the prime, the live weekly show, the public saves all but one. The hunt closes
@@ -197,17 +197,17 @@ clue never hands certainty.
 |---|---|---|
 | the Voice's weekend game (team or solo) | most weeks | the winners pick whose clue |
 | a quiz or blind test | some weeks | the winners |
-| the clue auction (S5: 100 € to 24,000 €; S14 again) | a twist, once or twice a season | the highest bidder; the holder can bid to PROTECT their own clue |
+| the clue auction (S5: $100 to $24,000; S14 again) | a twist, once or twice a season | the highest bidder; the holder can bid to PROTECT their own clue |
 | a mission's reward or a failed mission's penalty | per mission | penalty: a clue on the failer's OWN secret goes public |
 | the bridge / garden of sacrifices on the prime | twist | the holder chooses: sacrifice something (money, a visit, an immunity, a vote against) or the clue goes public |
-| the red phone | some primes | "protect your clue for 5,000 €" / "plant a fake clue" |
+| the red phone | some primes | "protect your clue for $5,000" / "plant a fake clue" |
 | a slip (tells) | any day | nobody chooses: the holder's behaviour leaks a tell to whoever is watching |
 | the house's own secret puzzle (a code in the rooms) | twist | solving it |
 | a buzz confrontation | per buzz | the defender's nerves can leak a tell |
 | a duo's or rival's challenge (S11: find each other's or a clue goes) | twist | forced pairs |
 
-**Fake clues** are real (S10: Sarah planted "QI" for 5,000 €; S11 Kamila bought
-a fake clue for 1 €). A fake clue is a `learn()` of a false fact; the house can
+**Fake clues** are real (S10: Sarah planted "QI" for $5,000; S11 Kamila bought
+a fake clue for $1). A fake clue is a `learn()` of a false fact; the house can
 be misled, which is half the fun.
 
 **What is a tell?** Part 1 wrote one or two per secret ("goes quiet whenever
@@ -239,8 +239,8 @@ are a real strategy (S6 duos, S10 Fanny and Julien).
    target's bluff (`strategic`, `temperament`, `social`) against the buzzer's
    read (`intuition`, `mental`). It can move the buzzer's confidence either way.
 3. **Withdraw or confirm.** After the confrontation the buzzer may back out
-   (free) or confirm and stake 5,000 euros (they need at least 5,000 in the
-   kitty: S11 the Voice left Barbara at 4,999 € as a joke).
+   (free) or confirm and stake $5,000 (they need at least 5,000 in the
+   kitty: S11 the Voice left Barbara at $4,999 as a joke).
 4. **The reveal**, later, in front of the whole house in the living room, by
    the target ("Ana, tell the house your secret") or a video from the Voice.
 5. **Right:** the buzzer takes the target's ENTIRE kitty; the secret is out
@@ -250,7 +250,7 @@ are a real strategy (S6 duos, S10 Fanny and Julien).
    who suspected whom and what they guessed.
 
 **Free buzzes** (a reward: "the investigator of the week", a game, a sacrifice);
-**buzz sales** (S5: buzzes at half stake, 2,500 €, to restart a slow hunt);
+**buzz sales** (S5: buzzes at half stake, $2,500, to restart a slow hunt);
 **buzz bans** (a dilemma's price: "you may not buzz this week").
 
 **When does an AI housemate buzz?** When their confidence in one specific
@@ -281,11 +281,11 @@ nominated together, the public saved them as a pair).
 
 | in | out |
 |---|---|
-| 10,000 € on night one | a wrong buzz (5,000 € to the target) |
+| $10,000 on night one | a wrong buzz ($5,000 to the target) |
 | a right buzz (the target's whole kitty) | a found secret (the whole kitty to the finder) |
-| missions (2,000 € to 30,000 €) | punishments (money taken) |
+| missions ($2,000 to $30,000) | punishments (money taken) |
 | dilemmas (sell a visit, a place in the final, an immunity) | dilemmas (pay to protect a clue, to save a friend) |
-| the red phone | the red phone ("give 2,000 € to the person you hate most") |
+| the red phone | the red phone ("give $2,000 to the person you hate most") |
 | the Voice's games | clue auctions |
 | the S12 thieves: stealing from others, coins hidden in the house | |
 
@@ -293,7 +293,7 @@ nominated together, the public saved them as a pair).
 lower it; disagreement costs it) and **clan kitties** (S6, S11).
 
 **At the end:** at the semi-final the kitties are VALIDATED (frozen). The winner
-receives the cheque (100,000 €, the S8+ amount) plus their own kitty; the other
+receives the cheque ($100,000, the S8+ amount) plus their own kitty; the other
 finalists keep theirs. Money is always conserved except for mission rewards,
 Voice money and validated cheques (the sum is checked by a test, as v1 already
 does for the buzz).
@@ -420,8 +420,8 @@ Every segment is a VP-visible act with consequences; the prime is the most
 
 **What is a dilemma?** An offer from the Voice with a price, to one housemate,
 often in front of the others, with a clock. Real ones: give your place in the
-final for 15,000 €; triple your friend's kitty and divide your rival's; see your
-mother but your partner loses an immunity; simulate a break-up for 15,000 €;
+final for $15,000; triple your friend's kitty and divide your rival's; see your
+mother but your partner loses an immunity; simulate a break-up for $15,000;
 accept that all the nasty things you said are shown; protect your clue or
 nominate your friend; keep the bell (everyone serves you) or reveal a clue.
 
@@ -593,8 +593,8 @@ nominations. A clan war week is a tool.
 **The secret of the house:** a riddle hidden in the house all season (the
 mona lisa paintings, numbers in every room, a tattoo, S4–S7, S13). Clues to it
 come through the season; whoever solves it in the semi-final week wins a place
-in the final, then usually faces the Voice's dilemma: sell it (15,000 € –
-50,000 €) or keep it.
+in the final, then usually faces the Voice's dilemma: sell it ($15,000 –
+$50,000) or keep it.
 
 **Semi-final week:** the hunt's last chance; families visit; the last
 dilemmas reshuffle kitties; at the semi prime the kitties are validated and the
@@ -672,7 +672,7 @@ clues earned, times nominated d'office, kitty history, prime segments.
 - **Measured targets from the real seasons** (the audit, like `audit:dr-spec`):
   share of secrets found by the buzzer before the semi (real: about half to
   most; S13 found 6 of 11), wrong buzzes per right one, kitty spread at the
-  semi (one or two rich, several near zero, S4 top 100,077 €), missions per
+  semi (one or two rich, several near zero, S4 top $100,077), missions per
   season, d'office nominations per season, exclusions (0–3), the public's
   winner share (33–73%).
 - **The season read:** play seasons off the real roster and read every screen
@@ -683,19 +683,19 @@ clues earned, times nominated d'office, kitty history, prime segments.
 
 ---
 
-## 23. Questions only the user can answer
+## 23. Decided by the user (2026-10-27)
 
-1. **The host.** Big Brother's host in this universe is Valeria. Secret Story's
-   real hosts were Benjamin Castaldi then Christophe Beaugrand. Who hosts our
-   prime: a new Total Drama-universe host, an existing character, or Valeria?
-2. **Language.** The show's own words in the sim: English ("the Voice", "the
-   prime", "the airlock", "the secret room") or French kept as names ("la
-   Voix", "le prime", "le sas", "la pièce secrète")?
-3. **The cheque.** 100,000 € (S8 on) or 150,000 € (S1–S7)?
-
-Everything else above is my call, made from the real seasons.
-
----
+1. **The host: a NEW host**, not Big Brother's Valeria; who exactly is still
+   open (the user floated "Dior"). Until then the prime's host is a registry
+   placeholder (`HOSTS_BY_FORMAT['secret-story']`) so nothing is written
+   around a name that may change. Note for the choice: Dior is also a fashion
+   brand, and the franchise keeps brand names out (memory, 2026-10-22).
+2. **English everywhere**, to keep the immersion: "the Voice", "the prime",
+   "the airlock", "the secret room", "the confessional", "the kitty", "the
+   buzzer", "the House of Secrets". No French terms on screen.
+3. **Money in dollars.** Kitty $10,000, buzz stake $5,000, the winner's cheque
+   **$100,000** (my pick between the two real amounts, the modern one), plus
+   their kitty. Real-season amounts quoted in this document are converted 1:1.
 
 ## 24. The plates (part 4, started now at the user's request)
 

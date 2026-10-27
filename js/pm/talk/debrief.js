@@ -106,6 +106,36 @@ export const DEBRIEF = build('debrief', {
         ['b', "You did it, though."],
         ['a', "I did it. Now I've got to live with it."],
       ] },
+      // Took their own partner back from whoever picked them first (debrief.js 'took-back').
+      { when: { of: 'took-back', taken: true }, turns: [
+        ['a', "{c} stood up and said {pa}'s name like I wasn't even sitting there. Like we weren't a couple. So I stood up and said {pa}'s name straight back."],
+        ['b', "I've never seen anyone stand up that fast."],
+      ] },
+      { when: { of: 'took-back', taken: true }, turns: [
+        ['a', "{pa} has made it so clear who {pa} is with. Everyone knows. {c} knows. And {c} still stood up and picked {pa}. What did {c} think was going to happen?"],
+      ] },
+      { when: { of: 'took-back', taken: true, cGone: true }, turns: [
+        ['a', "I didn't want anyone going home tonight. I really didn't. But {c} picked {pa} knowing {pa} was with me. I wasn't going to just sit there and let it happen."],
+      ] },
+      // Said no to the one who picked them, for a partner who had not chosen yet ('refused').
+      { when: { of: 'refused', taken: true }, turns: [
+        ['a', "I've never done that before. Said no to someone in front of everyone. But when {c} said my name, all I could think was, I'm with {pa}. And it came out before I could stop it."],
+        ['b', "{pa}'s face, though."],
+        ['a', "I know. I saw."],
+      ] },
+      { when: { of: 'refused', taken: true }, turns: [
+        ['a', "Standing there with everyone looking at me, I did think, what if {pa} doesn't pick me? What if I've just said no for nothing?"],
+        ['b', "And then {pa} stood up."],
+        ['a', "And then {pa} stood up."],
+      ] },
+      { when: { of: 'refused', taken: false }, turns: [
+        ['a', "I turned {c} down in front of the whole villa, for someone who didn't even pick me. I've never felt so stupid in my life."],
+        ['b', "You did it for the right reasons."],
+      ] },
+      // Stole somebody, and the one robbed went home tonight.
+      { when: { of: 'stole', taken: true, cGone: true }, turns: [
+        ['a', "I picked {pa}, and {c} went home because of it. I keep going over it. I'd still pick {pa}. I just hate that that's what it cost."],
+      ] },
       { when: { of: 'twisted-on' }, turns: [
         ['a', "I waited. I sat here in this villa, and I turned everyone down, and I didn't so much as look at anyone. And {c} walks back in holding someone else's hand. Like I was nothing. Like I was a holiday."],
         ['b', "You were loyal. That's not nothing."],
@@ -192,9 +222,38 @@ export const DEBRIEF = build('debrief', {
         ['a', "I feel so stupid."],
         ['b', "You're not stupid. You trusted someone. That's not the same thing."],
       ] },
-      { when: { of: ['stole', 'twisted'] }, turns: [
+      { when: { of: ['stole', 'twisted'], cGone: [undefined, false] }, turns: [
         ['b', "Look, I'm not going to tell you that you did the wrong thing. You've got to do what's right for you in here. But you're going to have to face {c} in the morning, and I'd think about what you're going to say."],
         ['a', "I know. I'll talk to {c}."],
+      ] },
+      { when: { of: 'took-back', taken: true, cGone: [undefined, false] }, turns: [
+        ['b', "Don't you dare feel bad. {pa} is your partner. You didn't take anyone off anyone, you got yours back."],
+        ['a', "I know. It's still going to be weird with {c} tomorrow."],
+        ['b', "That's {c}'s problem. Not yours."],
+      ] },
+      { when: { of: 'took-back', taken: true, cGone: true }, turns: [
+        ['b', "And {c} going home is not on you. {c} made that choice the second {c} stood up and said {pa}'s name."],
+        ['a', "I know. I just wish it hadn't come to that."],
+      ] },
+      { when: { of: 'took-back', taken: true }, turns: [
+        ['b', "For the record, I'd have done exactly the same. Exactly the same."],
+        ['a', "I wasn't going to give anyone the chance to get comfortable."],
+      ] },
+      { when: { of: 'refused', taken: true, cGone: [undefined, false] }, turns: [
+        ['b', "That took guts. Honestly. {c} is going to be embarrassed tomorrow, so be kind."],
+        ['a', "I will be. I didn't do it to hurt {c}."],
+      ] },
+      { when: { of: 'refused', taken: true, cGone: true }, turns: [
+        ['b', "{c} going home isn't your fault. You were honest. That's all you were."],
+        ['a', "It doesn't feel like that."],
+      ] },
+      { when: { of: 'refused', taken: false }, turns: [
+        ['b', "You were honest. That's never the wrong thing, even when it costs you."],
+        ['a', "It's cost me a lot tonight."],
+      ] },
+      { when: { of: 'stole', cGone: true }, turns: [
+        ['b', "You couldn't have known {c} would be the one going tonight."],
+        ['a', "I could, though. Everyone knew somebody was going."],
       ] },
       { when: { of: 'miss' }, turns: [
         ['b', "{c} would want you to carry on. Honestly. If you could hear what {c} would say about you sitting up here moping, you'd get up right now. Have one sad night, and then do it for {c.obj}."],

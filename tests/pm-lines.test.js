@@ -47,7 +47,7 @@ describe('the pools are well-formed', () => {
     // in a one-person scene renders as a raw placeholder, or as nobody.
     const CAST = { gossip: 3, 'head-turned': 1, 'jealous-sulk': 1, overthinking: 1,
       'jealous-confront': 3, 'jealous-retaliate': 3, advice: 3,
-      entrance: 1, steal: 3, 'recouple-pick': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
+      entrance: 1, steal: 3, 'recouple-pick': 3, 'recouple-refused': 3, 'dump-verdict': 1, 'dump-fallout': 1, 'snog-marry-pie': 4,
       'movie-night': 2, reveal: 2, 'dump-at-risk': 1, 'ex-return': 1, 'top-couple-pick': 4, 'couples-vote': 4, 'dump-verdict-couple': 2, 'dump-verdict-singles': 2, 'group-entrance': 2,
       'stand-up': 3, 'nobody-stands': 1, 'stand-up-pick': 3, 'bombshell-save': 3, 'public-match': 3,
       'return-entrance': 1, 'return-ex': 3, 'mission-brief': 1, 'mission-dump': 3, 'sleepover-invite': 3, 'sleepover-choice': 3, 'sleepover-single': 3,

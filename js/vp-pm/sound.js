@@ -247,7 +247,7 @@ const SITUATION = {
   goodbye: ['dump-goodbye', 'walk', 'walk-goodbye', 'solidarity', 'kin-goodbye', 'kin-walk'],
   comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
   suspense: ['recouple-open', 'dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'dump-tie', 'top-couple-pick', 'couples-vote',
-    'ex-ballot', 'final-recoupling', 'recouple-pick', 'steal',
+    'ex-ballot', 'final-recoupling', 'recouple-pick', 'recouple-refused', 'steal',
     // Stick or twist: the host, and every walk-in, under the wait (each choice's own music plays over it).
     'casa-host', 'casa-return'],
   // The final: the declarations and the places under the wait, then the

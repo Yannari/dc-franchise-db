@@ -26,7 +26,7 @@ export const DEBRIEF_RECOUNT = {
       W({ of: 'robbed' }, ['a', "I stood there and watched {c} take my partner. In front of everyone. I didn't even get a say."], ['b', "Nobody gets a say at a recoupling. That's the cruel bit."]),
       W({ of: 'robbed' }, ['a', "I'm angrier with myself than with {c}. I should have seen it coming."], ['b', "Nobody saw it coming. Not even me."]),
       W({ of: 'stole', taken: true }, ['a', "I've got who I wanted. So why do I feel sick?"], ['b', "Because you've got a heart. That's a good thing."]),
-      W({ of: 'stole', taken: true }, ['a', "Tomorrow is going to be awful. {c} is going to be awful. And I'll have earned it."], ['b', "Then face it. Don't hide from it."]),
+      W({ of: 'stole', taken: true, cGone: [undefined, false] }, ['a', "Tomorrow is going to be awful. {c} is going to be awful. And I'll have earned it."], ['b', "Then face it. Don't hide from it."]),
       W({ of: 'eyeing', taken: true }, ['a', "{c} walked in and {pa} sat up straighter. I saw it. Everybody saw it."], ['b', "And then {pa} sat back down next to you."], ['a', "For now."]),
       W({ of: 'bomb-threat', taken: true }, ['a', "{c} came in, looked around, and looked straight at {pa}. I'm not imagining it."], ['b', "You're not. But {pa} didn't look back. Not really."]),
       W({ of: 'bomb-fancy', taken: false }, ['a', "Okay. I'm just going to say it. {c}. Did you see? I need a chat with {c} tomorrow. First thing."], ['b', "You'll have to queue."]),

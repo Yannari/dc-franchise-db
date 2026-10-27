@@ -200,4 +200,20 @@ export function episodeText(row) {
   return out.join('\n');
 }
 
+/**
+ * The same text in the shape the wiki writer reads (js/wiki-fill.js
+ * readTranscript): a beach hut line is a confessional, and a line is said
+ * without the quote marks round it, so a "verbatim" quote is the words alone.
+ */
+export function wikiText(row) {
+  // Only what aired: a scene the viewer never saw is nobody's quote.
+  const aired = episodeText(row).split('\n\n').filter(b => !b.includes('  (not aired)')).join('\n\n');
+  return aired.split('\n').flatMap(line => {
+    const hut = line.match(/^\s*\[beach hut\] ([^:]+): "(.*)"$/);
+    if (hut) return [`[CONFESSIONAL: ${hut[1]}]`, `${hut[1]}: ${hut[2]}`, '[—]'];
+    const said = line.match(/^([^:(\[]+): "(.*)"$/);
+    return said ? [`${said[1]}: ${said[2]}`] : [line];
+  }).join('\n');
+}
+
 export { sceneHtml as _sceneHtml };

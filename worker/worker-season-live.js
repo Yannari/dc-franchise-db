@@ -763,6 +763,101 @@ Return ONLY valid JSON matching the schema.
  * `p.immunityWins`, neither of which a castle placement carries.
  */
 const NARRATIVE_BRIEFS = {
+  'perfect-match': {
+    placementLine(p) {
+      const pm = p.pm || {};
+      const couples = (pm.couples || []).map(s => `${s.with}${s.again ? ' again' : ''} ep${s.from}${s.to ? '-' + s.to : ''} (${s.how})`).join('; ');
+      return `#${p.placement} ${p.name} (${p.status}${p.exitEpisode ? `, episode ${p.exitEpisode}` : ''}) — `
+        + `couples in order: ${couples || 'never coupled'}; `
+        + `${pm.timesStolen || 0} times stolen, ${pm.publicVotesSurvived || 0} public votes survived`
+        + `${(pm.enemies || []).length ? `, clashed most with ${pm.enemies.join(', ')}` : ''}`
+        + `${p.fanFavourite ? ', the public\'s favourite islander' : ''}`;
+    },
+    summaryExtras(t) {
+      return {
+        winningCouple: t.winningCouple || [],
+        finalVote: (t.finalVote || []).map(f => `${f.couple.join(' & ')}: ${Math.round(f.share * 100)}%`),
+        fanFavourite: t.fanFavourite?.name || null,
+      };
+    },
+    instructions({ templateSummary, canonicalCast, recordBlock, episodeSummaries }) {
+      return `
+You are writing narrative content for a season of Perfect Match, a dating show
+in a villa. All STATS are already filled in — you only write NARRATIVE fields.
+
+THIS IS NOT TOTAL DRAMA, BIG BROTHER OR THE TRAITORS. Do not mention tribes,
+challenges that keep anybody safe for good, nominations, eviction, a jury,
+alliances voting people out, or a final tribal council.
+How the villa works:
+- Islanders live together in a villa and must stay in couples. Night one pairs
+  everybody up; new islanders ("bombshells") arrive all season and can steal
+  somebody's partner.
+- At a RECOUPLING one side (the girls or the boys) chooses, one at a time, who
+  to couple up with. Picking somebody already coupled takes them; their partner
+  can take them straight back by picking them in turn (a take-back, not a
+  steal). Somebody picked can say no and wait for their own partner. Whoever is
+  left single can be dumped from the island.
+- DUMPINGS: the public votes for its favourite couples and the least popular
+  can go; or the islanders themselves choose who goes; or a recoupling leaves
+  somebody single. Two ways out: dumped, or walked (left by choice).
+- CASA AMOR: the villa splits in two, each half meets new islanders, and on
+  the return everybody either STICKS (comes back single, staying loyal) or
+  TWISTS (comes back with somebody new). Postcards are photos sent between the
+  two villas.
+- Couples split up and some get back together. Feuds and rows are part of it.
+- A COUPLE wins, on the public's final vote. There is no jury, no immunity
+  that lasts, no tribe, no alliance vote, no Head of Household, no veto.
+
+SEASON DATA (pre-computed, DO NOT change these numbers):
+${templateSummary}
+
+THE COUPLES ARE THE SEASON. Every islander's story is the order of their
+couples — who they were with, from which episode to which, and how each one
+ended — and that order is given in their line above. Get it exactly right: a
+couple formed in episode 13 was not "together from the start". A take-back is
+not a steal: whoever took their own partner back was in the right. Say who
+somebody came back from Casa Amor with, who stuck, who got back together.
+
+THE RECORD OUTRANKS THE EPISODES. Where the transcript and the record disagree,
+the record is what happened.
+
+For each islander write:
+- notes: 1 sentence summary
+- strategicRank: 1-10, how well they played the villa — loyalty that paid,
+  reading the public, surviving recouplings, landing the right person.
+- story: 4-8 sentences through their couples in order, the steals, Casa Amor,
+  the rows, and how it ended.
+- gameplayStyle: 3-6 evocative words
+- keyMoments: 3-8 specific moments with episode numbers
+- gameArchetype: pick the closest. alliance-hub is the villa's centre, the
+  friend everyone confides in. social-manipulator is a grafter and stirrer.
+  floater drifts between couples. under-the-radar is never in the drama.
+  pawn-shield was kept as somebody's safe option. goat is kept because nobody
+  fears them. comp-beast is a challenge star. early-casualty went before they
+  found anyone.
+- resume / demise / demiseKind / optimalLine / ceiling, in villa terms: how
+  they were dumped and by whom (the public, the islanders, a recoupling), or,
+  for the winners, the last real threat to the couple.
+
+Also write: title, subtitle, seasonNarrative, winner analysis (keyStats/strategy/
+legacy) about the WINNING COUPLE together, and all awards.
+
+The award names are shared with the franchise's other shows, so read them in
+villa terms: "compBeast" is the challenges; "advantageKing" is whoever played
+recouplings and the public best; "mostLoyal" stayed loyal, Casa Amor included;
+"biggestBetrayal" is a twist at Casa Amor, a steal, or a cheat; "messiestFeud"
+is the villa's worst rivalry; "ftcGame" is whoever played the final week best;
+"mostRobbedFinalist" is a finalist couple the public did not pick.
+
+IMPORTANT: Use EXACTLY these islander names — do not modify, abbreviate, or add suffixes.
+Cast: ${canonicalCast.join(', ')}
+${recordBlock}
+${episodeSummaries}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+    },
+  },
   'traitors': {
     placementLine(p) {
       const tr = p.tr || {};
@@ -878,6 +973,44 @@ Return ONLY valid JSON matching the schema.
 const SHOW_WORDS = {
   'big-brother': { show: 'Big Brother', player: 'houseguest', round: 'Week', exit: 'evicted' },
   'total-drama': { show: 'Total Drama', player: 'contestant', round: 'Episode', exit: 'voted out' },
+  'perfect-match': { show: 'Perfect Match', player: 'islander', round: 'Episode', exit: 'dumped' },
+};
+
+/**
+ * What a show needs said to the two wiki writers on top of the shared rules.
+ * Looked up by format, like NARRATIVE_BRIEFS: a show with nothing to add adds
+ * nothing.
+ */
+const WIKI_NOTES = {
+  'perfect-match': `
+THIS SHOW IS A DATING SHOW IN A VILLA.
+How the villa works:
+- Islanders live together in a villa and must stay in couples. Night one pairs
+  everybody up; new islanders ("bombshells") arrive all season and can steal
+  somebody's partner.
+- At a RECOUPLING one side (the girls or the boys) chooses, one at a time, who
+  to couple up with. Picking somebody already coupled takes them; their partner
+  can take them straight back by picking them in turn (a take-back, not a
+  steal). Somebody picked can say no and wait for their own partner. Whoever is
+  left single can be dumped from the island.
+- DUMPINGS: the public votes for its favourite couples and the least popular
+  can go; or the islanders themselves choose who goes; or a recoupling leaves
+  somebody single. Two ways out: dumped, or walked (left by choice).
+- CASA AMOR: the villa splits in two, each half meets new islanders, and on
+  the return everybody either STICKS (comes back single, staying loyal) or
+  TWISTS (comes back with somebody new). Postcards are photos sent between the
+  two villas.
+- Couples split up and some get back together. Feuds and rows are part of it.
+- A COUPLE wins, on the public's final vote. There is no jury, no immunity
+  that lasts, no tribe, no alliance vote, no Head of Household, no veto.
+
+Each islander's RECORD lists their couples IN ORDER, with the episodes each
+stood and how it ended, and their TIMELINE is the engine's own episode-by-episode
+account: arrivals, every pick, steal, take-back and refusal at a recoupling,
+Casa Amor, break-ups, reunions, rows, the public's bottom, the exit. Follow that
+order exactly — a couple formed in episode 13 was not together "from day one".
+Taking your own partner back at a recoupling is not stealing them. In place of
+"alliance", write about their couples and their friends in the villa.`,
 };
 
 function showWords(format, sent) {
@@ -1070,6 +1203,7 @@ RULES
    sentence about how they played and stop. A short honest sentence is the
    floor; a paragraph about missing evidence is not.` : ''}
 5. Use EXACTLY these names: ${cast.join(', ')}
+${WIKI_NOTES[format] || ''}
 
 Return ONLY valid JSON matching the schema, with one entry per ${W.player}.
 `.trim();
@@ -1162,6 +1296,7 @@ RULES
    "little did they know", no addressing the reader.
 5. Each round is its own paragraph and reads on its own — a reader who
    arrives at ${W.round} 6 first should still follow it.
+${WIKI_NOTES[format] || ''}
 
 Return ONLY valid JSON matching the schema, one entry per round given, same numbers.
 `.trim();

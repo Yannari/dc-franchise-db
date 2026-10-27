@@ -253,7 +253,8 @@ function _leftThisRound(r) {
   const given = Array.isArray(r.exits) ? r.exits.filter(x => x?.name && x?.verb) : [];
   if (given.length) {
     return {
-      facts: given.map(x => `${x.name} was ${x.verb}`),
+      // (a verb that is something they did is said as one: "walked", never "was walked")
+      facts: given.map(x => (/^(walked|quit|left)$/.test(x.verb) ? `${x.name} ${x.verb}` : `${x.name} was ${x.verb}`)),
       gone: given[0].name,
       left: given.map(x => ({ name: x.name, verb: x.verb })),
     };
@@ -337,6 +338,17 @@ export function roundLedger(doc = {}) {
       for (const line of exits.facts) facts.push(line);
       return { n, word, gone: exits.gone,
         ...(exits.left.length ? { left: exits.left } : {}), facts };
+    }
+    /* A round that carries its own facts (js/pm/export.js: the villa's picks,
+       steals, refusals, Casa returns, splits and couples, in sentences) is told
+       from them: its ballots are mostly picks FOR somebody, and a tally of them
+       would read as votes against. */
+    if (Array.isArray(r.facts) && r.facts.length) {
+      if (r.title) facts.push(`the night: ${r.title}`);
+      facts.push(...r.facts);
+      const exits = _leftThisRound(r);
+      for (const line of exits.facts) facts.push(line);
+      return { n, word, gone: exits.gone, ...(exits.left.length ? { left: exits.left } : {}), facts };
     }
     if (r.hoh) facts.push(`${r.hoh} won Head of Household`);
     if (r.winner) facts.push(`${r.winner} won the challenge`);

@@ -110,6 +110,13 @@ async function loadDoc(season, format, root = '') {
  * not fill the request with "nothing".
  */
 export function timelineFor(doc, name) {
+  /* ── A SHOW THAT WRITES ITS OWN ──
+     A villa's ballots are mostly picks FOR somebody, and the loops below would
+     print a recoupling pick as "voted X" and count it against them. A show whose
+     export already wrote each person's season (js/pm/export.js pmStories: every
+     couple, steal, take-back, Casa, split and reunion) is read as written. */
+  const own = (doc.placements || []).find(p => p.name === name)?.timeline;
+  if (Array.isArray(own) && own.length) return own.length > 24 ? [...own.slice(0, 12), '…', ...own.slice(-12)] : own;
   const out = [];
 
   for (const w of (doc.weeks || [])) {
@@ -274,6 +281,12 @@ export function attachRecords(doc, threads, format) {
     }
     const partner = showmanceOf(row);
     if (partner) bits.push(`showmance with ${partner}`);
+    // A villa's couples in order, each with when it stood and how it ended
+    // (js/pm/export.js pmStories) — the order is what a writer gets wrong.
+    const stints = row.pm?.couples || [];
+    if (stints.length) bits.push(`couples, in order: ${stints.map(s => `${s.with}${s.again ? ' (again)' : ''} ep${s.from}${s.to ? `-${s.to}` : ''} (${s.how})`).join('; ')}`);
+    if (row.pm?.enemies?.length) bits.push(`clashed most with: ${row.pm.enemies.join(', ')}`);
+    if (row.pm?.publicVotesSurvived) bits.push(`survived ${row.pm.publicVotesSurvived} public vote${row.pm.publicVotesSurvived === 1 ? '' : 's'}`);
     if (row.rivalries?.length) bits.push(`rivals: ${row.rivalries.slice(0, 4).join(', ')}`);
     if (row.gameplayStyle) bits.push(`style: ${row.gameplayStyle}`);
     // THE TALLY BELONGS TO THE PERSON THE WINNER BLOCK NAMES.

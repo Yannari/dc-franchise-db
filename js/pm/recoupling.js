@@ -4,7 +4,8 @@
 //
 // The picking group chooses one at a time; the picked has no say — except
 // when a second picker wants somebody already taken, and then THAT islander
-// decides (spec §9.1). Every chooser reads THEIR OWN feelings and what they
+// decides (spec §9.1), and when the one picked is sure of a partner who has
+// not chosen yet and says no (runRecoupling, `refusals`). Every chooser reads THEIR OWN feelings and what they
 // BELIEVE the other feels (spec §6.3, §7): never the other person's truth,
 // and never approval or fame.
 import { attr } from './chemistry.js';
@@ -13,6 +14,7 @@ import { partnerOf } from './events.js';
 import { kinFor, onYourSide } from './kin.js';
 import { getBond } from '../bonds.js';
 import { splitOf } from './just-friends.js';
+import { closedness } from './ladder.js';
 
 /**
  * Whose choice the next recoupling is, without taking the turn: the smaller
@@ -118,6 +120,22 @@ export function runRecoupling(state, { rng, pickerGender, repick = false }) {
   // follows came up a couple short.
   const queue = [...pickers];
   const again = new Set();
+  // SAYING NO (user, PM1: Zara picked Freya's boyfriend, who had turned her
+  // down for days, and he had to wait for Freya to take him back). Picked away
+  // from a partner who has not chosen yet, an islander who is sure of that
+  // partner can refuse, and the picker chooses again. It is a gamble — the
+  // partner may yet choose somebody else — so it takes certainty of the
+  // partner, a real preference, and the nerve to say it at the fire pit.
+  const refusals = [];
+  const refuses = (best, mine, p) => {
+    const gap = desire(state, best, mine, ctx) - desire(state, best, p, ctx);
+    if (gap <= 0) return false;
+    const sure = Math.max(closedness(state, best, mine), Math.min(romance(best, mine), romance(mine, best)) / 10);
+    const nerve = 0.4 + 0.6 * state.profiles[best].stats.boldness / 10;
+    // (Measured, 20 seasons: 1.5 a season at full strength — a quarter of all
+    // recouplings. Scaled to about one a season: it should feel rare.)
+    return rng() < 0.65 * Math.min(1, gap * 2) * sure * nerve;
+  };
   for (let qi = 0; qi < queue.length; qi++) {
     const p = queue[qi];
     // Chosen already by a new arrival: coupled, and not choosing.
@@ -148,6 +166,13 @@ export function runRecoupling(state, { rng, pickerGender, repick = false }) {
         pickedSomeone.delete(holder);
         if (repick && !again.has(holder)) { again.add(holder); queue.push(holder); }
       } else {
+        const mine = partnerOf(state, best);
+        if (mine && mine !== p && room.includes(mine) && isPicker.has(mine) && !pickedSomeone.has(mine) && !taken.has(mine)
+          && !splitOf(state, best, mine) && refuses(best, mine, p)) {
+          refusals.push({ at: picks.length, picker: p, picked: best, partner: mine });
+          options = options.filter(c => c !== best);
+          continue;
+        }
         picks.push({ picker: p, picked: best, stole: null, reason: pickReason(state, p, best), first: fresh.includes(p) });
       }
       taken.set(best, p);
@@ -160,6 +185,7 @@ export function runRecoupling(state, { rng, pickerGender, repick = false }) {
   const coupled = new Set(couples.flat());
   return {
     picks,
+    refusals,
     couples,
     single: room.filter(n => !coupled.has(n)),
     ballots: picks.map(x => ({ voter: x.picker, target: x.picked, channel: 'recoupling' })),

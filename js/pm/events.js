@@ -152,7 +152,9 @@ function argumentReasons(s, a) {
   const past = s.history || [];
   // Stole my partner: a recoupling pick or a bombshell's steal.
   for (const e of past) {
-    const took = e.kind === 'recouple-pick' && e.extra?.stole === a ? { b: e.players[0], x: e.players[1] }
+    // (Taken back by their partner: the grudge runs the other way — at whoever picked them first.)
+    const took = e.kind === 'recouple-pick' && e.extra?.reclaim ? (e.players[0] === a ? { b: e.extra.stole, x: e.players[1] } : null)
+      : e.kind === 'recouple-pick' && e.extra?.stole === a ? { b: e.players[0], x: e.players[1] }
       : e.kind === 'steal' && e.players[2] === a ? { b: e.players[0], x: e.players[1] } : null;
     if (took && here.includes(took.b)) out.push({ cause: 'stole', b: took.b, about: took.x, w: 2.5 * since(e) });
   }
@@ -880,7 +882,7 @@ export const KINDS = {
     'final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech',
     'pair-text', 'kin-entrance', 'kin-goodbye', 'kin-walk', 'ex-text', 'ex-reveal', 'ex-partner', 'ex-confront',
     'dump-text', 'dump-nerves', 'dump-open', 'vote-safe', 'hideaway-text', 'hideaway-vote', 'hideaway-win', 'hideaway-snub', 'hideaway-morning',
-    'recouple-text', 'recouple-nerves', 'recouple-open', 'recouple-single', 'recouple-first', 'casa-text', 'casa-goodbye', 'casa-explain',
+    'recouple-text', 'recouple-nerves', 'recouple-open', 'recouple-single', 'recouple-first', 'recouple-refused', 'casa-text', 'casa-goodbye', 'casa-explain',
     'final-open', 'final-two', 'final-drum', 'final-winners', 'walk-doubt', 'walk-goodbye', 'walk-after', 'reunion-open', 'reunion-winners', 'reunion-close', 'rule-open', 'game-kiss', 'tod-truth', 'dump-recap', 'dump-safe', 'dump-plea', 'dump-decide',
     // the arrivals of Plan 4.5 phase 2
     'stand-up', 'nobody-stands', 'stand-up-pick', 'save-setup', 'bombshell-save', 'public-match',

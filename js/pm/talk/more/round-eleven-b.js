@@ -254,7 +254,7 @@ export const DEBRIEF_ELEVEN = {
       W({ of: 'rather', cast: 3 }, ['b', "There's time. {c} isn't going anywhere, and neither are you."]),
       W({ of: 'rather-yours', bTaken: true }, ['b', "Wait. You'd rather be with {pb}? Okay. We need to talk about this properly."]),
       W({ of: 'robbed' }, ['b', "{c} knew exactly what {c} was doing tonight. You didn't deserve that."]),
-      W({ of: 'stole' }, ['b', "You did what you had to do. Just be ready for tomorrow."]),
+      W({ of: 'stole', cGone: [undefined, false] }, ['b', "You did what you had to do. Just be ready for tomorrow."]),
       W({ of: 'twisted-on' }, ['b', "I can't believe {c} came back with someone else. I'm so sorry."]),
       W({ of: 'twisted' }, ['b', "You followed your heart. {c} will be hurt, but you'd have regretted it."]),
       W({ of: 'miss' }, ['b', "It's weird without {c} already. I keep expecting {c} to come back up the stairs."]),

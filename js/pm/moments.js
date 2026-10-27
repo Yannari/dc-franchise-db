@@ -468,11 +468,25 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     if (romance(pk.picker, pk.picked) >= 5.5 && romance(pk.picked, pk.picker) >= 5.5) return 'rekindled';
     return rec.holder === pk.picker && rec.mood !== 'friends' ? 'hoping' : 'friend';
   };
-  const events = [...open, ...r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
+  const pickEvents = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
     extra: { stole: pk.stole, reclaim: reclaim(pk), mates: mates(pk), exPick: exPick(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
-      ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }))];
+      ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }));
+  // Said no (recoupling.js refusals): in front of everyone, for the partner
+  // still to choose. The one turned down feels it; the partner hears it.
+  const refused = (r.refusals || []).map(f => {
+    feel(state, f.picker, 'confidence', -0.6);
+    addBond(f.picker, f.picked, -0.4);
+    addBond(f.picked, f.partner, 0.8);
+    feel(state, f.partner, 'security', 0.8);
+    return { at: f.at, e: makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-refused', players: [f.picker, f.picked, f.partner], aired: true,
+      major: [f.picker],
+      extra: { pop: { [f.picked]: { approval: 1, fame: 1.5 }, [f.picker]: { approval: 0.2, fame: 1 } } } }) };
+  });
+  const events = [...open];
+  pickEvents.forEach((e, i) => { for (const f of refused) if (f.at === i) events.push(f.e); events.push(e); });
+  for (const f of refused) if (f.at >= pickEvents.length) events.push(f.e);
   for (const pk of r.picks) if (pk.stole) breakHeart(state, pk.stole, pk.picked, (mates(pk) ? 2 : 5) * romance(pk.stole, pk.picked) / 10);
   // Who walked in with whom, for the goodbyes after (dumpingScene): the one who
   // just chose somebody else isn't the one hugging you at the gate saying "it
@@ -498,7 +512,7 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     if (old && old !== pk.picked && !reclaim(pk) && !takenFirst.has(old) && state.villa.includes(old) && !broken(state, pk.picker, old)
       && Math.max(romance(old, pk.picker), romance(pk.picker, old)) >= 3) {
       const rec = recordSplit(state, { by: pk.picker, left: old, cause: 'moved-on', about: pk.picked, publicly: true });
-      const e = events[open.length + i];
+      const e = pickEvents[i];
       if (rec && e) {
         e.extra.splitRec = rec;
         for (const [n, d] of Object.entries(verdictPop(rec, 0.6))) e.pop[n] = { approval: (e.pop[n]?.approval || 0) + d.approval, fame: (e.pop[n]?.fame || 0) + d.fame };

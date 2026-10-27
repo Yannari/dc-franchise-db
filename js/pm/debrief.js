@@ -54,11 +54,22 @@ export function nightDebrief(state, rng, entry, pre, m) {
   // earlier (season 33: Josh picked Mia, Jordan took her back, and Josh's
   // debrief said "I thought we were solid").
   for (const e of events) {
-    if (e.kind === 'recouple-pick' && e.extra?.stole) {
+    // Taking your own partner back from whoever picked them a minute earlier is
+    // no steal (user, PM1: Freya, after Zara picked her boyfriend, "Tomorrow is
+    // going to be awful. And I'll have earned it"): she is in the right, and
+    // says so. And whoever was robbed and dumped the same night is not there to
+    // be faced in the morning (`cGone`).
+    const goneNow = n => !here(n);
+    if (e.kind === 'recouple-pick' && e.extra?.stole && e.extra?.reclaim) {
+      add(1, 'robbed', e.players[2], e.players[0], null, { since: 'tonight' });
+      add(2, 'took-back', e.players[0], e.players[2], null, { cGone: goneNow(e.players[2]) });
+    } else if (e.kind === 'recouple-pick' && e.extra?.stole) {
       const since = partnerBefore(e.players[2]) === e.players[1] ? 'before' : 'tonight';
-      add(1, 'robbed', e.players[2], e.players[0], null, { since }); add(2, 'stole', e.players[0], e.players[2]);
+      add(1, 'robbed', e.players[2], e.players[0], null, { since }); add(2, 'stole', e.players[0], e.players[2], null, { cGone: goneNow(e.players[2]) });
     }
-    if (e.kind === 'steal') { add(1, 'robbed', e.players[2], e.players[0], null, { since: 'before' }); add(2, 'stole', e.players[0], e.players[2]); }
+    // Said no at the fire pit, for a partner still to choose (recoupling.js refusals).
+    if (e.kind === 'recouple-refused') add(2, 'refused', e.players[1], e.players[0], null, { cGone: goneNow(e.players[0]) });
+    if (e.kind === 'steal') { add(1, 'robbed', e.players[2], e.players[0], null, { since: 'before' }); add(2, 'stole', e.players[0], e.players[2], null, { cGone: goneNow(e.players[2]) }); }
     // Casa Amor: who came back with somebody, and who was left.
     if (e.kind === 'casa-return' && e.extra?.choice === 'twist') {
       const left = partnerBefore(e.players[0]);
@@ -156,6 +167,8 @@ function scene(state, rng, of, a, b, c, chose = null, more = {}) {
       addBond(b, a, side > 0 ? -0.5 : 0.2);
       break;
     }
+    case 'took-back': addBond(a, c, -0.4); feel(state, a, 'security', 0.4); break;
+    case 'refused': addBond(b, a, 0.3); feel(state, a, 'stress', 0.3); break;
     case 'twisted-on': addBond(b, c, -0.6); feel(state, a, 'stress', 0.8); break;
     case 'twisted': addBond(b, a, (getBond(b, c) > getBond(b, a) ? -0.5 : 0.1)); break;
     case 'miss': feel(state, a, 'stress', 0.4); break;
@@ -172,7 +185,7 @@ function scene(state, rng, of, a, b, c, chose = null, more = {}) {
     state.secrets.push({ id: `sec${state.secrets.length + 1}`, who: a, partner: pa, with: of === 'bomb-fancy' ? c : null,
       severity: 0.6, ep: state.ep, witnesses: [b], known: false, said: true, casa: false });
   }
-  const players = c && ['robbed', 'stole', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'].includes(of) ? [a, b, c] : [a, b];
+  const players = c && ['robbed', 'stole', 'took-back', 'refused', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat'].includes(of) ? [a, b, c] : [a, b];
   return makeEvent(state, rng, { phase: 'debrief', kind: 'debrief', players, aired: true, major,
     extra: { of, where, pop, ...more, ...(chose == null ? {} : { chose }) } });
 }

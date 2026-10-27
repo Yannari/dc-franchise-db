@@ -69,7 +69,7 @@ export const KIND_LABEL = {
   'sports-captains': 'The captains', 'sports-win': 'Sports Day winners', 'sports-sore': 'Sore losers', headline: 'The headline',
   blowup: 'It kicks off', 'pile-in': 'Taking sides', 'villa-divided': 'The villa divided', 'cold-shoulder': 'The cold shoulder', 'clear-the-air': 'Clearing the air',
   'bed-share': 'Lights out', vent: 'Letting off steam', apology: 'The apology', reunite: 'Back together', 'apology-rejected': 'Not this time',
-  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
+  steal: 'A steal', 'final-recoupling': 'The final recoupling', 'challenge-rules': 'How it works', 'date-text': 'I got a text!', 'date-picked': 'The dates', 'date-back': 'Back from the date', 'recouple-pick': 'The recoupling', 'recouple-refused': 'Turned down', 'dump-buildup': 'At risk', 'dump-verdict': 'Dumped',
   'dump-text': 'I got a text!', 'vote-safe': 'Everyone is safe', 'hideaway-text': 'I got a text!', 'recouple-text': 'I got a text!', 'final-open': 'The final vote', 'rule-open': 'How tonight works', 'game-kiss': 'The kiss', 'tod-truth': 'Truth', 'reunion-open': 'The reunion', 'reunion-winners': 'The winners', 'reunion-close': 'Goodnight', 'recouple-nerves': 'Getting ready', 'recouple-open': 'The recoupling', 'recouple-single': 'Left single', 'recouple-first': 'First choice', 'casa-text': 'I got a text!', 'casa-goodbye': 'The goodbye', 'casa-explain': 'Casa Amor', 'hideaway-vote': 'The Hideaway vote', 'hideaway-win': 'The Hideaway', 'hideaway-snub': 'Not one vote', 'hideaway-morning': 'The morning after', 'dump-nerves': 'Getting ready', 'dump-open': 'The fire pit', 'dump-recap': 'The host', 'dump-safe': 'Safe', 'dump-plea': 'Making their case', 'dump-decide': 'The decision',
   'ballot-reveal': 'The vote', 'dump-reaction': 'The reaction', 'dump-goodbye': 'Goodbye', 'dump-fallout': 'Fallout',
   'casa-return': 'Stick or twist', photos: 'The photos', declaration: 'The declaration', 'final-result': 'The result',
@@ -186,6 +186,7 @@ const POPS = {
   date: [[1, 'Attraction +', '', 'heart']],
   steal: [[0, 'Steal!', 'gold', 'spark'], [2, 'Stolen from', 'red', 'crack']],
   'recouple-pick': [[1, 'Chosen', 'gold', 'heartW']],
+  'recouple-refused': [[1, 'Said no', 'gold', 'heartW'], [0, 'Turned down', 'red', 'crack']],
   'step-forward': [[1, 'Chosen', 'gold', 'heartW']], 'step-choose': [[1, 'Chosen', 'gold', 'heartW']],
   'step-back': [[0, 'Passed over', 'down', 'crack']],
   'dump-verdict': [[0, 'Dumped', 'red', 'crack']],
@@ -733,7 +734,7 @@ const DRAWN_BY_FINAL = new Set(['final-result', 'envelope', 'final-open', 'final
 // to come, each line cut off before it lands. A teaser never shows how
 // anything ends — no verdict, no pick, no goodbye, nothing that didn't air.
 const NO_TEASE = new Set(['dump-at-risk', 'dump-buildup', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-recap', 'dump-nerves', 'debrief', 'villa-divided', 'clear-the-air', 'dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles', 'dump-reaction', 'dump-goodbye',
-  'dump-fallout', 'recouple-pick', 'steal', 'final-result', 'envelope', 'save-tie', 'dump-tie', 'walk', 'ballot-reveal', 'save-vote',
+  'dump-fallout', 'recouple-pick', 'recouple-refused', 'steal', 'final-result', 'envelope', 'save-tie', 'dump-tie', 'walk', 'ballot-reveal', 'save-vote',
   'top-couple-pick', 'reveal', 'result', 'stick-or-twist', 'casa-return', 'immunity-win', 'couples-vote', 'ex-ballot']);
 const TEASE = new Set(['argument', 'gossip', 'pull', 'entrance', 'group-entrance', 'head-turned', 'jealous-confront',
   'confession', 'hideaway', 'photos', 'movie-night', 'dump-text', 'dump-open', 'challenge-kiss', 'exclusive-ask',

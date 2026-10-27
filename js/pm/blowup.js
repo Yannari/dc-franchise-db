@@ -62,7 +62,9 @@ function grievances(state, tonight = []) {
     }
     if (e.kind === 'photos') { const k = e.extra?.of === 'kiss'; add(p[0], p[1], 2.5 * fade, 'cheating', 'partner', k); const r = e.extra?.faces?.[1]; if (r) add(p[0], r, 3 * fade, 'cheating', 'rival', k, p[1]); }
     // A steal names who was taken ('took'), so "you just took them" says who.
-    if (e.kind === 'recouple-pick' && e.extra?.stole) add(p[2], p[0], 3 * fade, 'steal', 'took', false, p[1], 'recoupling');
+    // (Taken back: the one who had them first has the row with whoever picked them.)
+    if (e.kind === 'recouple-pick' && e.extra?.stole && e.extra?.reclaim) add(p[0], p[2], 2 * fade, 'steal', 'took', false, p[1], 'recoupling');
+    else if (e.kind === 'recouple-pick' && e.extra?.stole) add(p[2], p[0], 3 * fade, 'steal', 'took', false, p[1], 'recoupling');
     if (e.kind === 'steal') add(p[2], p[0], 3 * fade, 'steal', 'took', false, p[1]);
     if (e.kind === 'casa-react' && ['devastated', 'turned'].includes(e.extra?.of)) { add(p[0], p[1], 3 * fade, 'casa', 'partner'); if (p[2]) add(p[0], p[2], 2.5 * fade, 'casa', 'rival', false, p[1]); }
     if (e.kind === 'gossip') add(p[2], p[0], 1.5 * fade, 'told');   // the one exposed, at the teller

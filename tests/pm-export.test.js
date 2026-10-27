@@ -61,6 +61,38 @@ describe('the season document', () => {
     // The article's ledger reads it without a branch of its own.
     expect(roundLedger(doc).length).toBe(rows.length);
   });
+  it('the wiki writer gets every couple in order, as the season had them', () => {
+    // User, 2026-10-27: "an ai that will read all the episodes for the wiki …
+    // couple, recoupling, separation, rekindle". The writer is handed each
+    // islander's couples with the episodes they stood (js/pm/export.js
+    // pmStories), checked here against the couples every episode recorded.
+    const { doc, rows } = season(2);
+    for (const p of doc.placements) {
+      for (const s of p.pm.couples) {
+        const on = rows.filter(r => r.moment !== 'final' && r.moment !== 'reunion' && (r.pm.couples || []).some(c => c.includes(p.name) && c.includes(s.with)));
+        expect(on.length, `${p.name} & ${s.with}`).toBeGreaterThan(0);
+        expect(on[0].num, `${p.name} & ${s.with} from`).toBeLessThanOrEqual(s.from);
+        if (s.to) expect(s.how, `${p.name} & ${s.with}: how it ended`).toBeTruthy();
+      }
+      expect(p.timeline.length, p.name).toBeGreaterThan(0);
+    }
+    // A night's own facts, never a tally of picks as if they were votes against.
+    const recoupling = roundLedger(doc).find((r, i) => doc.votingHistory[i].votes.some(v => v.channel === 'recoupling'));
+    expect(recoupling.facts.some(f => /picked/.test(f))).toBe(true);
+    expect(recoupling.facts.some(f => /^votes:/.test(f))).toBe(false);
+  });
+  it('taking your own partner back is not a steal, for the writer or the stats', () => {
+    for (const seed of [1, 2, 3]) {
+      const { doc, rows } = season(seed);
+      for (const h of doc.votingHistory) for (const st of h.steals.filter(x => x.reclaim)) {
+        expect(h.facts.join(' ')).not.toMatch(new RegExp(`${st.by} stole`));
+      }
+      const back = rows.flatMap(r => r.pm.events).filter(e => e.kind === 'recouple-pick' && e.extra?.reclaim);
+      for (const e of back) expect(pmCareerStats(rows, e.extra.stole).timesStolen).toBe(
+        rows.flatMap(r => r.pm.events).filter(x => (x.kind === 'steal' && x.players[2] === e.extra.stole)
+          || (x.kind === 'recouple-pick' && x.extra?.stole === e.extra.stole && !x.extra.reclaim)).length);
+    }
+  });
   it('the twists that played, in the catalogue\'s names', () => {
     const { doc, rows } = season(1);
     const dumps = rows.filter(r => r.pm.dumpFormat).length;

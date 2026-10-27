@@ -87,6 +87,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'hasWith', 'seen', 'casa', 'light', 'closedOff', 'sincere', 'spark', 'bFeels', 'believed', 'dayOne', 'side',
   // Casa Amor: who this scene concerns is in the other villa, and which villa it is in
   'paAway', 'pbAway', 'cAway', 'dAway', 'xAway', 'atCasa',
+  // who a debrief is about has left the show tonight: talked about, never faced tomorrow
+  'cGone',
   // the storylines (pm/threads.js): which story a beat is in, and what a group chat is about
   'story', 'subj', 'final', 'score', 'paKissed', 'lowScore', 'choosing', 'said', 'bSour',
   // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null

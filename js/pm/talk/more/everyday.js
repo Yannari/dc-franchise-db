@@ -331,7 +331,7 @@ export const DEBRIEF_MORE = {
         ['b', "You deserved so much better than that. Honestly. Anyone who can stand up and do that in front of everyone isn't someone you'd want anyway. I know it doesn't feel like that tonight. It will."],
         ['a', "I hope you're right."],
       ] },
-      { when: { of: 'stole' }, turns: [
+      { when: { of: 'stole', cGone: [undefined, false] }, turns: [
         ['b', "I'm not going to judge you. Everyone in this villa would do the same if they felt it. Just be ready for tomorrow, because it's going to be awkward."],
         ['a', "I know. I'm ready."],
       ] },

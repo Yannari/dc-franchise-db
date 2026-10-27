@@ -420,6 +420,15 @@ export const FIREPIT_LINES = {
     { id: "rf.m1", when: { of: "many" }, turns: [["dior", "Before we start. Our newest islanders will choose first tonight, before anyone else. {a}, {b}, and everyone else who's just arrived, you're up."]], beat: "The new faces look at each other along the bench." },
     { id: "rf.m2", when: { of: "many" }, turns: [["dior", "Everyone who's just walked into this villa chooses first tonight. {a}, you'll start us off. Then {b}, and the rest of the new arrivals."]], beat: "A few couples on the benches hold on to each other a little tighter." },
   ],
+  // Picked away from a partner who has not chosen yet, and saying no (recoupling.js refusals).
+  // [a] the one choosing, [b] the one who says no, [c] the partner b is waiting for.
+  'recouple-refused': [
+    { id: "rrf.1", stage: "{a} stands up and says {b}'s name.", turns: [["dior", "{b}, you've been chosen. Will you join {a}?"], ["b", "I'm sorry, {a}. I can't. I'm with {c}, and I'm staying with {c}."]], beat: "{c} puts both hands over {c.posAdj} mouth." },
+    { id: "rrf.2", stage: "{a} picks {b}. {b} doesn't get up from the bench.", turns: [["b", "No. I'm sorry. {c} hasn't chosen yet, and I want {c} to have the chance."], ["a", "Right. Okay."]], beat: "{a} stands there while the host asks {a.obj} to choose again." },
+    { id: "rrf.3", turns: [["a", "I'd like to couple up with {b}. I think there's something there, and I want to find out what."], ["b", "That's really kind. But no. I know exactly where I want to be."]], beat: "Every head on the benches turns to {c}." },
+    { id: "rrf.4", stage: "{a} says {b}'s name, and the fire pit goes quiet.", turns: [["dior", "{b}?"], ["b", "I'm going to say no. I'm waiting for {c}."]], beat: "Somebody gasps. {a} has to choose again, in front of everyone." },
+    { id: "rrf.5", turns: [["a", "{b}. It's {b}."], ["b", "{a}, I'm sorry. I'm not standing up."], ["dior", "{a}, {b} has turned you down. You'll need to choose somebody else."]], beat: "{a} nods, and doesn't look at {c} once." },
+  ],
   'recouple-single': [
     { id: "rsg.1", stage: "{a} is the only one left standing.", turns: [["dior", "{a}, you're single tonight. You're not going anywhere, but you are very vulnerable."], ["a", "I'll take it. For now."]] },
     { id: "rsg.2", stage: "Every couple is on the bench, and {a} is standing alone.", turns: [["a", "Well. That's embarrassing."], ["dior", "You're staying, {a}. But you'll have to graft."]] },

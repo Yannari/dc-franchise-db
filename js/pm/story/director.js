@@ -62,7 +62,7 @@ export const AFTER_OF = {
   pull: 'pull', loyalty: 'knocked-back', kiss: 'kiss', 'challenge-kiss': 'game-kiss', 'game-kiss': 'game-kiss',
   argument: 'row', 'jealous-confront': 'row', 'told-confront': 'row', 'stirrer-confront': 'row', blowup: 'row', 'rival-row': 'row', 'feud-confront': 'row',
   gossip: 'told', confession: 'told', entrance: 'arrival', 'group-entrance': 'arrival', 'return-entrance': 'arrival',
-  date: 'date', 'recouple-pick': 'recoupling', steal: 'recoupling', hideaway: 'hideaway', ick: 'ick',
+  date: 'date', 'recouple-pick': 'recoupling', 'recouple-refused': 'recoupling', steal: 'recoupling', hideaway: 'hideaway', ick: 'ick',
   'casa-return': 'casa', photos: 'casa', 'movie-clip': 'movie', 'bed-share': 'bed', 'head-turned': 'head-turned',
   'close-off': 'closed', 'exclusive-ask': 'closed', 'official-ask': 'official', 'love-said': 'love',
   'dump-verdict': 'dumping', 'dump-verdict-couple': 'dumping', 'dump-verdict-singles': 'dumping', 'ballot-reveal': 'vote',

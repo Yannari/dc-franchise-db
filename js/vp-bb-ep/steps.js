@@ -31,6 +31,8 @@ import { ssFinalScreens } from './ss-final.js';
 import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssPlace } from './ss-stage.js';
 import { ssArrange } from './ss-episode.js';
+import { ssVoiceMomentScreen } from './ss-voice-moments.js';
+import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3050,7 +3052,7 @@ function ssMissionScreen(act, ctx) {
   /** @type {BB.Step[]} */ const steps = [
     ssv(`${listOf(m.holders || [])}, please come to the confessional.`),
     ssv(`The Voice has a secret mission for you. ${m.text}`, { toast: ['SECRET MISSION', '#e0b84a'] }),
-    ssv(`If you succeed before the prime, you win ${euros(m.reward)}${(m.holders || []).length > 1 ? ' each' : ''}. Remember the fifth commandment: nobody may know this mission exists.`),
+    ssv(`If you succeed before the prime, you win ${euros(m.reward)}${(m.holders || []).length > 1 ? ' each' : ''}. And nobody may know this mission exists.`),
     // The mission's own line (js/ss/missions.js `say`); part 3 writes the full scenes.
     { k: 'dr', by: a, t: m.say || pickBy(["Challenge accepted.", 'This is going to be so much fun.', "I'm not saying no to the Voice."], k) },
   ];
@@ -3519,8 +3521,11 @@ function ssPrimeScreens(act, ctx, host) {
   // week's package, the studio (with last week's eliminated on the couch), the nominees, the house live,
   // the kitty board, the segments, the Golden Buzz; then the verdict, the walk, After Secret
   const MORE = { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow };
+  // ...and the night's packages between the live segments, each with its title card (vp-bb-ep/ss-magneto.js)
+  const mag = ssMagnetoScreens(act, ctx, host);
   const out = [ssVoiceAddressScreen(act, ctx, MORE), ssWeekPackageScreen(act, ctx, MORE), ssPrimeOpenScreen(act, ctx, host),
-    ssAirlockScreen(act, ctx, host), ssLiveChatScreen(act, ctx, host), ssKittyBoardScreen(act, ctx, host, MORE)];
+    mag.hunt || mag.love, ssLiveChatScreen(act, ctx, host), mag.noms, ssAirlockScreen(act, ctx, host), ssKittyBoardScreen(act, ctx, host, MORE),
+    mag.hunt && mag.love ? mag.love : mag.clash];
   for (const seg of act.segments || []) {
     if (seg.kind === 'mission') for (const r of seg.results || []) out.push(ssMissionResultScreen(r, ctx));
     else if (seg.kind === 'return') out.push(ssReturnScreen(seg, ctx, host));
@@ -3557,7 +3562,9 @@ function ssVerdictScreen(act, ctx, host) {
   if (friend) steps.push({ k: 'say', by: friend, t: pickBy([`${ev}, I love you! I'll see you outside!`, `We'll finish this for you, ${ev}!`, `${ev}! You were the best thing in this house!`], `${k}|f`) });
   steps.push({ k: 'say', by: ev, push: true, t: pickBy(["Thank you, all of you. Keep your secrets. Play hard.", "I love you guys. Look after each other.", `${ctx.week <= 1 ? 'Seven days' : `${ctx.week} weeks`}, and the best of my life. Win it, one of you.`], `${k}|bye`) },
     { k: 'beat', t: `${listOf(saved)} ${saved.length === 1 ? 'goes' : 'go'} back into the house to a pile of hugs. The airlock closes on ${ev}.`, exit: ev });
-  return ssLive(ctx, { id: `bb-ss-prime-verdict-w${ctx.week}`, ...AIRLOCK, title: 'The Verdict', label: 'The Verdict', sub: listOf(noms), cast: noms.map((n, i) => [n, 30 + i * 22]), steps });
+  return ssLive(ctx, { id: `bb-ss-prime-verdict-w${ctx.week}`, ...AIRLOCK, title: 'The Verdict', label: 'The Verdict', sub: listOf(noms),
+    // side by side in the airlock, holding hands (the real verdict; the user's reference)
+    cast: noms.map((n, i, a) => [n, Math.round(50 + (i - (a.length - 1) / 2) * 12.5)]), hands: true, steps });
 }
 
 // THE WALK and the INTERVIEW on the set; the secret the house never found.
@@ -5435,6 +5442,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
+      case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-black-buzzer': flush(); ceremony(ssBlackBuzzerScreen(act, ctx, { ssv })); break;
       case 'ss-journeys': flush(); for (const scr of (act.facts ? ssFinalScreens(act, ctx, { ssv, listOf, euros, pickBy, pronouns }) : [ssJourneysScreen(act, ctx)])) ceremony(scr); break;
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;

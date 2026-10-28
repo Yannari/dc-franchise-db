@@ -33,6 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
+import { voiceMoments } from '../ss/voice-moments.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
@@ -459,6 +460,16 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
           ? ev.statements.filter(s => s.raised.length).slice(0, 3).map(s => ({ text: `The Voice's "Oops" night: "${s.text}" ${s.raised.map(r => r.who).join(' and ')} ${s.raised.length > 1 ? 'raise' : 'raises'} the sign.`, players: s.raised.map(r => r.who).slice(0, 4), badgeText: 'OOPS NIGHT', badgeClass: 'gold', part: 'evening' }))
           : ev.rounds.map(r => ({ text: `Mini-secrets: the Voice reveals that somebody ${r.fact}. ${r.first} buzzes ${r.guess}: ${r.right ? `right, and wins $${r.money}` : `wrong, and loses $${r.money}`}.`, players: [r.first, r.subject], badgeText: 'MINI-SECRETS', badgeClass: r.right ? 'gold' : 'red', part: 'evening' })) });
     }
+  }
+  // The Voice between the house and the world (js/ss/voice-moments.js): a paid mission, the red phone round the
+  // house, a present from the public, the red room, a birthday, a letter from home, a telling-off.
+  for (const m of voiceMoments(state, ctx, { house: room })) {
+    applyFx(m.effects);
+    const { effects, ...rest } = m;
+    void effects;
+    acts.push({ type: 'ss-voice-moment', week: ctx.week, ...rest,
+      beats: [{ text: `The Voice: ${m.kind === 'poll' ? `the red phone asks ${m.q}, round the house` : m.kind === 'present' ? `${m.who} gets a present from the public` : m.kind === 'scold' ? `${m.who} is told off: ${m.text}` : m.kind === 'birthday' ? `${m.who}'s birthday` : m.kind === 'letter' ? `a letter from home for ${m.who}` : `a mission for ${m.who}${m.other ? ` and ${m.other}` : ''}, ${m.ok ? 'done' : 'failed'}`}.`,
+        players: [m.who, m.other].filter(Boolean), badgeText: 'THE VOICE', badgeClass: 'gold', part: 'voice' }] });
   }
   // The black buzzer: hidden by the Voice; the finder is immune and names a nominee (before the nominations).
   if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {

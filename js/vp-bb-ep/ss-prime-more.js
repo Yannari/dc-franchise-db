@@ -33,7 +33,7 @@ export function ssWeekPackageScreen(act, ctx, H) {
   const { listOf, euros } = H;
   const acts = ctx.row?.acts || [];
   const noms = act.nominees || [];
-  /** @type {any[]} */ const steps = [{ k: 'beat', t: 'This week in the House of Secrets.', toast: ['THIS WEEK', '#e0b84a'] }];
+  /** @type {any[]} */ const steps = [{ k: 'beat', t: 'This week in the House of Secrets.', magneto: { title: 'This Week', sub: 'In the House of Secrets', n: 0 } }];
   const said = [];
   const clues = acts.filter(a => a?.type === 'ss-clue').map(a => a.clue).filter(Boolean);
   if (clues.length) said.push(clues.length === 1 ? `A clue went on the living-room table: ${clues[0]}.` : `${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.`);

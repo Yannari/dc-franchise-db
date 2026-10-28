@@ -38,9 +38,9 @@ export const SS_PART_LABEL = { launch: 'Launch Night', daily: 'The Days', prime:
 
 // ── folding the Voice's little moments into house life ──
 // (a sanction, a clue, a mission given, the store, the masters' pick: 3 to 7 clicks each, a screen of their own)
-const FOLD = /^bb-ss-(rule|clue|houseclue|mission|role|store|houseend)-/;
+const FOLD = /^bb-ss-(rule|clue|houseclue|mission|role|store|houseend|vm)-/;
 const GATHER = /\b(everybody|everyone|housemates)\b[^.?!]*\bliving room\b/i;
-const MOOD_OF = id => (/^bb-ss-rule-/.test(id) ? 'ceremony' : /^bb-ss-(clue|houseclue)-/.test(id) ? 'secret' : /^bb-ss-(mission|role)-/.test(id) ? 'mission' : /^bb-ss-store-/.test(id) ? 'store' : 'house');
+const MOOD_OF = id => (/^bb-ss-vm-(birthday|letter)-/.test(id) ? 'love' : /^bb-ss-vm-/.test(id) ? 'fun' : /^bb-ss-rule-/.test(id) ? 'ceremony' : /^bb-ss-(clue|houseclue)-/.test(id) ? 'secret' : /^bb-ss-(mission|role)-/.test(id) ? 'mission' : /^bb-ss-store-/.test(id) ? 'store' : 'house');
 function asScene(F) {
   const house = (F.wall || []).filter(Boolean);
   const gather = (F.steps || []).some(st => typeof st.t === 'string' && GATHER.test(st.t)) && house.length;
@@ -84,11 +84,13 @@ export function ssArrange(out, row, o) {
     const F = out[i];
     const id = String(F.id || '');
     const pz = prime0();
-    if (!FOLD.test(id) || (pz >= 0 && i > pz) || (F.steps || []).length > 7) continue;
+    // (the Voice's moments always go into house life, however many lines; the rest only when they are short)
+    if (!FOLD.test(id) || (pz >= 0 && i > pz) || (F.steps || []).length > (/^bb-ss-vm-/.test(id) ? 16 : 7)) continue;
     let host = -1;
-    for (let j = i - 1; j >= 0 && host < 0; j--) { if (out[j].kind === 'houselife') host = j; else if (!FOLD.test(String(out[j].id || '')) && out[j].kind !== 'scene') break; }
+    // (back through up to three other screens of the days, never into launch night)
+    for (let j = i - 1, seen = 0; j >= 0 && host < 0 && seen <= 3; j--) { if (out[j].kind === 'houselife') host = j; else if (/^bb-ss-(launch|secrets-v|previously)/.test(String(out[j].id || ''))) break; else if (!FOLD.test(String(out[j].id || ''))) seen++; }
     let before = false;
-    if (host < 0) for (let j = i + 1; j < out.length && host < 0; j++) { if (out[j].kind === 'houselife') { host = j; before = true; } else if (!FOLD.test(String(out[j].id || ''))) break; }
+    if (host < 0) for (let j = i + 1, seen = 0; j < out.length && host < 0 && seen <= 3; j++) { if (out[j].kind === 'houselife') { host = j; before = true; } else if (/^bb-ss-prime-/.test(String(out[j].id || ''))) break; else if (!FOLD.test(String(out[j].id || ''))) seen++; }
     if (host < 0) continue;
     const steps = (F.steps || []).map((st, k) => (k === 0 ? { ...st, scene: asScene(F) } : st));
     const H = out[host];

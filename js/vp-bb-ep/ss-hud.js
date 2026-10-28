@@ -203,6 +203,17 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
       <div class="ssls-row ${r.new ? 'new' : ''} g${i % 4}" style="--i:${i}">${r.who ? `<span class="ssls-who"><span class="ssls-f" style="--c:${H.col(r.who)}">${H.img(r.who)}</span><em>${esc(r.who)}</em></span>` : ''}<span class="ssls-p">${esc(r.text)}</span></div>`).join('')}</div>
       <img class="ssls-eye" src="${EYE}" alt=""></div>`;
   }
+  // the nominees in the airlock, holding hands: one ribbon of hands across the line of them
+  if (S.hands && Array.isArray(S.cast) && S.cast.length > 1 && !st.out) {
+    const p = S.cast.map(c => Number(c[1]) || 50).sort((x, y) => x - y);
+    h += p.slice(1).map((x, i) => `<i class="ssha" style="left:${(p[i] + x) / 2}%;--i:${i}"></i>`).join('');
+  }
+  // a package's title card (the real prime's "magnéto"): it fills the screen, then the tape rolls
+  if (st.magneto) {
+    const M = st.magneto;
+    h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div><img class="ssmg-eye" src="${EYE}" alt="">
+      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}<b class="ssmg-t">${esc(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
+  }
   // the call to vote: every nominee under a big number, and how to vote
   if (st.votecall) {
     const V = st.votecall;
@@ -473,6 +484,21 @@ export const SS_CSS = `
 .sso.fresh{animation:ss-signup .55s calc(var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
 @keyframes ss-signup{from{transform:translateX(-50%) translateY(6cqw) rotate(-12deg);opacity:0}}
 /* (under the dialogue box: the host reads it, the line stays on top) */
+.ssha{position:absolute;bottom:19.4cqw;width:2.2cqw;height:2.2cqw;margin-left:-1.1cqw;z-index:12;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#ffc2df 60%,#ff3ea5);box-shadow:0 0 0 .2cqw #fff,0 0 1.2cqw rgba(255,62,165,.8);animation:ss-fade .6s calc(var(--i) * .12s) both}
+.ssmg{position:absolute;inset:0;z-index:26;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4cqw;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 45%,#ff3ea5 0%,#c8137a 30%,#5b0d4f 62%,#1a0626 100%)}
+.ssmg-rays{position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.1) 0 6deg,transparent 6deg 15deg);animation:sst-spin 30s linear infinite}
+.ssmg-eye{position:absolute;width:44cqw;opacity:.12;filter:blur(.2cqw)}
+.ssmg-tag{position:relative;font:800 1.2cqw 'SSNunito',sans-serif;letter-spacing:.4em;color:#fff;background:rgba(0,0,0,.35);padding:.5cqw 1.4cqw;border-radius:2cqw;box-shadow:0 0 0 .15cqw rgba(255,255,255,.5)}
+.ssmg-t{position:relative;max-width:84%;text-align:center;font:700 6.4cqw/1 'SSFredoka',sans-serif;color:#fff;text-transform:uppercase;letter-spacing:.02em;
+  text-shadow:.4cqw .4cqw 0 #c8137a,-.15cqw -.15cqw 0 #19d3c5,0 0 3cqw rgba(255,255,255,.55)}
+.ssmg-s{position:relative;font:800 1.7cqw 'SSNunito',sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#ffe14d}
+.ssmg.fresh .ssmg-t{animation:ssmg-in .9s cubic-bezier(.2,1.3,.4,1) both}
+.ssmg.fresh .ssmg-s,.ssmg.fresh .ssmg-tag{animation:ss-fade .6s .5s both}
+.ssmg.fresh{animation:ssmg-flash .5s ease-out}
+@keyframes ssmg-in{0%{opacity:0;transform:scale(2.4);filter:blur(1cqw)}60%{opacity:1;filter:blur(0)}100%{transform:scale(1)}}
+@keyframes ssmg-flash{0%{filter:brightness(3)}100%{filter:brightness(1)}}
+@keyframes sst-spin{to{rotate:360deg}}
 .ssls,.ssvc{position:absolute;inset:0;z-index:24;overflow:hidden;display:flex;flex-direction:column;align-items:center}
 .ssls-sky,.ssvc-sky{position:absolute;inset:0;background:
   radial-gradient(ellipse 38% 22% at 12% 92%,#fff 0 40%,transparent 70%),radial-gradient(ellipse 34% 20% at 88% 96%,#ffe9f6 0 40%,transparent 70%),

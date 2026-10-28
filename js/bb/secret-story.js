@@ -35,13 +35,14 @@ import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
+import { secretRoomDilemma } from '../ss/secret-room.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { throwParty, runSuperette } from '../ss/parties.js';
-import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack } from '../ss/hidden.js';
+import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, planFakes, fakePlanFor, usePlan } from '../ss/hidden.js';
 import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
@@ -277,10 +278,11 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     let past = [];
     try { past = Object.values(activeSeasons() || {}).map(r => r?.ssDraw).filter(Boolean); } catch { past = []; }
     const locks = { signature: seasonConfig?.ssSignature || undefined,
-      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'on' : seasonConfig?.ssSecretRoom === 'off' ? 'off' : undefined };
+      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : undefined };
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
-    (st0.plan ||= {}).secretRoomWeek = st0.draw.secretRoomWeek;
+    // the season's fake eliminations: how many, which kind, how long, and what they do up there (js/ss/hidden.js)
+    planFakes(st0, { castSize: room.length, level: st0.tools.secretRoom === 'on' ? 'once' : st0.tools.secretRoom, rng, first: st0.draw.secretRoomWeek });
     // the signature's pair, chosen by the Voice tonight
     castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
     // the secret of the house, hidden for the whole season (js/ss/final.js)
@@ -381,7 +383,14 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   for (const w of watchFromSecretRoom(state, ctx, { house: room })) {
     for (const h of w.heard) { try { addBond(w.name, h.who, h.d); } catch { /* no bond */ } }
     pub(w.name, 'arc', 0.2, 'watched the house from the secret room');
-    acts.push({ type: 'ss-secret-room', week: ctx.week, who: w.name, moments: w.moments, heard: w.heard,
+    if (w.masterPick) { pub(w.name, 'game', 0.2, 'nominated from the secret room'); pub(w.masterPick, 'pity', 0.1, 'was nominated from the secret room'); }
+    if (w.order) {
+      try { addBond(w.name, w.order.accomplice, 0.8); } catch { /* no bond */ }
+      pub(w.order.accomplice, 'game', 0.12, 'ran the secret room\'s orders');
+      // a slip: the house does not know, but somebody noticed something
+      if (w.order.slip && w.order.other) { try { addBond(w.order.other, w.order.accomplice, -0.6); } catch { /* */ } pub(w.order.accomplice, 'fun', 0.1, 'nearly gave the secret room away'); }
+    }
+    acts.push({ type: 'ss-secret-room', week: ctx.week, who: w.name, moments: w.moments, heard: w.heard, role: w.role, masterPick: w.masterPick, order: w.order, accomplice: w.accomplice, partner: w.partner, first: w.first,
       beats: [{ text: `Upstairs in the secret room, ${w.name} watches the house on the screens.`, players: [w.name], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'secret-room' }] });
   }
   // A mission is played through the week; a seduction or a nightmare moves a bond.
@@ -473,6 +482,19 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     acts.push({ type: 'ss-voice-moment', week: ctx.week, ...rest,
       beats: [{ text: `The Voice: ${m.kind === 'poll' ? `the red phone asks ${m.q}, round the house` : m.kind === 'present' ? `${m.who} gets a present from the public` : m.kind === 'scold' ? `${m.who} is told off: ${m.text}` : m.kind === 'birthday' ? `${m.who}'s birthday` : m.kind === 'letter' ? `a letter from home for ${m.who}` : `a mission for ${m.who}${m.other ? ` and ${m.other}` : ''}, ${m.ok ? 'done' : 'failed'}`}.`,
         players: [m.who, m.other].filter(Boolean), badgeText: 'THE VOICE', badgeClass: 'gold', part: 'voice' }] });
+  }
+  // THE SECRET ROOM, the Voice's room of dilemmas (js/ss/secret-room.js): most weeks somebody is called up alone
+  // and offered a trade that somebody else pays for. Before the nominations, which read what it wrote.
+  if (ctx.week >= 1 && rng() < (state.tools?.dilemmas === 'many' ? 0.75 : 0.55)) {
+    const d = secretRoomDilemma(state, ctx, { house: room, immune: [...((state.nextImmune || {})[ctx.week] || [])] });
+    if (d) {
+      applyFx(d.effects);
+      const { effects, ...rest } = d;
+      void effects;
+      acts.push({ type: 'ss-room-dilemma', week: ctx.week, ...rest,
+        beats: [{ text: `In the secret room, the Voice offers ${d.to} a trade (${d.kind.replace(/-/g, ' ')}). ${d.to} ${d.accepted ? 'takes it' : 'refuses'}.`,
+          players: [d.to, d.named].filter(Boolean), badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'secret-room' }] });
+    }
   }
   // The week's big house event (js/ss/house-events.js): the house mission, the housework in uniform, Miss and
   // Mister Secret, the clan war, a secret room found.
@@ -575,6 +597,22 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // The night's segments (js/ss/prime.js): every one has consequences, applied
   // here, BEFORE the lines close, so the public votes on what it just watched.
   const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  // THE FAKE VOLUNTARY DEPARTURE (js/ss/hidden.js, S6, S7): the Voice offers a housemate their kitty to walk out of
+  // the game, on air. They take it, say goodbye, walk out the door, and climb the stairs. The verdict stays real.
+  {
+    const plan = fakePlanFor(state, ctx.week, room.length);
+    if (plan?.kind === 'voluntary') {
+      const who = room.filter(n => !nominees.includes(n))
+        .sort((a, b) => (st(b, 'boldness') + st(b, 'strategic') * 0.5 + rng() * 4) - (st(a, 'boldness') + st(a, 'strategic') * 0.5 + rng() * 4))[0];
+      if (who) {
+        state.pendingVoluntary = who;
+        state.pendingVoluntaryPlan = { weeks: plan.weeks, role: plan.role };
+        usePlan(plan, 'voluntary');
+        /** @type {any[]} */ (night.segments).push({ kind: 'voluntary', to: who, kitty: Number(state.kitty?.[who]) || 0, effects: { bond: [], pop: [] } });
+        pub(who, 'fun', 0.2, 'walked out of the game on the prime');
+      }
+    }
+  }
   // THE SEMI PRIME (js/ss/final.js): the hunt closes, the secrets nobody found are unveiled and paid.
   if (room.length <= (Number(seasonConfig?.finaleSize) || 3) + 1 && !state.huntClosed) {
     const unveiled = unveilSecrets(state, ctx, { house: room });
@@ -600,7 +638,10 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // list now, so the week engine's roster keeps them (a late arrival keeps the seat it was given).
   for (const b of bringBack(state, ctx, { house: room })) {
     gs.activePlayers = [...new Set([...(gs.activePlayers || []), b.name])];
-    /** @type {any[]} */ (night.segments).unshift({ kind: 'return', ...b, effects: { bond: [...b.glad.map(n => [b.name, n, -1]), ...b.mourners.map(n => [b.name, n, 1])], pop: [] } });
+    // (the accomplice knew all along: the house was lied to; the one upstairs owes them)
+    const acc = b.accomplice ? [[b.name, b.accomplice, 1.5], ...room.filter(n => n !== b.accomplice && n !== b.name).slice(0, 4).map(n => [n, b.accomplice, -0.4])] : [];
+    if (b.accomplice) pub(b.accomplice, 'game', 0.25, `kept ${b.name}'s secret room from the house`);
+    /** @type {any[]} */ (night.segments).unshift({ kind: 'return', ...b, effects: { bond: [...b.glad.map(n => [b.name, n, -1]), ...b.mourners.map(n => [b.name, n, 1]), ...acc], pop: [] } });
     pub(b.name, 'arc', 0.5, 'came back from the secret room'); pub(b.name, 'fun', 0.3, 'came back from the secret room');
     for (const n of b.glad) pub(n, 'pity', 0.05, '');
   }
@@ -655,18 +696,44 @@ function readThePublic(state, room) {
  * set, and After Secret (the host and Blaineley) reads the house to the
  * viewers. Runs on the house as it stands after the elimination.
  */
-export function afterPrime({ week = undefined, evicted = null, house = [], rng = Math.random, fake = false } = {}) {
+export function afterPrime(opts = {}) {
+  const a = afterPrimeCore(opts);
+  const state = ssState();
+  if (!a || !state) return a;
+  const hidden = a.fake ? [a.evicted, ...(a.pair ? [a.pair] : [])] : [];
+  // the voluntary departure from tonight's prime climbs the stairs too
+  const v = state.pendingVoluntary;
+  if (v && (opts.house || []).includes(v) && v !== a.evicted) {
+    const p = state.pendingVoluntaryPlan || {};
+    state.pendingVoluntary = null; state.pendingVoluntaryPlan = null;
+    const ctx = huntCtx(opts.week, opts.rng || Math.random);
+    const sent = sendToSecretRoom(state, ctx, { name: v, house: (opts.house || []).filter(n => n !== v && n !== opts.evicted), weeks: p.weeks || 1, role: p.role || 'watch', kind: 'voluntary' });
+    a.voluntary = { ...sent };
+    hidden.push(v);
+  }
+  a.hidden = hidden;
+  return a;
+}
+function afterPrimeCore({ week = undefined, evicted = null, house = [], rng = Math.random, fake = false, second = null, power = null } = {}) {
   const state = ssState();
   if (!state || !evicted) return null;
   const room = house.filter(n => n && n !== evicted);
   const ctx = huntCtx(week, rng);
   if (fake) {
     // not the studio: the secret room. The secret is NOT told; the house mourns a housemate who is upstairs.
-    const sent = sendToSecretRoom(state, ctx, { name: evicted, house: room });
+    const plan = fakePlanFor(state, ctx.week, room.length + 1) || { weeks: 1, role: 'watch' };
+    const pair = second && room.includes(second) ? second : null;
+    const kind = pair ? 'double' : power ? 'power' : 'verdict';
+    usePlan(plan, kind);
+    const left = room.filter(n => n !== pair);
+    const sent = sendToSecretRoom(state, ctx, { name: evicted, house: left, weeks: plan.weeks, role: plan.role, kind, partner: pair });
+    if (pair) sendToSecretRoom(state, ctx, { name: pair, house: left, weeks: plan.weeks, role: plan.role === 'remote' ? 'watch' : plan.role, kind, partner: evicted });
+    if (power) { try { addBond(evicted, power, -2); } catch { /* */ } pub(power, 'heat', 0.3, `eliminated ${evicted} with the Voice's power`); }
     pub(evicted, 'seen', 0.5, '');
-    const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
-    after.public = readThePublic(state, room);
-    return { type: 'ss-after', week: ctx.week, evicted, fake: true, mourners: sent.mourners, glad: sent.glad, reveal: null, after, holders: [evicted],
+    const after = afterShow(state, ctx, { evicted, house: left, popOf: n => support(state, n) });
+    after.public = readThePublic(state, left);
+    return { type: 'ss-after', week: ctx.week, evicted, fake: true, mourners: sent.mourners, glad: sent.glad, reveal: null, after, holders: [evicted, ...(pair ? [pair] : [])],
+      pair, power, role: sent.role, weeks: sent.weeks, accomplice: sent.accomplice, fakeKind: kind,
       beats: [{ text: `${evicted} is not eliminated: the Voice sends ${evicted} to the secret room. The house thinks ${evicted} has gone.`, players: [evicted], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'after' }] };
   }
   const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
@@ -737,9 +804,13 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   // week and the room, not the season's dice, so the rest of the season plays as it did.
   const roll = [...`${wk}|${room.join(',')}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 100;
   const seats = wk <= 1 || room.length < 9 ? 2 : roll < 60 ? 2 : roll < 88 ? 3 : 4;
-  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, seats: Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length)) });
+  // The secret room's trades this week (js/ss/secret-room.js): a vote taken away, a vote doubled.
+  const blocked = (state?.rules?.blockedVote?.[wk] || []).filter(n => voters.includes(n));
+  const double = (state?.rules?.doubleVote?.[wk] || []).filter(n => voters.includes(n) && !blocked.includes(n));
+  voters = voters.filter(n => !blocked.includes(n));
+  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length)) });
   const nominees = [...dOffice, ...cast.nominees];
-  return { nominees, ballots: cast.ballots, tally: cast.tally, rule, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
+  return { nominees, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
     dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
 }
 
@@ -751,7 +822,7 @@ function shares(names, rng, noise) {
 }
 
 /** The public's eviction vote: the nominee the country likes least goes. Percentages to SAVE. */
-export function secretStoryPublicVote({ nominees = [], rng = Math.random, week = undefined, houseSize = 0 } = {}) {
+export function secretStoryPublicVote({ nominees = [], rng = Math.random, week = undefined, houseSize = 0, house = [] } = {}) {
   if (!nominees.length) return null;
   // the country saves by fan base (js/ss/public.js); an old save with no file votes the old way
   const state = ssState();
@@ -762,10 +833,19 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
     const total = Object.values(s).reduce((a, b) => a + b, 0) || 1;
     percents = Object.fromEntries(nominees.map(n => [n, Math.round((s[n] / total) * 1000) / 10]));
   }
-  const evicted = nominees.slice().sort((a, b) => percents[a] - percents[b])[0];
-  // the fake elimination (js/ss/hidden.js): the verdict is read as usual; the house will believe it
-  const fake = !!state && isFakeNight(state, Number(week?.num) || 0, houseSize);
-  return { evicted, percents, saved: nominees.filter(n => n !== evicted), fake };
+  const order = nominees.slice().sort((a, b) => percents[a] - percents[b]);
+  let evicted = order[0];
+  // the fake elimination (js/ss/hidden.js): the verdict is read as usual; the house will believe it.
+  // A double sends the two lowest up together; an elimination power hands the choice to one housemate.
+  const plan = state ? fakePlanFor(state, Number(week?.num) || 0, houseSize) : null;
+  const fake = !!plan && plan.kind !== 'voluntary';
+  let second = null, power = null;
+  if (fake && plan.kind === 'double' && order.length >= 3) second = order[1];
+  if (fake && plan.kind === 'power') {
+    const holder = house.filter(n => !nominees.includes(n)).sort((a, b) => (st(b, 'strategic') + st(b, 'boldness') + rng() * 3) - (st(a, 'strategic') + st(a, 'boldness') + rng() * 3))[0];
+    if (holder) { power = holder; evicted = nominees.slice().sort((a, b) => bond(holder, a) - bond(holder, b))[0]; }
+  }
+  return { evicted, percents, saved: nominees.filter(n => n !== evicted && n !== second), fake, second, power, fakeKind: fake ? (second ? 'double' : power ? 'power' : 'verdict') : null };
 }
 
 /**

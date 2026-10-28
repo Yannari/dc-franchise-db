@@ -48,7 +48,8 @@ export const SIGNATURES = [
  */
 export const TOOLS = {
   phone: { name: 'The red phone', levels: ['none', 'some', 'often'], weights: [0.2, 0.5, 0.3] },
-  secretRoom: { name: 'The secret room', levels: ['off', 'on'], weights: [0.3, 0.7] },
+  // (how many fake eliminations: js/ss/hidden.js planFakes; an old save's 'on' plays as 'once')
+  secretRoom: { name: 'The secret room', levels: ['off', 'once', 'twice'], weights: [0.25, 0.55, 0.2] },
   truths: { name: 'The room of truths', levels: ['none', 'some', 'often'], weights: [0.35, 0.45, 0.2] },
   visits: { name: 'Visits from home', levels: ['none', 'some', 'often'], weights: [0.2, 0.55, 0.25] },
   dilemmas: { name: 'Dilemmas', levels: ['few', 'many'], weights: [0.55, 0.45] },
@@ -88,7 +89,7 @@ function drawOnce(rng, { castSize = 14, locks = {} } = {}) {
   const tools = {};
   for (const [id, t] of Object.entries(TOOLS)) tools[id] = t.levels.includes(locks[id]) ? locks[id] : weighted(t.levels, t.weights, rng);
   const last = Math.max(3, castSize - 7);
-  const secretRoomWeek = tools.secretRoom === 'on' && last >= 3 ? 3 + Math.floor(rng() * (last - 2)) : null;
+  const secretRoomWeek = tools.secretRoom !== 'off' && last >= 3 ? 3 + Math.floor(rng() * (last - 2)) : null;
   return { signature, tools, secretRoomWeek };
 }
 

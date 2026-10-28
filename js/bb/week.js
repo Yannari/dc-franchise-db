@@ -7771,7 +7771,7 @@ export function simulateBBWeek(options = {}) {
     try { for (const a of runPrime({ week, house, nominees, rng })) week.acts.push(addBeats(a, { players: [...(a.mission?.holders || a.holders || [])] })); }
     catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
   }
-  const ssPublic = ss && !week.chainDuel ? secretStoryPublicVote({ nominees, rng, week, houseSize: house.length }) : null;
+  const ssPublic = ss && !week.chainDuel ? secretStoryPublicVote({ nominees, rng, week, houseSize: house.length, house }) : null;
   if (week.chainDuel) {
     // Decided in the yard, not in the Diary Room.
     evicted = week.chainDuel.loser;
@@ -8049,7 +8049,12 @@ export function simulateBBWeek(options = {}) {
   // SECRET STORY: the secret the house never found, told on the set, and After
   // Secret. After the eviction act, never before it (the side-bet lesson below).
   if (week.ssPublic && evicted) {
-    try { const a = afterPrime({ week, evicted, house, rng, fake: !!week.ssPublic.fake }); if (a) week.acts.push(addBeats(a, { players: [evicted] })); }
+    try {
+      const a = afterPrime({ week, evicted, house, rng, fake: !!week.ssPublic.fake, second: week.ssPublic.second || null, power: week.ssPublic.power || null });
+      if (a) week.acts.push(addBeats(a, { players: [evicted] }));
+      // everybody who climbed the stairs tonight (a double, a voluntary departure) is off the house list, not eliminated
+      week.ssHiddenList = [...(a?.hidden || [])];
+    }
     catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
     // THE FAKE ELIMINATION (js/ss/hidden.js): nobody is eliminated. The housemate leaves the house list
     // (below, after the roster is rebuilt) but never joins the eliminated; they come back down next week.
@@ -8213,7 +8218,7 @@ export function simulateBBWeek(options = {}) {
   // the seat it was given.
   const walkedIn = (gs.activePlayers || []).filter(name => !house.includes(name));
   gs.activePlayers = [...house, ...walkedIn]
-    .filter(name => name !== evicted && name !== secondEvicted && name !== week.ssHidden);
+    .filter(name => name !== evicted && name !== secondEvicted && name !== week.ssHidden && !(week.ssHiddenList || []).includes(name));
   if (evicted && !gs.eliminated.includes(evicted)) gs.eliminated.push(evicted);
   if (secondEvicted && !gs.eliminated.includes(secondEvicted)) gs.eliminated.push(secondEvicted);
 

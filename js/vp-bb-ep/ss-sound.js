@@ -101,6 +101,7 @@ const BY_ID = [
   [/^bb-ss-(black-buzzer|buzz-)|^bb-ss-prime-(airlock|dil|phone|noms)/, 'ss-tension'],
   [/^bb-ss-noms/, 'ss-tension'],
   [/^bb-ss-secretroom/, 'ss-secretroom'],
+  [/^bb-ss-sroom-/, 'ss-tension'],
   [/^bb-ss-houseend/, 'ss-cliff'],
   [/^bb-ss-prime-package/, 'ss-previously'],
   [/^bb-ss-prime-open/, 'ss-prime'],

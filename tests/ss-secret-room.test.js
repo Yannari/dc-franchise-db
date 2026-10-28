@@ -50,8 +50,9 @@ describe('the secret room', () => {
     const ids = bbWeekSteps(fakeRow, { host: 'Josh' }).map(s => s.id);
     expect(ids.some(i => i.startsWith('bb-ss-secretroom-in'))).toBe(true);
     expect(ids.some(i => i.startsWith('bb-ss-prime-walk'))).toBe(false);
-    const nextIds = bbWeekSteps(rows.find(r => r.num === fakeRow.num + 1), { host: 'Josh' }).map(s => s.id);
-    expect(nextIds.some(i => i.startsWith('bb-ss-secretroom-w'))).toBe(true);
+    // (a stay is one or two weeks: js/ss/hidden.js planFakes; the week screen is named for who is up there)
+    const nextIds = rows.filter(r => r.num > fakeRow.num && r.num <= fakeRow.num + 2).flatMap(r => bbWeekSteps(r, { host: 'Josh' }).map(s => s.id));
+    expect(nextIds.some(i => /^bb-ss-secretroom-(?!in-)/.test(i))).toBe(true);
     expect(nextIds.some(i => i.startsWith('bb-ss-prime-return'))).toBe(true);
     // (told only if they are really eliminated later, never on the fake night)
     expect(gs.bb.secretStory.secrets.find(s => s.holders.includes(hidden)).revealedOnExit ?? null).not.toBe(fakeRow.num);

@@ -70,13 +70,14 @@ export function nominationWish(state, ctx, voter, cand) {
  * go to a second round among the tied (the real show did this), and a tie that
  * survives it puts all of them up.
  */
-export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {}, seats = 2 } = {}) {
+export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {}, seats = 2, double = [] } = {}) {
   const ballots = [];
   const tally = Object.fromEntries(pool.map(n => [n, 0]));
   for (const v of voters) {
     const ranked = pool.filter(n => n !== v).map(n => ({ n, ...nominationWish(state, ctx, v, n) })).sort((a, b) => b.score - a.score);
     const picks = ranked.slice(0, 2);
-    for (const p of picks) tally[p.n] = (tally[p.n] || 0) + 1;
+    // (a double vote, bought in the secret room, counts twice)
+    for (const p of picks) tally[p.n] = (tally[p.n] || 0) + (double.includes(v) ? 2 : 1);
     ballots.push({ voter: v, picks: picks.map(p => p.n), reasons: Object.fromEntries(picks.map(p => [p.n, p.reason])) });
   }
   for (const [n, k] of Object.entries(extraVotes)) if (n in tally) tally[n] += k;

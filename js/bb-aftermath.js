@@ -14,7 +14,7 @@
 // is generated from what really happened in the week — who flipped, whether the
 // flip was visible, and who the evictee had already decided to blame.
 
-import { gs, seasonConfig, players } from './core.js';
+import { gs, seasonConfig, players, seasonFormat } from './core.js';
 // shows.js and not quick-setup.js, deliberately: quick-setup imports bb-run,
 // which imports this file, so reaching for the host list where it used to live
 // would have closed a three-file cycle. The registry is a leaf and the list is
@@ -69,13 +69,16 @@ export const BB_HOST_STYLES = {
  * house's own list is honoured; anything else is the house's default.
  */
 export function bbHostName() {
-  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  // The SHOW's desk, not the engine's: Secret Story plays on the house engine
+  // and is hosted by Josh, never by Big Brother's Valeria.
+  const show = seasonFormat(seasonConfig);
+  const list = HOSTS_BY_FORMAT[show] || HOSTS_BY_FORMAT['big-brother'] || [];
   const chosen = seasonConfig.host;
   // A name typed in by hand is the author's host and stands. Only a name that
   // belongs to ANOTHER show's desk — the Total Drama default riding along —
   // is swapped for the house's own.
   const elsewhere = Object.entries(HOSTS_BY_FORMAT)
-    .some(([fmt, hosts]) => fmt !== 'big-brother' && (hosts || []).some(h => h.value === chosen));
+    .some(([fmt, hosts]) => hosts !== list && (hosts || []).some(h => h.value === chosen));
   if (chosen && (list.some(h => h.value === chosen) || !elsewhere)) return chosen;
   return list[0]?.value || 'Valeria';
 }

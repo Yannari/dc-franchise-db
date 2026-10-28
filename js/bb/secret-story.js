@@ -35,6 +35,7 @@ import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
+import { castNominations } from '../ss/nominations.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -237,7 +238,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
 
 /** The engine context the hunt reads (js/ss/hunt.js is pure). */
 export function huntCtx(week, rng) {
-  return { rng, week: Number(week?.num) || 0, stat: (n, k) => st(n, k), bond: (a, b) => bond(a, b), archetype: n => archetypeOf(n) };
+  return { rng, week: Number(week?.num) || 0, stat: (n, k) => st(n, k), bond: (a, b) => bond(a, b), archetype: n => archetypeOf(n), pop: n => pop(n) };
 }
 
 /**
@@ -332,6 +333,8 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const g = genderOf;
   let voters, pool, rule;
   const men = room.filter(n => g(n) === 'm'), women = room.filter(n => g(n) === 'f');
+  // Immunities won at last week's prime (a dilemma, the red phone) hold this week.
+  immune = [...new Set([...immune, ...((ssState()?.nextImmune || {})[wk] || [])])];
   const eligible = l => l.filter(n => !immune.includes(n));
   // The revival's rule: everybody nominates anybody.
   const mixed = ssState()?.rule === 'mixed';
@@ -350,22 +353,13 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   // ...and the Master of the House's direct nomination (revival seasons).
   const dOffice = [...new Set([...(state ? dOfficeFor(state, wk) : []), ...(direct ? [direct] : [])])].filter(n => room.includes(n));
   pool = pool.filter(n => !dOffice.includes(n));
-  const ballots = [];
-  const tally = Object.fromEntries(pool.map(n => [n, 0]));
-  for (const v of voters) {
-    const choices = pool.filter(n => n !== v);
-    const want = n => -bond(v, n) * 0.6 + (st(n, 'physical') + st(n, 'strategic')) * 0.08 + rng() * 2.2;
-    const picks = choices.sort((a, b) => want(b) - want(a)).slice(0, 2);
-    for (const p of picks) tally[p] = (tally[p] || 0) + 1;
-    ballots.push({ voter: v, picks });
-  }
-  // The Voice's extra votes against (a broken commandment, the red phone).
+  // Who names whom, and why (js/ss/nominations.js); the Voice's extra votes
+  // against (a broken commandment, the red phone) count on top.
   const extra = state ? extraVotesFor(state, wk) : {};
-  for (const [n, k] of Object.entries(extra)) if (n in tally) tally[n] += k;
-  const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a] || (rng() - 0.5));
-  const nominees = [...dOffice, ...ranked.slice(0, 2)];
-  const tie = ranked.length > 2 && tally[ranked[1]] === tally[ranked[2]];
-  return { nominees, ballots, tally, rule, voiceTie: tie, dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
+  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra });
+  const nominees = [...dOffice, ...cast.nominees];
+  return { nominees, ballots: cast.ballots, tally: cast.tally, rule, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
+    dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
 }
 
 // How the country splits its vote: popularity sets the order, but nobody who made it this far is

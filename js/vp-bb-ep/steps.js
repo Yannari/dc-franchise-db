@@ -2842,11 +2842,30 @@ function ssNomScreen(act, ctx) {
     ...((ss.immune || []).length ? [ssv(`${listOf(ss.immune)} cannot be nominated this week.`, { rule: 2 })] : []),
     ...((ss.dOffice || []).length ? [ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'are' : 'is'} already nominated d'office.`, { rule: 3, nom: ss.dOffice.slice() })] : []),
   ];
-  (ss.ballots || []).slice(0, 5).forEach(b => steps.push({ k: 'dr', by: b.voter, t: `I nominate ${listOf(b.picks || [])}.` }));
-  if ((ss.ballots || []).length > 5) steps.push({ k: 'beat', t: `One by one the rest of ${who[0]} go into the confessional and name their two.` });
+  // Commandment 6: every nomination is justified out loud. A mission's holder
+  // gives a cover reason: commandment 5 forbids revealing the mission.
+  const WHY = {
+    'suspects-me': ['I see the way they watch me. They are getting too close.', 'they keep asking me questions they should not be asking'],
+    'buzzed-me': ['they buzzed me, and I have not forgotten it', 'after that buzz, I cannot trust them'],
+    'took-my-kitty': ['they took my whole kitty', 'they found my secret and took everything'],
+    'cost-me': ['I lost five thousand dollars on them', 'I was wrong about them once, and it cost me'],
+    'cannot-stand': ['we just do not get on', 'living with them is hard every single day'],
+    threat: ['they are a big threat in this game', 'they are playing very, very well'],
+    mission: ['they are playing a strong game', 'they are a threat, honestly'],
+    'talked-into-it': ['some people have opened my eyes about them', 'I have heard things about them this week'],
+    annoying: ['they have been impossible all week', 'I cannot take another week of this'],
+    gut: ['it is a feeling, and I trust my feelings', 'something about them does not add up'],
+  };
+  (ss.ballots || []).slice(0, 6).forEach(b => {
+    const [x, y] = b.picks || [];
+    const why = n => pickBy(WHY[b.reasons?.[n]] || WHY.gut, `${ctx.week}|why|${b.voter}|${n}`);
+    steps.push({ k: 'dr', by: b.voter, t: y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.` });
+  });
+  if (ss.secondRound) steps.push(ssv(`There is a tie between ${listOf(ss.secondRound.tied || [])}. Everybody back to the confessional, one name each.`, { toast: ['SECOND ROUND', '#e0b84a'] }));
+  if ((ss.ballots || []).length > 6) steps.push({ k: 'beat', t: `One by one the rest of ${who[0]} go into the confessional and name their two.` });
   const rows = Object.entries(ss.tally || {}).sort((x, y) => y[1] - x[1]).map(([n, v]) => ({ n, text: `${v} ${v === 1 ? 'vote' : 'votes'}` }));
   steps.push(ssv(`The nominations are in. Facing the public this week: ${listOf(act.nominees || [])}.`, { nom: (act.nominees || []).slice(), board: { title: 'THE CONFESSIONAL', rows }, toast: ['NOMINATED', '#ff3355'] }));
-  if (ss.voiceTie) steps.push({ k: 'beat', t: 'There was a tie for the last place on the block, and The Voice settled it.' });
+  if (ss.voiceTie) steps.push(ssv('The second round is tied too. They are all nominated.'));
   for (const n of act.nominees || []) steps.push({ k: 'dr', by: n, t: pickBy(["The public decides now. All I can do is be myself and hope that is enough.", 'Nominated. I did not see that coming, and now I need the country on my side.'], `${ctx.week}|ssn|${n}`) });
   return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '13:30',
     kicker: 'Cam 01 · Confessional', title: 'Nominations', label: 'Nominations', sub: `${listOf(act.nominees || [])} face the public`, cast: (act.nominees || []).map((n, i) => [n, 35 + i * 30]),

@@ -22990,10 +22990,12 @@ export function rpBuildBBVotingPlans(ep) {
  */
 /** The house's host — never Total Drama's default. Mirrors bbHostName(). */
 function _bbHost() {
-  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  // The show's desk (Secret Story is Josh's), the house's as the fallback.
+  const show = typeof seasonConfig !== 'undefined' ? seasonConfig?.format : null;
+  const list = (show && show !== 'big-brother' && HOSTS_BY_FORMAT[show]) || HOSTS_BY_FORMAT['big-brother'] || [];
   const chosen = typeof seasonConfig !== 'undefined' ? seasonConfig.host : null;
   const elsewhere = Object.entries(HOSTS_BY_FORMAT)
-    .some(([fmt, hosts]) => fmt !== 'big-brother' && (hosts || []).some(h => h.value === chosen));
+    .some(([fmt, hosts]) => hosts !== list && (hosts || []).some(h => h.value === chosen));
   if (chosen && (list.some(h => h.value === chosen) || !elsewhere)) return chosen;
   return list[0]?.value || 'Valeria';
 }

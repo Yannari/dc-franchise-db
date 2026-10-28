@@ -84,14 +84,15 @@ export function airStorylines(week) {
   // begins, five left, four, the last three (the user, 2026-10-07: "they don't acknowledge the
   // important moments... it seems monotone")
   try {
-    const ms = writeMilestone(week, { present: (week.houseAtStart || []).slice() });
+    // (Big Brother's corners, the jury and the final competitions: a Secret Story house turns none of them)
+    const ms = SS ? null : writeMilestone(week, { present: (week.houseAtStart || []).slice() });
     const first = week.acts.find(a => a && a.type !== 'jury-house');
     if (ms && first) (first.scenes ||= []).unshift(ms);
     // the final four's eviction leaves three, and the next thing is finale night: the last three,
     // alone in the house, close the week
     if ((week.houseAtStart || []).length === 4 && week.evicted) {
       const three = (week.houseAtStart || []).filter(n => n !== week.evicted);
-      const f3 = writeMilestone(week, { present: three }, 'f3');
+      const f3 = SS ? null : writeMilestone(week, { present: three }, 'f3');
       const last = [...week.acts].reverse().find(a => a && a.type !== 'jury-house');
       if (f3 && last) { f3.id = `milestone:${week.num || 0}:f3`; (last.scenes ||= []).push(f3); }
     }

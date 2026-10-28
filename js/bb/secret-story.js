@@ -36,6 +36,7 @@ import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
+import { startGroup, weekInGroup, enterFromGroup, groupHidden, GROUPS } from '../ss/hidden-groups.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
@@ -150,6 +151,19 @@ function assignChosenSecrets(room, chosen, rng) {
     for (const h of holders) placed.add(h);
   }
   return secrets;
+}
+
+/**
+ * Launch night's hidden group, if the season's signature is one (js/ss/hidden-groups.js): who goes to the space
+ * instead of the house. week.js takes them off the house list; the launch act learns where they went.
+ * @returns {string[]}
+ */
+export function ssLaunchGroup({ rng = Math.random, house = [], act = null } = {}) {
+  const state = ssState();
+  if (!state?.draw?.signature || !GROUPS[state.draw.signature]) return [];
+  const members = startGroup(state, huntCtx(undefined, rng), { signature: state.draw.signature, house });
+  if (members.length && act) act.group = { id: state.group.id, name: state.group.name, space: state.group.space, outside: state.group.outside, members: [...members] };
+  return members;
 }
 
 /**
@@ -483,6 +497,22 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       beats: [{ text: `The Voice: ${m.kind === 'poll' ? `the red phone asks ${m.q}, round the house` : m.kind === 'present' ? `${m.who} gets a present from the public` : m.kind === 'scold' ? `${m.who} is told off: ${m.text}` : m.kind === 'birthday' ? `${m.who}'s birthday` : m.kind === 'letter' ? `a letter from home for ${m.who}` : `a mission for ${m.who}${m.other ? ` and ${m.other}` : ''}, ${m.ok ? 'done' : 'failed'}`}.`,
         players: [m.who, m.other].filter(Boolean), badgeText: 'THE VOICE', badgeClass: 'gold', part: 'voice' }] });
   }
+  // THE HIDDEN GROUP (js/ss/hidden-groups.js): a week in the space; who comes in at this week's prime
+  {
+    const gw = weekInGroup(state, ctx, { house: room });
+    if (gw) {
+      state._groupEntering = gw.entering;
+      for (const e of gw.events) {
+        if (e.kind === 'found') { pub(e.who, 'game', 0.3, `found ${e.on}'s secret from ${gw.name}`); pub(e.on, 'pity', 0.15, 'had the secret found from the hidden space'); }
+        if (e.kind === 'tunnel') pub(e.who, 'game', 0.25, 'found the intruders\' tunnel');
+        if (e.kind === 'identified') pub(e.by, 'game', 0.15, 'picked out a hidden face among the portraits');
+      }
+      for (const n of gw.hidden) pub(n, 'arc', 0.12, `lived in ${gw.name}`);
+      acts.push({ type: 'ss-group', week: ctx.week, ...gw,
+        beats: [{ text: `${gw.name}: ${gw.hidden.join(', ')} ${gw.hidden.length > 1 ? 'are' : 'is'} still hidden.${gw.entering.length ? ` ${gw.entering.map(e => e.name).join(' and ')} will come in at the prime.` : ''}`,
+          players: gw.hidden.slice(0, 4), badgeText: 'HIDDEN', badgeClass: 'purple', part: 'group' }] });
+    }
+  }
   // THE SECRET ROOM, the Voice's room of dilemmas (js/ss/secret-room.js): most weeks somebody is called up alone
   // and offered a trade that somebody else pays for. Before the nominations, which read what it wrote.
   if (ctx.week >= 1 && rng() < (state.tools?.dilemmas === 'many' ? 0.75 : 0.55)) {
@@ -632,6 +662,16 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
       else { pub(acc.by, 'fun', 0.1, 'accused the wrong people'); pub(acc.by, 'warmth', -0.1, 'accused the wrong people');
         for (const x of acc.named) { try { addBond(x, acc.by, -1.2); } catch { /* */ } } }
       /** @type {any[]} */ (night.segments).push({ kind: 'accusation', ...acc, effects: { bond: [], pop: [] } });
+    }
+  }
+  // THE HIDDEN GROUP COMES IN (js/ss/hidden-groups.js): live, on the prime, onto the house list for next week
+  {
+    const came = enterFromGroup(state, state._groupEntering || []);
+    state._groupEntering = null;
+    if (came.length) {
+      gs.activePlayers = [...new Set([...(gs.activePlayers || []), ...came.map(e => e.name)])];
+      for (const e of came) pub(e.name, 'seen', 0.3, `walked into the house from ${state.group?.name || 'the hidden space'}`);
+      /** @type {any[]} */ (night.segments).unshift({ kind: 'entry', group: state.group?.id, groupName: state.group?.name, space: state.group?.space, came, left: groupHidden(state), effects: { bond: [], pop: [] } });
     }
   }
   // THE RETURN (js/ss/hidden.js): back down from the secret room, with a power. Back on the house

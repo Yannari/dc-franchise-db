@@ -35,6 +35,7 @@ import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
+import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3572,6 +3573,7 @@ function ssPrimeScreens(act, ctx, host) {
     if (seg.kind === 'mission') for (const r of seg.results || []) out.push(ssMissionResultScreen(r, ctx));
     else if (seg.kind === 'return') { if (!(seg.partner && out.some(s => s && s.id === `bb-ss-prime-return-${seg.partner}-w${ctx.week}`))) out.push(ssReturnScreen(seg, ctx, host)); }
     else if (seg.kind === 'voluntary') out.push(ssVoluntaryScreen(seg, ctx, host));
+    else if (seg.kind === 'entry') out.push(ssGroupEntryScreen(seg, ctx, host, { ssv }));
     else if (seg.kind === 'accusation') out.push(ssAccusationScreen(seg, ctx, host));
     else if (seg.kind === 'unveil') out.push(ssUnveilScreen(seg, ctx, host));
     else if (seg.kind === 'dilemma') out.push(ssDilemmaScreen(seg, ctx, host));
@@ -5519,6 +5521,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
+      case 'ss-group': { const scr = ssGroupWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
@@ -5585,6 +5588,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // the prime the host's (vp-bb-ep/ss-episode.js)
     const prev = ((/** @type {any} */ (globalThis).gs?.episodeHistory) || []).find(r => r && r.num === (row.num || 1) - 1);
     ssArrange(out, row, { prev, ssv, host: ctx.host });
+    // a hidden space whose plate the user has not made yet plays in the closest room built (vp-bb-ep/ss-groups.js)
+    const fall = p => (p && SPACE_FALLBACK[p] && !plateBuilt(p) ? SPACE_FALLBACK[p] : p);
+    for (const s of out) { if (s.plate) s.plate = fall(s.plate); for (const st of s.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; }
     // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
     for (const s of out) s.ss = true;
   }

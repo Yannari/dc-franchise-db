@@ -37,7 +37,7 @@ const real = await page.evaluate(async () => {
 });
 if (!real) await seedCast(page, { count: 14 });
 await page.waitForFunction(() => typeof window.simulateNext === 'function');
-await page.evaluate(m => { window.__ssMap = m; }, want.has('map'));
+await page.evaluate(([m, sig]) => { window.__ssMap = m; window.__ssSig = sig; }, [want.has('map'), process.env.SS_SIG || '']);
 await page.evaluate(() => {
   localStorage.setItem('bb-vp', 'stepped');
   localStorage.setItem('bb-map', window.__ssMap ? 'map' : 'linear');
@@ -45,6 +45,8 @@ await page.evaluate(() => {
   window.seasonConfig.format = 'secret-story';
   window.seasonConfig.finaleSize = 3;
   window.seasonConfig.jurySize = 0;
+  // SS_SIG=<signature>: lock the season's signature (a hidden group, the masters...)
+  if (window.__ssSig) window.seasonConfig.ssSignature = window.__ssSig;
 });
 for (let i = 0; i < Number(ep); i++) {
   await page.evaluate(() => window.simulateNext());

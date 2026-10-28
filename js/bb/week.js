@@ -95,7 +95,7 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
 import { runCliqueReturnees } from './clique-returnees.js';
-import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime } from './secret-story.js';
+import { ssOn, assignSecrets, ssLaunchGroup, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -1790,7 +1790,17 @@ export function simulateBBWeek(options = {}) {
   }
   // Secret Story: every houseguest has walked in with a secret and a kitty; The Voice says so
   if (ssOn() && !compressed && !gs.bb?.secretStory) {
-    try { const given = assignSecrets({ house, rng }); if (given) week.acts.push(given); } catch { /* the season plays without */ }
+    try {
+      const given = assignSecrets({ house, rng });
+      if (given) week.acts.push(given);
+      // a hidden group (the Secret Box, the intruders, the yacht...): off the house list from launch night
+      // (js/ss/hidden-groups.js); they come in at a prime, never as eliminated
+      const away = ssLaunchGroup({ rng, house, act: given });
+      if (away.length) {
+        for (const n of away) { const i = house.indexOf(n); if (i >= 0) house.splice(i, 1); }
+        gs.activePlayers = (gs.activePlayers || []).filter(n => !away.includes(n));
+      }
+    } catch { /* the season plays without */ }
   }
   // A turn is a CHANGE of register, not a week that happens to be hostile.
   // High Roller's books `hostile` at two anchors on purpose (a proportional

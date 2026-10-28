@@ -17,6 +17,8 @@
 //
 // The steps' helpers come from steps.js (`H`), so the screens look like the rest.
 
+import { launchToSpaceSteps } from './ss-groups.js';
+
 const pickRot = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
 
 const PEOPLE_THINK = {
@@ -161,6 +163,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
   // sent in one at a time so the house sees nothing) ──
   const groups = arrivalGroups(order, act.secrets || [], k);
   const listed = [];          // the list of secrets read so far, in order
+  const spaceSent = [];       // who has gone to the hidden space so far (js/ss/hidden-groups.js)
   const doneCk = new Set(), doneLs = new Set();
   let count = 0;
   const xs = n => (n <= 1 ? [50] : n === 2 ? [36, 64] : [28, 50, 72]);
@@ -181,7 +184,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       ? pickBy([`${g[0]} walks down the stairs onto the set, waving at the crowd.`, `${g[0]} comes out to the music, and nearly misses the last step.`, `${g[0]} walks on, both hands over ${pronouns(g[0]).posAdj || 'their'} mouth.`], `${kk}|walk`)
       : pickBy([`${listOf(g)} come down the stairs side by side, waving at the crowd.`, `${g[0]} takes the stairs two at a time. ${g.slice(1).join(' and ')} follow${g.length > 2 ? '' : 's'}, laughing.`, `${listOf(g)} walk on to a wall of noise.`], `${kk}|walk`) });
     steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing.`], `${kk}|hi`)
-      : pickBy(['Welcome, both of you! How are you feeling?', 'Welcome to Secret Story! Nervous?', 'Look at you two. How are the nerves?'], `${kk}|hi`) });
+      : pickBy([`Welcome, ${g.length > 2 ? 'all three of you' : 'both of you'}! How are you feeling?`, 'Welcome to Secret Story! Nervous?', `Look at you ${g.length > 2 ? 'three' : 'two'}. How are the nerves?`], `${kk}|hi`) });
     g.forEach((n, j) => steps.push({ k: 'say', by: n, t: ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length] }));
     if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, you two didn't arrive together by accident, did you?`, `You two seem very comfortable together. Interesting...`], `${kk}|pair`) },
       { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
@@ -230,7 +233,11 @@ export function ssLaunchScreens(act, ctx, host, H) {
     if (shared) steps.push(ssv(`${listOf(g)}, the Voice welcomes you to Secret Story. To keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${g[1]}, you wait here.`),
       { k: 'beat', t: `${g[1]} squeezes ${g[0]}'s hand once, and lets go.`, tense: [g[0], g[1]] });
     const goers = shared ? [g[0]] : g;
-    steps.push(ssv(`${listOf(goers)}, you may now enter the House of Secrets. That is all for now.`));
+    // a hidden group (js/ss/hidden-groups.js): its members go to their space, not into the house
+    const away = new Set(act.group?.members || []);
+    const inHouse = goers.filter(n => !away.has(n));
+    const toSpace = goers.filter(n => away.has(n));
+    if (inHouse.length) steps.push(ssv(`${listOf(inHouse)}, you may now enter the House of Secrets. That is all for now.`));
     // in: the house, live
     const enter = (who, alone) => {
       const here = [...inside];
@@ -248,9 +255,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
       }
       if (!alone) steps.push({ k: 'beat', t: pickBy([`${here[here.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${listOf(who)} shake${who.length > 1 ? '' : 's'} hands with everybody, one at a time.`, `${listOf(here.slice(-2))} pretend to have been there for years.`], `${kk}|greet|${who[0]}`) });
     };
-    enter(goers, false);
-    inside.push(...goers);
-    if (hide && goers.includes(hide.who)) steps.push({ k: 'beat', t: `${hide.who} runs off and starts opening every door.` },
+    if (inHouse.length) { enter(inHouse, false); inside.push(...inHouse); }
+    if (toSpace.length) { steps.push(...launchToSpaceSteps(act.group, toSpace, H, kk, spaceSent)); spaceSent.push(...toSpace); }
+    if (hide && inHouse.includes(hide.who)) steps.push({ k: 'beat', t: `${hide.who} runs off and starts opening every door.` },
       { k: 'beat', t: hide.ok ? `${hide.who} finds it in the pantry, tears it into pieces, and pushes the pieces under a mattress just in time.` : `${hide.who} finds it, rips it in half, and stuffs it behind a cushion. Half the words are still showing.` });
     if (shared) {
       steps.push({ k: 'beat', scene: SAS && { ...SAS, cast: [[g[1], 50]] }, t: `Back in the airlock, ${g[1]} waits alone, counting to a hundred.` },
@@ -258,7 +265,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       enter([g[1]], false);
       inside.push(g[1]);
     }
-    if (code && g.includes(code.who)) steps.push({ k: 'say', by: code.who, t: `${code.from[0]}, random question. What shoe size are you?` },
+    if (code && g.includes(code.who) && inside.includes(code.who) && inside.includes(code.from[0])) steps.push({ k: 'say', by: code.who, t: `${code.from[0]}, random question. What shoe size are you?` },
       { k: 'say', by: code.from[0], t: pickBy(['Why do you want to know that?', "That's the weirdest first question anyone's ever asked me."], `${kk}|shoe`) },
       { k: 'beat', t: code.ok ? `${code.who} laughs it off, gets the number, and counts the eggs while making tea. The locker opens. ${euros(code.reward)} for the kitty.` : `${code.who} gets the shoe size, miscounts the eggs, and the locker stays shut.` });
     count += g.length;

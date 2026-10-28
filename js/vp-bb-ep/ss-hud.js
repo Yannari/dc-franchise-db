@@ -93,7 +93,9 @@ function sfx(kind) {
 const ROOM_OF_PLATE = [[/^bedroom2-/, "Boys' Bedroom"], [/^bedroom-/, "Girls' Bedroom"], [/^storage/, 'The Store'], [/^(hallway|purple-hall)$/, 'Secret Passage'],
   [/^foyer$/, 'The Airlock'], [/^ss-attic/, 'The Secret Room'], [/^hoh-suite$/, 'The Love Room'], [/^library-/, 'The Library'], [/^gym-/, 'The Gym'],
   [/^(pool-|patio$)/, 'The Pool'], [/^lawn-/, 'The Garden'], [/^(front|balcony)$/, 'The Garden'], [/^nom-table$/, 'Living Room'], [/^confessional/, 'Confessional']];
-const roomOf = S => { const p = S.plate || ''; for (const [re, n] of ROOM_OF_PLATE) if (re.test(p)) return n; return S.room || ''; };
+// (a hidden space keeps its own name, whatever room stands in for it until its plate exists: vp-bb-ep/ss-groups.js)
+const SPACE_ROOMS = /^(The Secret Box|The Intruders' House|The Crystal House|The Hotel of Secrets|The Yacht of Secrets|The Portrait Gallery|The Tunnel|The Red Room)$/;
+const roomOf = S => { if (SPACE_ROOMS.test(S.room || '')) return S.room; const p = S.plate || ''; for (const [re, n] of ROOM_OF_PLATE) if (re.test(p)) return n; return S.room || ''; };
 
 /** The top of the screen: the show's bug, the room, the day, the viewer's kitty. */
 export function ssHudHtml(S, st, fresh, o) {

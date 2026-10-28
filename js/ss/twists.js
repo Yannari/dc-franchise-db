@@ -29,16 +29,18 @@ export const SIGNATURES = [
     what: 'a secret pair adds a nominee every week until somebody finds their secret' },
   { id: 'thieves', name: 'The House Thieves', from: 'S12', built: true,
     what: 'a pair starts with nothing and steals from the kitties every week until they are found' },
-  { id: 'intruders', name: 'The Intruders', from: 'S3', built: false, what: 'a group hides in a second house reached by a tunnel, and swaps in later' },
+  // (the hidden groups, twist family 1 F1.3: js/ss/hidden-groups.js)
+  { id: 'intruders', name: 'The Intruders', from: 'S3', built: true, what: 'a group hides in a second house reached by a tunnel, spies, and swaps in one a week' },
   { id: 'antechamber', name: 'The Antechamber', from: 'S4', built: false, what: 'three sacrificed at the door watch the house and must name who sacrificed them' },
   { id: 'labyrinth', name: 'The Labyrinth', from: 'S5', built: false, what: 'two masters of the tunnels spy on the house and nominate somebody for life' },
-  { id: 'secret-box', name: 'The Secret Box', from: 'S6', built: false, what: 'three watch from a tinted cube in the living room; find one secret to take that person\'s place' },
+  { id: 'secret-box', name: 'The Secret Box', from: 'S6', built: true, what: 'three watch from a tinted cube in the living room; find one secret to get out, and its holder is nominated' },
   { id: 'seven-rooms', name: 'The Seven Rooms', from: 'S7', built: false, what: 'seven secret rooms behind an elevator, seven mysteries' },
   { id: 'impostors', name: 'The Impostors', from: 'S8', built: false, what: 'four play eight people from a hidden zone' },
   { id: 'neighbours', name: 'The Neighbours', from: 'S9, S11', built: false, what: 'a small second house with trapdoors into the main one' },
-  { id: 'hotel', name: 'The Hotel of Secrets', from: 'S10', built: false, what: 'a hidden hotel next door, and six faces among two hundred portraits' },
+  { id: 'hotel', name: 'The Hotel of Secrets', from: 'S10', built: true, what: 'three hidden in the hotel next door; the house hunts their faces among two hundred portraits' },
   { id: 'fake-house', name: 'The Fake House', from: 'S12', built: false, what: 'night one in a fake house with a fake Voice' },
-  { id: 'crystal-house', name: 'The Crystal House', from: 'S13', built: false, what: 'a glass house; the main house must guess how many live there' },
+  { id: 'crystal-house', name: 'The Crystal House', from: 'S13', built: true, what: 'three in a glass house in the garden; every prime the main house votes one of them out to safety' },
+  { id: 'yacht', name: 'The Yacht of Secrets', from: 'S14', built: true, what: 'four on a yacht at the pier investigate the house; every secret they get right puts its holder up' },
   { id: 'common-secret', name: 'The Common Secret', from: 'S7', built: false, what: 'one secret shared by the whole house; nobody finds it and everybody is nominated' },
 ];
 

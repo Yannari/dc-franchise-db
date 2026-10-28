@@ -56,6 +56,9 @@ export const TOOLS = {
   store: { name: 'The store', levels: ['off', 'on'], weights: [0.3, 0.7] },
   // the eliminated's parting gift from the studio (S14 semi-final): a present for a friend, a price for a foe
   farewell: { name: "The eliminated's farewell power", levels: ['none', 'some'], weights: [0.45, 0.55] },
+  // the Voice's evening games (the "Oops" night, mini-secrets) and the black buzzer (js/ss/evening.js)
+  evenings: { name: "The Voice's evening games", levels: ['some', 'often'], weights: [0.5, 0.5] },
+  blackBuzzer: { name: 'The black buzzer', levels: ['off', 'on'], weights: [0.45, 0.55] },
 };
 
 /** How often a level makes a tool fire on a prime (or a week). */
@@ -66,6 +69,8 @@ export const RATE = {
   dilemmas: { few: 0.2, many: 0.55 },        // the chance of a second dilemma
   parties: { some: 0.45, often: 0.7 },
   farewell: { none: 0, some: 0.45 },
+  evenings: { some: 0.4, often: 0.65 },
+  blackBuzzer: { off: 0, on: 0.22 },
 };
 
 const weighted = (levels, weights, rng) => {

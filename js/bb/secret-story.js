@@ -32,6 +32,7 @@ import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } fro
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
+import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
@@ -442,6 +443,31 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const shut = state.rules?.house?.[ctx.week] === 'no-shopping' ? (state.rules.houseBlame?.[ctx.week] || true) : false;
     const shop = state.tools?.store === 'off' ? null : runSuperette(state, ctx, { house: room, closed: shut, picker: gameWinner && room.includes(gameWinner) ? gameWinner : null });
     if (shop) { applyFx(shop.effects); acts.push(shop); }
+  }
+  // An evening: the Voice's game (js/ss/evening.js), the "Oops" night or mini-secrets.
+  if (room.length >= 4 && ctx.week >= 2 && rng() < (RATE.evenings?.[state.tools?.evenings] ?? 0.5)) {
+    // the games take turns: an "Oops" night rarely follows another
+    const oops = rng() < (state.lastEvening === 'oops' ? 0.25 : 0.65);
+    const ev = (oops ? oopsNight(state, ctx, { house: room }) : miniSecretsNight(state, ctx, { house: room }))
+      || (oops ? miniSecretsNight(state, ctx, { house: room }) : oopsNight(state, ctx, { house: room }));
+    if (ev) {
+      applyFx(ev.effects);
+      const game = ev.statements ? 'oops' : 'mini';
+      state.lastEvening = game;
+      acts.push({ type: 'ss-evening', week: ctx.week, game, statements: ev.statements || null, rounds: ev.rounds || null,
+        beats: game === 'oops'
+          ? ev.statements.filter(s => s.raised.length).slice(0, 3).map(s => ({ text: `The Voice's "Oops" night: "${s.text}" ${s.raised.map(r => r.who).join(' and ')} ${s.raised.length > 1 ? 'raise' : 'raises'} the sign.`, players: s.raised.map(r => r.who).slice(0, 4), badgeText: 'OOPS NIGHT', badgeClass: 'gold', part: 'evening' }))
+          : ev.rounds.map(r => ({ text: `Mini-secrets: the Voice reveals that somebody ${r.fact}. ${r.first} buzzes ${r.guess}: ${r.right ? `right, and wins $${r.money}` : `wrong, and loses $${r.money}`}.`, players: [r.first, r.subject], badgeText: 'MINI-SECRETS', badgeClass: r.right ? 'gold' : 'red', part: 'evening' })) });
+    }
+  }
+  // The black buzzer: hidden by the Voice; the finder is immune and names a nominee (before the nominations).
+  if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {
+    const bz = blackBuzzer(state, ctx, { house: room });
+    if (bz) {
+      applyFx(bz.effects);
+      acts.push({ type: 'ss-black-buzzer', week: ctx.week, finder: bz.finder, named: bz.named, why: bz.why,
+        beats: [{ text: `${bz.finder} finds the black buzzer: immune this week, and ${bz.named} is nominated by ${bz.finder}'s hand.`, players: [bz.finder, bz.named], badgeText: 'BLACK BUZZER', badgeClass: 'red', part: 'black-buzzer' }] });
+    }
   }
   const weeksLeft = Math.max(0, room.length - 5);
   // (the hunt closes at the semi prime: js/ss/final.js unveilSecrets)

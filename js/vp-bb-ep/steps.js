@@ -28,6 +28,7 @@ import { players as ROSTER } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { ssLaunchScreens } from './ss-launch.js';
 import { ssFinalScreens } from './ss-final.js';
+import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -5368,6 +5369,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-house-secret-end': flush(); ceremony(ssHouseSecretEndScreen(act, ctx)); beatsOf(act); break;
       case 'ss-returns': flush(); ceremony(ssReturnsScreen(act, ctx)); break;
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
+      // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
+      case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
+      case 'ss-black-buzzer': flush(); ceremony(ssBlackBuzzerScreen(act, ctx, { ssv })); break;
       case 'ss-journeys': flush(); for (const scr of (act.facts ? ssFinalScreens(act, ctx, { ssv, listOf, euros, pickBy, pronouns }) : [ssJourneysScreen(act, ctx)])) ceremony(scr); break;
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;

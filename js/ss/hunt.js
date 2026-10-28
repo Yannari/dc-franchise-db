@@ -48,7 +48,7 @@ export function huntOf(state) {
 }
 
 /** Near-miss texts for a secret: same kind from the pool, never the truth. */
-function nearMisses(secret) {
+export function nearMisses(secret) {
   const kind = secret.secretKind || secret.kind;
   const same = SECRET_POOL.filter(e => e.kind === kind && e.text !== secret.text).map(e => e.text);
   return same.length ? same : SECRET_POOL.filter(e => e.text !== secret.text).map(e => e.text);

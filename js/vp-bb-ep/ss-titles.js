@@ -18,6 +18,10 @@ import { bbxTitleReady, bbxTitleDone } from './titles.js';
 
 const PROPS = 'assets/sets/bb/secret-story/props';
 const FRONT = 'assets/sets/bb/resort/secret-story/front-day.webp';
+// The show's music is not in the repo yet (the user brings recordings): until it is, the titles start on
+// their own clock rather than asking for a file that is not there. Set true once assets/audio/ss/ has them.
+const MUSIC = false;
+const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '#c8137a', '#22c55e'];
 const col = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
 
@@ -114,7 +118,8 @@ export function ssTitleScreen(kind, cast = [], title = '', gone = []) {
     id: `bb-${kind === 'intro' ? 'titles' : 'closing'}`,
     label: kind === 'intro' ? 'Opening Titles' : 'Closing',
     html: `<div class="sst bbt" data-ambient="none" data-secs="${secs.toFixed(1)}"><style>${CSS}</style>${body}
-  <audio src="${audio}" preload="auto" oncanplay="bbxTitleReady(this)" onplay="this.closest('.sst').classList.add('go');this.closest('.sst').classList.remove('blocked')" onerror="ssTitleSilent(this)" onended="bbxTitleDone(this)"></audio>
+  ${MUSIC ? `<audio src="${audio}" preload="auto" oncanplay="bbxTitleReady(this)" onplay="this.closest('.sst').classList.add('go');this.closest('.sst').classList.remove('blocked')" onerror="ssTitleSilent(this)" onended="bbxTitleDone(this)"></audio>`
+    : `<img src="${GIF}" alt="" style="display:none" onload="ssTitleSilent(this)">`}
   <button type="button" class="play" onclick="ssTitleSilent(this)">▶ PLAY</button>
   <button type="button" class="skip" onclick="bbxTitleDone(this)">Skip ${kind === 'intro' ? 'intro' : 'closing'} ▶</button>
 </div>`,

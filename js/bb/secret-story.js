@@ -32,18 +32,20 @@ import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } fro
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
-import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
+import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { throwParty, runSuperette } from '../ss/parties.js';
-import { planSecretRoom, isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, hiddenNow } from '../ss/hidden.js';
+import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack } from '../ss/hidden.js';
 import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { careerOf } from '../franchise-meta.js';
+import { careerOf, activeSeasons } from '../franchise-meta.js';
+import { drawSeason, RATE, signatureOf } from '../ss/twists.js';
+import { castRole, playRole, accuseRole, ROLE_NAMES } from '../ss/signatures.js';
 import { styleOf } from './game-style.js';
 
 // The ledger owns the amounts (js/ss/kitty.js); re-exported for v1's callers.
@@ -261,9 +263,20 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   };
   openKitties(gs.bb.secretStory, room, KITTY_START, 1);
   huntOf(gs.bb.secretStory);
-  // the season's fake elimination, if it has one (js/ss/hidden.js); a setting can force it on or off
-  planSecretRoom(gs.bb.secretStory, { castSize: room.length, rng,
-    force: seasonConfig?.ssSecretRoom === 'on' ? true : seasonConfig?.ssSecretRoom === 'off' ? false : null });
+  // THE SEASON'S DRAW (js/ss/twists.js): a signature and every tool's level, redrawn until it is
+  // not too close to a past Secret Story season in the franchise ledger. Settings lock pieces.
+  {
+    const st0 = gs.bb.secretStory;
+    let past = [];
+    try { past = Object.values(activeSeasons() || {}).map(r => r?.ssDraw).filter(Boolean); } catch { past = []; }
+    const locks = { signature: seasonConfig?.ssSignature || undefined,
+      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'on' : seasonConfig?.ssSecretRoom === 'off' ? 'off' : undefined };
+    st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
+    st0.tools = { ...st0.draw.tools };
+    (st0.plan ||= {}).secretRoomWeek = st0.draw.secretRoomWeek;
+    // the signature's pair, chosen by the Voice tonight
+    castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
+  }
   // THE SECRETS BECOME CANON NOW (js/ss/canon.js): from this browser if it can;
   // the published season carries them as well, for the worker to finish.
   if (asShow && typeof window !== 'undefined') {
@@ -280,6 +293,11 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   return {
     type: 'ss-secrets', week: 1, secret: true,
     secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind })),
+    // launch night (part 2 §2): the arrivals in order, who recognises whom, the season's signature
+    arrivals: room.slice().sort(() => rng() - 0.5),
+    commandments: (gs.bb.secretStory.weekly === 'revival' ? COMMANDMENTS_REVIVAL : COMMANDMENTS).slice(),
+    recognitions: (gs.bb.secretStory.recognitions || []).slice(),
+    signature: gs.bb.secretStory.draw?.signature ? { ...signatureOf(gs.bb.secretStory.draw.signature), pair: gs.bb.secretStory.role?.pair || [] } : null,
     kitty: KITTY_START, stake: BUZZ_STAKE,
     beats: [{ text: `Every housemate moves in with a secret and $${KITTY_START.toLocaleString('en-US')} in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
   };
@@ -333,7 +351,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   // Monday: the Voice's missions (§7), played through the week.
   acts.push(...handOutMissions(state, ctx, { house: room }));
   // The weekend: the Voice throws a party most weeks (§15). Guards come down; a slip is likelier.
-  if (room.length >= 4 && rng() < (ctx.week <= 1 ? 0.5 : 0.65)) {
+  if (room.length >= 4 && rng() < (ctx.week <= 1 ? 0.5 : (RATE.parties[state.tools?.parties] ?? 0.65))) {
     const party = throwParty(state, ctx, { house: room });
     if (party) { applyFx(party.effects); acts.push(party); if (week) week._ssParty = true; }
   } else if (week) week._ssParty = false;
@@ -365,6 +383,16 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const clue = showClue(state, ctx, { holder, how: 'voice', house: room });
     if (clue) acts.push(clue);
   }
+  // The season's signature role (js/ss/signatures.js): the masters add a nominee, the thieves steal.
+  {
+    const r = playRole(state, ctx, { house: room });
+    if (r) {
+      if (r.target) pub(r.target, 'pity', 0.1, 'was nominated by the masters');
+      for (const t of r.takes || []) pub(t.from, 'pity', 0.08, 'was robbed by the house thieves');
+      for (const p of r.pair) pub(p, 'game', 0.12, `played ${ROLE_NAMES[r.role]} in secret`);
+      acts.push(r);
+    }
+  }
   // The Voice's rules (§3): breaks from behaviour, each with its price.
   for (const r of weeklyRuleBreaks(state, ctx, { house: room, party: !!week?._ssParty })) {
     // a slip is human (a little pity); arguing with the Voice or talking
@@ -378,7 +406,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   // a house-wide punishment this week keeps it shut.
   {
     const shut = state.rules?.house?.[ctx.week] === 'no-shopping' ? (state.rules.houseBlame?.[ctx.week] || true) : false;
-    const shop = runSuperette(state, ctx, { house: room, closed: shut, picker: gameWinner && room.includes(gameWinner) ? gameWinner : null });
+    const shop = state.tools?.store === 'off' ? null : runSuperette(state, ctx, { house: room, closed: shut, picker: gameWinner && room.includes(gameWinner) ? gameWinner : null });
     if (shop) { applyFx(shop.effects); acts.push(shop); }
   }
   const weeksLeft = Math.max(0, room.length - 5);
@@ -453,6 +481,17 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // The night's segments (js/ss/prime.js): every one has consequences, applied
   // here, BEFORE the lines close, so the public votes on what it just watched.
   const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  // THE ACCUSATION (js/ss/signatures.js): somebody sure enough names the season's secret pair.
+  {
+    const acc = accuseRole(state, ctx, { house: room });
+    if (acc) {
+      if (acc.right) { pub(acc.by, 'game', 0.5, `unmasked ${ROLE_NAMES[acc.role]}`); pub(acc.by, 'fun', 0.3, `unmasked ${ROLE_NAMES[acc.role]}`);
+        for (const p of acc.pair) { pub(p, 'fun', 0.25, `was unmasked as one of ${ROLE_NAMES[acc.role]}`); pub(p, 'heat', 0.3, `was unmasked as one of ${ROLE_NAMES[acc.role]}`); try { addBond(acc.by, p, -1.5); } catch { /* */ } } }
+      else { pub(acc.by, 'fun', 0.1, 'accused the wrong people'); pub(acc.by, 'warmth', -0.1, 'accused the wrong people');
+        for (const x of acc.named) { try { addBond(x, acc.by, -1.2); } catch { /* */ } } }
+      /** @type {any[]} */ (night.segments).push({ kind: 'accusation', ...acc, effects: { bond: [], pop: [] } });
+    }
+  }
   // THE RETURN (js/ss/hidden.js): back down from the secret room, with a power. Back on the house
   // list now, so the week engine's roster keeps them (a late arrival keeps the seat it was given).
   for (const b of bringBack(state, ctx, { house: room })) {

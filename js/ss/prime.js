@@ -23,6 +23,7 @@
 import { mint, burn, transfer, balance } from './kitty.js';
 import { secretOf, theoryOf, showClue, hiddenSecrets } from './hunt.js';
 import { runDilemma, nominateNext, immuneNext } from './dilemmas.js';
+import { RATE } from './twists.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const bondOf = (ctx, a, b) => Number(ctx?.bond?.(a, b)) || 0;
@@ -197,7 +198,7 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   if (missions.length) segs.push({ kind: 'mission', results: missions, effects: { bond: [], pop: [] } });
   // the dilemmas: one most weeks, two some weeks, never on a nominee's last night
   const free = house.filter(n => !nominees.includes(n));
-  const nDil = week <= 1 ? 1 : rng() < 0.35 ? 2 : 1;
+  const nDil = week <= 1 ? 1 : rng() < (RATE.dilemmas[tools.dilemmas] ?? 0.35) ? 2 : 1;
   const used = [];
   for (let i = 0; i < nDil && free.length; i++) {
     const to = free.filter(n => !segs.some(s => s.to === n))[Math.floor(rng() * free.length)] || free[0];
@@ -205,11 +206,12 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
     if (d) { used.push(d.dilemmaId); segs.push({ kind: 'dilemma', ...d }); }
   }
   // the red phone: a signature tool, rings on some primes (more in the seasons that use it)
-  const phoneP = tools.phone === false ? 0 : tools.phone === 'often' ? 0.55 : 0.32;
+  // the season's draw sets how often each tool comes out (js/ss/twists.js)
+  const phoneP = tools.phone === false ? 0 : RATE.phone[tools.phone] ?? 0.32;
   if (week >= 2 && rng() < phoneP) { const p = ringPhone(state, ctx, { house }); if (p) segs.push(p); }
-  if (week >= 3 && rng() < 0.28) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }
+  if (week >= 3 && rng() < (RATE.truths[tools.truths] ?? 0.28)) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }
   const visited = segs.find(s => s.kind === 'dilemma' && s.visit);
-  if (!visited && week >= 2 && rng() < 0.3) { const v = familyVisit(state, ctx, { house, nominees }); if (v) segs.push(v); }
+  if (!visited && week >= 2 && rng() < (RATE.visits[tools.visits] ?? 0.3)) { const v = familyVisit(state, ctx, { house, nominees }); if (v) segs.push(v); }
   // the order on the night: missions early, the phone in the middle, the heart near the verdict
   const ORDER = { mission: 1, dilemma: 2, phone: 3, truths: 4, visit: 5 };
   segs.sort((a, b) => ORDER[a.kind] - ORDER[b.kind]);

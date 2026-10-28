@@ -844,3 +844,34 @@ power (seasons 5 and 6): immune next week, and one housemate nominated for
 next week, chosen from what they saw. Every public reason is now written as
 something the housemate did ("got into a fight in the house"), so After
 Secret's lines read as sentences.
+
+## 30. The draw, two signatures, launch night (built, M10)
+
+`js/ss/twists.js`: the catalog (13 signatures from the real seasons, each
+marked `built` or not; the draw only takes built ones) and seven tools with
+levels (red phone none/some/often, secret room, room of truths, visits,
+dilemmas, parties, the store). `drawSeason` draws a signature (85% of seasons)
+and every tool, places the secret room, and scores the draw against every past
+Secret Story season the franchise ledger holds (`rec.ssDraw`, written by
+`deriveSeasonRecord`): too alike, or last season's signature again, and it
+draws again. Settings lock pieces (`ssSignature`, `ssSecretRoom`). The prime,
+the parties and the store read the levels (`RATE`).
+
+`js/ss/signatures.js` plays two signatures now: THE MASTERS OF THE NOMINATIONS
+(S7: a secret pair adds a nominee every week) and THE HOUSE THIEVES (S12: a
+pair starts at zero and steals from the fattest kitties every week). The house
+grows suspicions (the sharp see the true pair, everybody sees some noise; a
+masters' target who feuded with a master points at them), and the surest names
+the pair on the prime: right, the role ends (the masters are nominated, the
+thieves give everything to the one who caught them); wrong, the accuser pays
+the two they named. Still to build: intruders, antechamber, labyrinth, Secret
+Box, seven rooms, impostors, neighbours, hotel, fake house, crystal house,
+common secret.
+
+LAUNCH NIGHT is a full episode (about 130 clicks): the Voice's cold open, Josh
+in the studio, every arrival one by one (a card, their own first words, their
+secret told to the public with the house never hearing it, a shared secret's
+partner not reacting, the walk through the airlock, who recognises them and
+from where), the Voice's first address with the commandments read out, and,
+when the draw has a signature, the pair called to the confessional at two in
+the morning to be given their role.

@@ -409,6 +409,8 @@ export function deriveSeasonRecord(state = null) {
   const rec = { seasonName: _seasonName, format: _gs.format || DEFAULT_FORMAT,
     fanFavorite: _favouriteOf(_gs), ratings, players: {},
     finale: { format: _finFormat, votes: fin.votes && Object.keys(fin.votes).length ? { ...fin.votes } : null } };
+  // Secret Story: the season's twist draw (js/ss/twists.js), so the next season's can be different
+  if (_gs.bb?.secretStory?.draw) rec.ssDraw = JSON.parse(JSON.stringify(_gs.bb.secretStory.draw));
   for (const n of names) {
     // Last (not first) elimination episode — RI/EoE returnees can be booted twice.
     const elimEp = [...hist].reverse().find(ep => _bootOf(ep) === n) || null;

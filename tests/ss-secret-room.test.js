@@ -53,7 +53,8 @@ describe('the secret room', () => {
     const nextIds = bbWeekSteps(rows.find(r => r.num === fakeRow.num + 1), { host: 'Josh' }).map(s => s.id);
     expect(nextIds.some(i => i.startsWith('bb-ss-secretroom-w'))).toBe(true);
     expect(nextIds.some(i => i.startsWith('bb-ss-prime-return'))).toBe(true);
-    expect(gs.bb.secretStory.secrets.find(s => s.holders.includes(hidden)).revealedOnExit ?? null).toBe(null);
+    // (told only if they are really eliminated later, never on the fake night)
+    expect(gs.bb.secretStory.secrets.find(s => s.holders.includes(hidden)).revealedOnExit ?? null).not.toBe(fakeRow.num);
   });
   it('the season still ends with a winner, and the hidden one is placed once', () => {
     expect(gs.bb.finale?.winner).toBeTruthy();

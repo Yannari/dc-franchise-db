@@ -825,3 +825,22 @@ from the top shelf costs $1,000 of a kitty and buys the house a night, and
 sometimes an envelope behind the cereal is a clue only the runners see. A
 house-wide punishment for talking nominations is now the hot water OR the
 shopping, and the house knows who cost them it.
+
+## 29. The secret room (built, M9)
+
+`js/ss/hidden.js`. About seven seasons in ten (a setting can force it on or
+off) have a fake elimination in the middle of the season, while the house has
+six or more. The verdict is read as usual and the house says goodbye; then the
+airlock's studio door does not open, the Voice says "you are not eliminated",
+and the housemate climbs behind the bookcase into the attic. After Secret has
+nobody on the couch and Blaineley is in on it. The secret is NOT told.
+
+A hidden housemate is off the house list (no nominations, no hunt, no house
+life) and never on the eliminated list (one helper, the Twin Twist bug class).
+For a week they watch every screen: their theories jump on four housemates,
+and they hear who raised a glass to them and who laughed (bonds move both
+ways). At the next prime the bookcase swings open: the house's shock, and a
+power (seasons 5 and 6): immune next week, and one housemate nominated for
+next week, chosen from what they saw. Every public reason is now written as
+something the housemate did ("got into a fight in the house"), so After
+Secret's lines read as sentences.

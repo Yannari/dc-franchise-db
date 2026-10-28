@@ -38,6 +38,7 @@ import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { throwParty, runSuperette } from '../ss/parties.js';
+import { planSecretRoom, isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, hiddenNow } from '../ss/hidden.js';
 import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
@@ -94,7 +95,7 @@ function pub(n, axis, d, why = '') {
   if (p) { addPop(n, p); state.publicSeenPop ||= {}; state.publicSeenPop[n] = Number(gs.popularity?.[n]) || 0; }
 }
 /** An effect list's `pop` entries, read as the public's warmth or heat. */
-const FX_WHY = { dilemma: 'their dilemma on the prime', phone: 'answered the red phone', truths: 'the room of truths', visit: 'a visit from home', mission: 'a secret mission' };
+const FX_WHY = { dilemma: 'faced a dilemma on the prime', phone: 'answered the red phone', truths: 'went into the room of truths', visit: 'got a visit from home', mission: 'took on a secret mission' };
 const popFx = (list, kind) => { for (const [n, d] of list || []) pub(n, d >= 0 ? 'warmth' : 'heat', Math.abs(d), FX_WHY[kind] || ''); };
 const MOVING = ['survived', 'family', 'love', 'body'];
 /** An act's `effects` (bonds, the public), applied. */
@@ -260,6 +261,9 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   };
   openKitties(gs.bb.secretStory, room, KITTY_START, 1);
   huntOf(gs.bb.secretStory);
+  // the season's fake elimination, if it has one (js/ss/hidden.js); a setting can force it on or off
+  planSecretRoom(gs.bb.secretStory, { castSize: room.length, rng,
+    force: seasonConfig?.ssSecretRoom === 'on' ? true : seasonConfig?.ssSecretRoom === 'off' ? false : null });
   // THE SECRETS BECOME CANON NOW (js/ss/canon.js): from this browser if it can;
   // the published season carries them as well, for the worker to finish.
   if (asShow && typeof window !== 'undefined') {
@@ -335,10 +339,17 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   } else if (week) week._ssParty = false;
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
+  // the secret room (js/ss/hidden.js): whoever is upstairs watches every screen, and hears what the house says
+  for (const w of watchFromSecretRoom(state, ctx, { house: room })) {
+    for (const h of w.heard) { try { addBond(w.name, h.who, h.d); } catch { /* no bond */ } }
+    pub(w.name, 'arc', 0.2, 'watched the house from the secret room');
+    acts.push({ type: 'ss-secret-room', week: ctx.week, who: w.name, moments: w.moments, heard: w.heard,
+      beats: [{ text: `Upstairs in the secret room, ${w.name} watches the house on the screens.`, players: [w.name], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'secret-room' }] });
+  }
   // A mission is played through the week; a seduction or a nightmare moves a bond.
   for (const [a, b, d] of playMissions(state, ctx, { house: room })) { try { addBond(a, b, d); } catch { /* no bond */ } }
   // the hunt on screen: the ones watching and talking are seen, and seen playing
-  for (const m of moments.slice(0, 6)) { pub(m.who, 'seen', 0.15, ''); pub(m.who, 'game', 0.04, 'on the hunt'); }
+  for (const m of moments.slice(0, 6)) { pub(m.who, 'seen', 0.15, ''); pub(m.who, 'game', 0.04, 'went hunting for secrets'); }
   if (moments.length) {
     acts.push({ type: 'ss-hunt', week: ctx.week, moments: moments.slice(0, 6),
       beats: moments.slice(0, 3).map(m => ({ text: m.kind === 'tell'
@@ -381,15 +392,15 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       pub(b.target, 'pity', friend ? 0.5 : 0.3, 'lost the secret and the money');
       // the secret itself, told to the country: a moving one wins hearts, a fake couple is a story
       const sk = secretOf(state, b.target);
-      if (MOVING.includes(sk?.secretKind)) for (const h of b.holders) { pub(h, 'pity', 0.35, 'the story behind the secret'); pub(h, 'warmth', 0.2, 'the story behind the secret'); }
-      if (sk?.kind === 'voice-pair') for (const h of b.holders) pub(h, 'arc', 0.35, 'the fake couple, found out');
+      if (MOVING.includes(sk?.secretKind)) for (const h of b.holders) { pub(h, 'pity', 0.35, 'told the story behind the secret'); pub(h, 'warmth', 0.2, 'told the story behind the secret'); }
+      if (sk?.kind === 'voice-pair') for (const h of b.holders) pub(h, 'arc', 0.35, 'was found out as a fake couple');
       try { addBond(b.target, b.by, -2); for (const h of b.holders) if (h !== b.target) addBond(h, b.by, -1.2); } catch { /* no bond */ }
     } else if (b.outcome === 'wrong') {
       // a wrong buzz is funny to watch, and a bit embarrassing
       pub(b.by, 'fun', 0.15, `buzzed ${b.target}, wrongly`); pub(b.by, 'warmth', -0.12, `buzzed ${b.target}, wrongly`);
       // playing and missing is still playing
       pub(b.by, 'game', 0.1, `went for ${b.target}'s secret`);
-      pub(b.target, 'pity', 0.12, `wrongly accused by ${b.by}`);
+      pub(b.target, 'pity', 0.12, `was wrongly accused by ${b.by}`);
       try { addBond(b.target, b.by, -1.4); } catch { /* no bond */ }
       for (const n of room) if (n !== b.by && n !== b.target && rng() < 0.3) { try { addBond(n, b.by, -0.2); } catch { /* */ } }
     } else {
@@ -422,8 +433,8 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   const nomAct = (week?.acts || []).find(a => a?.secretStory)?.secretStory;
   for (const n of nominees) {
     const votes = Number(nomAct?.tally?.[n]) || 0;
-    if (votes) pub(n, 'pity', Math.min(0.4, votes * 0.05), 'nominated by the house');
-    if ((nomAct?.dOffice || []).includes(n)) pub(n, 'heat', 0.1, 'nominated by the Voice');
+    if (votes) pub(n, 'pity', Math.min(0.4, votes * 0.05), 'was nominated by the house');
+    if ((nomAct?.dOffice || []).includes(n)) pub(n, 'heat', 0.1, 'was nominated by the Voice');
   }
   // the money: a kitty that grew this week is a player's work; nobody plays the hunt
   // for three weeks after the first, and the country notices that too
@@ -442,19 +453,28 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // The night's segments (js/ss/prime.js): every one has consequences, applied
   // here, BEFORE the lines close, so the public votes on what it just watched.
   const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  // THE RETURN (js/ss/hidden.js): back down from the secret room, with a power. Back on the house
+  // list now, so the week engine's roster keeps them (a late arrival keeps the seat it was given).
+  for (const b of bringBack(state, ctx, { house: room })) {
+    gs.activePlayers = [...new Set([...(gs.activePlayers || []), b.name])];
+    /** @type {any[]} */ (night.segments).unshift({ kind: 'return', ...b, effects: { bond: [...b.glad.map(n => [b.name, n, -1]), ...b.mourners.map(n => [b.name, n, 1])], pop: [] } });
+    pub(b.name, 'arc', 0.5, 'came back from the secret room'); pub(b.name, 'fun', 0.3, 'came back from the secret room');
+    for (const n of b.glad) pub(n, 'pity', 0.05, '');
+  }
   for (const s of /** @type {any[]} */ (night.segments)) {
     for (const [a, b, d] of s.effects?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
     popFx(s.effects?.pop, s.kind);
     // and what the country made of it
-    if (s.kind === 'dilemma') {
+    if (s.kind === 'return') { /* its bonds are above */ }
+    else if (s.kind === 'dilemma') {
       if (s.heart) pub(s.to, 'warmth', 0.35, 'chose the heart over the money');
       else { pub(s.to, 'fun', 0.22, 'took the deal'); pub(s.to, 'heat', 0.2, 'took the deal'); }
     } else if (s.kind === 'phone' && s.answered) pub(s.answered, 'fun', 0.15, 'ran for the red phone');
     else if (s.kind === 'truths') {
-      pub(s.subject, 'pity', 0.4, 'watched what the house says behind their back');
+      pub(s.subject, 'pity', 0.4, 'watched what the house says about them');
       if (s.reaction === 'explodes') pub(s.subject, 'fun', 0.25, 'lost it in the room of truths');
-      for (const t of s.talkers || []) { pub(t, 'real', -0.22, `two-faced about ${s.subject}`); pub(t, 'heat', 0.12, `two-faced about ${s.subject}`); }
-    } else if (s.kind === 'visit') { pub(s.to, 'pity', 0.2, 'a visit from home'); pub(s.to, 'warmth', 0.25, 'a visit from home'); pub(s.to, 'arc', 0.15, 'a visit from home'); }
+      for (const t of s.talkers || []) { pub(t, 'real', -0.22, `was two-faced about ${s.subject}`); pub(t, 'heat', 0.12, `was two-faced about ${s.subject}`); }
+    } else if (s.kind === 'visit') { pub(s.to, 'pity', 0.2, 'got a visit from home'); pub(s.to, 'warmth', 0.25, 'got a visit from home'); pub(s.to, 'arc', 0.15, 'got a visit from home'); }
   }
   (state.primes ||= []).push({ week: ctx.week, name: night.name, segments: night.segments.map(s => s.kind) });
   const players = [...new Set(/** @type {any[]} */ (night.segments).flatMap(s => [s.to, s.answered, s.subject, s.target, ...(s.talkers || []), ...(s.mission?.holders || [])]).filter(Boolean))];
@@ -463,28 +483,15 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     beats: [{ text: `The prime: ${night.name}.`, players: players.slice(0, 4), badgeText: 'THE PRIME', badgeClass: 'gold', part: 'prime' }] }];
 }
 
-/**
- * After the public's verdict: the secret the house never found is told on the
- * set, and After Secret (the host and Blaineley) reads the house to the
- * viewers. Runs on the house as it stands after the elimination.
- */
-export function afterPrime({ week = undefined, evicted = null, house = [], rng = Math.random } = {}) {
-  const state = ssState();
-  if (!state || !evicted) return null;
-  const room = house.filter(n => n && n !== evicted);
-  const ctx = huntCtx(week, rng);
-  const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
-  // a partner left in the house is exposed with it: the house knows now
-  for (const p of reveal?.partners || []) pub(p, 'pity', 0.2, 'the shared secret came out on the set');
-  // the ones who were right and never pressed: "I knew it", and the house hears it
-  for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
-  const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
+/** The country, read for After Secret: its favourite (and the group carrying them), the one it
+ *  loves to hate, the one it never sees, and the gamers' own favourite. */
+function readThePublic(state, room) {
   // the country, read for the viewers: its favourite, the one it loves to hate, the one it never sees
   const reads = room.map(n => ({ n, s: support(state, n), r: publicRead(state, n), f: fileOf(state, n) }));
   const whyOf = (f, axis) => [...(f.log || [])].reverse().find(l => l.axis === axis && l.d > 0)?.why || null;
-  const AX = { sweetheart: 'warmth', underdog: 'pity', character: 'fun', story: 'arc', villain: 'heat', hated: 'heat' };
+  const AX = { sweetheart: 'warmth', underdog: 'pity', character: 'fun', story: 'arc', villain: 'heat', hated: 'heat', player: 'game' };
   const pick = list => list[0] ? { name: list[0].n, label: list[0].r.label, key: list[0].r.key, why: whyOf(list[0].f, AX[list[0].r.key] || 'warmth') } : null;
-  after.public = {
+  const out = {
     favourite: pick(reads.slice().sort((a, b) => b.s - a.s)),
     villain: pick(reads.filter(x => x.r.key === 'villain' || x.r.key === 'hated').sort((a, b) => b.f.heat - a.f.heat)),
     unseen: pick(reads.filter(x => x.r.key === 'unseen').sort((a, b) => a.f.seen - b.f.seen)),
@@ -492,7 +499,36 @@ export function afterPrime({ week = undefined, evicted = null, house = [], rng =
     player: (() => { const p = reads.filter(x => x.f.game > 0.6).sort((a, b) => b.f.game - a.f.game)[0]; return p ? { name: p.n, why: whyOf(p.f, 'game') } : null; })(),
   };
   // which group of the audience carries the favourite
-  if (after.public.favourite) { const g = carriedBy(state, after.public.favourite.name); after.public.favourite.carriedBy = g ? GROUP_LABEL[g] : null; }
+  if (out.favourite) { const g = carriedBy(state, out.favourite.name); out.favourite.carriedBy = g ? GROUP_LABEL[g] : null; }
+  return out;
+}
+
+/**
+ * After the public's verdict: the secret the house never found is told on the
+ * set, and After Secret (the host and Blaineley) reads the house to the
+ * viewers. Runs on the house as it stands after the elimination.
+ */
+export function afterPrime({ week = undefined, evicted = null, house = [], rng = Math.random, fake = false } = {}) {
+  const state = ssState();
+  if (!state || !evicted) return null;
+  const room = house.filter(n => n && n !== evicted);
+  const ctx = huntCtx(week, rng);
+  if (fake) {
+    // not the studio: the secret room. The secret is NOT told; the house mourns a housemate who is upstairs.
+    const sent = sendToSecretRoom(state, ctx, { name: evicted, house: room });
+    pub(evicted, 'seen', 0.5, '');
+    const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
+    after.public = readThePublic(state, room);
+    return { type: 'ss-after', week: ctx.week, evicted, fake: true, mourners: sent.mourners, glad: sent.glad, reveal: null, after, holders: [evicted],
+      beats: [{ text: `${evicted} is not eliminated: the Voice sends ${evicted} to the secret room. The house thinks ${evicted} has gone.`, players: [evicted], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'after' }] };
+  }
+  const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
+  // a partner left in the house is exposed with it: the house knows now
+  for (const p of reveal?.partners || []) pub(p, 'pity', 0.2, 'had a shared secret come out on the set');
+  // the ones who were right and never pressed: "I knew it", and the house hears it
+  for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
+  const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
+  after.public = readThePublic(state, room);
   return { type: 'ss-after', week: ctx.week, evicted, reveal, after, holders: [evicted],
     beats: [{ text: reveal && !reveal.alreadyFound ? `${evicted}'s secret, never found, is told on the set: ${reveal.secret}.` : `${evicted} leaves the House of Secrets.`,
       players: [evicted], badgeText: 'AFTER SECRET', badgeClass: 'gold', part: 'after' }] };
@@ -547,7 +583,7 @@ function shares(names, rng, noise) {
 }
 
 /** The public's eviction vote: the nominee the country likes least goes. Percentages to SAVE. */
-export function secretStoryPublicVote({ nominees = [], rng = Math.random } = {}) {
+export function secretStoryPublicVote({ nominees = [], rng = Math.random, week = undefined, houseSize = 0 } = {}) {
   if (!nominees.length) return null;
   // the country saves by fan base (js/ss/public.js); an old save with no file votes the old way
   const state = ssState();
@@ -559,7 +595,9 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random } = {})
     percents = Object.fromEntries(nominees.map(n => [n, Math.round((s[n] / total) * 1000) / 10]));
   }
   const evicted = nominees.slice().sort((a, b) => percents[a] - percents[b])[0];
-  return { evicted, percents, saved: nominees.filter(n => n !== evicted) };
+  // the fake elimination (js/ss/hidden.js): the verdict is read as usual; the house will believe it
+  const fake = !!state && isFakeNight(state, Number(week?.num) || 0, houseSize);
+  return { evicted, percents, saved: nominees.filter(n => n !== evicted), fake };
 }
 
 /**

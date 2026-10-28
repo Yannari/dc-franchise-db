@@ -106,7 +106,7 @@ export function throwParty(state, ctx, { house = [], theme = null } = {}) {
     moments.push({ kind: kiss ? 'kiss' : 'flirt', who: [couple.a, couple.b],
       text: kiss ? `${couple.a} and ${couple.b} kiss on the dance floor, and the whole house sees it.` : `${couple.a} and ${couple.b} dance close all night, and do not go to bed when everybody else does.` });
     fx.bond.push([couple.a, couple.b, kiss ? 2 : 1.2]);
-    for (const n of [couple.a, couple.b]) fx.pub.push([n, 'arc', kiss ? 0.4 : 0.2, kiss ? 'a kiss at the party' : 'a slow dance at the party']);
+    for (const n of [couple.a, couple.b]) fx.pub.push([n, 'arc', kiss ? 0.4 : 0.2, kiss ? 'kissed somebody at the party' : 'slow-danced at the party']);
     // somebody who wanted one of them watches it happen
     const jealous = house.find(x => x !== couple.a && x !== couple.b && ctx.compat?.(x, couple.a) && bondOf(ctx, x, couple.a) >= 5);
     if (jealous && kiss) {

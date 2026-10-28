@@ -101,12 +101,12 @@ export function weekPasses(state, names = []) {
  * kind says how it played.
  */
 const READS = [
-  [/fight|clash|argu|feud|blow.?up|scream|shout|confront|row\b|snap/i, [['fun', 0.22], ['heat', 0.12]], 'a fight in the house'],
-  [/comfort|hug|cheer up|apolog|make.?up|reconcil/i, [['warmth', 0.12]], 'looking after somebody'],
-  [/cry|tears|alone|excluded|left.?out|homesick|bull(y|ied)|mock|picked on|isolat|lonely/i, [['pity', 0.22]], 'a hard day'],
-  [/showmance|kiss|flirt|romance|crush|cuddl|date|spark/i, [['arc', 0.16], ['fun', 0.08]], 'a romance'],
-  [/lie|lying|scheme|backstab|betray|manipul|two.?fac|fake/i, [['real', -0.12], ['fun', 0.1], ['heat', 0.06]], 'playing people'],
-  [/joke|laugh|prank|dance|sing|party|funny|banter/i, [['fun', 0.14], ['warmth', 0.06]], 'making the house laugh'],
+  [/fight|clash|argu|feud|blow.?up|scream|shout|confront|row\b|snap/i, [['fun', 0.22], ['heat', 0.12]], 'got into a fight in the house'],
+  [/comfort|hug|cheer up|apolog|make.?up|reconcil/i, [['warmth', 0.12]], 'looked after somebody'],
+  [/cry|tears|alone|excluded|left.?out|homesick|bull(y|ied)|mock|picked on|isolat|lonely/i, [['pity', 0.22]], 'had a hard day'],
+  [/showmance|kiss|flirt|romance|crush|cuddl|date|spark/i, [['arc', 0.16], ['fun', 0.08]], 'fell for somebody'],
+  [/lie|lying|scheme|backstab|betray|manipul|two.?fac|fake/i, [['real', -0.12], ['fun', 0.1], ['heat', 0.06]], 'played people against each other'],
+  [/joke|laugh|prank|dance|sing|party|funny|banter/i, [['fun', 0.14], ['warmth', 0.06]], 'made the house laugh'],
 ];
 
 export function readHouseBeats(state, beats = [], week = 0) {

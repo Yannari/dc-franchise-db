@@ -284,6 +284,7 @@ export const SS_CSS = `
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
 /* a clean HD picture: no film grain, no scanlines (the user, 2026-10-28: "we're not in 2006 anymore") */
 .bbx .stage.ss .grain{display:none}
+.bbx .stage.ss .ledtv::after{background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 30%)}
 .bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
 .bbx .stage.ss .toast b{font-family:'SSFredoka',sans-serif;font-weight:700;letter-spacing:.02em}
 .bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSFredoka',sans-serif}

@@ -5643,6 +5643,17 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // a hidden space whose plate the user has not made yet plays in the closest room built (vp-bb-ep/ss-groups.js)
     const fall = p => (p && SPACE_FALLBACK[p] && !plateBuilt(p) ? SPACE_FALLBACK[p] : p);
     for (const s of out) { if (s.plate) s.plate = fall(s.plate); for (const st of s.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; }
+    // the host is SEEN when he speaks (the user, 2026-10-28: "can't even see Josh"): standing on the stage in the
+    // studio, on the living room's big screen when the prime goes to the house. Set on every scene too, since a
+    // step's scene inherits its screen's flags.
+    const studio = x => /^studio/.test(String(x.set || '')) || /^ss-studio/.test(String(x.plate || ''));
+    const NO_TV = new Set(['dr', 'attic', 'truths', 'arena', 'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber']);
+    const flags = x => ({ hostOn: studio(x), tvObj: !studio(x) && !NO_TV.has(String(x.set || '')) });
+    for (const s of out) {
+      if (!(s.steps || []).some(st => st.k === 'host')) continue;
+      Object.assign(s, flags(s));
+      for (const st of s.steps) if (st.scene) st.scene = { ...st.scene, ...flags({ ...s, ...st.scene }) };
+    }
     // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
     for (const s of out) s.ss = true;
   }

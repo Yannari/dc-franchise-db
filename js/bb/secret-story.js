@@ -901,12 +901,14 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const exclusive = nt?.kind === 'exclusive' && room.includes(nt.who) ? nt.who : null;
   if (exclusive) { voters = [exclusive]; pool = pool.filter(n => n !== exclusive); }
   // (five at most: direct nominations take the house's seats first, and four of them leave the house no vote)
-  const seatsNow = dOffice.length >= 4 ? 0 : Math.max(dOffice.length >= 3 ? 1 : 2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
+  // (a linked week names half as many: every name the house reads can bring a partner up with it)
+  const seatsNow = dOffice.length >= 4 ? 0 : nt?.kind === 'linked' ? Math.max(1, 2 - dOffice.length)
+    : Math.max(dOffice.length >= 3 ? 1 : 2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
   // the whole house faces the public this week (S7's opening, S12 weeks one and five): no vote at all
   const everybody = nt?.kind === 'everybody';
   const cast = seatsNow && !everybody ? castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
     invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 }) : { nominees: [], ballots: [], tally: {}, secondRound: null };
-  const before = everybody ? room.slice() : [...dOffice, ...cast.nominees];
+  let before = everybody ? room.slice() : [...dOffice, ...cast.nominees];
   // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
   const post = state && !everybody ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };
   // linked destinies: a nominee's partner goes up too (unless immune)
@@ -916,7 +918,17 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
     const p = pair && pair.find(x => x !== n);
     if (p && room.includes(p) && !immune.includes(p) && !post.nominees.includes(p) && !linked.some(l => l.to === p)) linked.push({ from: n, to: p });
   }
-  const nominees = [...post.nominees, ...linked.map(l => l.to)];
+  let nominees = [...post.nominees, ...linked.map(l => l.to)];
+  // five at most, ever (but the week the whole house is up): a tie in the house's vote can still read out more.
+  // The house-voted names the fewest named come off; never a direct nomination, a nomination for life, a linked
+  // partner or a card's target.
+  if (!everybody && nominees.length > 5) {
+    const keep = new Set([...dOffice, lifer, ...linked.map(l => l.to), ...post.played.map(p => p.put)].filter(Boolean));
+    const T = cast.tally || {};
+    const cut = nominees.filter(n => !keep.has(n)).sort((a, b) => (cast.inverted ? (T[b] || 0) - (T[a] || 0) : (T[a] || 0) - (T[b] || 0)));
+    // (and off the list the Voice reads out: the screen reads `before`)
+    while (nominees.length > 5 && cut.length) { const x = cut.shift(); nominees = nominees.filter(n => n !== x); before = before.filter(n => n !== x); }
+  }
   return { nominees, before, cards: [...pre.played, ...post.played], twist: nt ? { kind: nt.kind, who: nt.who || null, dragged: nt.dragged || null, pairs: nt.pairs || null,
     immuneHouse: nt.immuneHouse || null, nominationHouse: nt.nominationHouse || null } : null, lifer, linked, inverted: !!cast.inverted, exclusive, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
     dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };

@@ -7,6 +7,7 @@
 // that the two shows never offer each other's content.
 import { describe, expect, it } from 'vitest';
 import { TWIST_CATALOG, twistFormat, twistsForFormat, SEASON_FORMATS } from '../js/core.js';
+import { engineOf } from '../js/shows.js';
 import { SEASON_SETTINGS, SETTINGS_BY_FORMAT, settingsForFormat, defaultSettingFor } from '../js/settings.js';
 
 describe('format-scoped season design', () => {
@@ -32,13 +33,15 @@ describe('format-scoped season design', () => {
   });
 
   it('scopes the twist catalogue to the show being designed', () => {
+    // (a spin-off draws its engine's twists, Drag Race All Stars; unless it has twists of its own, Secret Story)
+    const own = f => engineOf(f) === f || TWIST_CATALOG.some(t => t.format === f);
     for (const fmt of SEASON_FORMATS) {
       const list = twistsForFormat(fmt);
       // Nothing from another show leaks in.
-      for (const t of list) expect(twistFormat(t)).toBe(fmt);
+      for (const t of list) expect(twistFormat(t)).toBe(own(fmt) ? fmt : engineOf(fmt));
     }
     // Every twist is claimed by exactly one show, so none are unreachable.
-    const total = SEASON_FORMATS.reduce((n, f) => n + twistsForFormat(f).length, 0);
+    const total = SEASON_FORMATS.filter(own).reduce((n, f) => n + twistsForFormat(f).length, 0);
     expect(total).toBe(TWIST_CATALOG.length);
   });
 });

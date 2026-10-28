@@ -354,6 +354,12 @@ export function resolveTwistSchedule(ids, cfg, { isException = () => false } = {
  */
 export const TWIST_CATEGORIES = [
   { id: 'team', label: 'Team Dynamics' },
+  // Secret Story's own shelves (its twists are not Big Brother's: js/core.js TWIST_CATALOG, format 'secret-story')
+  { id: 'ss-noms', label: 'Nominations' },
+  { id: 'ss-prime', label: 'Prime Themes' },
+  { id: 'ss-house', label: 'The House' },
+  { id: 'ss-identity', label: 'Who Is Talking' },
+  { id: 'ss-public', label: 'The Public' },
   // The villa's dumpings: how a vote night decides who leaves (Perfect Match).
   { id: 'dumping', label: 'Dumpings' },
   // How a ratings night ends (The Circle): the Hangout, a sole influencer, ...
@@ -668,6 +674,68 @@ export const TWIST_CATALOG = [
   // Scoped by `format`, so none of these ever appear in a Total Drama season
   // and none of the above ever appear in a house. A twist here changes the
   // SHAPE of the week — what happens, in what order, and how many people leave.
+  // ── SECRET STORY's own twists (the user, 2026-10-28: "I'm still seeing Big Brother twists when Secret Story is
+  // selected, and no Secret Story twists"). Placed on a week, js/bb/secret-story.js readSchedule makes it happen.
+  { id:'ss-linked', emoji:"\ud83d\udd17", name:"Linked Destinies", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"The Voice ties the house in pairs for one week, and some of the pairs have never got on. If one of a pair is nominated, the other goes up too, so every name the house writes can cost two people.",
+    engineType:'ss-linked', incompatible:['ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'] },
+  { id:'ss-for-life', emoji:"\u26d3\ufe0f", name:"Nominated for Life", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"One housemate is nominated every week until the Voice lifts it, or until a friend asks to take it on in their place. Whoever holds the power picks the target: the housemate they most want gone.",
+    engineType:'ss-for-life', incompatible:['ss-linked', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'] },
+  { id:'ss-inverted', emoji:"\ud83d\udd04", name:"Inverted Nominations", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"For one week the house names the two housemates it wants to SAVE, and the ones the fewest of them saved face the public. It sounds kinder; it shows everyone who nobody wanted to protect.",
+    engineType:'ss-inverted', incompatible:['ss-linked', 'ss-for-life', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'] },
+  { id:'ss-houses', emoji:"\ud83c\udfe0", name:"Immunity House against Nomination House", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"The house splits in two for one week and two champions play a duel in the games arena. The winning house is immune, and every nominee comes from the losing one.",
+    engineType:'ss-houses', incompatible:['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-red-room', 'ss-exclusive', 'ss-everybody'] },
+  { id:'ss-red-room', emoji:"\ud83d\udeaa", name:"The Red Room", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"A red door appears in the house and the Voice says nothing about it. Whoever opens it first is nominated on the spot, and must drag one housemate into the nominations with them.",
+    engineType:'ss-red-room', incompatible:['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-exclusive', 'ss-everybody'] },
+  { id:'ss-exclusive', emoji:"\u261d\ufe0f", name:"One Name for Everybody", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"There is no house vote this week. One housemate names every nominee alone, in the confessional, and then has to tell the house why.",
+    engineType:'ss-exclusive', incompatible:['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-everybody'] },
+  { id:'ss-everybody', emoji:"\ud83d\udc65", name:"Everybody Is Nominated", format:'secret-story', category:'ss-noms', phase:'any',
+    desc:"There are no nominations this week, because every housemate faces the public. One of them leaves at the prime, and the public alone decides who.",
+    engineType:'ss-everybody', incompatible:['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive'] },
+  { id:'ss-red-phone', emoji:"\u260e\ufe0f", name:"The Red Phone Prime", format:'secret-story', category:'ss-prime', phase:'any',
+    desc:"The red phone rings two or three times during the prime. Whoever runs to it first hears an offer (money, a card, a clue) that somebody else usually ends up paying for.",
+    engineType:'ss-red-phone', incompatible:['ss-dilemmas', 'ss-bridge', 'ss-truths', 'ss-rings'] },
+  { id:'ss-dilemmas', emoji:"\u2696\ufe0f", name:"The Night of Dilemmas", format:'secret-story', category:'ss-prime', phase:'any',
+    desc:"Three dilemmas in one prime. Each housemate called up must choose, live, between money and a friend, while the whole house watches the answer.",
+    engineType:'ss-dilemmas', incompatible:['ss-red-phone', 'ss-bridge', 'ss-truths', 'ss-rings'] },
+  { id:'ss-bridge', emoji:"\ud83c\udf09", name:"The Bridge of Sacrifices", format:'secret-story', category:'ss-prime', phase:'any',
+    desc:"Crossing by crossing, each housemate is offered a sacrifice (their money, a clue about their own secret, a nomination next week) so that a friend can cross with $5,000 or immunity. The house sees who gave, and who did not.",
+    engineType:'ss-bridge', incompatible:['ss-red-phone', 'ss-dilemmas', 'ss-truths', 'ss-rings'] },
+  { id:'ss-truths', emoji:"\ud83d\udde3\ufe0f", name:"Truths Revealed", format:'secret-story', category:'ss-prime', phase:'any',
+    desc:"The room of truths opens twice in one prime. Each time, one housemate sits alone and watches what the house says about them when they think nobody is listening.",
+    engineType:'ss-truths', incompatible:['ss-red-phone', 'ss-dilemmas', 'ss-bridge', 'ss-rings'] },
+  { id:'ss-rings', emoji:"\ud83d\udc8d", name:"The Rings", format:'secret-story', category:'ss-prime', phase:'any',
+    desc:"Four rings are hidden in the house: a secret immunity, a nomination, a kitty swap with the richest housemate, and the Switch. Whoever finds one keeps it to themselves until they play it.",
+    engineType:'ss-rings', incompatible:['ss-red-phone', 'ss-dilemmas', 'ss-bridge', 'ss-truths'] },
+  { id:'ss-second-house', emoji:"\ud83c\udfd8\ufe0f", name:"The Second House", format:'secret-story', category:'ss-house', phase:'any',
+    desc:"For two or three weeks, half the house moves into a second house behind the garden, and the Voice parts the closest pairs on purpose. Every week a duel makes one side immune, and the nominees come from the other.",
+    engineType:'ss-second-house', incompatible:['ss-clans', 'ss-bears'] },
+  { id:'ss-clans', emoji:"\ud83d\udea9", name:"The Clans", format:'secret-story', category:'ss-house', phase:'any',
+    desc:"Two captains draft the house into two clans for two or three weeks. They still live together, but every week the clans play a duel: the winners are immune and paid, the losers provide the nominees.",
+    engineType:'ss-clans', incompatible:['ss-second-house', 'ss-bears'] },
+  { id:'ss-bears', emoji:"\ud83d\udc3b", name:"The Pink Bears", format:'secret-story', category:'ss-house', phase:'any',
+    desc:"Three or four housemates move into the house next door and play against the main house for two or three weeks, with a duel every week. The Voice may offer one of the losers $3,000 to change sides.",
+    engineType:'ss-bears', incompatible:['ss-second-house', 'ss-clans'] },
+  { id:'ss-false-voice', emoji:"\ud83c\udf99\ufe0f", name:"The False Voice", format:'secret-story', category:'ss-identity', phase:'any',
+    desc:"The Voice says goodbye, and a new voice takes over the house for a week, asking each housemate alone about their life before the house. The trusting answer, and a clue on their own secret goes up on the wall; at the prime the real Voice was there all along, and the doubters are paid.",
+    engineType:'ss-false-voice', incompatible:['ss-robot'] },
+  { id:'ss-robot', emoji:"\ud83e\udd16", name:"Monsieur Robot", format:'secret-story', category:'ss-identity', phase:'any',
+    desc:"A robot moves in for a week with an eliminated housemate inside, and the house has to guess who. The robot hears everything; at the prime it is unmasked, the right guesses win $1,000, and the robot repeats what it heard.",
+    engineType:'ss-robot', incompatible:['ss-false-voice'] },
+  { id:'ss-house-decides', emoji:"\ud83d\uddf3\ufe0f", name:"The House Decides", format:'secret-story', category:'ss-public', phase:'any',
+    desc:"At the prime, the public names the bottom two instead of the one who leaves. Then every housemate, live, says which of the two goes, and a tie goes to the public's vote.",
+    engineType:'ss-house-decides', incompatible:['ss-vote-to-evict'] },
+  { id:'ss-vote-to-evict', emoji:"\ud83d\udc4e", name:"The Vote to Eliminate", format:'secret-story', category:'ss-public', phase:'any',
+    desc:"For one prime the public votes against instead of to save. The most disliked nominee leaves, not the least loved: a night that is bad news for a villain.",
+    engineType:'ss-vote-to-evict', incompatible:['ss-house-decides'] },
+  { id:'ss-ticket', emoji:"\ud83c\udf9f\ufe0f", name:"The Ticket", format:'secret-story', category:'ss-public', phase:'any',
+    desc:"At the prime, every housemate names the one they would keep, never themselves. The most named cannot be nominated the following week.",
+    engineType:'ss-ticket', incompatible:[] },
   { id:'bb-duo-week', emoji:'\u26d3\ufe0f', name:'You Go, They Go', format:'big-brother',
     category:'elim', phase:'any',
     desc:'For one week the house plays in pairs. The Head of Household nominates two DUOS rather than two houseguests \u2014 four keys on the wall \u2014 and the veto pulls a whole pair down and puts a whole pair up. The house then votes normally, one name each, and whoever takes the most votes is evicted along with their partner, however few votes that partner got. Two people leave and only one of them was chosen.',
@@ -2138,6 +2206,8 @@ export function isSpinOffSeason(source) {
 
 /** The twists a given season is allowed to draw — a show never offers another's. */
 export function twistsForFormat(source) {
+  // Secret Story plays on Big Brother's engine but has twists of its own: only those
+  if (seasonFormat(source) === SS_FORMAT) return TWIST_CATALOG.filter(t => t.format === SS_FORMAT);
   const fmt = engineFormat(source);
   return TWIST_CATALOG.filter(t => twistFormat(t) === fmt);
 }

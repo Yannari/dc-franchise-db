@@ -48,7 +48,8 @@ describe('show formats', () => {
     // red the day Drag Race filed twists of its own.
     // Summed over ENGINES: a spin-off (Drag Race All Stars) draws its engine's
     // twists, which is sharing on purpose and not a twist filed twice.
-    const byShow = Object.keys(SHOWS).filter(f => engineOf(f) === f).map(f => twistsForFormat(f));
+    // ...and a spin-off with twists of its own (Secret Story, on Big Brother's engine) is a shelf of its own
+    const byShow = Object.keys(SHOWS).filter(f => engineOf(f) === f || TWIST_CATALOG.some(t => t.format === f)).map(f => twistsForFormat(f));
     expect(byShow.reduce((n, list) => n + list.length, 0)).toBe(TWIST_CATALOG.length);
     const seen = new Set();
     for (const list of byShow) {

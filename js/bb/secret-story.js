@@ -119,6 +119,23 @@ function applyFx(fx) {
   for (const [n, axis, d, why] of fx?.pub || []) pub(n, axis, d, why);
 }
 
+// THE TIMELINE: a Secret Story twist placed on a week (js/core.js TWIST_CATALOG, format 'secret-story') sets the
+// week's choice before the engine draws its own.
+const SS_SCHEDULE = {
+  'ss-linked': ['forceWeekTwist', 'linked'], 'ss-for-life': ['forceWeekTwist', 'for-life'], 'ss-inverted': ['forceWeekTwist', 'inverted'], 'ss-houses': ['forceWeekTwist', 'houses'],
+  'ss-red-room': ['forceWeekTwist', 'red-room'], 'ss-exclusive': ['forceWeekTwist', 'exclusive'], 'ss-everybody': ['forceWeekTwist', 'everybody'],
+  'ss-red-phone': ['forcePrimeTheme', 'red-phone'], 'ss-dilemmas': ['forcePrimeTheme', 'dilemmas'], 'ss-bridge': ['forcePrimeTheme', 'bridge'], 'ss-truths': ['forcePrimeTheme', 'truths'], 'ss-rings': ['forcePrimeTheme', 'rings'],
+  'ss-second-house': ['forceSplit', 'second-house'], 'ss-clans': ['forceSplit', 'clans'], 'ss-bears': ['forceSplit', 'bears'],
+  'ss-false-voice': ['forceDeception', 'false-voice'], 'ss-robot': ['forceDeception', 'robot'],
+  'ss-house-decides': ['forceVoteMode', 'house-decides'], 'ss-vote-to-evict': ['forceVoteMode', 'evict'], 'ss-ticket': ['forceTicket', true],
+};
+export function readSchedule(state, wk) {
+  for (const t of (seasonConfig?.twistSchedule || []).filter(x => x && Number(x.episode) === Number(wk))) {
+    const m = SS_SCHEDULE[t.type];
+    if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
+  }
+}
+
 /** The season's secret-story state, created on first touch. Plain JSON. */
 export function ssState() {
   gs.bb ||= {};
@@ -378,6 +395,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   const ctx = huntCtx(week, rng);
   const acts = [];
   state._week = ctx.week;
+  // the twists the user placed on this week in the timeline, before the engine draws its own
+  readSchedule(state, ctx.week);
   state.publicRoom = room.slice();
   state.kittyAtWeekStart = Object.fromEntries(room.map(n => [n, Number(state.kitty?.[n]) || 0]));
   // a new week: last week's headlines fade, the stories stay (js/ss/public.js)
@@ -1025,7 +1044,7 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
     const out = nominees.slice().sort((a, b) => against[b] - against[a])[0];
     return { evicted: out, percents: against, saved: nominees.filter(n => n !== out), mode, fake: false, second: null, power: null, fakeKind: null };
   }
-  if (mode === 'house-decides' && nominees.length >= 3) {
+  if (mode === 'house-decides' && nominees.length >= 2) {
     const bottom = order.slice(0, 2);
     const hd = houseDecides(huntCtx(week, rng), { bottom, house, publicLowest: order[0] });
     return { evicted: hd.evicted, percents, saved: nominees.filter(n => n !== hd.evicted), mode, bottom, houseVotes: hd.votes, houseTally: hd.tally, houseTie: hd.tie,

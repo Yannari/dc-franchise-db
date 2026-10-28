@@ -506,6 +506,8 @@ export function bbFindCompetition(id) {
 }
 
 export function bbTwistsForWeek(weekNum) {
+  // (a Secret Story season runs its own twists, js/bb/secret-story.js readSchedule: never Big Brother's)
+  if (seasonFormat(seasonConfig) === SS_FORMAT) return [];
   const scheduled = (seasonConfig.twistSchedule || [])
     .filter(t => t && Number(t.episode) === Number(weekNum))
     .map(t => t.type)

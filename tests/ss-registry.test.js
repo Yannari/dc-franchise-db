@@ -37,10 +37,14 @@ describe('Secret Story in the registry', () => {
     }
   });
 
-  it('draws the Big Brother engine twists', () => {
+  // (the user, 2026-10-28: "I'm still seeing Big Brother twists when Secret Story is selected, and no Secret Story
+  // twists": it plays on Big Brother's engine, with twists of its own and none of Big Brother's)
+  it('has twists of its own, and none of Big Brother\'s', () => {
     const ids = twistsForFormat({ format: 'secret-story' }).map(t => t.id);
     expect(ids.length).toBeGreaterThan(0);
-    expect(ids).toEqual(twistsForFormat({ format: 'big-brother' }).map(t => t.id));
+    expect(ids.every(id => id.startsWith('ss-'))).toBe(true);
+    const bb = new Set(twistsForFormat({ format: 'big-brother' }).map(t => t.id));
+    expect(ids.some(id => bb.has(id))).toBe(false);
   });
 
   it('opens an old Big Brother save that ran the Secret Story theme as Secret Story', () => {

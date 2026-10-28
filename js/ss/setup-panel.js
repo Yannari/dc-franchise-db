@@ -13,7 +13,7 @@
 import { seasonConfig, players, kinshipPairs, seasonFormat } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { careerOf } from '../franchise-meta.js';
-import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS, PRODUCTION_SECRETS, productionSecret, drawProductionSecret } from './casting.js';
+import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS, SECRET_POOL, PRODUCTION_SECRETS, productionSecret, drawProductionSecret, pickedSecret } from './casting.js';
 import { playerAvatarUrl } from '../players.js';
 import { ROLE_JOBS } from './production.js';
 
@@ -57,9 +57,9 @@ export function ensureSsCast() {
   if (JSON.stringify(seasonConfig.ssSecrets) !== before) persist();
 }
 
-const BADGE = { pool: ['DRAWN', '#8b8fa3'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'], production: ['PRODUCTION', '#ff3ea5'] };
+const BADGE = { pool: ['DRAWN', '#8b8fa3'], chosen: ['CHOSEN', '#19d3c5'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'], production: ['PRODUCTION', '#ff3ea5'] };
 // the tag on a housemate's card, in words
-const SOURCE = { pool: ['Drawn', '#9b97b8'], own: ['Yours', '#f5c542'], history: ['From their life', '#5fb3ff'], canon: ['Canon', '#c084fc'], production: ['Production', '#ff3ea5'] };
+const SOURCE = { pool: ['Drawn', '#9b97b8'], chosen: ['Chosen', '#19d3c5'], own: ['Yours', '#f5c542'], history: ['From their life', '#5fb3ff'], canon: ['Canon', '#c084fc'], production: ['Production', '#ff3ea5'] };
 
 /** Is the season being cast a Secret Story season? (the cast screen asks, to show its Secrets tab) */
 export function isSecretStorySeason() { return seasonFormat(seasonConfig) === SS_FORMAT; }
@@ -111,6 +111,7 @@ const BOARD_CSS = `
 .ssb-env-names{font-size:12.5px;font-weight:600}
 .ssb-x{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:8px;border:0;background:transparent;color:var(--dim)!important;cursor:pointer;font-size:14px!important}
 .ssb-x:hover{background:rgba(255,255,255,.08);color:#fff!important}
+.ssb-x.ssb-ed{right:38px}
 .ssb-new{border-radius:14px;border:1.5px dashed rgba(255,255,255,.2);background:transparent;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--dim)!important;transition:border-color .15s,color .15s}
 .ssb-new:hover{border-color:var(--gold);color:var(--gold)!important}
 .ssb-new b{font:600 15px 'SSFredoka',sans-serif}
@@ -197,6 +198,8 @@ export function ssSecretsBoardHTML() {
   const all = c.map(p => seasonConfig.ssSecrets?.[p.name]);
   const prodN = new Set(all.filter(e => e?.source === 'production').map(e => e.text)).size;
   const shared = all.filter(e => e?.pair || (e?.group && e.source !== 'production')).length;
+  // (a secret already given to somebody, or anybody's canon secret, is not offered twice)
+  const takenIds = new Set([...all.map(e => e?.id).filter(Boolean), ...canonTaken()]);
   const cards = c.map(p => {
     const e = seasonConfig.ssSecrets?.[p.name];
     const [label, col] = SOURCE[e?.source] || SOURCE.pool;
@@ -214,6 +217,10 @@ export function ssSecretsBoardHTML() {
       ${locked ? '<div class="ssb-lock">Canon: this secret is part of who they are now.</div>' : `<div class="ssb-act">
         <button type="button" class="ssb-btn" title="Draw another secret from the pool" onclick="ssReroll('${n}')">🎲 Reroll</button>
         <button type="button" class="ssb-btn" title="Write a secret for them" onclick="ssWriteOpen('${n}')">✎ Write</button>
+        <select onchange="ssChoose('${n}',this.value)" title="Pick one of the secrets yourself"><option value="">Choose a secret…</option>${SECRET_KINDS.map(kd => {
+          const opts = SECRET_POOL.filter(x => x.kind === kd.id && (!takenIds.has(x.id) || x.id === e?.id));
+          return opts.length ? `<optgroup label="${esc(kd.label)}">${opts.map(x => `<option value="${esc(x.id)}" ${x.id === e?.id ? 'selected' : ''}>${esc(x.text)}</option>`).join('')}</optgroup>` : '';
+        }).join('')}</select>
         ${hist.length ? `<select onchange="ssUseHistory('${n}',this.value)" title="Something true from their history"><option value="">From their life…</option>${hist.map((h, j) => `<option value="${j}">${esc(h.text)}</option>`).join('')}</select>` : ''}</div>
       <div class="ssb-write" id="ss-write-${n}"><input id="ss-write-text-${n}" placeholder="I have…">
         <select id="ss-write-kind-${n}">${SECRET_KINDS.map(k => `<option value="${k.id}">${esc(k.label)}</option>`).join('')}</select>
@@ -242,7 +249,9 @@ function prodPanelHTML(c) {
   const env = e => {
     const job = jobOf(e);
     const who = (e.group || []).map(n => c.find(p => p.name === n)).filter(Boolean);
-    return `<div class="ssb-env"><button type="button" class="ssb-x" title="Take it away (they draw a secret of their own)" onclick="ssProdRemove('${esc(e.text).replace(/'/g, '&#39;')}')">✕</button>
+    const key = esc(e.text).replace(/'/g, '&#39;');
+    return `<div class="ssb-env"><button type="button" class="ssb-x" title="Take it away (they draw a secret of their own)" onclick="ssProdRemove('${key}')">✕</button>
+      <button type="button" class="ssb-x ssb-ed" title="Edit it: the secret, who keeps it, the job" onclick="ssProdEdit('${key}')">✎</button>
       <div class="ssb-env-k">${job ? esc(job[0]) : 'A production secret'}</div>
       <div class="ssb-env-q">“${esc(e.text)}”</div>
       ${job?.[1] ? `<div class="ssb-env-job">Every week: ${esc(job[1])}.</div>` : '<div class="ssb-env-job">No weekly job: a secret to keep, nothing more.</div>'}
@@ -285,8 +294,38 @@ function prodCheck() {
   const msg = $('ss-prod-msg');
   if (msg) msg.textContent = !tile ? 'Choose a secret, then who keeps it.' : !text ? 'Write the secret.' : who < min ? `Choose ${min - who} more.` : who > max ? `Too many: at most ${max}.` : 'Ready.';
 }
+// the production secret being edited (its words), while the composer is open on it
+let editing = null;
+/** Opens the composer on a production secret already cast: its words, who keeps it, its job. */
+export function ssProdEdit(text) {
+  const all = Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'production' && e.text === text);
+  if (!all.length) return;
+  const e = all[0][1];
+  const el = $('ss-prod-comp');
+  if (!el) return;
+  el.classList.add('on');
+  editing = text;
+  const id = (/^prod-(.+)$/.exec(String(e.id || '')) || [])[1];
+  const tile = /** @type {HTMLElement|null} */ (document.querySelector(`.ssb-tile[data-def="${id && PRODUCTION_SECRETS.some(d => d.id === id && d.text === text) ? id : 'own'}"]`));
+  if (tile) ssProdPick(tile);
+  if (tile?.dataset.def === 'own') {
+    const set = (k, v) => { const x = /** @type {HTMLInputElement|null} */ ($(k)); if (x) x.value = v || ''; };
+    set('ss-prod-own-text', e.text); set('ss-prod-own-plays', e.plays || ''); set('ss-prod-own-c1', (e.clues || [])[0]); set('ss-prod-own-c2', (e.clues || [])[1]);
+  }
+  const keep = new Set(all.map(([n]) => n));
+  document.querySelectorAll('.ssb-person').forEach(b => b.classList.toggle('on', keep.has(/** @type {HTMLElement} */ (b).dataset.name || '')));
+  const go = $('ss-prod-go');
+  if (go) go.textContent = 'Save the changes';
+  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  prodCheck();
+  const ownT = $('ss-prod-own-text'), ownP = $('ss-prod-own-plays');
+  if (ownT && !ownT.dataset.bound) { ownT.dataset.bound = '1'; ownT.addEventListener('input', prodCheck); ownP?.addEventListener('change', prodCheck); }
+}
 /** Opens (or closes) the composer for a new production secret. */
 export function ssProdOpen(open = true) {
+  editing = null;
+  const go0 = $('ss-prod-go');
+  if (go0) go0.textContent = 'Cast it';
   const el = $('ss-prod-comp');
   if (!el) return;
   // (the "+ New" card toggles it; Cancel closes it)
@@ -316,6 +355,14 @@ export function ssProdCast() {
   const max = def.max || 6;
   const holders = who.slice(0, max);
   const next = { ...(seasonConfig.ssSecrets || {}) };
+  // editing: the old one goes; whoever it no longer covers draws a secret of their own
+  if (editing) {
+    for (const [n, e] of Object.entries(next)) if (e?.source === 'production' && e.text === editing && !holders.includes(n)) {
+      const r = rerollSecret(playerNamed(n), next, { taken: canonTaken() });
+      if (r) next[n] = r; else delete next[n];
+    }
+    editing = null;
+  }
   // whoever already held a group secret with one of these leaves it whole for the others
   for (const n of holders) if (next[n]?.group) for (const m of next[n].group) if (!holders.includes(m) && next[m]) next[m] = { ...next[m], group: next[m].group.filter(x => !holders.includes(x)) };
   seasonConfig.ssSecrets = { ...next, ...productionSecret(def, holders) };
@@ -393,6 +440,15 @@ const playerNamed = n => cast().find(p => p.name === n) || { name: n };
 
 export function ssReroll(name) {
   const e = rerollSecret(playerNamed(name), seasonConfig.ssSecrets || {}, { taken: canonTaken() });
+  if (!e) return;
+  seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), [name]: e };
+  persist(); renderSsSecrets();
+}
+
+/** A secret picked by hand from the pool for one housemate. */
+export function ssChoose(name, id) {
+  if (!id) return;
+  const e = pickedSecret(id);
   if (!e) return;
   seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), [name]: e };
   persist(); renderSsSecrets();

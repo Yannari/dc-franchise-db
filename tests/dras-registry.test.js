@@ -20,7 +20,8 @@ describe('Drag Race All Stars in the registry', () => {
     expect(familyOf('drag-race-all-stars')).toBe('drag-race');
     expect(familyOf('traitors')).toBe('traitors');
     expect(familyMembers('drag-race-all-stars')).toEqual(['drag-race', 'drag-race-all-stars']);
-    expect(familyMembers('big-brother')).toEqual(['big-brother']);
+    // (Big Brother's family has its own spin-off too: Secret Story, under Big Brother's tab)
+    expect(familyMembers('big-brother')).toEqual(['big-brother', 'secret-story']);
     expect(engineFormat({ format: 'drag-race-all-stars' })).toBe('drag-race');
   });
 

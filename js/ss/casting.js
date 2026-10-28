@@ -165,6 +165,12 @@ export function rerollSecret(player, secrets = {}, { taken = new Set(), rng = Ma
   return e ? asEntry(e, 'pool') : null;
 }
 
+/** A secret the user CHOSE from the pool for one housemate (the cast screen's "Choose a secret"). */
+export function pickedSecret(id) {
+  const e = SECRET_POOL.find(x => x.id === id);
+  return e ? asEntry({ ...e }, 'chosen') : null;
+}
+
 /** A secret the user wrote, with its kind's clues and tells. */
 export function writtenSecret(text, kind) {
   return text && String(text).trim() ? asEntry(ownSecret(text, kind), 'own') : null;

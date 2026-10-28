@@ -8,7 +8,7 @@ import { bKey, getBond } from './bonds.js';
 import { seasonRecord, recordLines, vetoSavedIn } from './analysis/game-record.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildPerfectMatchSeasonDocument } from './pm/export.js';
-import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT, BB_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf, careerShowOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
 import { seasonFormat } from './core.js';
@@ -3232,7 +3232,15 @@ export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFor
       doc.winner.runnerUp = order[1] || null;
       doc.winner.vote = doc.finalVote.map(f => `${f.name} ${f.percent}%`).join(' — ');
       doc.winner.kitty = Number(finale.kitty) || 0;
+      doc.winner.cheque = Number(finale.cheque) || 0;
     }
+    // what made this season this season: the draw, its secret pair, the secret of
+    // the house, the secret room (js/ss/twists.js, signatures.js, final.js, hidden.js)
+    const S = gs.bb.secretStory;
+    doc.ssDraw = S.draw ? { signature: S.draw.signature || null, tools: { ...(S.draw.tools || {}) }, secretRoomWeek: S.draw.secretRoomWeek ?? null } : null;
+    doc.ssRole = S.role ? { id: S.role.id, pair: [...S.role.pair], exposedWeek: S.role.exposedWeek ?? null, by: S.role.by || null } : null;
+    doc.houseSecret = S.houseSecret ? { riddle: S.houseSecret.riddle, answer: S.houseSecret.answer, solvedBy: S.houseSecret.solvedBy || null, sold: !!S.houseSecret.sold } : null;
+    doc.secretRoom = (S.hidden || []).map(h => ({ name: h.name, from: h.from, back: h.back ?? null }));
   }
   return _attachVillainBoard(doc);
 }
@@ -5741,7 +5749,7 @@ export async function syncLiveEpisode(onStatus) {
   try {
     const fmt = snap.format || DEFAULT_FORMAT;
     const list = fmt === 'total-drama' ? publishedTDExitInterviews()
-      : engineOf(fmt) === 'big-brother' ? publishedExitInterviews() : publishedExits(fmt);
+      : engineOf(fmt) === BB_FORMAT ? publishedExitInterviews() : publishedExits(fmt);
     let sdb = { seasons: [] };
     try { const r = await fetch('seasons_database.json'); if (r.ok) sdb = await r.json(); } catch {}
     const win = _airWindowFor(sdb, fmt, snap.seasonNumber);

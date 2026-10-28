@@ -115,7 +115,8 @@ export function showClue(state, ctx, { holder = undefined, clue = null, how = 'g
   if (!shown && !fake) return null;
   const viewers = to === 'house' ? house.filter(n => !(secret.holders || []).includes(n)) : [].concat(to);
   const ftxt = fake ? (fakeText || pick(nearMisses(secret), rng)) : null;
-  const strength = /cassette|song|sound|video/i.test(shown || '') ? 0.32 : 0.24;
+  // (calibrated by the ss-spec audit, 2026-10-27: 0.24 found 30% of the secrets; the real show finds half or more)
+  const strength = /cassette|song|sound|video/i.test(shown || '') ? 0.38 : 0.3;
   for (const v of viewers) addEvidence(state, ctx, v, holder, { strength, how: fake ? 'fake-clue' : `clue:${how}`, toward: ftxt });
   const rec = { week: ctx.week ?? 0, secretId: secret.id, holders: [...secret.holders], clue: shown || 'a clue', how, fake, to: to === 'house' ? 'house' : viewers, by };
   state.shownClues.push(rec);

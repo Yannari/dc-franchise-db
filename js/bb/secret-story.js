@@ -380,7 +380,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       players: [m.who, m.to || m.about].filter(Boolean), badgeText: m.kind === 'tell' ? 'NOTICED' : 'THEORY', badgeClass: 'blue', part: 'hunt' })) });
   }
   // The Voice's clue of the week (until the weekly game hands them out, M3).
-  for (let c = 0; c < 2; c++) {
+  // two a week, and a third in the back half of the season when the Voice wants the hunt to finish
+  for (let c = 0; c < (room.length <= 9 ? 3 : 2); c++) {
     const hidden = room.filter(n => secretOf(state, n) && !secretOf(state, n).found);
     if (!hidden.length) break;
     const holder = hidden[Math.floor(rng() * hidden.length)];
@@ -399,6 +400,11 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   } else if (ctx.week >= 2 && rng() < 0.55) {
     const c = houseSecretClue(state, ctx, { house: room, to: rng() < 0.5 ? gameWinner : null });
     if (c) { pub(c.finder, 'game', 0.08, 'found a clue to the secret of the house'); acts.push(c); }
+  }
+  // A fake couple (or fake siblings) still playing it: the public, which knows, follows the story every week.
+  for (const s of (state.secrets || []).filter(x => x.kind === 'voice-pair' && !x.found)) {
+    const on = (s.holders || []).filter(h => room.includes(h));
+    if (on.length === 2) for (const h of on) pub(h, 'arc', 0.14, 'played the fake couple for another week');
   }
   // The season's signature role (js/ss/signatures.js): the masters add a nominee, the thieves steal.
   {
@@ -596,7 +602,7 @@ export function afterPrime({ week = undefined, evicted = null, house = [], rng =
   for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
   const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
   after.public = readThePublic(state, room);
-  return { type: 'ss-after', week: ctx.week, evicted, reveal, after, holders: [evicted],
+  return { type: 'ss-after', week: ctx.week, evicted, reveal, after, read: publicRead(state, evicted), holders: [evicted],
     beats: [{ text: reveal && !reveal.alreadyFound ? `${evicted}'s secret, never found, is told on the set: ${reveal.secret}.` : `${evicted} leaves the House of Secrets.`,
       players: [evicted], badgeText: 'AFTER SECRET', badgeClass: 'gold', part: 'after' }] };
 }

@@ -895,3 +895,33 @@ each finalist's season from their biggest moments (kept all season, not just
 the last weeks), reads the shares from last place to first, and the winner
 takes their kitty AND the $100,000 cheque. Big Brother's last days (revising for
 a jury quiz) no longer play in a Secret Story final.
+
+## 32. The audit, the export, part 2 done (M12)
+
+`npm run audit:ss-spec` plays thirty seasons and prints every rate; it fails
+only on what must never happen (an engine error, a kitty ledger that does not
+add up, a broken line or another show's word on a Secret Story screen). The
+calibrated reading, 2026-10-28:
+
+| measure | value | the real show |
+|---|---|---|
+| secrets found by a buzz | 43% | about half or more |
+| buzzes a season | 14, right 179 / wrong 200 / withdrawn 45 | many, often wrong |
+| signatures | thieves 16, masters 10, none 4; unmasked half the time, week 5 | |
+| fake eliminations | 73%, every one came back | most seasons |
+| secret of the house | solved 57%, the place sold back 53% (of 17) | solved most seasons, often sold |
+| winner = biggest fan base | 87%; sweetheart 21, big character 8, love-to-hate 1 | |
+| prime / launch night | 106 / 128 clicks | full episodes |
+| errors / ledger / bad lines | 0 / 0 / 0 | |
+
+Calibrated by it: clue strength 0.24 → 0.30 and a third Voice clue in the back
+half (secrets found 30% → 43%); the house's riddle bar and the sell-back odds;
+romantics 0.6 → 0.8 and a weekly story for a fake couple still playing (the
+winners had been almost all sweethearts). The audit itself had a measuring bug
+(the first-out read taken from the house WITHOUT the person who left): the
+after act now carries how the country saw them as they went.
+
+The season document now exports the draw, the secret pair, the secret of the
+house, the secret room and the winner's cheque. Part 2 (the game) is complete;
+part 3 (the writing) and part 4 (look and sound, Secret Story's own plates and
+lettering) are next.

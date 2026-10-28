@@ -300,4 +300,6 @@ No HOH, no veto, no jury: the confessional nominates, the public eliminates and
 crowns. Never print houseguest / HOH / veto / jury / evicted over it. A newbie's
 secret becomes canon on the character (write-once `roster.secret`). Design and
 the four-part plan: `docs/superpowers/specs/2026-10-27-secret-story-show-design.md`;
-research of all 14 French seasons: `docs/research/secret-story-france.md`.
+research of all 14 French seasons: `docs/research/secret-story-france.md`. Part 2 (the game) is
+`docs/superpowers/specs/2026-10-27-secret-story-game-design.md` (§25–§32 are what was built);
+before shipping a change run `npm run audit:ss-spec` and read it.

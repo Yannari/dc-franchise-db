@@ -25,6 +25,7 @@ import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
+import { SS_FORMAT } from '../shows.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
@@ -5211,7 +5212,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         ctx.hoh = act.winner || ctx.hoh; ctx.anchor = 'hoh';
         // the room opens the same night (bb/hoh-room.js says which competitions get it, and which beats play in it)
         const acts = row.acts || [], i = acts.indexOf(act);
-        if (hasHohRoom(act) && row.themeId !== 'secret-story') {
+        if (hasHohRoom(act) && row.themeId !== SS_FORMAT) {
           const room = hohRoomBeats(acts, i);
           // (an older save chooses its House Life from the beats: these have aired here)
           for (const b of room) aired.add(b.eventId);

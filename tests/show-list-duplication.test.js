@@ -213,7 +213,7 @@ const COMPARISON_BACKLOG = {
   'js/social/archive.js':         3,
   'js/social/events.js':          2,
   'js/social/live.js':            1,
-  'js/stats-export.js':           4,
+  'js/stats-export.js':           3,
   // 1 -> 2 for the castle's transcript (Plan 8, Task 6). This file already
   // hands a Big Brother row to its own writer in the same shape and for the
   // same reason: a show's TRANSCRIPT is not a field the registry can declare,

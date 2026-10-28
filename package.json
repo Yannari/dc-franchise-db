@@ -22,6 +22,7 @@
     "audit:bb-comps": "vitest run --config vitest.audit.config.js tests/bb-comp-domination-audit.test.js --reporter=verbose",
     "audit:tr-castle": "vitest run --config vitest.audit.config.js tests/tr-castle-audit.test.js --reporter=verbose",
     "audit:pm-spec": "vitest run --config vitest.audit.config.js tests/pm-spec-audit.test.js --reporter=verbose",
+    "audit:ss-spec": "vitest run --config vitest.audit.config.js tests/ss-spec-audit.test.js --reporter=verbose",
     "rr:transcript": "vitest run --config vitest.audit.config.js tests/rr-transcript-audit.test.js",
     "rr:read": "vitest run --config vitest.audit.config.js tests/rr-read-audit.test.js",
     "audit:rr-spec": "vitest run --config vitest.audit.config.js tests/rr-spec-audit.test.js --reporter=verbose",

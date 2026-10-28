@@ -154,7 +154,9 @@ export function absorbPopularity(state, popularity = {}, names = [], week = 0) {
  *   authenticity a multiplier, both ways
  */
 /** The audience's groups and how much of the country each is. */
-export const GROUPS = { hearts: 1, drama: 0.8, romantics: 0.6, gamers: 0.55 };
+// (romantics up from 0.6, the ss-spec audit 2026-10-27: the real winners were often a story the
+// public followed, the fake couples and siblings of S2, S4, S6, and the model crowned sweethearts 25 times in 30)
+export const GROUPS = { hearts: 1, drama: 0.8, romantics: 0.8, gamers: 0.55 };
 export const GROUP_LABEL = { hearts: 'the hearts at home', drama: 'the drama fans', romantics: 'the romantics', gamers: 'the gamers' };
 
 /**

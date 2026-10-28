@@ -73,15 +73,16 @@ export function solveHouseSecret(state, ctx, { house = [] } = {}) {
   const hs = state.houseSecret;
   if (!hs || hs.solvedBy) return null;
   const rng = ctx.rng || Math.random;
-  const score = n => (hs.seen[n] || 0) * 0.22 + st(ctx, n, 'mental') / 10 * 0.3 + st(ctx, n, 'intuition') / 10 * 0.2 + rng() * 0.3;
+  const score = n => (hs.seen[n] || 0) * 0.12 + st(ctx, n, 'mental') / 10 * 0.3 + st(ctx, n, 'intuition') / 10 * 0.2 + rng() * 0.3;
   const best = house.map(n => ({ n, s: score(n) })).sort((a, b) => b.s - a.s)[0];
-  if (!best || best.s < 0.62) return { type: 'ss-house-secret-end', week: ctx.week ?? 0, solved: false, answer: hs.answer,
+  // (calibrated by the ss-spec audit: 0.62 solved it 97% of seasons)
+  if (!best || best.s < 0.78) return { type: 'ss-house-secret-end', week: ctx.week ?? 0, solved: false, answer: hs.answer,
     beats: [{ text: 'Nobody solves the secret of the house.', players: [], badgeText: 'THE HOUSE', badgeClass: 'grey', part: 'house-secret' }] };
   hs.solvedBy = best.n;
   // the Voice's offer: the place in the final, for money
   const offer = 15000 + Math.round(rng() * 7) * 5000;
   const greed = (st(ctx, best.n, 'strategic') - st(ctx, best.n, 'loyalty') + 10) / 20;
-  const sells = rng() < clamp(0.15 + greed * 0.35 + (offer - 15000) / 35000 * 0.25);
+  const sells = rng() < clamp(0.04 + greed * 0.2 + (offer - 15000) / 35000 * 0.12);
   if (sells) { hs.sold = true; mint(state, best.n, offer, 'sold the place in the final', ctx.week ?? 0); }
   return { type: 'ss-house-secret-end', week: ctx.week ?? 0, solved: true, by: best.n, answer: hs.answer, riddle: hs.riddle, offer, sold: sells,
     beats: [{ text: sells ? `${best.n} solves the secret of the house, then sells the place in the final for $${offer.toLocaleString('en-US')}.` : `${best.n} solves the secret of the house and keeps the place in the final.`,

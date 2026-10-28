@@ -103,6 +103,8 @@ const BY_ID = [
   [/^bb-ss-secretroom/, 'ss-secretroom'],
   [/^bb-ss-sroom-/, 'ss-tension'],
   [/^bb-ss-group-/, 'ss-secretroom'],
+  [/^bb-ss-ntwist-houses-/, 'ss-epic'],
+  [/^bb-ss-ntwist-/, 'ss-tension'],
   [/^bb-ss-prime-entry-/, 'ss-epic'],
   [/^bb-ss-houseend/, 'ss-cliff'],
   [/^bb-ss-prime-package/, 'ss-previously'],

@@ -70,17 +70,24 @@ export function nominationWish(state, ctx, voter, cand) {
  * go to a second round among the tied (the real show did this), and a tie that
  * survives it puts all of them up.
  */
-export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {}, seats = 2, double = [] } = {}) {
+export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {}, seats = 2, double = [], invert = false, picksPer = 2 } = {}) {
   const ballots = [];
   const tally = Object.fromEntries(pool.map(n => [n, 0]));
   for (const v of voters) {
-    const ranked = pool.filter(n => n !== v).map(n => ({ n, ...nominationWish(state, ctx, v, n) })).sort((a, b) => b.score - a.score);
-    const picks = ranked.slice(0, 2);
+    // (the inverted week, js/ss/nomination-twists.js: they name who they want to SAVE, the ones they least want gone)
+    const ranked = pool.filter(n => n !== v).map(n => ({ n, ...nominationWish(state, ctx, v, n) })).sort((a, b) => (invert ? a.score - b.score : b.score - a.score));
+    const picks = ranked.slice(0, Math.max(1, picksPer));
     // (a double vote, bought in the secret room, counts twice)
     for (const p of picks) tally[p.n] = (tally[p.n] || 0) + (double.includes(v) ? 2 : 1);
     ballots.push({ voter: v, picks: picks.map(p => p.n), reasons: Object.fromEntries(picks.map(p => [p.n, p.reason])) });
   }
-  for (const [n, k] of Object.entries(extraVotes)) if (n in tally) tally[n] += k;
+  for (const [n, k] of Object.entries(extraVotes)) if (n in tally) tally[n] += invert ? -k : k;
+  if (invert) {
+    // the least saved go up (an extra vote against counts as one save fewer)
+    const S0 = Math.max(1, Math.min(seats, pool.length));
+    const order = Object.keys(tally).sort((a, b) => tally[a] - tally[b]);
+    return { nominees: order.slice(0, S0), ballots, tally, secondRound: null, inverted: true };
+  }
   const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
   // (how many go up is the Voice's call each week: two, sometimes three or four; the caller says)
   const S = Math.max(1, Math.min(seats, ranked.length));

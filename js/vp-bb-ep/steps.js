@@ -36,6 +36,7 @@ import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
+import { ssWeekTwistScreen } from './ss-week-twist.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3134,6 +3135,7 @@ function ssGameScreen(act, ctx) {
     clue: `${w}, you have won a clue. Choose whose secret it is about.`,
     money: `${w}, you have won ${euros(act.amount)} for your kitty.`,
     'free-buzz': `${w}, you have won a free buzz. Use it whenever you like: it will cost you nothing.`,
+    joker: `${w}, you have won the Joker card. Keep it secret. After a nomination, you may cancel one nominee and name another.`,
     none: `${w}, well played. This one was for the glory.`,
   };
   /** @type {BB.Step[]} */ const steps = [
@@ -3203,6 +3205,9 @@ function ssNomScreen(act, ctx) {
   const ss = act.secretStory;
   const who = ss.rule === 'women-nominate-men' ? ['the women', 'two men'] : ss.rule === 'men-nominate-women' ? ['the men', 'two women'] : ['every housemate', 'two housemates'];
   const noms = (act.nominees || []).slice();
+  // (the names the house gave, before any card was played: js/ss/powers.js)
+  const read = (ss.before || noms).slice();
+  const cards = ss.cards || [];
   const k = `${ctx.week}|ssnom`;
   const house = (ctx.house || []).filter(Boolean);
   const DR = n => ({ set: 'dr', plate: 'confessional-close', room: 'Confessional', cam: CAM.dr, kicker: 'Cam 01 · Confessional', cast: [[n, 50]] });
@@ -3230,8 +3235,14 @@ function ssNomScreen(act, ctx) {
     const [x, y] = b.picks || [];
     // (no reason said twice in one night: each pool is walked from a different start)
     const why = n => { const pool = WHY[b.reasons?.[n]] || WHY.gut; let j = hash(`${ctx.week}|why|${b.voter}|${n}`) % pool.length; for (let t = 0; t < pool.length && saidWhy.has(pool[j]); t++) j = (j + 1) % pool.length; saidWhy.add(pool[j]); return pool[j]; };
-    if (i === 0) steps.push(ssv(`${b.voter}, it's time for your nominations. Which two housemates do you nominate, and why?`, { scene: DR(b.voter), toast: ['NOMINATIONS', '#e0b84a'] }));
-    steps.push({ k: 'dr', by: b.voter, t: y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.`, ...(i ? { scene: DR(b.voter) } : {}) });
+    if (i === 0) steps.push(ssv(ss.inverted ? `${b.voter}, this week it's the other way round. Which two housemates do you want to save?`
+      : ss.exclusive ? `${b.voter}, this week you alone name the nominees. Who are they, and why?`
+        : `${b.voter}, it's time for your nominations. Which two housemates do you nominate, and why?`, { scene: DR(b.voter), toast: ['NOMINATIONS', '#e0b84a'] }));
+    const SAVE = ["they've been good to me since day one", 'I trust them, simple as that', "they're the ones I'd want next to me at the end", "they've had my back all week"];
+    const t = ss.inverted ? `I save ${listOf((b.picks || []).filter(Boolean))}, because ${pickBy(SAVE, `${ctx.week}|save|${b.voter}`)}.`
+      : ss.exclusive ? `I nominate ${listOf((b.picks || []).filter(Boolean))}. ${x}, because ${why(x)}.${y ? ` ${y}, because ${why(y)}.` : ''}`
+        : y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.`;
+    steps.push({ k: 'dr', by: b.voter, t, ...(i ? { scene: DR(b.voter) } : {}) });
   });
   if ((ss.ballots || []).length > 6) steps.push({ k: 'beat', t: 'One by one, the others go into the confessional and name their two.' });
   if (ss.secondRound) steps.push(ssv(`There is a tie between ${listOf(ss.secondRound.tied || [])}. Everybody back to the confessional, one name each.`, { toast: ['SECOND ROUND', '#e0b84a'] }));
@@ -3243,23 +3254,42 @@ function ssNomScreen(act, ctx) {
   if ((ss.immune || []).length) steps.push(ssv(`${listOf(ss.immune)} could not be nominated this week.`));
   if ((ss.dOffice || []).length) steps.push(ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'were' : 'was'} already nominated.`, { nom: ss.dOffice.slice() }));
   // the secret room's trades: a vote taken away, a vote that counted twice (js/ss/secret-room.js)
+  for (const c of cards.filter(x => x.kind === 'thief')) steps.push(ssv(`One of you has used the immunity thief. ${c.from}, your immunity has been taken.${c.to === c.holder ? ` It now belongs to ${c.holder}.` : ` ${c.holder} has given it to ${c.to}.`}`, { toast: ['THE IMMUNITY THIEF', '#ff3355'] }),
+    { k: 'say', by: c.from, t: pickBy([`${c.holder}? You took it from ME?`, 'Are you serious right now?'], `${k}|th`) });
+  for (const c of cards.filter(x => x.kind === 'nominate')) steps.push(ssv(`${c.holder} holds the nomination ring, and has used it. ${c.target} is nominated.`, { toast: ['THE NOMINATION RING', '#ff3355'], nom: [c.target] }));
+  // the week's twist, read in the living room (js/ss/nomination-twists.js)
+  if (ss.lifer) steps.push(ssv(`${ss.lifer}, you are nominated for life.`, { nom: [ss.lifer] }));
+  if (ss.twist?.kind === 'houses') steps.push(ssv(`The Immunity House could not be named: ${listOf((ss.twist.immuneHouse || []).filter(n => house.includes(n)))}.`));
   if ((ss.blocked || []).length) steps.push(ssv(`${listOf(ss.blocked)} could not vote this week.`), { k: 'say', by: ss.blocked[0], t: pickBy(['Why me? Who did that?', "Somebody up there doesn't like me."], `${k}|blk`) });
   if ((ss.double || []).length) steps.push(ssv(`One of you voted twice this week. The Voice will not say who.`), { k: 'beat', t: 'Everybody looks at everybody.' });
   const NW = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
-  steps.push(ssv(`The Voice has the results of the nominations. ${NW[noms.length] || noms.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
+  steps.push(ssv(`The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
   const LIVE_SAY = ["Okay. Okay. It's fine.", 'Me? Seriously?', 'I knew it. I knew it was going to be me.', 'Fine. Let the public decide.', "Wow. Okay. I didn't see that one coming.", "That's the game. It's fine.", 'Of course. Of course it is.', "Great. Love that for me.", "Whoever did that, I see you.", "It's fine. I'm fine. Everything's fine."];
   const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `They'll never vote you out, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
   const used = new Set();
   const once = (arr, key, tag) => { let j = hash(key) % arr.length; for (let t = 0; t < arr.length && used.has(`${tag}${j}`); t++) j = (j + 1) % arr.length; used.add(`${tag}${j}`); return arr[j]; };
   const LIVE_BEAT = n => [`${n} closes ${pronouns(n).posAdj || 'their'} eyes for a second, then nods.`, `A gasp goes round the sofas. ${n} laughs, a bit too loud.`, `${n} stares at the screen and doesn't move.`, `Somebody puts an arm round ${n} straight away.`];
-  noms.forEach((n, i) => {
-    const friend = house.filter(x => x !== n && !noms.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0];
-    steps.push(ssv(i === noms.length - 1 && i > 0 ? `And the ${ORD[i] || 'last'} housemate nominated is... ${n}.` : `The ${ORD[i] || 'next'} housemate nominated is... ${n}.`, { nom: noms.slice(0, i + 1), tense: [n] }),
+  read.forEach((n, i) => {
+    const friend = house.filter(x => x !== n && !read.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0];
+    steps.push(ssv(i === read.length - 1 && i > 0 ? `And the ${ORD[i] || 'last'} housemate nominated is... ${n}.` : `The ${ORD[i] || 'next'} housemate nominated is... ${n}.`, { nom: read.slice(0, i + 1), tense: [n] }),
       { k: 'beat', t: once(LIVE_BEAT(n), `${k}|b|${n}`, 'b') },
       { k: 'say', by: n, t: once(LIVE_SAY, `${k}|s|${n}`, 's') });
     if (friend && hash(`${k}|f|${n}`) % 2 === 0) steps.push({ k: 'say', by: friend, t: once(FRIEND_SAY(n), `${k}|fs|${n}`, 'f') });
   });
+  // linked destinies: a nominee's partner goes up with them
+  for (const l of ss.linked || []) steps.push(ssv(`${l.from} is nominated. And ${l.from}'s destiny is linked to ${l.to}'s: ${l.to} is nominated too.`, { nom: noms.slice(), tense: [l.from, l.to] }),
+    { k: 'say', by: l.to, t: pickBy([`Because of ${l.from}?! I didn't even get a vote!`, `${l.from}, we're in this together now. Come here.`], `${k}|ln|${l.to}`) });
+  // a card played after the result (js/ss/powers.js): live, in the living room
+  for (const c of cards.filter(x => x.kind === 'joker' || x.kind === 'switch' || x.kind === 'immunity')) {
+    const NAME = { joker: 'THE JOKER', switch: 'THE SWITCH', immunity: 'THE SECRET IMMUNITY' }[c.kind];
+    steps.push(ssv('Wait. Before the lines open, one of you has something to say.', { toast: [NAME, '#7c5cff'], shake: true }),
+      { k: 'say', by: c.holder, t: c.kind === 'immunity' ? 'I have a secret immunity. And I am using it, now.' : c.kind === 'switch' ? `I have the Switch card. ${c.saved === c.holder ? 'I come off.' : `${c.saved} comes off.`}` : `I have the Joker card. And I'm using it. ${c.saved === c.holder ? 'I come off.' : `${c.saved} comes off.`}` },
+      { k: 'beat', t: pickBy(['The room explodes. Nobody knew that card existed.', `${c.saved} covers their face. Somebody screams.`, 'A second of silence, then everybody talks at once.'], `${k}|card`) },
+      ssv(c.kind === 'immunity' ? `${c.holder} is no longer nominated. In ${c.holder}'s place, the next most named housemate: ${c.put}.` : `${c.saved} is no longer nominated. ${c.holder}, who do you nominate instead?`, { nom: noms.slice() }));
+    if (c.kind !== 'immunity') steps.push({ k: 'say', by: c.holder, push: true, t: `${c.put}.` });
+    steps.push({ k: 'say', by: c.put, t: pickBy(['Me? Seriously? I was safe!', `${c.holder}. Okay. I'll remember that.`, "Wow. That's how it is, then."], `${k}|put`), tense: [c.put, c.holder] });
+  }
   const rows = Object.entries(ss.tally || {}).sort((x, y) => y[1] - x[1]).map(([n, v]) => ({ n, text: `${v} ${v === 1 ? 'vote' : 'votes'}` }));
   steps.push(ssv(`${listOf(noms)}, it is now up to the public. That is all for now.`, { nom: noms.slice(), board: { title: 'THE CONFESSIONAL', rows }, toast: ['NOMINATED', '#ff3355'] }));
   if (ss.voiceTie) steps.push(ssv('The second round was tied too. They are all nominated.'));
@@ -5527,6 +5557,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
+      case 'ss-week-twist': { const scr = ssWeekTwistScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-group': { const scr = ssGroupWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }

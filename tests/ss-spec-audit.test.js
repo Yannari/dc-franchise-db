@@ -29,7 +29,9 @@ describe('Secret Story spec audit', () => {
   it(`measures ${SEASONS} seasons`, () => {
     const m = { found: [], secrets: [], buzzes: [], wrong: 0, right: 0, withdrawn: 0, fakes: 0, fakeBack: 0, roles: {}, unmasked: 0, unmaskWeek: [],
       riddleSolved: 0, riddleSold: 0, winnerRead: {}, winnerTop: 0, firstOutUnseen: 0, firstOuts: 0, parties: [], storeShut: 0, errors: [],
-      badText: [], ledger: 0, weeks: [], signatures: {}, primeClicks: [], launchClicks: [] };
+      badText: [], ledger: 0, weeks: [], signatures: {}, primeClicks: [], launchClicks: [],
+      // twist families 1 and 2: the secret room's dilemmas, the cards, the week's nomination twists
+      roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {} };
     for (let s = 1; s <= SEASONS; s++) {
       const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[(i + s) % ARCH.length] }));
       seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
@@ -44,6 +46,12 @@ describe('Secret Story spec audit', () => {
       m.buzzes.push(st.buzzes.length);
       for (const b of st.buzzes) b.outcome === 'right' ? m.right++ : b.outcome === 'wrong' ? m.wrong++ : m.withdrawn++;
       if ((st.hidden || []).length) { m.fakes++; if (st.hidden.every(h => h.back)) m.fakeBack++; }
+      for (const h of st.hidden || []) bump(m.fakeKinds, `${h.kind || 'verdict'}/${h.role || 'watch'}`);
+      m.roomDilemmas.push((st.roomDilemmas || []).length);
+      m.cardsGiven.push((st.powers || []).length);
+      for (const p of (st.powers || []).filter(x => x.used)) bump(m.cardsPlayed, p.kind);
+      for (const t of Object.values(st.weekTwists || {})) if (t?.kind) { bump(m.weekTwists, t.kind); m.twistWeeks++; }
+      m.nomWeeks += rows.filter(r => (r.acts || []).some(a => a.secretStory)).length;
       bump(m.signatures, st.draw?.signature || 'none');
       if (st.role) { bump(m.roles, st.role.id); if (st.role.exposedWeek) { m.unmasked++; m.unmaskWeek.push(st.role.exposedWeek); } }
       if (st.houseSecret?.solvedBy) { m.riddleSolved++; if (st.houseSecret.sold) m.riddleSold++; }
@@ -85,6 +93,9 @@ describe('Secret Story spec audit', () => {
       `the first three out were the barely seen ${pct(m.firstOutUnseen, m.firstOuts)}`,
       `parties per season ${mean(m.parties)}; store shut ${m.storeShut} times`,
       `prime clicks per week ${mean(m.primeClicks)}; launch night clicks ${mean(m.launchClicks)}`,
+      `fake eliminations by kind/role ${JSON.stringify(m.fakeKinds)}`,
+      `secret-room dilemmas per season ${mean(m.roomDilemmas)}; cards handed out per season ${mean(m.cardsGiven)}, played ${JSON.stringify(m.cardsPlayed)}`,
+      `weeks with a nomination twist ${pct(m.twistWeeks, m.nomWeeks)} (the design: about a third from week two) ${JSON.stringify(m.weekTwists)}`,
       `engine errors ${m.errors.length}; ledger mismatches ${m.ledger}; broken or wrong-show lines ${m.badText.length}`,
       ...[...new Set(m.badText)].slice(0, 12).map(x => `  ${x}`),
       ...[...new Set(m.errors)].slice(0, 6).map(x => `  ERROR ${x}`),

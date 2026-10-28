@@ -36,6 +36,8 @@ import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
+import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../ss/powers.js';
+import { weekTwist, twistOf, forLifeNow } from '../ss/nomination-twists.js';
 import { startGroup, weekInGroup, enterFromGroup, groupHidden, GROUPS } from '../ss/hidden-groups.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
@@ -513,6 +515,20 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
           players: gw.hidden.slice(0, 4), badgeText: 'HIDDEN', badgeClass: 'purple', part: 'group' }] });
     }
   }
+  // THE WEEK'S NOMINATION TWIST (js/ss/nomination-twists.js), announced before the nominations
+  {
+    const nt = weekTwist(state, ctx, { house: room, winner: gameWinner });
+    if (nt && (nt.kind || nt.life)) {
+      if (nt.kind === 'for-life') { pub(nt.who, 'pity', 0.3, 'was nominated for life'); if (nt.by) pub(nt.by, 'heat', 0.25, 'nominated somebody for life'); }
+      if (nt.life?.kind === 'taken') { pub(nt.life.by, 'warmth', 0.45, `took ${nt.life.who}'s nomination for life`); try { addBond(nt.life.who, nt.life.by, 2.5); } catch { /* */ } }
+      if (nt.kind === 'red-room') { pub(nt.who, 'fun', 0.2, 'walked into the red room'); try { addBond(nt.dragged, nt.who, -1.5); } catch { /* */ } }
+      if (nt.kind === 'houses') pub(nt.winner, 'game', 0.2, 'won the duel of the houses');
+      if (nt.kind === 'exclusive') pub(nt.who, 'heat', 0.15, 'named the nominees alone');
+      acts.push({ type: 'ss-week-twist', week: ctx.week, twist: nt.kind ? { ...nt, life: undefined } : null, life: nt.life || null,
+        beats: [{ text: nt.kind ? `The Voice changes the nominations this week: ${nt.kind.replace(/-/g, ' ')}.` : `${nt.life.who} is still nominated for life.`,
+          players: [nt.who, nt.dragged, nt.life?.who].filter(Boolean), badgeText: 'THE NOMINATIONS', badgeClass: 'red', part: 'week-twist' }] });
+    }
+  }
   // THE SECRET ROOM, the Voice's room of dilemmas (js/ss/secret-room.js): most weeks somebody is called up alone
   // and offered a trade that somebody else pays for. Before the nominations, which read what it wrote.
   if (ctx.week >= 1 && rng() < (state.tools?.dilemmas === 'many' ? 0.75 : 0.55)) {
@@ -819,9 +835,18 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const men = room.filter(n => g(n) === 'm'), women = room.filter(n => g(n) === 'f');
   // Immunities won at last week's prime (a dilemma, the red phone) hold this week.
   immune = [...new Set([...immune, ...((ssState()?.nextImmune || {})[wk] || [])])];
+  // THE CARDS, before the vote (js/ss/powers.js): the immunity thief, the nomination ring
+  const cardState = ssState();
+  const cardCtx = huntCtx(week, rng);
+  if (cardState) expireCards(cardState, wk);
+  const pre = cardState ? cardsBeforeNominations(cardState, cardCtx, { house: room, immune, week: wk }) : { immune, dOffice: [], played: [] };
+  immune = pre.immune;
   const eligible = l => l.filter(n => !immune.includes(n));
   // The revival's rule: everybody nominates anybody.
   const mixed = ssState()?.rule === 'mixed';
+  // this week's twist (js/ss/nomination-twists.js): the Immunity House cannot be named
+  const nt = cardState ? twistOf(cardState, wk) : null;
+  if (nt?.kind === 'houses') immune = [...new Set([...immune, ...nt.immuneHouse.filter(n => room.includes(n))])];
   if (mixed) {
     voters = room; pool = eligible(room); rule = 'everybody';
   } else if (nominateMen && eligible(men).length >= 2 && women.length) {
@@ -835,7 +860,10 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   // whatever their immunity; the house names its two from everybody else.
   const state = ssState();
   // ...and the Master of the House's direct nomination (revival seasons).
-  const dOffice = [...new Set([...(state ? dOfficeFor(state, wk) : []), ...(direct ? [direct] : [])])].filter(n => room.includes(n));
+  // ...and the week's twist: the red room's two, the one nominated for life
+  const lifer = state ? forLifeNow(state, wk) : null;
+  const twistUp = [...(nt?.kind === 'red-room' ? [nt.who, nt.dragged] : []), ...(lifer ? [lifer] : [])];
+  const dOffice = [...new Set([...(state ? dOfficeFor(state, wk) : []), ...(direct ? [direct] : []), ...pre.dOffice, ...twistUp])].filter(n => room.includes(n));
   pool = pool.filter(n => !dOffice.includes(n));
   // Who names whom, and why (js/ss/nominations.js); the Voice's extra votes
   // against (a broken commandment, the red phone) count on top.
@@ -848,9 +876,26 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const blocked = (state?.rules?.blockedVote?.[wk] || []).filter(n => voters.includes(n));
   const double = (state?.rules?.doubleVote?.[wk] || []).filter(n => voters.includes(n) && !blocked.includes(n));
   voters = voters.filter(n => !blocked.includes(n));
-  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length)) });
-  const nominees = [...dOffice, ...cast.nominees];
-  return { nominees, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
+  // the Nomination House nominates among itself; the exclusive nominator names them all alone
+  if (nt?.kind === 'houses') pool = pool.filter(n => nt.nominationHouse.includes(n));
+  const exclusive = nt?.kind === 'exclusive' && room.includes(nt.who) ? nt.who : null;
+  if (exclusive) { voters = [exclusive]; pool = pool.filter(n => n !== exclusive); }
+  const seatsNow = Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
+  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
+    invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 });
+  const before = [...dOffice, ...cast.nominees];
+  // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
+  const post = state ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally }) : { nominees: before, played: [] };
+  // linked destinies: a nominee's partner goes up too (unless immune)
+  const linked = [];
+  if (nt?.kind === 'linked') for (const n of [...post.nominees]) {
+    const pair = (nt.pairs || []).find(p => p.includes(n));
+    const p = pair && pair.find(x => x !== n);
+    if (p && room.includes(p) && !immune.includes(p) && !post.nominees.includes(p) && !linked.some(l => l.to === p)) linked.push({ from: n, to: p });
+  }
+  const nominees = [...post.nominees, ...linked.map(l => l.to)];
+  return { nominees, before, cards: [...pre.played, ...post.played], twist: nt ? { kind: nt.kind, who: nt.who || null, dragged: nt.dragged || null, pairs: nt.pairs || null,
+    immuneHouse: nt.immuneHouse || null, nominationHouse: nt.nominationHouse || null } : null, lifer, linked, inverted: !!cast.inverted, exclusive, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
     dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
 }
 

@@ -14,6 +14,7 @@
 
 import { mint } from './kitty.js';
 import { secretOf, showClue, theoryOf } from './hunt.js';
+import { grantPower } from './powers.js';
 
 /** Prize weights in a classic season (the real games' rewards, roughly). */
 export const CLASSIC_PRIZES = [
@@ -21,6 +22,8 @@ export const CLASSIC_PRIZES = [
   { id: 'immunity', w: 0.26 },
   { id: 'money', w: 0.2 },
   { id: 'free-buzz', w: 0.16 },
+  // the Joker card (S4-S6; js/ss/powers.js)
+  { id: 'joker', w: 0.12 },
 ];
 
 /** Which kind of season: a pick, or a draw. */
@@ -79,11 +82,13 @@ export function settleWeeklyGame(state, ctx, { winner = undefined, house = [] } 
   } else if (prize === 'free-buzz') {
     state.freeBuzz ||= {};
     state.freeBuzz[winner] = (state.freeBuzz[winner] || 0) + 1;
+  } else if (prize === 'joker') {
+    grantPower(state, { kind: 'joker', holder: winner, week, from: 'game' });
   }
   const got = prize === 'clue' && clueAct ? 'chooses a clue on the table'
     : prize === 'money' ? `wins $${amount.toLocaleString('en-US')}`
       : prize === 'free-buzz' ? 'wins a free buzz'
-        : prize === 'immunity' ? 'wins immunity from this week\'s nominations' : 'wins the game';
+        : prize === 'immunity' ? 'wins immunity from this week\'s nominations' : prize === 'joker' ? 'wins the Joker card' : 'wins the game';
   return {
     immune: prize === 'immunity' ? [winner] : [], masterPick: null, clueAct,
     act: { type: 'ss-game', week, winner, mode: 'classic', prize: prize === 'clue' && !clueAct ? 'none' : prize, amount, target,

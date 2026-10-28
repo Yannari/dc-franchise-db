@@ -24,6 +24,7 @@ import { mint, burn, transfer, balance } from './kitty.js';
 import { secretOf, theoryOf, showClue, hiddenSecrets } from './hunt.js';
 import { runDilemma, nominateNext, immuneNext } from './dilemmas.js';
 import { RATE } from './twists.js';
+import { grantPower } from './powers.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const bondOf = (ctx, a, b) => Number(ctx?.bond?.(a, b)) || 0;
@@ -47,6 +48,16 @@ export function whoAnswers(ctx, house) {
 
 /** Every message is a real one (§12). Each: `{ id, build(state, ctx, n, house) -> {said, effects…} | null }`. */
 const PHONE = [
+  // the cards (js/ss/powers.js): held in secret, played after the nominees are read
+  { id: 'joker-card', w: 0.6, build(state, ctx, n) {
+    grantPower(state, { kind: 'joker', holder: n, week: ctx.week ?? 0, from: 'phone' });
+    return { said: 'You receive the Joker card. Keep it secret. After a nomination, you may use it once: cancel one nominee, and name another.', text: `${n} receives the Joker card, in secret.` };
+  } },
+  { id: 'switch-card', w: 0.5, build(state, ctx, n, house) {
+    const f = house.filter(x => x !== n).sort((a, b) => bondOf(ctx, n, b) - bondOf(ctx, n, a))[0] || null;
+    grantPower(state, { kind: 'switch', holder: n, week: ctx.week ?? 0, from: 'phone', protects: f });
+    return { said: `You receive the Switch card. If you${f ? `, or ${f},` : ''} are nominated in the next three weeks, it will take you off, and you will name somebody else.`, choice: f, text: `${n} receives the Switch card, protecting ${f ? `${n} and ${f}` : n}.`, target: f };
+  } },
   { id: 'nominated', w: 1.2, build(state, ctx, n) {
     nominateNext(state, ctx, n);
     return { said: 'You are nominated for next week.', text: `${n} is nominated d'office for next week.`, pop: [[n, 0.15]] };

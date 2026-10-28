@@ -52,7 +52,9 @@ export function ssGroupWeekScreen(act, ctx, H) {
   const S = SPACE[act.id] || SPACE['secret-box'];
   const k = `${ctx.week}|ssgrp|${act.id}`;
   const hid = act.hidden || [];
-  /** @type {any[]} */ const steps = [{ k: 'beat', scene: at(act.space, S.room, hid), t: `${S.room}. ${S.look}`, toast: [S.room.toUpperCase(), '#7c5cff'] }];
+  // (the yacht: the deck one week, a cabin the next; the box seen from inside)
+  const space = act.id === 'yacht' ? ['ss-yacht-deck', 'ss-yacht-cabin', 'ss-yacht-cabin-2'][(ctx.week || 0) % 3] : act.space;
+  /** @type {any[]} */ const steps = [{ k: 'beat', scene: at(space, S.room, hid), t: `${S.room}. ${S.look}`, toast: [S.room.toUpperCase(), '#7c5cff'] }];
   for (const w of (act.watched || []).slice(0, 3)) steps.push({ k: 'dr', by: w.who, t: pickBy([`I've been watching ${w.about} for days. "${w.theory}". I'd bet on it.`, `From in here you see what ${w.about} does when nobody's looking. "${w.theory}", I think.`], `${k}|${w.who}|${w.about}`) });
   for (const e of act.events || []) {
     if (e.kind === 'found') steps.push(ssv(`${e.who}, you believe you know ${e.on}'s secret. Tell the Voice.`), { k: 'say', by: e.who, t: `"${e.text || '...'}"` },
@@ -81,6 +83,8 @@ export function ssGroupEntryScreen(seg, ctx, host, H) {
     const how = e.how === 'found' ? `${e.name} found ${e.on}'s secret, and comes out of ${S.room}.` : e.how === 'swap' ? `A new housemate walks in. The house has no idea where ${e.name} has really been.`
       : e.how === 'caught' ? `The tunnel has been found: ${e.name} comes in with the intruders${e.nominated ? ', and is nominated' : ''}.` : e.how === 'rescued' ? `The house has voted: ${e.name} comes out of the glass house.`
         : e.how === 'last' ? `${e.name} is the last one out of ${S.room}${e.nominated ? ', and comes in nominated' : ''}.` : `${e.name}'s time in ${S.room} is over.`;
+    // an intruder comes up through a hatch in one of the bedrooms (the user's plates: ss-hatch-girls, ss-hatch-boys)
+    if (seg.group === 'intruders' && (e.how === 'swap' || e.how === 'caught')) steps.push({ k: 'beat', scene: at(hash(e.name) % 2 ? 'ss-hatch-boys' : 'ss-hatch-girls', 'The Bedroom', [e.name], 'bedroom'), t: pickBy([`A square of the bedroom floor lifts. ${e.name} climbs out of the hatch and dusts off.`, `The hatch under the beds creaks open, and ${e.name}'s head pops up.`], `${k}|h|${e.name}`) });
     steps.push({ k: 'beat', scene: LIV, t: how, shake: e.how === 'caught' || e.how === 'found' },
       { k: 'say', by: e.name, t: pickBy(['Hello, everybody! Did you miss me? You didn\'t know me. Fair.', "Surprise!", "Hi. I've been watching you. Sorry. Hi."], `${k}|${e.name}`) });
   }

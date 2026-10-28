@@ -19,7 +19,9 @@ const IDS = Object.keys(PLATES).filter(k => !k.startsWith('_'));
 const SETS = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', 'hoh', 'yard', 'dr', 'storage', 'havenot',
   'bathroom', 'juryhouse', 'door', 'premiere', 'comp', 'wall', 'cutaway', 'studio', 'studio-wide', 'finale', 'finale-jury', 'villa', 'map',
   // Secret Story's own rooms (its house is its own theme: plates.json `only`)
-  'attic', 'truths', 'arena']);
+  'attic', 'truths', 'arena',
+  // ...and its hidden spaces (twist family 1: the Secret Box, the Control Tower, the intruders, the hotel, the Crystal House, the yacht)
+  'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber']);
 const USES = new Set(['eviction', 'ceremony', 'nominations', 'house', 'meal', 'quiet', 'secret', 'dr']);
 // the stage's sets for the engine's rooms (ROOM_SET in vp-bb-ep/steps.js) and their Blender rooms
 const ROOM_SETS = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', yard: 'yard', dr: 'dr',

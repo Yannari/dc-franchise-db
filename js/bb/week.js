@@ -95,7 +95,7 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
 import { runCliqueReturnees } from './clique-returnees.js';
-import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime } from './secret-story.js';
+import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -8045,6 +8045,13 @@ export function simulateBBWeek(options = {}) {
       // reads as the wrong name being called.
       duoVote: week.duoVote || null },
     { nominees: [...nominees], evicted, votes, ballots }));
+
+  // SECRET STORY: the secret the house never found, told on the set, and After
+  // Secret. After the eviction act, never before it (the side-bet lesson below).
+  if (week.ssPublic && evicted) {
+    try { const a = afterPrime({ week, evicted, house, rng }); if (a) week.acts.push(addBeats(a, { players: [evicted] })); }
+    catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
+  }
 
   // ── THE FLOOR SETTLES ─────────────────────────────────────────────────
   //

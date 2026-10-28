@@ -22992,7 +22992,7 @@ export function rpBuildBBVotingPlans(ep) {
 function _bbHost() {
   // The show's desk (Secret Story is Josh's), the house's as the fallback.
   const show = typeof seasonConfig !== 'undefined' ? seasonConfig?.format : null;
-  const list = (show && show !== 'big-brother' && HOSTS_BY_FORMAT[show]) || HOSTS_BY_FORMAT['big-brother'] || [];
+  const list = (show && HOSTS_BY_FORMAT[show]) || HOSTS_BY_FORMAT['big-brother'] || [];
   const chosen = typeof seasonConfig !== 'undefined' ? seasonConfig.host : null;
   const elsewhere = Object.entries(HOSTS_BY_FORMAT)
     .some(([fmt, hosts]) => hosts !== list && (hosts || []).some(h => h.value === chosen));

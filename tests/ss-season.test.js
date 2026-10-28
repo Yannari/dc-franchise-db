@@ -116,12 +116,13 @@ describe('missions air', () => {
     play(17);
     const eps = gs.episodeHistory.filter(e => e && e.format === 'big-brother');
     const given = eps.flatMap(e => (e.acts || []).filter(a => a.type === 'ss-mission'));
-    const judged = eps.flatMap(e => (e.acts || []).filter(a => a.type === 'ss-mission-result'));
+    // judged at the prime: the results are one of the prime's segments (js/ss/prime.js)
+    const judged = eps.flatMap(e => (e.acts || []).filter(a => a.type === 'ss-prime').flatMap(a => a.segments.filter(s => s.kind === 'mission').flatMap(s => s.results)));
     expect(given.length).toBeGreaterThan(4);
     expect(judged.length).toBeGreaterThan(3);
     for (const ep of eps) {
       const ids = bbWeekSteps(ep).map(s => s.id);
-      for (const a of ep.acts || []) if (a.type === 'ss-mission-result') expect(ids).toContain(`bb-ss-missionres-${a.mission.id}`);
+      for (const a of (ep.acts || []).filter(x => x.type === 'ss-prime')) for (const s of a.segments) if (s.kind === 'mission') for (const r of s.results) expect(ids).toContain(`bb-ss-missionres-${r.mission.id}`);
     }
   });
 });

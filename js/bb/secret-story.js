@@ -36,6 +36,7 @@ import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
+import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -313,12 +314,44 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   if (!state) return [];
   const room = house.filter(Boolean);
   const ctx = huntCtx(week, rng);
-  const acts = [];
+  const missions = [];
   for (const r of settleMissions(state, ctx, { house: room, nominees })) {
     if (r.won) for (const h of r.mission.holders) addPop(h, 0.3);
-    acts.push(r);
+    missions.push(r);
   }
-  return acts;
+  // The night's segments (js/ss/prime.js): every one has consequences, applied
+  // here, BEFORE the lines close, so the public votes on what it just watched.
+  const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  for (const s of night.segments) {
+    for (const [a, b, d] of s.effects?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
+    for (const [n, d] of s.effects?.pop || []) addPop(n, d);
+  }
+  (state.primes ||= []).push({ week: ctx.week, name: night.name, segments: night.segments.map(s => s.kind) });
+  const players = [...new Set(night.segments.flatMap(s => [s.to, s.answered, s.subject, s.target, ...(s.talkers || []), ...(s.mission?.holders || [])]).filter(Boolean))];
+  return [{ type: 'ss-prime', week: ctx.week, name: night.name, nominees: [...nominees], segments: night.segments, holders: players.slice(0, 6),
+    kitty: { ...(state.kitty || {}) },
+    beats: [{ text: `The prime: ${night.name}.`, players: players.slice(0, 4), badgeText: 'THE PRIME', badgeClass: 'gold', part: 'prime' }] }];
+}
+
+/**
+ * After the public's verdict: the secret the house never found is told on the
+ * set, and After Secret (the host and Blaineley) reads the house to the
+ * viewers. Runs on the house as it stands after the elimination.
+ */
+export function afterPrime({ week = undefined, evicted = null, house = [], rng = Math.random } = {}) {
+  const state = ssState();
+  if (!state || !evicted) return null;
+  const room = house.filter(n => n && n !== evicted);
+  const ctx = huntCtx(week, rng);
+  const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
+  // a partner left in the house is exposed with it: the house knows now
+  for (const p of reveal?.partners || []) addPop(p, 0.1);
+  // the ones who were right and never pressed: "I knew it", and the house hears it
+  for (const n of reveal?.right || []) addPop(n, 0.05);
+  const after = afterShow(state, ctx, { evicted, house: room, popOf: pop });
+  return { type: 'ss-after', week: ctx.week, evicted, reveal, after, holders: [evicted],
+    beats: [{ text: reveal && !reveal.alreadyFound ? `${evicted}'s secret, never found, is told on the set: ${reveal.secret}.` : `${evicted} leaves the House of Secrets.`,
+      players: [evicted], badgeText: 'AFTER SECRET', badgeClass: 'gold', part: 'after' }] };
 }
 
 /**

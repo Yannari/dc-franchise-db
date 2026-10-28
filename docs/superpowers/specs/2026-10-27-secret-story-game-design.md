@@ -709,3 +709,31 @@ bathroom, garden and pool, airlock, secret room, wall of secrets, supérette,
 prime studio, games arena, and a prop sheet (buzzer, red and black phones, the
 eye, the clue chest, cards, the kitty display, the portrait, the crystal ball).
 Results go to `..\usable`.
+
+**More cameras (2026-10-27).** The user: "only 1 view of each room thats not a
+lot". 58 more jobs, one per resort camera, in `to-edit/<room>-views/`, each with
+`0-match-*` (the room's finished main view) so every angle keeps one decor.
+
+**The show's own lettering.** The user, 2026-10-27: "use the secret story fonts
+(later in the stepped viewer for example name in confessional use that font)".
+Part 4 gives Secret Story its typefaces: the name plate in the confessional, the
+prime's title cards, the Voice's lines, the kitty board and After Secret all in
+the show's lettering (a free, licensed match to the logo and on-screen graphics
+of the real seasons, loaded from Google Fonts or shipped in `assets/fonts/`),
+never Big Brother's.
+
+## 25. The prime is a full episode (built, M6)
+
+The user, 2026-10-27: "prime are full episode so theyre not sometimes with 30
+click like real full episodes". `js/ss/prime.js` plays the night; the viewer
+airs it as its own run of screens, 90–130 clicks: the opening (the host, the
+night's name, the week told back, the money), the airlock (each nominee's week,
+the host's question from why the house named them, a friend's word, ten seconds
+to the public), live in the house (the host talks to whoever the week happened
+to), the segments (missions revealed, one or two dilemmas from
+`js/ss/dilemmas.js`, the red phone, the room of truths, a family visit), the
+verdict read in the airlock, the walk to the studio and the interview (the
+secret the house never found is told, its partner exposed, the ones who were
+right say so), then After Secret with Josh and Blaineley (the theories the
+viewers can see, the money, the public's favourite, Blaineley's prediction).
+Every segment moves bonds or the public before the lines close.

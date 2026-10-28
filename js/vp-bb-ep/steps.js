@@ -36,6 +36,7 @@ import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssProductionScreen } from './ss-production.js';
 import { ssSplitScreens } from './ss-split.js';
+import { ssDeceptionWeekScreen, ssFalseVoiceRevealScreen, ssRobotUnmaskScreen, ssTicketScreen } from './ss-deceptions.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
 import { ssWeekTwistScreen } from './ss-week-twist.js';
@@ -3631,6 +3632,10 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'phone') out.push(ssPhoneScreen(seg, ctx, host));
     else if (seg.kind === 'truths') out.push(ssTruthsScreen(seg, ctx, host));
     else if (seg.kind === 'visit') out.push(ssVisitScreen(seg, ctx, host));
+    // twist family 5: the false Voice revealed, the robot unmasked, the ticket (vp-bb-ep/ss-deceptions.js)
+    else if (seg.kind === 'false-voice') out.push(ssLive(ctx, { ...LIVING, ...ssFalseVoiceRevealScreen(seg, ctx, host, { ssv }) }));
+    else if (seg.kind === 'robot') out.push(ssLive(ctx, { ...LIVING, ...ssRobotUnmaskScreen(seg, ctx, host) }));
+    else if (seg.kind === 'ticket') out.push(ssLive(ctx, { ...LIVING, ...ssTicketScreen(seg, ctx, host) }));
   }
   out.push(ssGoldenBuzzScreen(act, ctx, host, MORE));
   return out.filter(Boolean);
@@ -3670,7 +3675,28 @@ function ssVerdictScreen(act, ctx, host) {
   // AN ELIMINATION POWER (js/ss/hidden.js, S5, S9, S12): tonight the public does not decide, one housemate does
   const power = act.ssPublic?.power;
   const pairOut = act.ssPublic?.second;
-  if (power) {
+  const mode = act.ssPublic?.mode || 'save';
+  if (mode === 'evict') {
+    // THE VOTE TO ELIMINATE (S13): the public voted against; the fewest votes against go first
+    steps.push({ k: 'host', by: host, t: "Tonight is different. The public did not vote to save anybody. The public voted to ELIMINATE.", toast: ['A VOTE TO ELIMINATE', '#ff3355'], shake: true });
+    const safe = noms.filter(n => n !== ev).sort((a, b) => (pc[a] || 0) - (pc[b] || 0));
+    safe.forEach((n, i) => steps.push({ k: 'host', by: host, t: `${n}, only ${pc[n]}% voted against you. You're staying.`, safe: n,
+      board: { title: 'VOTES TO ELIMINATE', rows: noms.map(x => ({ n: x, text: safe.indexOf(x) > -1 && safe.indexOf(x) <= i ? `${pc[x]}%` : '?' })) } }));
+    steps.push({ k: 'host', by: host, t: `${ev}, ${pc[ev]}% of the public voted against you. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
+      settle: { id: `${k}|out`, answer: ev, n: noms.length }, board: { title: 'VOTES TO ELIMINATE', rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
+  } else if (mode === 'house-decides') {
+    // THE HOUSE DECIDES (S8): the public's bottom two, then the housemates, one by one, live
+    const bottom = act.ssPublic.bottom || [];
+    const others = noms.filter(n => !bottom.includes(n));
+    steps.push({ k: 'host', by: host, t: `Tonight, the public has not chosen who leaves. The public has chosen the bottom two: ${listOf(bottom)}.`, toast: ['THE HOUSE DECIDES', '#ff3355'], shake: true,
+      board: { title: "THE PUBLIC'S BOTTOM TWO", rows: noms.map(x => ({ n: x, text: bottom.includes(x) ? 'BOTTOM' : 'SAFE' })) } });
+    for (const n of others) steps.push({ k: 'host', by: host, t: `${n}, you're safe.`, safe: n });
+    steps.push({ k: 'host', by: host, t: 'And now, the house decides. One by one, housemates, say the name of the one who leaves tonight.' });
+    for (const [v, t] of Object.entries(act.ssPublic.houseVotes || {})) steps.push({ k: 'say', by: v, t: `${t}.` });
+    const tl = act.ssPublic.houseTally || {};
+    steps.push({ k: 'host', by: host, t: act.ssPublic.houseTie ? `It's a tie, ${tl[bottom[0]] || 0} each, so the public's vote decides. ${ev}, your adventure ends tonight.`
+      : `${ev}, with ${tl[ev] || 0} votes, the house has decided. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'], settle: { id: `${k}|out`, answer: ev, n: noms.length } });
+  } else if (power) {
     steps.push({ k: 'host', by: host, t: `But this envelope stays closed tonight. The Voice has given one housemate the power to eliminate, in the public's place: ${power}.`, toast: ['THE POWER', '#ff3355'], shake: true },
       { k: 'say', by: power, t: pickBy(['Me? Why me?', "Oh no. Oh, no, no, no."], `${k}|pw`) },
       { k: 'host', by: host, t: `${power}, which of ${listOf(noms)} leaves the House of Secrets tonight?` },
@@ -3678,11 +3704,11 @@ function ssVerdictScreen(act, ctx, host) {
       { k: 'say', by: power, push: true, t: `${ev}. I'm sorry, ${ev}.` });
     for (const n of noms.filter(x => x !== ev)) steps.push({ k: 'host', by: host, t: `${n}, you're staying.`, safe: n });
     steps.push({ k: 'host', by: host, t: `${ev}, ${power} has chosen. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'], settle: { id: `${k}|out`, answer: ev, n: noms.length } });
-  } else for (const n of saved) steps.push({ k: 'host', by: host, t: `${n}... with ${pc[n]}% of the vote, you're staying in the House of Secrets.`, safe: n,
+  } else if (mode === 'save') for (const n of saved) steps.push({ k: 'host', by: host, t: `${n}... with ${pc[n]}% of the vote, you're staying in the House of Secrets.`, safe: n,
     board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: x === n || saved.indexOf(x) < saved.indexOf(n) ? `${pc[x]}%` : '?' })) } });
-  if (!power && pairOut) steps.push({ k: 'host', by: host, t: `${ev} and ${pairOut}, with ${pc[ev]}% and ${pc[pairOut]}%... tonight, the public sends you BOTH home.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
+  if (mode === 'save' && !power && pairOut) steps.push({ k: 'host', by: host, t: `${ev} and ${pairOut}, with ${pc[ev]}% and ${pc[pairOut]}%... tonight, the public sends you BOTH home.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
     settle: { id: `${k}|out`, answer: ev, n: noms.length }, board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
-  else if (!power) steps.push({ k: 'host', by: host, t: `${ev}, with ${pc[ev]}%, the public has decided that your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
+  else if (mode === 'save' && !power) steps.push({ k: 'host', by: host, t: `${ev}, with ${pc[ev]}%, the public has decided that your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
     settle: { id: `${k}|out`, answer: ev, n: noms.length },
     board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
   steps.push({ k: 'beat', t: pickBy([`${saved[0] || 'The others'} grabs ${ev} and does not let go.`, `${ev} nods, and smiles, and wipes ${pronouns(ev).posAdj || 'their'} eyes.`, `In the living room, somebody screams. ${ev} laughs through the tears.`], `${k}|r`) });
@@ -5577,6 +5603,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-production': { const scr = ssProductionScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
+      case 'ss-deception': { const scr = ssDeceptionWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-split': { const scrs = ssSplitScreens(act, ctx, { ssv }); if (scrs.length) { flush(); for (const scr of scrs) ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-black-buzzer': flush(); ceremony(ssBlackBuzzerScreen(act, ctx, { ssv })); break;

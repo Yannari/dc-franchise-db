@@ -37,6 +37,8 @@ import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
 import { productionWeek } from '../ss/production.js';
 import { startSplit, splitWeek, splitActive, SPLIT_KINDS } from '../ss/split.js';
+import { deceptionDue, falseVoiceWeek, revealFalseVoice, robotWeek, unmaskRobot } from '../ss/deceptions.js';
+import { voteMode, evictShares, houseDecides, ticketDue, ticketVote } from '../ss/public-votes.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
 import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../ss/powers.js';
 import { weekTwist, twistOf, forLifeNow } from '../ss/nomination-twists.js';
@@ -600,6 +602,16 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       beats: [{ text: `${p.holders.join(' and ')}: the week's production mission (${p.role.replace(/-/g, ' ')}). ${p.ok ? 'Done.' : 'It goes wrong.'}`,
         players: p.holders.slice(0, 4), badgeText: 'PRODUCTION SECRET', badgeClass: 'purple', part: 'production' }] });
   }
+  // WHO IS REALLY TALKING (js/ss/deceptions.js): a week of the false Voice, or of Monsieur Robot with an eliminated
+  // housemate inside; both are revealed at the prime.
+  {
+    const gone = (gs.eliminated || []).filter(n => !room.includes(n));
+    const kind = deceptionDue(state, ctx, { house: room, gone });
+    const ev = kind === 'false-voice' ? falseVoiceWeek(state, ctx, { house: room }) : kind === 'robot' ? robotWeek(state, ctx, { house: room, gone }) : null;
+    if (ev) acts.push({ type: 'ss-deception', week: ctx.week, ...ev,
+      beats: [{ text: ev.kind === 'false-voice' ? `A new Voice takes over the house. ${ev.doubters.length} of the house do not trust it.` : `Monsieur Robot moves in. ${ev.robot} is inside.`,
+        players: ev.kind === 'robot' ? [ev.robot] : ev.doubters.slice(0, 4), badgeText: ev.kind === 'robot' ? 'MONSIEUR ROBOT' : 'THE NEW VOICE', badgeClass: 'purple', part: 'deception' }] });
+  }
   // The black buzzer: hidden by the Voice; the finder is immune and names a nominee (before the nominations).
   if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {
     const bz = blackBuzzer(state, ctx, { house: room });
@@ -741,6 +753,15 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     /** @type {any[]} */ (night.segments).unshift({ kind: 'return', ...b, effects: { bond: [...b.glad.map(n => [b.name, n, -1]), ...b.mourners.map(n => [b.name, n, 1]), ...acc], pop: [] } });
     pub(b.name, 'arc', 0.5, 'came back from the secret room'); pub(b.name, 'fun', 0.3, 'came back from the secret room');
     for (const n of b.glad) pub(n, 'pity', 0.05, '');
+  }
+  // the week's deception, revealed live (js/ss/deceptions.js); the ticket, voted live (js/ss/public-votes.js)
+  const fvSeg = revealFalseVoice(state, ctx, { house: room });
+  if (fvSeg) /** @type {any[]} */ (night.segments).push(fvSeg);
+  const rbSeg = unmaskRobot(state, ctx, { house: room });
+  if (rbSeg) /** @type {any[]} */ (night.segments).push(rbSeg);
+  if (ticketDue(state, ctx, { house: room })) {
+    const tk = ticketVote(state, ctx, { house: room });
+    if (tk.winner) { /** @type {any[]} */ (night.segments).push(tk); pub(tk.winner, 'game', 0.25, 'was voted straight through by the house'); }
   }
   for (const s of /** @type {any[]} */ (night.segments)) {
     for (const [a, b, d] of s.effects?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
@@ -995,13 +1016,28 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
   // A double sends the two lowest up together; an elimination power hands the choice to one housemate.
   const plan = state ? fakePlanFor(state, Number(week?.num) || 0, houseSize) : null;
   const fake = !!plan && plan.kind !== 'voluntary';
+  // THE NIGHT THE PUBLIC DECIDES DIFFERENTLY (js/ss/public-votes.js): to eliminate, or the house picks from the
+  // public's bottom two. Never on a fake elimination's night.
+  const mode = state && !fake ? voteMode(state, huntCtx(week, rng), { nominees }) : 'save';
+  if (state) (state.voteModes ||= {})[Number(week?.num) || 0] = mode;
+  if (mode === 'evict' && nominees.length >= 2) {
+    const against = evictShares(state, nominees, rng, 0.2);
+    const out = nominees.slice().sort((a, b) => against[b] - against[a])[0];
+    return { evicted: out, percents: against, saved: nominees.filter(n => n !== out), mode, fake: false, second: null, power: null, fakeKind: null };
+  }
+  if (mode === 'house-decides' && nominees.length >= 3) {
+    const bottom = order.slice(0, 2);
+    const hd = houseDecides(huntCtx(week, rng), { bottom, house, publicLowest: order[0] });
+    return { evicted: hd.evicted, percents, saved: nominees.filter(n => n !== hd.evicted), mode, bottom, houseVotes: hd.votes, houseTally: hd.tally, houseTie: hd.tie,
+      fake: false, second: null, power: null, fakeKind: null };
+  }
   let second = null, power = null;
   if (fake && plan.kind === 'double' && order.length >= 3) second = order[1];
   if (fake && plan.kind === 'power') {
     const holder = house.filter(n => !nominees.includes(n)).sort((a, b) => (st(b, 'strategic') + st(b, 'boldness') + rng() * 3) - (st(a, 'strategic') + st(a, 'boldness') + rng() * 3))[0];
     if (holder) { power = holder; evicted = nominees.slice().sort((a, b) => bond(holder, a) - bond(holder, b))[0]; }
   }
-  return { evicted, percents, saved: nominees.filter(n => n !== evicted && n !== second), fake, second, power, fakeKind: fake ? (second ? 'double' : power ? 'power' : 'verdict') : null };
+  return { evicted, percents, saved: nominees.filter(n => n !== evicted && n !== second), mode, fake, second, power, fakeKind: fake ? (second ? 'double' : power ? 'power' : 'verdict') : null };
 }
 
 /**

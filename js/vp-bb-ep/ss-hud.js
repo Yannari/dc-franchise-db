@@ -125,7 +125,7 @@ export function ssLineHtml(S, st, fresh, L, H) {
   if (!st || st.quiet) return '';
   if (st.k === 'voice' || st.k === 'bb') {
     return `<div class="ssv ${fresh ? 'fresh' : ''}"><div class="ssv-eye"><i></i><i></i><i></i><img src="${EYE}" alt=""></div>
-      <div class="ssv-body"><b>THE VOICE</b><div class="ssv-tx">${esc(st.t)}</div></div></div>`;
+      <div class="ssv-body"><b>${st.falseVoice ? esc(String(st.by || 'The New Voice').toUpperCase()) : 'THE VOICE'}</b><div class="ssv-tx">${esc(st.t)}</div></div></div>`;
   }
   if (st.k === 'beat') return `<div class="ssn ${fresh ? 'fresh' : ''}"><span>${esc(st.t)}</span></div>`;
   const c = H.col(st.by);

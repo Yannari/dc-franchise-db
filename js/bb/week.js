@@ -95,7 +95,7 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
 import { runCliqueReturnees } from './clique-returnees.js';
-import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote } from './secret-story.js';
+import { ssOn, assignSecrets, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -7766,6 +7766,11 @@ export function simulateBBWeek(options = {}) {
   let evicted;
   let secondEvicted = null;
   let tieBreak = null;
+  // SECRET STORY: the prime runs before the public's verdict (missions, M6's segments).
+  if (ss && !week.chainDuel && !compressed) {
+    try { for (const a of runPrime({ week, house, nominees, rng })) week.acts.push(addBeats(a, { players: [...(a.mission?.holders || a.holders || [])] })); }
+    catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
+  }
   const ssPublic = ss && !week.chainDuel ? secretStoryPublicVote({ nominees, rng }) : null;
   if (week.chainDuel) {
     // Decided in the yard, not in the Diary Room.

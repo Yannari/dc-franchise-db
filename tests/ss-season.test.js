@@ -110,3 +110,18 @@ describe('the hunt airs', () => {
     expect(buzz).toBeGreaterThan(0);
   });
 });
+
+describe('missions air', () => {
+  it('missions are handed out and judged at the prime, and both reach a screen', () => {
+    play(17);
+    const eps = gs.episodeHistory.filter(e => e && e.format === 'big-brother');
+    const given = eps.flatMap(e => (e.acts || []).filter(a => a.type === 'ss-mission'));
+    const judged = eps.flatMap(e => (e.acts || []).filter(a => a.type === 'ss-mission-result'));
+    expect(given.length).toBeGreaterThan(4);
+    expect(judged.length).toBeGreaterThan(3);
+    for (const ep of eps) {
+      const ids = bbWeekSteps(ep).map(s => s.id);
+      for (const a of ep.acts || []) if (a.type === 'ss-mission-result') expect(ids).toContain(`bb-ss-missionres-${a.mission.id}`);
+    }
+  });
+});

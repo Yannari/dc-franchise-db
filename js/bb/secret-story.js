@@ -34,6 +34,7 @@ import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGE
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
+import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -236,7 +237,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
 
 /** The engine context the hunt reads (js/ss/hunt.js is pure). */
 export function huntCtx(week, rng) {
-  return { rng, week: Number(week?.num) || 0, stat: (n, k) => st(n, k), bond: (a, b) => bond(a, b) };
+  return { rng, week: Number(week?.num) || 0, stat: (n, k) => st(n, k), bond: (a, b) => bond(a, b), archetype: n => archetypeOf(n) };
 }
 
 /**
@@ -258,8 +259,11 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     if (g.act) acts.push(g.act);
     if (g.clueAct) acts.push(g.clueAct);
   } else if (week) { week._ssImmune = []; week._ssMaster = null; }
+  // Monday: the Voice's missions (§7), played through the week.
+  acts.push(...handOutMissions(state, ctx, { house: room }));
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
+  playMissions(state, ctx, { house: room });
   if (moments.length) {
     acts.push({ type: 'ss-hunt', week: ctx.week, moments: moments.slice(0, 6),
       beats: moments.slice(0, 3).map(m => ({ text: m.kind === 'tell'
@@ -293,6 +297,24 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       try { addBond(b.target, b.by, -0.6); } catch { /* */ }
     }
     acts.push(b);
+  }
+  return acts;
+}
+
+/**
+ * THE PRIME (§10): the week's live show, between the nominations and the
+ * public's verdict. Missions are judged and revealed here; the rest of the
+ * prime's segments join in M6. Returns acts, in running order.
+ */
+export function runPrime({ week = undefined, house = [], nominees = [], rng = Math.random } = {}) {
+  const state = ssState();
+  if (!state) return [];
+  const room = house.filter(Boolean);
+  const ctx = huntCtx(week, rng);
+  const acts = [];
+  for (const r of settleMissions(state, ctx, { house: room, nominees })) {
+    if (r.won) for (const h of r.mission.holders) addPop(h, 0.3);
+    acts.push(r);
   }
   return acts;
 }

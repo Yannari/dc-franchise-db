@@ -1284,7 +1284,6 @@ const CONFIG_SCOPE = {
     'cfg-bb-safety':         ['=big-brother'],
     'cfg-bb-safety-stops':   ['=big-brother'],
     'cfg-bb-havenot-count':  ['=big-brother'],
-    'cfg-ss-name':           ['secret-story'],
     'cfg-ss-house':          ['secret-story'],
     'cfg-ss-noms':           ['secret-story'],
     'cfg-ss-nominees':       ['secret-story'],

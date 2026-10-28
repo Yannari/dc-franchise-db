@@ -197,7 +197,8 @@ export function ssSecretsBoardHTML() {
   const names = c.map(p => p.name);
   const all = c.map(p => seasonConfig.ssSecrets?.[p.name]);
   const prodN = new Set(all.filter(e => e?.source === 'production').map(e => e.text)).size;
-  const shared = all.filter(e => e?.pair || (e?.group && e.source !== 'production')).length;
+  // (a secret kept by two or more, any kind: a real tie, a production pair, a group; counted once)
+  const shared = new Set(all.filter(e => e?.pair || (e?.group || []).length > 1).map(e => e.text)).size;
   // (a secret already given to somebody, or anybody's canon secret, is not offered twice)
   const takenIds = new Set([...all.map(e => e?.id).filter(Boolean), ...canonTaken()]);
   const cards = c.map(p => {
@@ -224,7 +225,7 @@ export function ssSecretsBoardHTML() {
         ${hist.length ? `<select onchange="ssUseHistory('${n}',this.value)" title="Something true from their history"><option value="">From their life…</option>${hist.map((h, j) => `<option value="${j}">${esc(h.text)}</option>`).join('')}</select>` : ''}</div>
       <div class="ssb-write" id="ss-write-${n}"><input id="ss-write-text-${n}" placeholder="I have…">
         <select id="ss-write-kind-${n}">${SECRET_KINDS.map(k => `<option value="${k.id}">${esc(k.label)}</option>`).join('')}</select>
-        <button type="button" class="ssb-btn primary" onclick="ssWriteSave('${n}')">Save the secret</button></div>`}
+        <span><button type="button" class="ssb-btn primary" onclick="ssWriteSave('${n}')">Save the secret</button> <button type="button" class="ssb-btn" onclick="ssWriteOpen('${n}')">Cancel</button></span></div>`}
     </div>`;
   }).join('');
   const recog = (seasonConfig.ssRecognitions || []).filter(r => names.includes(r.who) && names.includes(r.whom));
@@ -262,7 +263,7 @@ function prodPanelHTML(c) {
       <button type="button" class="ssb-btn" onclick="ssProdDraw()" title="Let the Voice choose one, and who keeps it">🎲 Let the Voice draw one</button></div>
     <div class="ssb-env-row">${cur.map(env).join('')}
       <button type="button" class="ssb-new" onclick="ssProdOpen()"><b>+ New production secret</b><span>Choose it, then who keeps it</span></button></div>
-    <div class="ssb-comp" id="ss-prod-comp">
+    <div class="ssb-comp" id="ss-prod-comp"><button type="button" class="ssb-x" style="position:relative;float:right;right:0;top:0" title="Close" onclick="ssProdOpen(false)">✕</button>
       <div class="ssb-step"><div class="ssb-step-h"><i>1</i>Choose the secret <small>· from the seasons, or write your own</small></div>
         <div class="ssb-tiles">${PRODUCTION_SECRETS.map(d => `<button type="button" class="ssb-tile" data-def="${d.id}" data-min="${d.min || 1}" data-max="${d.max || 4}" onclick="ssProdPick(this)"><b>“${esc(d.text)}”</b><span>${esc(d.from)} · ${d.min === d.max ? d.min : `${d.min}–${d.max}`} ${d.max > 1 ? 'housemates' : 'housemate'}</span></button>`).join('')}
           <button type="button" class="ssb-tile own" data-def="own" data-min="1" data-max="6" onclick="ssProdPick(this)"><b>✎ Write my own</b><span>Your words, and the job it plays</span></button></div></div>

@@ -24,7 +24,7 @@ const DIR = 'assets/audio/ss/';
 const BASE_VOL = 0.4;
 // the encoder's delay at the head of every file (measured on decode)
 const HEAD = 0.0251;
-const DUR = { 'previously-1': 84.37, 'previously-2': 76.59, 'previously-3': 35.63, launch: 58.36, anthem: 74.52, voice: 50.16, 'mission-1': 46.15, 'mission-2': 55.3,
+const DUR = { theme: 59.0, 'previously-1': 84.37, 'previously-2': 76.59, 'previously-3': 35.63, launch: 58.36, anthem: 74.52, voice: 50.16, 'mission-1': 46.15, 'mission-2': 55.3,
   bailiff: 58.71, 'finalists-2': 86.18, 'finalists-3': 95.47, winner: 75.38, 'party-1': 98.39, 'party-2': 58.29, 'party-3': 58.41, 'party-4': 54.95, 'party-5': 58.43,
   'fun-1': 58.41, 'fun-2': 58.38, 'fun-3': 74.03, 'fun-4': 84.27, 'fun-5': 41.39, after: 58.41, 'quirky-1': 88.64, 'quirky-2': 58.57, store: 26.55,
   'hunt-1': 58.41, 'hunt-2': 95.35, 'hunt-3': 39.51, 'hunt-4': 93.77, 'hunt-5': 93.77, 'hunt-6': 72.25, think: 79.84, plot: 31.05, 'drama-1': 102.76, 'drama-2': 21.09,
@@ -34,7 +34,8 @@ const DUR = { 'previously-1': 84.37, 'previously-2': 76.59, 'previously-3': 35.6
 /** Each kind of moment, its tracks, and what they are. */
 export const SS_BEDS = {
   'ss-previously': { files: ['previously-1', 'previously-2', 'previously-3'], what: '"Précédemment dans Secret Story": under the narrator\'s recap' },
-  'ss-prime':      { files: ['theme-long'], what: 'the full generic (I Wanna Chat), as the prime goes on air' },
+  // (the user, 2026-10-28: "use the truncated theme for the opening, not the full song")
+  'ss-prime':      { files: ['theme'], what: 'the generic, the show\'s own cut of the theme, as the prime goes on air' },
   'ss-launch':     { files: ['launch'], what: 'Secret Boys Secret Girls: the arrivals on launch night' },
   'ss-anthem':     { files: ['anthem'], what: 'the Hymn of Secrets: a secret told, the list of secrets' },
   'ss-voice':      { files: ['voice'], what: "the Eye of the Net jingle bed: under the Voice's announcements" },
@@ -123,8 +124,9 @@ const BY_ID = [
   [/^bb-ss-(journeys|final-journey)/, 'ss-sad'],
   [/^bb-ss-final-awards/, 'ss-fun'],
 ];
-// a house scene sounds like what it is; ordinary talk is the room (silence, like Big Brother's house)
-const BY_MOOD = { mission: 'ss-mission', store: 'ss-store', drama: 'ss-drama', scheming: 'ss-plot', plan: 'ss-hunt', campaign: 'ss-plot', ceremony: 'ss-tension', secret: 'ss-hunt', fun: 'ss-fun', love: 'ss-love', deals: null, house: null };
+// a house scene sounds like what it is; ordinary talk has the dailies' light music under it (the user, 2026-10-28:
+// "you have 53 songs, use them": the real show's dailies are scored nearly wall to wall)
+const BY_MOOD = { mission: 'ss-mission', store: 'ss-store', drama: 'ss-drama', scheming: 'ss-plot', plan: 'ss-hunt', campaign: 'ss-plot', ceremony: 'ss-tension', secret: 'ss-hunt', fun: 'ss-fun', love: 'ss-love', deals: 'ss-plot', house: 'ss-fun' };
 // Big Brother's moment beds, in the House of Secrets
 const FROM_BB = { 'bb-drama': 'ss-drama', 'bb-scheming': 'ss-plot', 'bb-planning': 'ss-hunt', 'bb-campaign': 'ss-plot', 'bb-brewing': 'ss-tension', 'bb-secret': 'ss-hunt',
   'bb-light': 'ss-fun', 'bb-house': 'ss-fun', 'bb-live-wait': 'ss-wait', 'bb-live-vote': 'ss-wait', 'bb-celebration': 'ss-winner', 'bb-comp-win': 'ss-epic', 'bb-comp': 'ss-epic',
@@ -135,12 +137,13 @@ const FROM_BB = { 'bb-drama': 'ss-drama', 'bb-scheming': 'ss-plot', 'bb-planning
 export function ssBaseFor(screen) {
   const id = String(screen?.id || '');
   for (const [re, b] of BY_ID) if (re.test(id)) return b;
-  if (screen?.kind === 'houselife') return 'none';
-  if (screen?.kind === 'scene') return BY_MOOD[screen.mood] || 'none';
+  if (screen?.kind === 'houselife') return 'ss-fun';
+  if (screen?.kind === 'scene') return BY_MOOD[screen.mood] || 'ss-fun';
   if (screen?.kind === 'hoh') return 'ss-epic';
   if (screen?.kind === 'noms') return 'ss-tension';
   if (screen?.kind === 'voice') return 'ss-voice';
-  return 'none';
+  // (any other Secret Story screen: a quiet bed rather than silence)
+  return 'ss-think';
 }
 /** The House of Secrets' name for a bed Big Brother's rules chose (a moment: a fight, the wait, a win). */
 export function ssFromBB(bed) {

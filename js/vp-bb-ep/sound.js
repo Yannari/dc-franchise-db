@@ -229,7 +229,8 @@ function ssMomentBed(screen, idx) {
   for (let i = idx; i >= 0; i--) if (steps[i]?.scene) { cut = i; break; }
   let held = null;
   for (let i = Math.max(0, cut); i <= idx; i++) { const b = ssStepBed(screen, steps[i]) || ssFromBB(rulesFor(screen, i).bed); if (b) held = b; }
-  const base = held || (cut >= 0 ? ssMoodBed(steps[cut].scene.mood) : ssBaseFor(screen));
+  // (a scene with no mood of its own keeps its screen's music: the arrivals moved studio, airlock, house in silence)
+  const base = held || (cut >= 0 && steps[cut].scene.mood ? ssMoodBed(steps[cut].scene.mood) : ssBaseFor(screen));
   if (base === 'ss-winner' || base === 'ss-epic' || base === 'ss-sad' || base === 'ss-bailiff') return base;
   for (let i = idx; i > Math.max(cut, idx - 3); i--) if (HEAT(steps[i])) return 'ss-drama';
   const st = steps[idx];

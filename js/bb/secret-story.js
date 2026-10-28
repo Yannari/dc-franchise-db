@@ -303,7 +303,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     // The season's house (a pick, or the draw made now) and its name.
     houseTheme: SS_HOUSE_THEMES.some(h => h.id === seasonConfig?.ssHouseTheme)
       ? seasonConfig.ssHouseTheme : SS_HOUSE_THEMES[Math.floor(rng() * SS_HOUSE_THEMES.length)].id,
-    name: String(seasonConfig?.ssName || '').trim() || null,
+    // (the season's own title, Season Basics; an old save's Secret Story-only name if it has no title)
+    name: String(seasonConfig?.name || seasonConfig?.ssName || '').trim() || null,
     recognitions: recog.filter(r => room.includes(r.who) && room.includes(r.whom)),
   };
   openKitties(gs.bb.secretStory, room, KITTY_START, 1);

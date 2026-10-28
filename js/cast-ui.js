@@ -1609,7 +1609,6 @@ export function saveConfig() {
     bbDepartures: g('cfg-bb-departures')?.value || 'off',
     // Secret Story: the season's identity, and the cast screen's choices
     // (js/ss/setup-panel.js), which no control holds and so must survive a save.
-    ssName: g('cfg-ss-name') ? g('cfg-ss-name').value.trim() : (seasonConfig.ssName || ''),
     ssHouseTheme: g('cfg-ss-house')?.value || seasonConfig.ssHouseTheme || 'random',
     ssNominations: g('cfg-ss-noms')?.value || seasonConfig.ssNominations || 'random',
     ssNomineeCount: g('cfg-ss-nominees')?.value || seasonConfig.ssNomineeCount || 'auto',
@@ -1844,7 +1843,6 @@ export function renderConfig() {
   set('cfg-bb-safety-stops', seasonConfig.bbSafetyStopsAt || 9);
   set('cfg-bb-havenot-count', seasonConfig.bbHaveNotCount || 'auto');
   set('cfg-bb-departures', seasonConfig.bbDepartures || 'off');
-  set('cfg-ss-name', seasonConfig.ssName || '');
   set('cfg-ss-house', seasonConfig.ssHouseTheme || 'random');
   set('cfg-ss-noms', seasonConfig.ssNominations || 'random');
   set('cfg-ss-nominees', seasonConfig.ssNomineeCount || 'auto');

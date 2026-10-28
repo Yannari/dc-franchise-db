@@ -23,6 +23,8 @@ const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
+/** The options the country reads as the heart over the deal. */
+export const HEART_LABELS = new Set(['the visit', 'save the friend', 'refuse', 'keep it', 'give up the immunity', 'keep the secret safe']);
 
 /** Somebody the chooser is close to, and somebody they are not. */
 const bestFriend = (ctx, n, house) => house.filter(x => x !== n).sort((a, b) => (ctx.bond?.(n, b) ?? 0) - (ctx.bond?.(n, a) ?? 0))[0] || null;
@@ -165,13 +167,16 @@ export function runDilemma(state, ctx, { to, house = [], exclude = [] } = {}) {
     const d = options.splice(Math.floor(rng() * options.length), 1)[0];
     const built = d.build(state, ctx, to, house);
     if (!built) continue;
-    const yes = built.yes.value + (rng() - 0.5) * 0.25;
-    const no = built.no.value + (rng() - 0.5) * 0.25;
+    // a housemate who knows the country is watching leans toward how it will look (js/ss/public.js)
+    const looks = Number(ctx.looks?.(to)) || 0;
+    const tilt = o => (HEART_LABELS.has(o.label) ? 0.14 : -0.1) * looks;
+    const yes = built.yes.value + tilt(built.yes) + (rng() - 0.5) * 0.25;
+    const no = built.no.value + tilt(built.no) + (rng() - 0.5) * 0.25;
     const chose = yes >= no ? built.yes : built.no;
     const fx = chose.apply() || {};
     (state.dilemmasUsed ||= []).push(d.id);
     return { type: 'ss-dilemma', week: ctx.week ?? 0, to, dilemmaId: d.id, from: d.from, offer: built.text,
-      options: [built.yes.label, built.no.label], chose: chose.label, result: fx.text, clue: fx.clue?.clue || null,
+      options: [built.yes.label, built.no.label], chose: chose.label, heart: HEART_LABELS.has(chose.label), result: fx.text, clue: fx.clue?.clue || null,
       visit: fx.visit || null, effects: { bond: fx.bond || [], pop: fx.pop || [] },
       beats: [{ text: `${to}'s dilemma: ${built.text} ${fx.text}`, players: [to], badgeText: 'DILEMMA', badgeClass: 'gold', part: 'dilemma' }] };
   }

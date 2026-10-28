@@ -3247,9 +3247,19 @@ function ssAfterScreen(act, ctx, host) {
   if ((af.close || []).length || (af.wrong || []).length) steps.push({ k: 'say', by: ev, t: pickBy(["I had no idea anybody was that close. Wow.", "That's mad. They talk about it every night and they still don't know.", "I would never have guessed that."], `${k}|th`) });
   if ((af.kitties || []).length) steps.push({ k: 'host', by: host, t: 'The money, after tonight.', board: { title: 'THE KITTIES', rows: af.kitties.map(([n, v]) => ({ n, text: euros(v) })) } },
     { k: 'host', by: B, t: `${af.kitties[0][0]} is sitting on ${euros(af.kitties[0][1])}. Every hunter in that house should be looking at ${af.kitties[0][0]}.` });
-  if (af.favourite) steps.push({ k: 'host', by: host, t: `The public's favourite this week: ${af.favourite}.` });
-  if (af.leastLiked && af.leastLiked !== af.favourite) steps.push({ k: 'host', by: B, t: `And the one the public is least sure about: ${af.leastLiked}. Careful, ${af.leastLiked}.` },
-    { k: 'say', by: ev, t: pickBy([`That doesn't surprise me at all.`, `Really? In the house it doesn't feel like that.`], `${k}|ll`) });
+  // THE COUNTRY (js/ss/public.js): its favourite and why, the one it loves to hate, the one it never sees
+  const P = af.public || {};
+  const hotFav = P.favourite && (P.favourite.key === 'villain' || P.favourite.key === 'hated');
+  if (hotFav) steps.push({ k: 'host', by: host, t: `The housemate the country cannot stop watching this week: ${P.favourite.name}. Love ${pronouns(P.favourite.name).obj || 'them'} or hate ${pronouns(P.favourite.name).obj || 'them'}, everybody is talking about ${P.favourite.name}.`, toast: ['THE PUBLIC', '#e0b84a'] },
+    { k: 'host', by: B, t: P.favourite.why ? `And it started when ${P.favourite.name} ${P.favourite.why}.` : `I can't look away either, darling.` });
+  else if (P.favourite) steps.push({ k: 'host', by: host, t: `The public's favourite this week: ${P.favourite.name}, ${P.favourite.label}.`, toast: ['THE PUBLIC', '#e0b84a'] },
+    { k: 'host', by: B, t: P.favourite.why ? `The phones went mad when ${P.favourite.name} ${P.favourite.why}.` : `Everybody at home is talking about ${P.favourite.name}.` });
+  else if (af.favourite) steps.push({ k: 'host', by: host, t: `The public's favourite this week: ${af.favourite}.` });
+  if (P.villain && P.villain.name !== P.favourite?.name) steps.push({ k: 'host', by: B, t: P.villain.key === 'villain'
+    ? `And ${P.villain.name}. The country loves to hate ${P.villain.name}${P.villain.why ? `, especially since ${pronouns(P.villain.name).sub || 'they'} ${P.villain.why}` : ''}. But they watch, and the ones who watch, vote.`
+    : `${P.villain.name}, the country is cross with you${P.villain.why ? `. You ${P.villain.why}, and they saw it` : ''}.` },
+    { k: 'say', by: ev, t: pickBy([`That doesn't surprise me at all.`, `Really? In the house it doesn't feel like that.`, `Good. Somebody had to see it.`], `${k}|vl`) });
+  if (P.unseen && P.unseen.name !== P.favourite?.name) steps.push({ k: 'host', by: B, t: `Has anybody seen ${P.unseen.name} this week? Because the public hasn't. ${P.unseen.name}, in this game the ones nobody sees go home.` });
   if (af.nextToFall) steps.push({ k: 'host', by: B, t: `My prediction: the next secret to fall is ${af.nextToFall.holder}'s. And ${af.nextToFall.by} will be the one pressing the buzzer.` });
   steps.push({ k: 'host', by: host, t: `${af.hiddenLeft ?? 'The'} secrets still hidden. ${ev}, thank you for everything.` },
     { k: 'host', by: B, t: "See you next week. Keep your secrets!" });

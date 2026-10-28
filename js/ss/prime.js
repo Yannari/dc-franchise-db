@@ -216,6 +216,9 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   return { name: primeName(segs), segments: segs };
 }
 
+/** Nobody's popularity, when the caller has none to give. */
+const noPop = (/** @type {string} */ _n) => /** @type {number} */ (0);
+
 // ── AFTER THE VERDICT ────────────────────────────────────────────────────
 
 /**
@@ -223,7 +226,7 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
  * the set tonight. Who was right, who was wrong, who never guessed. The
  * theories about it close.
  */
-export function revealOnExit(state, { evicted, house = [], week = 0 } = {}) {
+export function revealOnExit(state, { evicted = undefined, house = [], week = 0 } = {}) {
   const s = secretOf(state, evicted);
   if (!s) return null;
   const was = !!s.found;
@@ -247,7 +250,7 @@ export function revealOnExit(state, { evicted, house = [], week = 0 } = {}) {
  * After Secret (the host and Blaineley, the eliminated on the couch): what the
  * viewers know that the house does not. Read from the state, after the verdict.
  */
-export function afterShow(state, ctx, { evicted, house = [], popOf = () => 0 } = {}) {
+export function afterShow(state, ctx, { evicted = undefined, house = [], popOf = noPop } = {}) {
   const hidden = hiddenSecrets(state).filter(s => (s.holders || []).some(h => house.includes(h)));
   // the theories closest to the truth, and the loudest wrong ones
   const close = [], wrong = [];

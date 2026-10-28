@@ -102,7 +102,7 @@ export function addEvidence(state, ctx, knower, target, { strength = 0.2, how = 
  * housemate in `house`). A FAKE clue points at `fakeText` instead of the truth.
  * Returns the act for the viewer.
  */
-export function showClue(state, ctx, { holder, clue = null, how = 'game', to = 'house', house = [], fake = false, fakeText = null, by = null } = {}) {
+export function showClue(state, ctx, { holder = undefined, clue = null, how = 'game', to = 'house', house = [], fake = false, fakeText = null, by = null } = {}) {
   huntOf(state);
   const secret = secretOf(state, holder);
   if (!secret || secret.found) return null;
@@ -186,7 +186,8 @@ export function runBuzzes(state, ctx, { house = [], weeksLeft = 6, maxPerWeek = 
       .sort((x, y) => y[1].conf - x[1].conf)[0];
     if (!best) continue;
     const [target, th] = best;
-    const bar = buzzBar(state, ctx, n, { weeksLeft }) - (free ? 0.12 : 0);
+    // ...and how it will look on air (the adapter's ctx.buzzCost: a friend, the country's favourite)
+    const bar = buzzBar(state, ctx, n, { weeksLeft }) - (free ? 0.12 : 0) + (Number(ctx.buzzCost?.(n, target)) || 0);
     if (th.conf >= bar && rng() < 0.55 + st(ctx, n, 'boldness') * 0.03) candidates.push({ n, target, th, free });
   }
   candidates.sort((a, b) => b.th.conf - a.th.conf);

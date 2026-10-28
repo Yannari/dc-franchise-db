@@ -56,7 +56,7 @@ function masterPick(state, ctx, master, house) {
  * The week's game is won; settle the prize. Returns
  * `{ act, immune: [names], masterPick: name|null, clueAct }`.
  */
-export function settleWeeklyGame(state, ctx, { winner, house = [] } = {}) {
+export function settleWeeklyGame(state, ctx, { winner = undefined, house = [] } = {}) {
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
   if (!winner) return { act: null, immune: [], masterPick: null, clueAct: null };

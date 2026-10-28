@@ -737,3 +737,37 @@ secret the house never found is told, its partner exposed, the ones who were
 right say so), then After Secret with Josh and Blaineley (the theories the
 viewers can see, the money, the public's favourite, Blaineley's prediction).
 Every segment moves bonds or the public before the lines close.
+
+## 26. The public (built, M7)
+
+The user, 2026-10-27: "popularity is the most important part of the game ...
+not too simple ... sometimes even a villain could be popular, more popular than
+someone nobody cares about ... popularity can come from multiple things, even
+pity". `js/ss/public.js` keeps seven running numbers per housemate:
+
+| axis | fed by | why (source) |
+|---|---|---|
+| seen | every aired beat, every act | you cannot love who you never see (parasocial attachment needs screen time); relative to the house, so a quiet housemate stays quiet all season |
+| warmth | comforting, choosing the heart in a dilemma, a right buzz on a stranger | likeability |
+| pity | nominated by many, buzzed, betrayed, the room of truths, a moving secret told | the underdog; S2's daughter kept with 85% the week her mother left. Wears thin on its own |
+| fun | fights, bold buzzes, missions pulled off, deals taken, the red phone | viewers rate entertainment over realism; it builds a devoted core even for a villain |
+| real | caught being two-faced (−), buzzing a friend (−) | audiences prize authentic moments; lying FOR the game is the premise, to hurt is not |
+| arc | romance, a fake couple's story, a visit from home | fake couples and siblings won S2, S4, S6: the country votes for a story; it barely decays |
+| heat | cruelty, greed on air, d'office, fights | some heat is fuel; too much with nothing warm underneath turns the country |
+
+The vote SAVES, so it reads the size of a FAN BASE (`support`): recognition ×
+(casual fans from warmth, pity and arc minus what heat drives away, plus a
+devoted core from entertainment) × authenticity. A villain the country watches
+outlasts a housemate nobody noticed; a warm one beats both. The week's headlines
+decay, the arc stays. The engine's own popularity number still moves (other
+screens read it) and the public reads its changes lightly.
+
+Decisions weigh how they LOOK, more as the season goes and for the socially
+sharp (`awareness`): nominating the country's favourite is a wasted vote,
+buzzing a friend or a favourite on air needs more certainty, a dilemma tilts
+toward the heart. After Secret reads the country to the viewers: its favourite
+and why, the one it loves to hate, the one it never sees.
+
+Measured over six seasons: 24 sweethearts, 19 love-to-hate villains, 10 big
+characters by the end; a villain survived four public votes in a row on his fan
+base; the barely-seen went early.

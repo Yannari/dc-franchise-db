@@ -15,7 +15,7 @@
 
 import { gs, seasonConfig } from './core.js';
 import { themeBeat, themeState } from './bb/themes.js';
-import { ssOn, secretStoryFinalVote, ssState } from './bb/secret-story.js';
+import { ssOn, secretStoryFinalVote, secretStoryFinalWeek, ssState } from './bb/secret-story.js';
 import { pStats, pronouns } from './players.js';
 import { getBond } from './bonds.js';
 import { dealBetween, sincerityOf, honoursDeal, breakDeal, exposeDeal, tierOf } from './bb/deals.js';
@@ -565,11 +565,14 @@ export function simulateBBFinale(rng = Math.random) {
   };
   _themeFinale('finale', { finalists: [...house] });
 
-  const finaleHouse = generateBBFinaleHouse(week, rng);
+  // (Big Brother's last days revise for a jury quiz; Secret Story has no jury: its final week is the returns)
+  const finaleHouse = ssOn() ? null : generateBBFinaleHouse(week, rng);
   if (finaleHouse) acts.push(finaleHouse);
 
   // ── SECRET STORY: no final Head of Household and no jury; the public crowns the winner ──
   if (ssOn()) {
+    // the final week first: the eliminated come back for a day, and each journey is told
+    try { acts.push(...secretStoryFinalWeek({ finalists: [...house], rng })); } catch { /* the vote stands without it */ }
     const fv = secretStoryFinalVote({ finalists: [...house], rng });
     acts.push({ type: 'ss-final-vote', ...fv });
     const winner = fv.winner;
@@ -581,7 +584,7 @@ export function simulateBBFinale(rng = Math.random) {
     gs.winner = winner;
     gs.bb ||= {};
     gs.bb.finale = { finalHoh: null, finalTwo: order.slice(0, 2), cut: ssCut, jury: [], votes: {}, winner, runnerUp, favourite: null,
-      publicVote: fv.percents, kitty: fv.kitty };
+      publicVote: fv.percents, kitty: fv.kitty, cheque: fv.cheque };
     return {
       num: week.num, format: 'big-brother', isBigBrother: true, isFinale: true, finale: true,
       themeMood: themeState()?.mood || null, themeId: themeState()?.id || null,

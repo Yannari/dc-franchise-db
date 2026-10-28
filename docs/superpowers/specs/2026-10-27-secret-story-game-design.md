@@ -875,3 +875,23 @@ partner not reacting, the walk through the airlock, who recognises them and
 from where), the Voice's first address with the commandments read out, and,
 when the draw has a signature, the pair called to the confessional at two in
 the morning to be given their role.
+
+## 31. The semi-final and the final (built, M11)
+
+`js/ss/final.js`. THE SECRET OF THE HOUSE: one of four riddles (six letters
+spelling FINALE, the watching portraits, a number in every room, the midnight
+song) is announced on launch night; a clue turns up most weeks (to the game's
+winner or the sharpest eyes, and whoever sees them find it); in the semi-final
+week the best-informed may solve it for a place in the final, and the Voice
+offers $15,000–$50,000 to give the place back.
+
+THE SEMI PRIME: the hunt closes (no buzz after it), every secret nobody found is
+unveiled to the house, and each one kept that long is paid $10,000.
+
+THE FINAL WEEK: the eliminated come back for a day, each to the finalist they
+loved (a reunion) or the one who buzzed them or worked against them (a
+reckoning); bonds and the public move before the vote. The final prime tells
+each finalist's season from their biggest moments (kept all season, not just
+the last weeks), reads the shares from last place to first, and the winner
+takes their kitty AND the $100,000 cheque. Big Brother's last days (revising for
+a jury quiz) no longer play in a Secret Story final.

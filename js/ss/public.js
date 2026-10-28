@@ -84,6 +84,12 @@ export function notice(state, n, axis, d, why = '', week = 0) {
   // anything the country notices, it has seen
   if (axis !== 'seen') f.seen = Math.round((f.seen + Math.abs(d) * 0.35) * 1000) / 1000;
   if (why) { f.log.push({ week, axis, d: Math.round(d * 100) / 100, why }); if (f.log.length > 40) f.log.shift(); }
+  // the season's big moments, kept from week one (the final's journeys): the largest twenty
+  if (why && d >= 0.25) {
+    f.highlights ||= [];
+    f.highlights.push({ week, axis, d: Math.round(d * 100) / 100, why });
+    if (f.highlights.length > 20) { f.highlights.sort((a, b) => b.d - a.d); f.highlights.length = 20; }
+  }
 }
 
 /** A week passes: the headlines fade, the story stays. Quiet housemates fade fastest. */

@@ -46,6 +46,7 @@ import { addBond, getBond } from '../bonds.js';
 import { careerOf, activeSeasons } from '../franchise-meta.js';
 import { drawSeason, RATE, signatureOf } from '../ss/twists.js';
 import { castRole, playRole, accuseRole, ROLE_NAMES } from '../ss/signatures.js';
+import { planHouseSecret, houseSecretClue, solveHouseSecret, finalPlace, unveilSecrets, finalWeekReturns, journeyOf, CHEQUE, KEPT_BONUS } from '../ss/final.js';
 import { styleOf } from './game-style.js';
 
 // The ledger owns the amounts (js/ss/kitty.js); re-exported for v1's callers.
@@ -276,6 +277,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     (st0.plan ||= {}).secretRoomWeek = st0.draw.secretRoomWeek;
     // the signature's pair, chosen by the Voice tonight
     castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
+    // the secret of the house, hidden for the whole season (js/ss/final.js)
+    planHouseSecret(st0, rng);
   }
   // THE SECRETS BECOME CANON NOW (js/ss/canon.js): from this browser if it can;
   // the published season carries them as well, for the worker to finish.
@@ -296,6 +299,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     // launch night (part 2 §2): the arrivals in order, who recognises whom, the season's signature
     arrivals: room.slice().sort(() => rng() - 0.5),
     commandments: (gs.bb.secretStory.weekly === 'revival' ? COMMANDMENTS_REVIVAL : COMMANDMENTS).slice(),
+    houseRiddle: gs.bb.secretStory.houseSecret?.riddle || null,
     recognitions: (gs.bb.secretStory.recognitions || []).slice(),
     signature: gs.bb.secretStory.draw?.signature ? { ...signatureOf(gs.bb.secretStory.draw.signature), pair: gs.bb.secretStory.role?.pair || [] } : null,
     kitty: KITTY_START, stake: BUZZ_STAKE,
@@ -383,6 +387,19 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const clue = showClue(state, ctx, { holder, how: 'voice', house: room });
     if (clue) acts.push(clue);
   }
+  // THE SECRET OF THE HOUSE (js/ss/final.js): a clue most weeks; in the semi-final week, somebody may solve it.
+  const semi = room.length <= (Number(seasonConfig?.finaleSize) || 3) + 1;
+  if (semi) {
+    const end = solveHouseSecret(state, ctx, { house: room });
+    if (end) {
+      if (end.solved && !end.sold) { pub(end.by, 'game', 0.5, 'solved the secret of the house'); if (week) week._ssImmune = [...new Set([...(week._ssImmune || []), end.by])]; }
+      if (end.solved && end.sold) { pub(end.by, 'fun', 0.2, 'sold the place in the final'); pub(end.by, 'heat', 0.2, 'sold the place in the final'); }
+      acts.push(end);
+    }
+  } else if (ctx.week >= 2 && rng() < 0.55) {
+    const c = houseSecretClue(state, ctx, { house: room, to: rng() < 0.5 ? gameWinner : null });
+    if (c) { pub(c.finder, 'game', 0.08, 'found a clue to the secret of the house'); acts.push(c); }
+  }
   // The season's signature role (js/ss/signatures.js): the masters add a nominee, the thieves steal.
   {
     const r = playRole(state, ctx, { house: room });
@@ -410,7 +427,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     if (shop) { applyFx(shop.effects); acts.push(shop); }
   }
   const weeksLeft = Math.max(0, room.length - 5);
-  for (const b of runBuzzes(state, ctx, { house: room, weeksLeft })) {
+  // (the hunt closes at the semi prime: js/ss/final.js unveilSecrets)
+  for (const b of state.huntClosed ? [] : runBuzzes(state, ctx, { house: room, weeksLeft })) {
     if (b.outcome === 'right') {
       // the hunter is a character; buzzing a FRIEND on air is a betrayal the country saw
       const friend = bond(b.by, b.target) > 3;
@@ -481,6 +499,16 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // The night's segments (js/ss/prime.js): every one has consequences, applied
   // here, BEFORE the lines close, so the public votes on what it just watched.
   const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  // THE SEMI PRIME (js/ss/final.js): the hunt closes, the secrets nobody found are unveiled and paid.
+  if (room.length <= (Number(seasonConfig?.finaleSize) || 3) + 1 && !state.huntClosed) {
+    const unveiled = unveilSecrets(state, ctx, { house: room });
+    for (const u of unveiled) for (const h of u.holders) {
+      pub(h, 'arc', 0.3, 'kept the secret to the semi-final'); pub(h, 'game', 0.3, 'kept the secret to the semi-final');
+      const sk = (state.secrets || []).find(s => s.text === u.text);
+      if (MOVING.includes(sk?.secretKind)) pub(h, 'warmth', 0.25, 'told the story behind the secret');
+    }
+    /** @type {any[]} */ (night.segments).unshift({ kind: 'unveil', list: unveiled, bonus: KEPT_BONUS, place: finalPlace(state), effects: { bond: [], pop: [] } });
+  }
   // THE ACCUSATION (js/ss/signatures.js): somebody sure enough names the season's secret pair.
   {
     const acc = accuseRole(state, ctx, { house: room });
@@ -675,7 +703,29 @@ export function secretStoryExport(state, { finalists = [] } = {}) {
   return { players, secrets };
 }
 
-/** The public's final vote, among the finalists. The winner takes their kitty. */
+/**
+ * THE FINAL WEEK (js/ss/final.js): the eliminated come back for a day, a few at a time, and each
+ * finalist's journey is told. Before the final vote: the last days move the country too.
+ */
+export function secretStoryFinalWeek({ finalists = [], rng = Math.random } = {}) {
+  const state = ssState();
+  if (!state) return [];
+  const ctx = huntCtx({ num: (gs.bb?.weeks?.length || 0) + 1 }, rng);
+  const eliminated = (gs.eliminated || []).filter(n => !finalists.includes(n));
+  const visits = finalWeekReturns(state, ctx, { finalists, eliminated });
+  for (const v of visits) {
+    if (!v.with) continue;
+    if (v.kind === 'reunion') { try { addBond(v.who, v.with, 1); } catch { /* */ } pub(v.with, 'warmth', 0.08, `was welcomed back by ${v.who}`); }
+    else { try { addBond(v.who, v.with, -1); } catch { /* */ } pub(v.with, 'fun', 0.1, `faced ${v.who} again in the final week`); }
+  }
+  const acts = [];
+  if (visits.length) acts.push({ type: 'ss-returns', visits, beats: [{ text: `The eliminated come back for a day: ${visits.map(v => v.who).join(', ')}.`, players: visits.map(v => v.who).slice(0, 4), badgeText: 'THE RETURNS', badgeClass: 'gold', part: 'final' }] });
+  acts.push({ type: 'ss-journeys', finalists: [...finalists], journeys: Object.fromEntries(finalists.map(n => [n, journeyOf(state, n)])),
+    kitties: Object.fromEntries(finalists.map(n => [n, Number(state.kitty?.[n]) || 0])) });
+  return acts;
+}
+
+/** The public's final vote, among the finalists. The winner takes their kitty, and the cheque. */
 export function secretStoryFinalVote({ finalists = [], rng = Math.random } = {}) {
   if (!finalists.length) return null;
   const state = ssState();
@@ -688,6 +738,6 @@ export function secretStoryFinalVote({ finalists = [], rng = Math.random } = {})
   }
   const order = finalists.slice().sort((a, b) => percents[b] - percents[a]);
   const winner = order[0];
-  return { winner, order, percents, kitty: state?.kitty?.[winner] ?? KITTY_START,
-    secrets: (state?.secrets || []).map(x => ({ holders: [...x.holders], text: x.text, found: x.found, foundBy: x.foundBy })) };
+  return { winner, order, percents, kitty: state?.kitty?.[winner] ?? KITTY_START, cheque: CHEQUE,
+    secrets: (state?.secrets || []).map(x => ({ holders: [...x.holders], text: x.text, found: x.found, foundBy: x.foundBy, unveiled: x.unveiled ?? null })) };
 }

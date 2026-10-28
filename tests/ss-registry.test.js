@@ -92,3 +92,13 @@ describe('Secret Story on the calendar', () => {
     expect(text).toMatch(/SS ?1|Secret Story 1/);
   });
 });
+
+describe('who presents Secret Story', () => {
+  it('Josh hosts the prime, never Big Brother\'s host', async () => {
+    const { HOSTS_BY_FORMAT } = await import('../js/shows.js');
+    expect(HOSTS_BY_FORMAT['secret-story'].map(h => h.value)).toEqual(['Josh']);
+  });
+  it('Josh and Blaineley present the After show', () => {
+    expect(SHOWS['secret-story'].after).toEqual({ name: 'After Secret', hosts: ['Josh', 'Blaineley'] });
+  });
+});

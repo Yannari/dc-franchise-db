@@ -206,6 +206,10 @@ export const SHOWS = {
     airSlots: ['summer'],
     rosterPlace: 'HOUSE',
     hasJury: false,
+    // The after show (the real After Secret): the night's prime picked apart in
+    // the studio. Josh hosts, Blaineley co-hosts (the user, 2026-10-27); she is
+    // a franchise alumna (roster slug blaineley), so she brings her own history.
+    after: { name: 'After Secret', hosts: ['Josh', 'Blaineley'] },
     words: { seasonComplete: 'The season is complete. The public has chosen.',
       player: 'housemate', players: 'housemates', round: 'Week', exit: 'eliminated',
       quietRound: 'A normal week in the House of Secrets',
@@ -1153,6 +1157,14 @@ export const HOSTS_BY_FORMAT = {
   // Don, the Ridonculous Race's own host (assets/avatars/don.png): upbeat, slick, vain.
   'ridonculous-race': [
     { value: 'Don', label: 'Don' },
+  ],
+  // Josh hosts the prime (the user, 2026-10-27; assets/avatars/josh.png, a HOST
+  // literal): the Total Drama universe's celebrity-gossip host, smooth, grave on
+  // the verdicts the way the real prime's host was. Declared here so the
+  // family fallback below never hands Secret Story Big Brother's Valeria.
+  // Blaineley co-hosts the After show with him (SHOWS['secret-story'].after).
+  'secret-story': [
+    { value: 'Josh', label: 'Josh' },
   ],
 };
 // A spin-off is presented by its family's hosts: All Stars is RuPaul's too.

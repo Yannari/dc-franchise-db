@@ -46,6 +46,7 @@ import { addBond, getBond } from '../bonds.js';
 import { careerOf, activeSeasons } from '../franchise-meta.js';
 import { drawSeason, RATE, signatureOf } from '../ss/twists.js';
 import { castRole, playRole, accuseRole, ROLE_NAMES } from '../ss/signatures.js';
+import { planLaunch, lastSummer } from '../ss/launch.js';
 import { planHouseSecret, houseSecretClue, solveHouseSecret, finalPlace, unveilSecrets, finalWeekReturns, journeyOf, CHEQUE, KEPT_BONUS } from '../ss/final.js';
 import { styleOf } from './game-style.js';
 
@@ -293,11 +294,21 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     const m = /^The Voice told me (.+)'s secret$/.exec(s.text);
     if (m && room.includes(m[1])) (gs.bb.secretStory.suspicion[s.holders[0]] ||= {})[m[1]] = 0.9;
   }
+  // LAUNCH NIGHT (js/ss/launch.js): who arrives when, the first missions, what the first ones in do
+  // while they wait, the list of secrets; its first impressions move the bonds now
+  const launch = planLaunch(gs.bb.secretStory, huntCtx(undefined, rng), { house: room.slice().sort(() => rng() - 0.5) });
+  for (const [a, b, d] of launch.effects.bond) { try { addBond(a, b, d); } catch { /* no bond */ } }
+  let summer = null;
+  try { summer = lastSummer(activeSeasons() || {}); } catch { summer = null; }
   return {
     type: 'ss-secrets', week: 1, secret: true,
     secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind })),
     // launch night (part 2 §2): the arrivals in order, who recognises whom, the season's signature
-    arrivals: room.slice().sort(() => rng() - 0.5),
+    arrivals: launch.order,
+    launch: { missions: launch.missions, checkins: launch.checkins, lists: launch.lists },
+    lastSummer: summer,
+    houseTheme: gs.bb.secretStory.houseTheme || null,
+    styles: Object.fromEntries(room.map(n => [n, playStyle(n)])),
     commandments: (gs.bb.secretStory.weekly === 'revival' ? COMMANDMENTS_REVIVAL : COMMANDMENTS).slice(),
     houseRiddle: gs.bb.secretStory.houseSecret?.riddle || null,
     recognitions: (gs.bb.secretStory.recognitions || []).slice(),

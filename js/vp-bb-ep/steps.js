@@ -26,6 +26,7 @@ import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
+import { ssLaunchScreens } from './ss-launch.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
@@ -2665,58 +2666,8 @@ const ROLE_LINE = {
 };
 function ssSecretsScreen(act, ctx, host = 'Josh') {
   const k = `${ctx.week}|sslaunch`;
-  const order = (act.arrivals || []).length ? act.arrivals : [...new Set((act.secrets || []).flatMap(s => s.holders || []))];
-  const secretOf = n => (act.secrets || []).find(s => (s.holders || []).includes(n));
-  const NTH = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth'];
-  const card = n => {
-    const p = (ROSTER || []).find(x => x.name === n) || {};
-    const bits = [p.age ? `${p.age}` : null, p.hometown ? `from ${p.hometown}` : null].filter(Boolean).join(', ');
-    const nth = NTH[order.indexOf(n)];
-    const job = p.occupation ? ` ${String(p.occupation).replace(/^./, c => c.toUpperCase())}.` : '';
-    return bits || job ? `${n}${bits ? `, ${bits}` : ''}.${job}` : `${n}, the ${nth || 'next'} housemate to arrive.`;
-  };
-  // every arrival says something of their own: no two on the night with the same words
-  const ARRIVE = ['Nervous. Excited. Mostly nervous.', 'I have been waiting for this for months.', 'Ready. I think.', 'My heart is going so fast right now.',
-    'Honestly? I want to win.', 'I just want to have fun and keep my mouth shut.', 'I feel like I might throw up, but in a good way.',
-    "I've watched every season. I know what I'm doing. I hope.", 'Terrified. Is that allowed?', 'Like the luckiest person alive.',
-    'Calm on the outside. Not on the inside.', "I can't wait to meet everybody.", 'I am going to find every single secret in there.', 'Shaking. Look at my hands.',
-    'Like it is my birthday and my first day of school at once.', 'I promised my family I would make them proud.'];
-  const arriveLine = n => ARRIVE[(order.indexOf(n) + (ctx.week || 1) * 7) % ARRIVE.length];
-  const out = [];
-  /** @type {BB.Step[]} */ const open = [
-    { k: 'beat', t: 'Night over the House of Secrets. Every light is off but one: the eye above the door.' },
-    ssv('They all have a secret. Their mission: to keep it, whatever it costs. But will they manage without being unmasked? And above all, never forget: trust no appearances.', { toast: ['SECRET STORY', '#e0b84a'] }),
-    { k: 'beat', t: 'The studio lights come up on a crowd already on its feet.', shake: true },
-    { k: 'host', by: host, t: `Good evening, and welcome to the launch of Secret Story! Tonight, ${order.length} people move into the House of Secrets, and every one of them is hiding something.` },
-    { k: 'host', by: host, t: 'You, at home, will know every secret. They will not. Let\'s meet them.' },
-  ];
-  out.push({ id: 'bb-ss-launch-open', kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'studio-wide', room: 'The Prime Studio', cam: 1, time: 'LIVE',
-    kicker: 'Live · The Prime Studio', title: 'Launch Night', label: 'Launch Night', sub: `${order.length} secrets`, cast: [], steps: open });
-  const inside = [];
-  const recog = act.recognitions || [];
-  for (let i = 0; i < order.length; i += 4) {
-    /** @type {BB.Step[]} */ const steps = [];
-    for (const n of order.slice(i, i + 4)) {
-      const s = secretOf(n);
-      steps.push({ k: 'beat', t: card(n), toast: ['ARRIVING', '#e0b84a'] },
-        { k: 'host', by: host, t: pickBy([`${n}, welcome!`, `Here's ${n}! Welcome to Secret Story.`, `${n}, come here. How are you feeling?`], `${k}|hi|${n}`) },
-        { k: 'say', by: n, t: arriveLine(n) });
-      if (s) {
-        steps.push({ k: 'host', by: host, t: `${n}, the public is about to hear your secret. The house must never find out.` },
-          { k: 'say', by: n, push: true, t: `My secret is: "${s.text}."`, toast: ['ONLY THE PUBLIC KNOWS', '#7c5cff'] });
-        const partner = (s.holders || []).find(x => x !== n && inside.includes(x));
-        if (partner) steps.push({ k: 'beat', t: `Inside, ${partner} watches ${n} walk in, and does not react at all.`, tense: [n, partner] });
-      }
-      steps.push({ k: 'beat', t: pickBy([`${n} walks through the airlock and into the house.`, `The airlock opens. ${n} steps into the House of Secrets.`, `${n} goes down the red carpet, through the airlock, and in.`], `${k}|walk|${n}`) });
-      for (const r of recog.filter(r => r.whom === n && inside.includes(r.who))) steps.push(
-        { k: 'say', by: r.who, t: `Wait... aren't you from ${r.from}?`, tense: [r.who, n] },
-        { k: 'dr', by: n, t: pickBy(['I hoped nobody in here would know who I am.', 'Two minutes in, and somebody already knows me. Great.', 'If they know where I am from, they are one step closer to my secret.'], `${k}|rec|${n}`) });
-      if (inside.length && !recog.some(r => r.whom === n && inside.includes(r.who))) steps.push({ k: 'beat', t: pickBy([`${inside[inside.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${n} shakes hands with everybody, one by one.`], `${k}|in|${n}`) });
-      inside.push(n);
-    }
-    out.push({ id: `bb-ss-launch-arrivals-${i / 4 + 1}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'door', room: 'The Airlock', cam: 7, time: 'LIVE',
-      kicker: 'Live · The Airlock', title: 'The Arrivals', label: `Arrivals ${i / 4 + 1}`, sub: order.slice(i, i + 4).join(', '), cast: order.slice(i, i + 4).map((n, j) => [n, 20 + j * 20]), steps });
-  }
+  // the cold open, every arrival, the house between them, the list of secrets (vp-bb-ep/ss-launch.js)
+  const out = ssLaunchScreens(act, ctx, host, { ssv, pickBy, listOf, euros, ROSTER, ROOM_NAME, CAM, pronouns });
   /** @type {BB.Step[]} */ const voice = [
     { k: 'beat', t: 'Everybody is in. The living room goes dark, and the eye on the screen opens.' },
     ssv('Housemates, this is the Voice. Welcome to the House of Secrets.', { toast: ['THE VOICE', '#e0b84a'] }),

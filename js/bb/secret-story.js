@@ -882,9 +882,10 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   if (nt?.kind === 'houses') pool = pool.filter(n => nt.nominationHouse.includes(n));
   const exclusive = nt?.kind === 'exclusive' && room.includes(nt.who) ? nt.who : null;
   if (exclusive) { voters = [exclusive]; pool = pool.filter(n => n !== exclusive); }
-  const seatsNow = Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
-  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
-    invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 });
+  // (five at most: direct nominations take the house's seats first, and four of them leave the house no vote)
+  const seatsNow = dOffice.length >= 4 ? 0 : Math.max(dOffice.length >= 3 ? 1 : 2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
+  const cast = seatsNow ? castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
+    invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 }) : { nominees: [], ballots: [], tally: {}, secondRound: null };
   const before = [...dOffice, ...cast.nominees];
   // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
   const post = state ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };

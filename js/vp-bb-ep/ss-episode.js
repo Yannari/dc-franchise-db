@@ -60,7 +60,7 @@ export function ssArrange(out, row, o) {
   // with the arrivals"); the Voice's week-open and after-eviction words are the narrator's now
   for (let i = out.length - 1; i >= 0; i--) if (/^(bb-movein(-v)?|theme-primer-v|bb-theme-open-v|bb-theme-vote-v)$/.test(out[i].id)) out.splice(i, 1);
   // (the theme's "the lines are now open" after the nominations: the narrator and the Voice close the days now)
-  for (const s of out) if (s.id === 'bb-noms-v') s.steps = (s.steps || []).filter(st => !/^The speakers in the living room click on\.?$|The lines are now open/.test(String(st.t || '')));
+  for (const s of out) if (s.id === 'bb-noms-v') s.steps = (s.steps || []).filter(st => !/^The speakers in the living room click on\.?$|The lines are now open|The house has chosen; the public will decide/.test(String(st.t || '')));
   const idx = re => out.findIndex(s => re.test(String(s.id || '')));
   const lastIdx = re => { for (let i = out.length - 1; i >= 0; i--) if (re.test(String(out[i].id || ''))) return i; return -1; };
 

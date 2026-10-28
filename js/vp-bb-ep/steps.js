@@ -3252,7 +3252,9 @@ function ssNomScreen(act, ctx) {
   const LIV = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: house.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(10 + 80 * i / (a.length - 1))]) };
   steps.push(ssv('Housemates, please gather in the living room.', { scene: LIV }),
     { k: 'beat', t: pickBy(['Everybody squeezes onto the sofas. Nobody is talking. A few of them are holding hands.', 'They come in fast and sit down in silence. All eyes on the screen.', 'The sofas fill up. Somebody jokes to break the silence. Nobody laughs.'], `${k}|in`) });
-  if ((ss.immune || []).length) steps.push(ssv(`${listOf(ss.immune)} could not be nominated this week.`));
+  // (immune means could not be named by the house: never somebody the Voice put up directly, and the Immunity House is said on its own)
+  const immuneSaid = (ss.immune || []).filter(n => !(ss.dOffice || []).includes(n) && !(ss.twist?.immuneHouse || []).includes(n));
+  if (immuneSaid.length) steps.push(ssv(`${listOf(immuneSaid)} could not be nominated this week.`));
   if ((ss.dOffice || []).length) steps.push(ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'were' : 'was'} already nominated.`, { nom: ss.dOffice.slice() }));
   // the secret room's trades: a vote taken away, a vote that counted twice (js/ss/secret-room.js)
   for (const c of cards.filter(x => x.kind === 'thief')) steps.push(ssv(`One of you has used the immunity thief. ${c.from}, your immunity has been taken.${c.to === c.holder ? ` It now belongs to ${c.holder}.` : ` ${c.holder} has given it to ${c.to}.`}`, { toast: ['THE IMMUNITY THIEF', '#ff3355'] }),
@@ -3296,10 +3298,11 @@ function ssNomScreen(act, ctx) {
   if (ss.voiceTie) steps.push(ssv('The second round was tied too. They are all nominated.'));
   steps.push({ k: 'beat', t: pickBy(['The screen goes dark. For a second nobody gets up.', 'The Eye closes. The room breaks into little groups, whispering.', 'As soon as the screen goes off, everybody starts talking at once.'], `${k}|out`) });
   // ...and later, alone, in the confessional
-  for (const n of noms) steps.push({ k: 'dr', by: n, scene: DR(n), t: ["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side.",
+  const AFTER = ["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side.",
     'Being nominated hurts. But it also means the public finally gets to say what they think of me.', "I'm up this week. I'm not going to change who I am to stay. That's not why I came.",
     "I'm scared, honestly. But I'd rather be scared and real than safe and fake.", 'Every time I walk past a camera now, I think: are they with me out there?',
-    "I've seen people go home who didn't deserve it. I just hope that's not me this week.", 'Nominated. Fine. Now I find out if the country actually likes me.'][(hash(`${ctx.week}|ssn|${n}`) + (ctx.week || 0) * 3 + noms.indexOf(n)) % 8] });
+    "I've seen people go home who didn't deserve it. I just hope that's not me this week.", 'Nominated. Fine. Now I find out if the country actually likes me.'];
+  for (const n of noms) steps.push({ k: 'dr', by: n, scene: DR(n), t: once(AFTER, `${ctx.week}|ssn|${n}`, 'a') });
   return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, time: '13:30', sceneful: true,
     kicker: 'Cam 04 · Living room', title: 'Nominations', label: 'Nominations', sub: `${listOf(noms)} face the public`, cast: LIV.cast, steps };
 }

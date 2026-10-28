@@ -65,7 +65,7 @@ const plan = await page.evaluate(wantList => {
     if (!S || !/^bb-ss-/.test(S.id || '')) continue;
     if (want.has('rest')) out.push({ uid: r.uid, idx: -1, kind: 'rest', id: S.id });
     S.steps.forEach((st, k) => {
-      const kind = st.ask ? 'ask' : st.prop ? 'prop' : st.card ? 'card' : st.k;
+      const kind = st.kitties ? 'kitties' : st.signs ? 'signs' : st.coins ? 'coins' : st.ask ? 'ask' : st.prop ? 'prop' : st.card ? 'card' : st.k;
       const key = `${S.id.replace(/-w\d+.*/, '')}|${kind}`;
       if (!want.has(kind) || seen.has(key)) return;
       seen.add(key); out.push({ uid: r.uid, idx: k, kind, id: S.id });
@@ -81,7 +81,7 @@ for (const m of plan.slice(0, Number(max))) {
   await page.evaluate(i => window.vpGoTo(i), at);
   await page.waitForTimeout(500);
   if (m.idx >= 0) await page.evaluate(([uid, k]) => window.bbxJump(uid, k + 1), [m.uid, m.idx]);
-  await page.waitForTimeout(1700);
+  await page.waitForTimeout(Number(process.env.SS_WAIT || 1700));
   const el = await page.$(`#bbx-st-${m.uid}`);
   if (!el) continue;
   const file = `${OUT}/e${ep}-${String(++n).padStart(2, '0')}-${m.kind}-${m.id.replace(/[^a-z0-9-]/gi, '').slice(0, 40)}.png`;

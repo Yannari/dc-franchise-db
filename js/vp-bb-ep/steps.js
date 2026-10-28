@@ -2997,7 +2997,7 @@ function ssBuzzScreen(act, ctx) {
     if (act.outcome === 'right') {
       reveal.push(ssv(`${t}, tell the house your secret.`),
         { k: 'say', by: t, push: true, t: `My secret is: "${act.secretText}."`, toast: ['SECRET FOUND', '#f5c542'], card: { text: act.secretText, state: 'found', who: `${t}'s secret` } },
-        ssv(`${a}, you were right. ${t}'s kitty, ${euros(act.took)}, is now yours.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
+        ssv(`${a}, you were right. ${t}'s kitty, ${euros(act.took)}, is now yours.`, { coins: { from: t, to: a }, board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
         { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I'm not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
     } else {
       reveal.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'], card: { text: act.guess, state: 'wrong', who: `${a}'s guess` } }),

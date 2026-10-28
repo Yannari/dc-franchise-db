@@ -594,6 +594,8 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     // last week's eliminated, on the studio couch all night (S14)
     couch: state.lastEvicted && state.lastEvicted.week === ctx.week - 1 ? state.lastEvicted.name : null,
     kitty: { ...(state.kitty || {}) },
+    // (where each kitty stood when the week began: the board rolls from there, vp-bb-ep/ss-hud.js)
+    kittyStart: { ...(state.kittyAtWeekStart || {}) },
     beats: [{ text: `The prime: ${night.name}.`, players: players.slice(0, 4), badgeText: 'THE PRIME', badgeClass: 'gold', part: 'prime' }] }];
 }
 

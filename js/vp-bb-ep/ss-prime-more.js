@@ -86,7 +86,8 @@ export function ssKittyBoardScreen(act, ctx, host, H) {
   return { id: `bb-ss-prime-kitties-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     kicker: 'Live · Living room', title: 'The Kitties', label: 'The Kitties', sub: `${rich} leads`, cast: [[rich, 40], [poor, 62]],
     steps: [
-      { k: 'host', by: host, t: "Let's talk money. Here are the kitties, after the week you've all had.", board: { title: 'THE KITTIES', rows: rows.map(([n, v]) => ({ n, text: euros(v) })) }, toast: ['THE KITTIES', '#e0b84a'] },
+      { k: 'host', by: host, t: "Let's talk money. Here are the kitties, after the week you've all had.", toast: ['THE KITTIES', '#e0b84a'],
+        kitties: rows.slice(0, 8).map(([n, v]) => ({ n, from: Number(act.kittyStart?.[n] ?? v) || 0, to: v })) },
       { k: 'host', by: host, t: `${rich} leads with ${euros(rows[0][1])}. ${poor} is at the bottom with ${euros(rows[rows.length - 1][1])}. Let's show the house.` },
       { k: 'beat', t: ["The board lights up on the living-room screen. Everybody leans in at once.", "The kitties appear on the screen, one by one. Somebody groans.", "Every eye in the house goes to the screen as the numbers come up.", "The board fills the giant screen. Somebody starts doing the maths out loud."][((ctx.week || 0) + 0) % 4] },
       { k: 'say', by: rows[1][0], t: pickBy([`${euros(rows[0][1])}? ${rich}, what have you been doing?`, `${rich} is rich. Look at that.`, `How does ${rich} have that much?`], `${k}|r`) },

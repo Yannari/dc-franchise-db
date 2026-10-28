@@ -24,7 +24,9 @@ export function ssEveningScreen(act, ctx, H) {
       steps.push(ssv(s.text));
       const r = s.raised || [];
       steps.push({ k: 'beat', t: !r.length ? 'Nobody moves. Somebody laughs nervously.'
-        : r.length === 1 ? `${r[0].who} raises the sign.` : `${r.slice(0, -1).map(x => x.who).join(', ')} and ${r.at(-1).who} raise their signs at the same time. The room erupts.` });
+        : r.length === 1 ? `${r[0].who} raises the sign.` : `${r.slice(0, -1).map(x => x.who).join(', ')} and ${r.at(-1).who} raise their signs at the same time. The room erupts.`,
+        signs: r.map(x => x.who) });
+      for (const x of r) cast.add(x.who);
       for (const x of s.scene || []) {
         cast.add(x.who); if (x.about) cast.add(x.about);
         if (x.kind === 'accuse') {

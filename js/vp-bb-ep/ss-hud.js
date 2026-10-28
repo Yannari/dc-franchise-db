@@ -161,6 +161,28 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
       <div class="ssc-f ssc-back"><i>${esc(C.who || '')}</i><b>“${esc(C.text || '')}”</b>${C.state ? `<em>${C.state === 'found' ? 'FOUND' : C.state === 'wrong' ? 'WRONG' : C.state === 'kept' ? 'NEVER FOUND' : ''}</em>` : ''}</div>
     </div></div>`;
   }
+  // the kitties: every housemate's money rolls up (or down) from where the week began, coins stacked by size
+  if (st.kitties) {
+    const top = Math.max(1, ...st.kitties.map(r => r.to));
+    h += `<div class="ssk ${fresh ? 'fresh' : ''}"><b class="ssk-h">THE KITTIES</b><div class="ssk-r">${st.kitties.map((r, i) => {
+      const up = r.to - r.from;
+      return `<div class="ssk-c" style="--i:${i};--h:${Math.max(4, Math.round(r.to / top * 100))}%"><div class="ssk-stack"><i></i></div>
+        <span class="ssk-n" style="--from:${Math.round(r.from)};--to:${Math.round(r.to)}" data-v="${money(r.to)}"></span>${up ? `<em class="${up > 0 ? 'up' : 'down'}">${up > 0 ? '+' : '−'}${money(Math.abs(up)).slice(1)}</em>` : ''}
+        <span class="ssk-f" style="--c:${H.col(r.n)}">${H.img(r.n)}</span><b>${esc(r.n)}</b></div>`;
+    }).join('')}</div></div>`;
+  }
+  // money changing hands: coins fly from one housemate to the other
+  if (st.coins && fresh) {
+    const xs = Object.fromEntries((S.cast || []).filter(Array.isArray));
+    const a = xs[st.coins.from] ?? 30, b = xs[st.coins.to] ?? 70;
+    h += `<div class="ssf" style="--a:${a}%;--b:${b}%">${Array.from({ length: 14 }, (_, i) => `<img src="${PROPS}/kitty-stand.webp" style="--d:${(i * 0.07).toFixed(2)}s;--y:${(i % 5) * 1.4}cqw" alt="">`).join('')}</div>`;
+    setTimeout(() => sfx('coin'), 300);
+  }
+  // the Oops night: the signs go up over the heads of whoever it fits
+  if (st.signs) {
+    const xs = Object.fromEntries((S.cast || []).filter(Array.isArray));
+    h += st.signs.map((n, i) => `<div class="sso ${fresh ? 'fresh' : ''}" style="left:${xs[n] ?? 30 + i * 20}%;--i:${i}"><b>OOPS!</b><i></i></div>`).join('');
+  }
   if (st.ask) h += askHtml(st.ask, o, H);
   if (st.settle && fresh) {
     const r = settleCall(o?.ssKey, st.settle.id, st.settle.answer, st.settle.n || 2);
@@ -225,6 +247,9 @@ export const SS_CSS = `
 .bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSFredoka',sans-serif}
 .bbx .stage.ss .fboard{font-family:'SSNunito',sans-serif;border-radius:1.4cqw;background:linear-gradient(160deg,rgba(43,13,63,.92),rgba(80,12,70,.9));box-shadow:0 0 0 .25cqw var(--ssp),0 1.5cqw 4cqw rgba(0,0,0,.45)}
 .bbx .stage.ss .fboard .fh{font-family:'SSFredoka',sans-serif;color:var(--ssg)}
+/* (the board's amount is .ft, a class Big Brother's camera thumbnails also style as a 16:9 box) */
+.bbx .stage.ss .fboard .ft{width:auto;aspect-ratio:auto;box-shadow:none;opacity:1;overflow:visible;margin-left:auto;padding-left:1.4cqw;font:700 1.6cqw 'SSFredoka',sans-serif;color:#fff}
+.bbx .stage.ss .fboard .fbr b{font:700 1.3cqw 'SSFredoka',sans-serif;color:#fff}
 /* the HUD */
 .ssh{position:absolute;inset:0 0 auto 0;z-index:30;display:flex;justify-content:space-between;align-items:flex-start;padding:1.4cqw 1.6cqw;pointer-events:none}
 .ssh-bug{display:flex;align-items:center;gap:.9cqw}
@@ -382,6 +407,42 @@ export const SS_CSS = `
 .bbx .ssds q{display:block;font:italic 600 12.5px/1.35 'SSNunito',sans-serif;color:#f6d6ea;margin:4px 0 2px}
 .bbx .ssds span{font:800 10px 'SSNunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#19d3c5}
 .bbx .ssds.found span{color:#ff5c8a}.bbx .ssds.told span{color:#9ca3af}.bbx .ssds.found q,.bbx .ssds.told q{opacity:.6;text-decoration:line-through}
+/* the kitties: columns of coins, the amount rolling (an animated integer, counter()) */
+@property --ssn{syntax:'<integer>';inherits:false;initial-value:0}
+.ssk{position:absolute;z-index:23;left:6cqw;right:6cqw;top:9cqw;bottom:16cqw;display:flex;flex-direction:column;align-items:center;
+  background:linear-gradient(180deg,rgba(43,13,63,.88),rgba(90,10,80,.82));border-radius:2cqw;box-shadow:0 0 0 .25cqw var(--ssg),0 2cqw 4cqw rgba(0,0,0,.45);padding:1.2cqw 2cqw}
+.ssk.fresh{animation:ss-boxin .5s cubic-bezier(.2,1.3,.4,1)}
+.ssk-h{font:700 2.2cqw 'SSFredoka',sans-serif;color:var(--ssg);letter-spacing:.2em}
+.ssk-r{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:space-around;gap:1cqw;margin-top:.6cqw}
+.ssk-c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;color:#fff}
+.ssk-stack{position:relative;width:62%;flex:1;display:flex;align-items:flex-end}
+.ssk-stack i{display:block;width:100%;height:var(--h);border-radius:.6cqw .6cqw .2cqw .2cqw;
+  background:repeating-linear-gradient(0deg,#b8860b 0 .25cqw,#f5c542 .25cqw 1.1cqw);box-shadow:0 0 1.4cqw rgba(245,197,66,.55)}
+.ssk.fresh .ssk-stack i{animation:ss-grow 1.4s calc(var(--i) * .08s) cubic-bezier(.2,1,.3,1) both}
+.ssk-n{font:700 1.5cqw 'SSFredoka',sans-serif;margin-top:.4cqw;--ssn:var(--to);counter-reset:k var(--ssn)}
+/* (a counter cannot print a thousands separator: it rolls, then the amount as the show writes it takes over) */
+.ssk-n{display:inline-grid}.ssk-n::before,.ssk-n::after{grid-area:1/1;justify-self:center}
+.ssk-n::before{content:'$' counter(k);opacity:0}.ssk-n::after{content:attr(data-v)}
+.ssk.fresh .ssk-n{animation:ss-count 1.8s calc(var(--i) * .08s) cubic-bezier(.2,.9,.3,1) both}
+.ssk.fresh .ssk-n::before{animation:ss-swapout 1.8s calc(var(--i) * .08s) step-end both}
+.ssk.fresh .ssk-n::after{animation:ss-swapin 1.8s calc(var(--i) * .08s) step-end both}
+@keyframes ss-swapout{from{opacity:1}to{opacity:0}}@keyframes ss-swapin{from{opacity:0}to{opacity:1}}
+.ssk-c em{font:800 .95cqw 'SSNunito',sans-serif;font-style:normal}.ssk-c em.up{color:#4ade80}.ssk-c em.down{color:#fb7185}
+.ssk-f{width:3.4cqw;height:3.4cqw;border-radius:50%;overflow:hidden;background:var(--c);margin-top:.4cqw;box-shadow:0 0 0 .18cqw #fff}
+.ssk-f img{width:100%;height:100%;object-fit:cover}
+.ssk-c b{font:700 1cqw 'SSFredoka',sans-serif;margin-top:.2cqw;white-space:nowrap}
+@keyframes ss-grow{from{height:0}}
+@keyframes ss-count{from{--ssn:var(--from)}to{--ssn:var(--to)}}
+/* coins changing hands */
+.ssf{position:absolute;inset:0;z-index:24;pointer-events:none}
+.bbx .stage .ssf img{position:absolute;bottom:22cqw;left:var(--a);width:2.6cqw;opacity:0;animation:ss-fly 1.1s var(--d) cubic-bezier(.4,0,.2,1) forwards}
+@keyframes ss-fly{0%{left:var(--a);transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}50%{transform:translateY(calc(-8cqw - var(--y))) scale(1.1)}100%{left:var(--b);transform:translateY(0) scale(.7);opacity:0}}
+/* the Oops signs */
+.sso{position:absolute;z-index:23;bottom:31cqw;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.sso b{font:700 2.2cqw 'SSFredoka',sans-serif;color:#fff;background:#e11d48;padding:.5cqw 1.4cqw;border-radius:.6cqw;border:.25cqw solid #fff;box-shadow:0 .5cqw 1cqw rgba(0,0,0,.4)}
+.sso i{width:.4cqw;height:3cqw;background:#f5deb3;border-radius:.2cqw}
+.sso.fresh{animation:ss-signup .55s calc(var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
+@keyframes ss-signup{from{transform:translateX(-50%) translateY(6cqw) rotate(-12deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.ss-iris,.sss-coins{display:none}.ssh-eye,.ssv-eye img,.ssrest-eye{animation:none}}
 `;
 

@@ -60,3 +60,19 @@ describe('the fake eliminations', () => {
     });
   }
 });
+
+describe('the Control Tower', () => {
+  it('two fake eliminations a season climb to the tower and nominate from there; the screens say tower', () => {
+    const rows = play({ ssSignature: 'control-tower', ssSecretRoom: 'off' }, 9, null, 5);
+    const plan = gs.bb.secretStory.plan.fakes || [];
+    expect(plan.length).toBe(2);
+    expect(plan.every(f => f.role === 'master' && f.space === 'tower')).toBe(true);
+    const hid = gs.bb.secretStory.hidden || [];
+    expect(hid.length).toBeGreaterThanOrEqual(1);
+    expect(hid.every(h => h.space === 'tower')).toBe(true);
+    const ids = rows.flatMap(r => bbWeekSteps(r, { host: 'Josh' })).filter(s => /^bb-ss-secretroom-/.test(s.id));
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids.every(s => s.room === 'The Control Tower')).toBe(true);
+    expect(screensClean(rows)).toEqual([]);
+  });
+});

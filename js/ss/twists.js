@@ -40,6 +40,7 @@ export const SIGNATURES = [
   { id: 'hotel', name: 'The Hotel of Secrets', from: 'S10', built: true, what: 'three hidden in the hotel next door; the house hunts their faces among two hundred portraits' },
   { id: 'fake-house', name: 'The Fake House', from: 'S12', built: false, what: 'night one in a fake house with a fake Voice' },
   { id: 'crystal-house', name: 'The Crystal House', from: 'S13', built: true, what: 'three in a glass house in the garden; every prime the main house votes one of them out to safety' },
+  { id: 'control-tower', name: 'The Control Tower', from: 'S11', built: true, what: 'two fake eliminations a season climb to a glass tower above the house, and choose a nominee every week from there' },
   { id: 'yacht', name: 'The Yacht of Secrets', from: 'S14', built: true, what: 'four on a yacht at the pier investigate the house; every secret they get right puts its holder up' },
   { id: 'common-secret', name: 'The Common Secret', from: 'S7', built: false, what: 'one secret shared by the whole house; nobody finds it and everybody is nominated' },
 ];

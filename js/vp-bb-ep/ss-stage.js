@@ -45,6 +45,8 @@ const RULES = [
  */
 export function ssPlace(S, has = () => true) {
   if (!S || typeof S.id !== 'string') return S;
+  // (a screen in a hidden space keeps its own room: the Control Tower, vp-bb-ep/ss-groups.js stands in for unbuilt plates)
+  if (S.space) return S;
   for (const [re, at] of RULES) {
     if (!re.test(S.id)) continue;
     if (!S.plate || !has(S.plate)) {

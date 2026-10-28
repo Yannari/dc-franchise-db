@@ -296,7 +296,7 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
     // the season's fake eliminations: how many, which kind, how long, and what they do up there (js/ss/hidden.js)
-    planFakes(st0, { castSize: room.length, level: st0.tools.secretRoom === 'on' ? 'once' : st0.tools.secretRoom, rng, first: st0.draw.secretRoomWeek });
+    planFakes(st0, { castSize: room.length, level: st0.tools.secretRoom === 'on' ? 'once' : st0.tools.secretRoom, rng, first: st0.draw.secretRoomWeek, tower: st0.draw.signature === 'control-tower' });
     // the signature's pair, chosen by the Voice tonight
     castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
     // the secret of the house, hidden for the whole season (js/ss/final.js)
@@ -404,7 +404,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       // a slip: the house does not know, but somebody noticed something
       if (w.order.slip && w.order.other) { try { addBond(w.order.other, w.order.accomplice, -0.6); } catch { /* */ } pub(w.order.accomplice, 'fun', 0.1, 'nearly gave the secret room away'); }
     }
-    acts.push({ type: 'ss-secret-room', week: ctx.week, who: w.name, moments: w.moments, heard: w.heard, role: w.role, masterPick: w.masterPick, order: w.order, accomplice: w.accomplice, partner: w.partner, first: w.first,
+    acts.push({ type: 'ss-secret-room', week: ctx.week, who: w.name, moments: w.moments, heard: w.heard, role: w.role, masterPick: w.masterPick, order: w.order, accomplice: w.accomplice, partner: w.partner, first: w.first, space: w.space,
       beats: [{ text: `Upstairs in the secret room, ${w.name} watches the house on the screens.`, players: [w.name], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'secret-room' }] });
   }
   // A mission is played through the week; a seduction or a nightmare moves a bond.
@@ -766,14 +766,14 @@ function afterPrimeCore({ week = undefined, evicted = null, house = [], rng = Ma
     const kind = pair ? 'double' : power ? 'power' : 'verdict';
     usePlan(plan, kind);
     const left = room.filter(n => n !== pair);
-    const sent = sendToSecretRoom(state, ctx, { name: evicted, house: left, weeks: plan.weeks, role: plan.role, kind, partner: pair });
-    if (pair) sendToSecretRoom(state, ctx, { name: pair, house: left, weeks: plan.weeks, role: plan.role === 'remote' ? 'watch' : plan.role, kind, partner: evicted });
+    const sent = sendToSecretRoom(state, ctx, { name: evicted, house: left, weeks: plan.weeks, role: plan.role, kind, partner: pair, space: plan.space || null });
+    if (pair) sendToSecretRoom(state, ctx, { name: pair, house: left, weeks: plan.weeks, role: plan.role === 'remote' ? 'watch' : plan.role, kind, partner: evicted, space: plan.space || null });
     if (power) { try { addBond(evicted, power, -2); } catch { /* */ } pub(power, 'heat', 0.3, `eliminated ${evicted} with the Voice's power`); }
     pub(evicted, 'seen', 0.5, '');
     const after = afterShow(state, ctx, { evicted, house: left, popOf: n => support(state, n) });
     after.public = readThePublic(state, left);
     return { type: 'ss-after', week: ctx.week, evicted, fake: true, mourners: sent.mourners, glad: sent.glad, reveal: null, after, holders: [evicted, ...(pair ? [pair] : [])],
-      pair, power, role: sent.role, weeks: sent.weeks, accomplice: sent.accomplice, fakeKind: kind,
+      pair, power, role: sent.role, weeks: sent.weeks, accomplice: sent.accomplice, fakeKind: kind, space: sent.space,
       beats: [{ text: `${evicted} is not eliminated: the Voice sends ${evicted} to the secret room. The house thinks ${evicted} has gone.`, players: [evicted], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'after' }] };
   }
   const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });

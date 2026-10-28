@@ -2816,6 +2816,8 @@ function ssStoreScreen(act, ctx) {
 }
 
 // THE SECRET ROOM (js/ss/hidden.js): the fake elimination, the week upstairs, the return.
+// (the Control Tower, S11: the same, one floor higher; its plate is the user's to make, the attic desk stands in)
+const TOWER = who => ({ set: 'attic', plate: 'ss-tower', room: 'The Control Tower', cam: 21, kicker: 'Cam 21 · The Control Tower', cast: who.map((n, i, a) => [n, a.length === 1 ? 50 : 36 + i * 28]) });
 function ssSecretRoomTwistScreen(act, ctx) {
   const n = act.evicted;
   const two = act.pair ? [n, act.pair] : [n];
@@ -2833,8 +2835,10 @@ function ssSecretRoomTwistScreen(act, ctx) {
     ...(act.pair ? [{ k: 'say', by: act.pair, t: pickBy(['Both of us? Together?', "Are you serious right now?"], `${k}|p`) }] : []),
     ssv(`The house thinks you have gone. You are going to the secret room${two.length > 1 ? ', together' : ''}. Follow the light, and not a sound.`),
   ];
-  steps.push({ k: 'beat', t: `A panel slides open. ${who} ${two.length > 1 ? 'climb' : 'climbs'} a narrow staircase behind the bookcase, into the attic.` },
-    { k: 'beat', t: 'A wall of screens. On every one of them, the house, live.' });
+  const tower = act.space === 'tower';
+  steps.push(tower ? { k: 'beat', t: `A lift door opens at the back of the airlock. ${who} ${two.length > 1 ? 'ride' : 'rides'} it up, above the roof of the house, into a room made of glass.` }
+    : { k: 'beat', t: `A panel slides open. ${who} ${two.length > 1 ? 'climb' : 'climbs'} a narrow staircase behind the bookcase, into the attic.` },
+    { k: 'beat', t: tower ? 'The Control Tower: nine screens, a microphone, and the whole house below, lit up.' : 'A wall of screens. On every one of them, the house, live.', ...(tower ? { scene: TOWER(two) } : {}) });
   // the role: what they will do up there (js/ss/hidden.js)
   const wks = act.weeks > 1 ? 'two weeks' : 'a week';
   if (act.role === 'master') steps.push(ssv(`For ${wks}, you will watch the house from here. And every week, you will choose one housemate to be nominated. Nobody downstairs will know who chose.`, { toast: ['THE MASTER ABOVE', '#c86bff'] }));
@@ -2846,9 +2850,10 @@ function ssSecretRoomTwistScreen(act, ctx) {
   steps.push({ k: 'dr', by: n, t: (act.glad || []).length
     ? pickBy([`I can see everything. And now I know exactly who was pleased I left.`, `${act.glad[0]} looks very happy for somebody who just lost a friend. Noted.`], `${k}|g`)
     : pickBy([`They are actually sad. That is the nicest thing I have ever watched.`, `I can see every room. Every single one.`], `${k}|m`) });
-  return { id: `bb-ss-secretroom-in-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: 'The Secret Room', cam: 21, time: 'LIVE',
+  return { id: `bb-ss-secretroom-in-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: tower ? 'The Control Tower' : 'The Secret Room', cam: 21, time: 'LIVE', ...(tower ? { space: 'tower', sceneful: true } : {}),
     kicker: 'Cam 21 · The Secret Room', title: 'The Secret Room', label: 'Secret Room', sub: `${n} is not eliminated`, cast: [[n, 50]],
-    rules: [['THE HOUSE', 'thinks they are gone'], ['THE SCREENS', 'every room, live'], ['THE RETURN', 'at the next prime']], rulesTitle: 'THE SECRET ROOM · HOW IT WORKS', steps };
+    rules: [['THE HOUSE', 'thinks they are gone'], ['THE SCREENS', 'every room, live'], ['THE RETURN', 'at the next prime']], rulesTitle: 'THE SECRET ROOM · HOW IT WORKS', steps,
+    ...(tower ? { plate: 'ss-tower', kicker: 'Cam 21 · The Control Tower', title: 'The Control Tower', label: 'Control Tower', rulesTitle: 'THE CONTROL TOWER · HOW IT WORKS' } : {}) };
 }
 
 function ssSecretRoomWeekScreen(act, ctx) {
@@ -2883,7 +2888,8 @@ function ssSecretRoomWeekScreen(act, ctx) {
   }
   steps.push({ k: 'dr', by: n, scene: { set: 'attic', plate: 'ss-attic-desk', room: 'The Secret Room', cam: 21, kicker: 'Cam 21 · The Secret Room', cast: [[n, 50]] }, t: pickBy(["When I go back down there, I'm going to remember all of it.", 'This room is the best thing that has happened to my game.', 'They are going to get such a shock.'], `${k}|end`) });
   return { id: `bb-ss-secretroom-${n}-w${ctx.week}`, sceneful: true, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: 'The Secret Room', cam: 21, time: '15:00',
-    kicker: 'Cam 21 · The Secret Room', title: 'The Secret Room', label: 'Secret Room', sub: `${n} watches the house`, cast: [[n, 50]], steps };
+    kicker: 'Cam 21 · The Secret Room', title: 'The Secret Room', label: 'Secret Room', sub: `${n} watches the house`, cast: [[n, 50]], steps,
+    ...(act.space === 'tower' ? { space: 'tower', plate: 'ss-tower', room: 'The Control Tower', kicker: 'Cam 21 · The Control Tower', title: 'The Control Tower', label: 'Control Tower' } : {}) };
 }
 
 function ssReturnScreen(seg, ctx, host) {

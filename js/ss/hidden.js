@@ -36,15 +36,16 @@ const weighted = (pairs, rng) => { let r = rng() * pairs.reduce((t, [, w]) => t 
  * The season's fake eliminations: none, once or twice (the draw's `secretRoom` level), each with its kind,
  * its length and its role. Kept on `state.plan.fakes`; `secretRoomWeek` stays the first one's week.
  */
-export function planFakes(state, { castSize = 14, level = 'once', rng = Math.random, first = null } = {}) {
+export function planFakes(state, { castSize = 14, level = 'once', rng = Math.random, first = null, tower = false } = {}) {
   state.plan ||= {};
-  const n = level === 'twice' ? 2 : level === 'off' ? 0 : 1;
+  // (the Control Tower, S11: the season's signature is two fake eliminations into the tower, both masters of the nominations)
+  const n = tower ? 2 : level === 'twice' ? 2 : level === 'off' ? 0 : 1;
   const last = Math.max(3, castSize - 7);
   const fakes = [];
   let wk = first || (3 + Math.floor(rng() * Math.max(1, last - 2)));
   for (let i = 0; i < n && wk <= last + 1; i++) {
     fakes.push({ week: wk, kind: weighted([['verdict', 0.4], ['double', 0.2], ['voluntary', 0.2], ['power', 0.2]], rng),
-      weeks: rng() < 0.7 ? 1 : 2, role: weighted([['watch', 0.4], ['master', 0.3], ['remote', 0.3]], rng) });
+      weeks: tower ? 2 : rng() < 0.7 ? 1 : 2, role: tower ? 'master' : weighted([['watch', 0.4], ['master', 0.3], ['remote', 0.3]], rng), ...(tower ? { space: 'tower' } : {}) });
     wk += 3 + Math.floor(rng() * 2);
   }
   state.plan.fakes = fakes;
@@ -86,7 +87,7 @@ export const isFakeNight = (state, week, houseSize) => !!fakePlanFor(state, week
  * The verdict was fake: the house said goodbye, and `name` climbs the hidden
  * stairs. Who mourned them and who was glad, as the house is now.
  */
-export function sendToSecretRoom(state, ctx, { name = undefined, house = [], weeks = 1, role = 'watch', kind = 'verdict', partner = null } = {}) {
+export function sendToSecretRoom(state, ctx, { name = undefined, house = [], weeks = 1, role = 'watch', kind = 'verdict', partner = null, space = null } = {}) {
   state.hidden ||= [];
   const week = ctx.week ?? 0;
   const mourners = house.filter(n => n !== name && (ctx.bond?.(n, name) ?? 0) >= 3);
@@ -94,8 +95,8 @@ export function sendToSecretRoom(state, ctx, { name = undefined, house = [], wee
   // remote control: the closest friend still in the house is told, and keeps the act going (S8, S12)
   const accomplice = role === 'remote'
     ? house.filter(n => n !== name && n !== partner).sort((a, b) => (ctx.bond?.(name, b) ?? 0) - (ctx.bond?.(name, a) ?? 0))[0] || null : null;
-  state.hidden.push({ name, from: week, returnWeek: week + Math.max(1, weeks), mourners, glad, back: null, role, kind, partner, accomplice, orders: 0, slipped: false });
-  return { name, mourners, glad, role, kind, weeks: Math.max(1, weeks), accomplice, partner };
+  state.hidden.push({ name, from: week, returnWeek: week + Math.max(1, weeks), mourners, glad, back: null, role, kind, partner, accomplice, orders: 0, slipped: false, space });
+  return { name, mourners, glad, role, kind, weeks: Math.max(1, weeks), accomplice, partner, space };
 }
 
 /**
@@ -145,7 +146,7 @@ export function watchFromSecretRoom(state, ctx, { house = [] } = {}) {
       rec.orders = (rec.orders || 0) + 1;
       order = { accomplice: a, kind, other, ok, slip, money: ok ? 500 : 0 };
     }
-    out.push({ name: h, moments, heard, role: rec?.role || 'watch', masterPick, order, accomplice: rec?.accomplice || null, partner: rec?.partner || null, first: rec?.from === week - 1 });
+    out.push({ name: h, moments, heard, role: rec?.role || 'watch', masterPick, order, accomplice: rec?.accomplice || null, partner: rec?.partner || null, first: rec?.from === week - 1, space: rec?.space || null });
   }
   return out;
 }
@@ -168,7 +169,7 @@ export function bringBack(state, ctx, { house = [] } = {}) {
     state.nextImmune ||= {};
     (state.nextImmune[week + 1] ||= []).includes(rec.name) || state.nextImmune[week + 1].push(rec.name);
     back.push({ name: rec.name, target, glad, mourners: (rec.mourners || []).filter(n => house.includes(n)), from: rec.from,
-      role: rec.role || 'watch', fakeKind: rec.kind || 'verdict', partner: rec.partner || null, accomplice: rec.accomplice && house.includes(rec.accomplice) ? rec.accomplice : null, slipped: !!rec.slipped });
+      space: rec.space || null, role: rec.role || 'watch', fakeKind: rec.kind || 'verdict', partner: rec.partner || null, accomplice: rec.accomplice && house.includes(rec.accomplice) ? rec.accomplice : null, slipped: !!rec.slipped });
   }
   return back;
 }

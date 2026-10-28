@@ -34,6 +34,7 @@ import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_ST
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
+import { houseEvent } from '../ss/house-events.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
@@ -138,9 +139,11 @@ function assignChosenSecrets(room, chosen, rng) {
     if (placed.has(n)) continue;
     const e = fill[n];
     if (!e) continue;
-    // A real tie is ONE secret two people share, if both are in the house.
-    const holders = e.pair && room.includes(e.pair) && !placed.has(e.pair) ? [n, e.pair] : [n];
-    secrets.push({ id: `secret-${holders.join('-')}`, kind: e.pair && holders.length > 1 ? 'real-pair' : 'personal',
+    // A real tie is ONE secret two people share, if both are in the house; a production secret is one secret
+    // its whole group shares (js/ss/casting.js PRODUCTION_SECRETS).
+    const group = Array.isArray(e.group) ? e.group.filter(h => room.includes(h) && !placed.has(h)) : null;
+    const holders = group && group.length > 1 && group.includes(n) ? group : e.pair && room.includes(e.pair) && !placed.has(e.pair) ? [n, e.pair] : [n];
+    secrets.push({ id: `secret-${holders.join('-')}`, kind: e.source === 'production' ? (holders.length > 1 ? 'voice-pair' : 'voice-mission') : e.pair && holders.length > 1 ? 'real-pair' : 'personal',
       source: e.source, poolId: e.id || null, secretKind: e.kind || null, holders, text: e.text,
       clues: [...(e.clues || [])], tells: [...(e.tells || [])], difficulty: Number(e.difficulty) || 0.55 });
     for (const h of holders) placed.add(h);
@@ -470,6 +473,23 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     acts.push({ type: 'ss-voice-moment', week: ctx.week, ...rest,
       beats: [{ text: `The Voice: ${m.kind === 'poll' ? `the red phone asks ${m.q}, round the house` : m.kind === 'present' ? `${m.who} gets a present from the public` : m.kind === 'scold' ? `${m.who} is told off: ${m.text}` : m.kind === 'birthday' ? `${m.who}'s birthday` : m.kind === 'letter' ? `a letter from home for ${m.who}` : `a mission for ${m.who}${m.other ? ` and ${m.other}` : ''}, ${m.ok ? 'done' : 'failed'}`}.`,
         players: [m.who, m.other].filter(Boolean), badgeText: 'THE VOICE', badgeClass: 'gold', part: 'voice' }] });
+  }
+  // The week's big house event (js/ss/house-events.js): the house mission, the housework in uniform, Miss and
+  // Mister Secret, the clan war, a secret room found.
+  {
+    const he = houseEvent(state, ctx, { house: room });
+    if (he) {
+      applyFx(he.effects);
+      const { effects, ...rest } = he;
+      void effects;
+      const who = [he.who, he.other, he.miss, he.mister, he.weak, ...(he.captains || [])].filter(Boolean);
+      acts.push({ type: 'ss-house-event', week: ctx.week, ...rest,
+        beats: [{ text: he.kind === 'mission' ? `The house mission: ${he.text}. ${he.ok ? 'Done: money for everybody.' : `Failed, because of ${he.weak}: no hot water.`}`
+          : he.kind === 'housework' ? `${he.who} and ${he.other} clean the house in uniform, for the Voice.`
+          : he.kind === 'pageant' ? `Miss and Mister Secret: ${[he.miss, he.mister].filter(Boolean).join(' and ')} win, and a clue each.`
+          : he.kind === 'clans' ? `The clan war: ${he.captains.join(' against ')}. ${he.names[he.winners]} win.`
+          : `${he.who} finds a secret room ${he.where}.`, players: who.slice(0, 4), badgeText: 'THE HOUSE', badgeClass: 'gold', part: 'house-event' }] });
+    }
   }
   // The black buzzer: hidden by the Voice; the finder is immune and names a nominee (before the nominations).
   if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {

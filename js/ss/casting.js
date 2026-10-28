@@ -73,6 +73,7 @@ const asEntry = (e, source) => e && ({
   source, id: e.id ?? null, kind: e.kind, text: e.text,
   clues: [...(e.clues || [])], tells: [...(e.tells || [])], difficulty: Number(e.difficulty) || 0.55,
   ...(e.pair ? { pair: e.pair } : {}),
+  ...(e.group ? { group: [...e.group] } : {}),
 });
 
 /**
@@ -99,6 +100,52 @@ export function castSecrets(cast = [], { existing = {}, taken = new Set(), rng =
     out[p.name] = asEntry(e, 'pool');
   }
   return out;
+}
+
+// ── PRODUCTION SECRETS ──────────────────────────────────────────────────
+// The secrets the Voice hands out instead of a life story (the real seasons' list, S1–S7, the user 2026-10-28):
+// one housemate or a group carries a role. Never canon on the character: a role belongs to its season.
+// (The Masters of the Nominations, S7, are the season signature in js/ss/signatures.js, not a secret here.)
+export const PRODUCTION_SECRETS = [
+  { id: 'accomplice', text: "I am the Voice's accomplice", from: 'S1, Gabriel', min: 1, max: 1, clues: ['an earpiece in a sock drawer', 'a second key to the confessional'] },
+  { id: 'fake-couple', text: 'We are a fake couple', from: 'S2, Matthias and Alice; S5, Ayem and Daniel', min: 2, max: 2, mixed: true, clues: ['a ring that does not fit', 'two toothbrushes in one cup'] },
+  { id: 'intruders', text: 'We are the intruders of the house', from: 'S3, Romain, Angie, Léo and Kevin', min: 2, max: 4, clues: ['a tunnel map torn in half', 'footprints that stop at a wall'] },
+  { id: 'enemies', text: 'We are the worst of enemies', from: 'S3, Emilie and Vanessa', min: 2, max: 2, clues: ['a photo torn down the middle', 'a boxing glove'] },
+  { id: 'chosen', text: "We are the Voice's chosen ones", from: 'S4, Ahmed, Julie and Anne-Krystel', min: 2, max: 3, clues: ['three golden tickets', 'a crown made of paper'] },
+  { id: 'public-couple', text: "We are the public's favourite fake couple", from: 'S4, Robin and Benoît', min: 2, max: 2, clues: ['a heart made of voting slips', 'a wedding cake topper'] },
+  { id: 'tunnels', text: 'We are the masters of the tunnels', from: 'S5, Zelko and Zarko', min: 2, max: 2, clues: ['a torch with dead batteries', 'a key to a door nobody has seen'] },
+  { id: 'house-key', text: 'I am the key to the secret of the house', from: 'S5, Simon', min: 1, max: 1, clues: ['an old key on a red ribbon', 'a padlock with no lock'] },
+  { id: 'secret-box', text: 'We are the residents of the Secret Box', from: 'S6, Audrey, Emilie and Midou', min: 2, max: 3, clues: ['a mirror you can see through', 'a cushion inside a cube'] },
+  { id: 'fake-siblings', text: 'We are fake siblings', from: 'S6, Nadège and Thomas', min: 2, max: 2, clues: ['a family photo that has been edited', 'matching baby shoes'] },
+  { id: 'access-code', text: 'I am the access code to the secret of the house', from: 'S6, Julien', min: 1, max: 1, clues: ['four numbers written on a hand', 'a keypad with one worn button'] },
+  { id: 'public-family', text: 'We are the family the public chose', from: 'S7, Anaïs, Julien, Ben and Sonja', min: 3, max: 4, clues: ['a family tree with one empty branch', 'a ballot box full of hearts'] },
+];
+/**
+ * A production secret as a cast entry for each of its holders (`group`: everybody who keeps it).
+ * `def` is a catalogue entry, or `{ text }` for one the user wrote.
+ */
+export function productionSecret(def, holders = []) {
+  const group = [...new Set(holders.filter(Boolean))];
+  if (!def?.text || !group.length) return null;
+  const e = { source: 'production', id: def.id ? `prod-${def.id}` : null, kind: group.length > 1 ? 'voice-pair' : 'voice-mission', text: def.text,
+    clues: [...(def.clues || ['a note in the Voice\'s handwriting', 'an envelope with the Eye on it'])], tells: [], difficulty: group.length > 1 ? 0.6 : 0.7, group };
+  return Object.fromEntries(group.map(n => [n, { ...e }]));
+}
+/** A production secret drawn for this cast: a fake couple if a man and a woman can carry it, otherwise another. */
+export function drawProductionSecret(cast = [], { rng = Math.random, gender = p => p?.gender, avoid = new Set() } = {}) {
+  const free = cast.filter(p => p?.name && !avoid.has(p.name));
+  const women = free.filter(p => gender(p) === 'f'), men = free.filter(p => gender(p) === 'm');
+  const pickOne = l => l[Math.floor(rng() * l.length) % Math.max(1, l.length)];
+  const shuffled = PRODUCTION_SECRETS.slice().sort(() => rng() - 0.5);
+  const first = rng() < 0.55 ? PRODUCTION_SECRETS.find(d => d.id === 'fake-couple') : shuffled[0];
+  for (const d of [first, ...shuffled]) {
+    if (d.mixed) { if (!women.length || !men.length) continue; return { def: d, holders: [pickOne(women).name, pickOne(men).name] }; }
+    const size = d.min === d.max ? d.min : d.min + Math.floor(rng() * (d.max - d.min + 1));
+    if (free.length < size + 2) continue;
+    const hs = free.slice().sort(() => rng() - 0.5).slice(0, size).map(p => p.name);
+    return { def: d, holders: hs };
+  }
+  return null;
 }
 
 /** A fresh draw for one housemate, leaving everybody else's alone. */

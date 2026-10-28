@@ -46,7 +46,14 @@ test('a Secret Story week plays in its own house, and the viewer calls it with a
     return null;
   });
   expect(target, 'no call with its reveal on one screen').toBeTruthy();
-  const at = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), target.uid);
+  // (a week airs as its own episodes: the call may be in the prime, a different part from the one open)
+  let at = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), target.uid);
+  if (at < 0) {
+    await page.evaluate(id => window.bbxSsPart(3, /^bb-ss-(prime|after|missionres)-/.test(id) ? 'prime' : 'daily'), target.id);
+    await page.waitForTimeout(800);
+    at = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), target.uid);
+  }
+  expect(at, 'the call is on a screen of the episode').toBeGreaterThanOrEqual(0);
   await page.evaluate(i => window.vpGoTo(i), at);
   await page.waitForSelector(`#bbx-st-${target.uid}`);
   await page.evaluate(([uid, k]) => window.bbxJump(uid, k + 1), [target.uid, target.ask]);
@@ -59,7 +66,8 @@ test('a Secret Story week plays in its own house, and the viewer calls it with a
   for (const p of plates) expect(p).not.toMatch(/resort\/default\//);
   // the call: pick the right answer, so the payoff is a win
   await expect(stage.locator('.ssa')).toBeVisible();
-  await stage.locator('.ssa-o', { hasText: target.answer }).click();
+  // (exactly the answer: "Tester1" is also inside "Tester10")
+  await stage.locator('.ssa-o').filter({ has: page.getByText(target.answer, { exact: true }) }).first().click();
   await expect(stage.locator('.ssa-o.on')).toHaveCount(1);
   await expect(stage.locator('.ssa-o[disabled]')).toHaveCount(target.opts.length);
   await page.screenshot({ path: `${SHOTS}/ss-call.png` });
@@ -83,12 +91,17 @@ test('a Secret Story week plays in its own house, and the viewer calls it with a
     for (const r of Object.values(window._bbx || {})) {
       const S = r.screens[r.si];
       const k = S.steps.findIndex(st => st.prop && st.press);
-      if (k >= 0 && k < S.steps.length - 1) return { uid: r.uid, k };
+      if (k >= 0 && k < S.steps.length - 1) return { uid: r.uid, k, id: S.id };
     }
     return null;
   });
   if (prop) {
-    const at2 = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), prop.uid);
+    let at2 = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), prop.uid);
+    if (at2 < 0) {
+      await page.evaluate(id => window.bbxSsPart(3, /^bb-ss-(prime|after|missionres)-/.test(id) ? 'prime' : 'daily'), prop.id);
+      await page.waitForTimeout(800);
+      at2 = await page.evaluate(uid => (window.vpScreens || []).findIndex(s => (s.html || '').includes(`data-uid="${uid}"`)), prop.uid);
+    }
     await page.evaluate(i => window.vpGoTo(i), at2);
     await page.waitForSelector(`#bbx-st-${prop.uid}`);
     await page.evaluate(([uid, k]) => window.bbxJump(uid, k + 1), [prop.uid, prop.k]);

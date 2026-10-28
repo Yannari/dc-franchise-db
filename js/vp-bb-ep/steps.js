@@ -33,6 +33,7 @@ import { ssPlace } from './ss-stage.js';
 import { ssArrange } from './ss-episode.js';
 import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
+import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3178,7 +3179,8 @@ function ssNomScreen(act, ctx) {
   // the nominations, in the confessional: one housemate at a time, nobody else in the room (the user, 2026-10-28:
   // "why are we viewing two people sit in the confessional for no reason")
   /** @type {BB.Step[]} */ const steps = [];
-  const ballots = (ss.ballots || []).slice(0, 6);
+  // (a voter left with nobody to name, the pool all immune or already up, names nobody: no line)
+  const ballots = (ss.ballots || []).filter(b => (b.picks || []).filter(Boolean).length).slice(0, 6);
   const saidWhy = new Set();
   ballots.forEach((b, i) => {
     const [x, y] = b.picks || [];
@@ -5442,6 +5444,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
+      case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-black-buzzer': flush(); ceremony(ssBlackBuzzerScreen(act, ctx, { ssv })); break;
       case 'ss-journeys': flush(); for (const scr of (act.facts ? ssFinalScreens(act, ctx, { ssv, listOf, euros, pickBy, pronouns }) : [ssJourneysScreen(act, ctx)])) ceremony(scr); break;

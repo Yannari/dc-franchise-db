@@ -13,7 +13,7 @@
 import { seasonConfig, players, kinshipPairs, seasonFormat } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { careerOf } from '../franchise-meta.js';
-import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS } from './casting.js';
+import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS, PRODUCTION_SECRETS, productionSecret, drawProductionSecret } from './casting.js';
 import { playerAvatarUrl } from '../players.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -45,10 +45,18 @@ export function ensureSsCast() {
     seasonConfig.ssRecognitions = recognitions(c.map(p => p.name), { careers: cs, fame });
     seasonConfig.ssRecognitionsCast = sig;
   }
+  // a production secret, as nearly every real season had one: drawn once for a cast big enough to carry it
+  // (the cast screen's Secrets tab can change it, cast another, or take it away)
+  const castSig = c.map(p => p.name).sort().join('|');
+  if (seasonConfig.ssProductionDrawn !== castSig && c.length >= 10 && !Object.values(seasonConfig.ssSecrets || {}).some(e => e?.source === 'production')) {
+    const d = drawProductionSecret(c, { avoid: new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'canon').map(([n]) => n)) });
+    if (d) seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), ...productionSecret(d.def, d.holders) };
+    seasonConfig.ssProductionDrawn = castSig;
+  }
   if (JSON.stringify(seasonConfig.ssSecrets) !== before) persist();
 }
 
-const BADGE = { pool: ['DRAWN', '#8b8fa3'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'] };
+const BADGE = { pool: ['DRAWN', '#8b8fa3'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'], production: ['PRODUCTION', '#e11d48'] };
 
 /** Is the season being cast a Secret Story season? (the cast screen asks, to show its Secrets tab) */
 export function isSecretStorySeason() { return seasonFormat(seasonConfig) === SS_FORMAT; }
@@ -95,6 +103,16 @@ const BOARD_CSS = `
 .ssb-rec b{font:700 15px 'SSFredoka',sans-serif;display:block;margin-bottom:6px}
 .ssb-rec span{display:inline-block;margin:3px 6px 3px 0;font-size:12px;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.14)}
 .ssb-empty{padding:30px;text-align:center;font-size:15px}
+.ssb-prod{margin:0 0 16px;padding:14px;border-radius:16px;background:rgba(43,13,63,.42);border:1px solid rgba(255,255,255,.22)}
+.ssb-prod-h b{display:block;font:700 18px 'SSFredoka',sans-serif;color:#ffe14d}.ssb-prod-h span{font-size:12.5px;opacity:.9}
+.ssb-prod-cur{margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px}.ssb-chip.on{background:#e11d48;border-color:#fff;text-transform:none;letter-spacing:0}
+.ssb-chip.on button{margin-left:6px;border:0;background:transparent;color:#fff;cursor:pointer;font-weight:900}
+.ssb-prod-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ssb-prod-row select,.ssb-prod-row input{flex:1 1 260px;border-radius:10px;border:0;padding:8px 10px;font:600 13px system-ui,sans-serif}
+.ssb-prod-row button,.ssb-prod-go{border-radius:999px;border:1.5px solid #fff;background:rgba(255,255,255,.15);color:#fff;font:800 12px system-ui,sans-serif;padding:7px 12px;cursor:pointer}
+.ssb-prod-go{margin-top:10px;background:#ff3ea5}
+.ssb-prod-who{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:13px}
+.ssb-prod-who label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
 @media (max-width:560px){.ssb-t{font-size:24px}.ssb-grid{grid-template-columns:1fr}}`;
 
 /** The cast screen's Secrets tab: one card per housemate. */
@@ -112,14 +130,14 @@ export function ssSecretsBoardHTML() {
     const locked = e?.source === 'canon';
     const hist = locked ? [] : historySecretOptions(p.name, { cast: names, pairs: pairs(), career: careers(p.name) });
     const n = esc(p.name);
-    const partner = e?.pair || Object.entries(seasonConfig.ssSecrets || {}).find(([m, x]) => m !== p.name && x?.text && x.text === e?.text)?.[0];
+    const partner = e?.group ? e.group.filter(m => m !== p.name).join(', ') : e?.pair || Object.entries(seasonConfig.ssSecrets || {}).find(([m, x]) => m !== p.name && x?.text && x.text === e?.text)?.[0];
     let url = '';
     try { url = playerAvatarUrl(p) || ''; } catch { url = ''; }
     return `<div class="ssb-card">
       <div class="ssb-top"><span class="ssb-face" style="--c:${colOf(p.name)}">${url ? `<img src="${esc(url)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>
         <span><div class="ssb-nm">${n}</div><span class="ssb-src" style="--sc:${col}">${locked ? '🔒 ' : ''}${label}</span></span></div>
       <div class="ssb-pill g${i % 4}"><span class="seal">SECRET</span>${esc(e?.text || '—')}</div>
-      ${partner ? `<div class="ssb-pair">Shared with ${esc(partner)}: they walk in pretending they have never met.</div>` : ''}
+      ${partner ? `<div class="ssb-pair">${e?.source === 'production' ? `Cast by the Voice, with ${esc(partner)}.` : `Shared with ${esc(partner)}: they walk in pretending they have never met.`}</div>` : e?.source === 'production' ? '<div class="ssb-pair">Cast by the Voice.</div>' : ''}
       ${locked ? '<div class="ssb-lock">Canon: this secret is part of who they are now.</div>' : `<div class="ssb-act">
         <button type="button" title="Draw another from the pool" onclick="ssReroll('${n}')">🎲 Reroll</button>
         <button type="button" title="Write my own" onclick="ssWriteOpen('${n}')">✍️ Write</button>
@@ -134,10 +152,56 @@ export function ssSecretsBoardHTML() {
     <div class="ssb-h"><div><div class="ssb-t">The List of Secrets</div>
       <div class="ssb-sub">Every housemate walks in hiding one of these. The public sees them all on launch night; the house sees none. Once the season starts, a secret becomes part of who they are.</div></div>
       <div class="ssb-tally">${tally.map(([k, v]) => `<span class="ssb-chip">${v} ${BADGE[k][0]}</span>`).join('')}<button type="button" class="ssb-chip" style="cursor:pointer" onclick="ssRerollAll()">🎲 Reroll every drawn secret</button></div></div>
+    ${prodPanelHTML(c)}
     <div class="ssb-grid">${cards}</div>
     ${recog.length ? `<div class="ssb-rec"><b>Recognised walking in</b>${recog.map(r => `<span>${esc(r.who)} knows ${esc(r.whom)}${r.from ? ` · ${esc(r.from)}` : ''}</span>`).join('')}</div>` : ''}
   </div>`;
 }
+// The production secrets: the real ones (S1–S7), or one of your own, cast on whoever you pick.
+function prodPanelHTML(c) {
+  const cur = [...new Map(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'production').map(([n, e]) => [e.text, e])).values()];
+  return `<div class="ssb-prod"><div class="ssb-prod-h"><b>Production secrets</b><span>The Voice can hand a role to one housemate or a group instead of a life story: a fake couple, the intruders, the Voice's accomplice. Pick one, choose who keeps it, and cast it.</span></div>
+    ${cur.length ? `<div class="ssb-prod-cur">${cur.map(e => `<span class="ssb-chip on">"${esc(e.text)}" · ${esc((e.group || []).join(', '))} <button type="button" title="Take it away (they draw a secret of their own)" onclick="ssProdRemove('${esc(e.text).replace(/'/g, '&#39;')}')">✕</button></span>`).join('')}</div>` : ''}
+    <div class="ssb-prod-row">
+      <select id="ss-prod-def" onchange="document.getElementById('ss-prod-own').style.display=this.value==='own'?'':'none'">${PRODUCTION_SECRETS.map(d => `<option value="${d.id}">${esc(d.text)} (${esc(d.from)})</option>`).join('')}<option value="own">Write my own…</option></select>
+      <input id="ss-prod-own" placeholder="We are…" style="display:none">
+      <button type="button" onclick="ssProdDraw()" title="Let the Voice choose">🎲 Draw one</button>
+    </div>
+    <div class="ssb-prod-who">${c.map(p => `<label><input type="checkbox" value="${esc(p.name)}" class="ss-prod-pick"> ${esc(p.name)}</label>`).join('')}</div>
+    <button type="button" class="ssb-prod-go" onclick="ssProdCast()">Cast it on them</button></div>`;
+}
+/** Casts the chosen production secret on the ticked housemates. */
+export function ssProdCast() {
+  const sel = document.getElementById('ss-prod-def')?.value;
+  const def = sel === 'own' ? { text: String(document.getElementById('ss-prod-own')?.value || '').trim() } : PRODUCTION_SECRETS.find(d => d.id === sel);
+  const who = [...document.querySelectorAll('.ss-prod-pick:checked')].map(x => x.value);
+  if (!def?.text || !who.length) return;
+  const max = def.max || 4;
+  const holders = who.slice(0, max);
+  const next = { ...(seasonConfig.ssSecrets || {}) };
+  // whoever already held a group secret with one of these leaves it whole for the others
+  for (const n of holders) if (next[n]?.group) for (const m of next[n].group) if (!holders.includes(m) && next[m]) next[m] = { ...next[m], group: next[m].group.filter(x => !holders.includes(x)) };
+  seasonConfig.ssSecrets = { ...next, ...productionSecret(def, holders) };
+  persist(); renderSsSecrets();
+}
+/** The Voice picks a production secret and who keeps it. */
+export function ssProdDraw() {
+  const d = drawProductionSecret(cast(), { avoid: new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'canon' || e?.source === 'production').map(([n]) => n)) });
+  if (!d) return;
+  seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), ...productionSecret(d.def, d.holders) };
+  persist(); renderSsSecrets();
+}
+/** Takes a production secret away: its holders draw secrets of their own. */
+export function ssProdRemove(text) {
+  const next = { ...(seasonConfig.ssSecrets || {}) };
+  for (const [n, e] of Object.entries(next)) if (e?.source === 'production' && e.text === text) {
+    const r = rerollSecret(playerNamed(n), next, { taken: canonTaken() });
+    if (r) next[n] = r; else delete next[n];
+  }
+  seasonConfig.ssSecrets = next;
+  persist(); renderSsSecrets();
+}
+
 /** Draws another for every housemate whose secret came from the pool. */
 export function ssRerollAll() {
   for (const p of cast()) {

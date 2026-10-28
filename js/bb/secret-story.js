@@ -320,7 +320,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   }
   // LAUNCH NIGHT (js/ss/launch.js): who arrives when, the first missions, what the first ones in do
   // while they wait, the list of secrets; its first impressions move the bonds now
-  const launch = planLaunch(gs.bb.secretStory, huntCtx(undefined, rng), { house: room.slice().sort(() => rng() - 0.5) });
+  // (a first crush on launch night only between two who could: romanticCompat)
+  const launch = planLaunch(gs.bb.secretStory, { ...huntCtx(undefined, rng), compat: (a, b) => { try { return romanticCompat(a, b); } catch { return false; } } }, { house: room.slice().sort(() => rng() - 0.5) });
   for (const [a, b, d] of launch.effects.bond) { try { addBond(a, b, d); } catch { /* no bond */ } }
   let summer = null;
   try { summer = lastSummer(activeSeasons() || {}); } catch { summer = null; }

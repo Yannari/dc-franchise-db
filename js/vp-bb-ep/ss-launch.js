@@ -20,6 +20,7 @@
 import { launchToSpaceSteps } from './ss-groups.js';
 
 const pickRot = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
+const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 const PEOPLE_THINK = {
   mastermind: ["People think I'm cold. I'm not cold, I'm just always thinking.", "People say they never know what I'm feeling. That's kind of the point."],
@@ -165,6 +166,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const listed = [];          // the list of secrets read so far, in order
   const spaceSent = [];       // who has gone to the hidden space so far (js/ss/hidden-groups.js)
   const doneCk = new Set(), doneLs = new Set();
+  // (a face goes on the list only once its housemate has owned it, live, to the host: the user, 2026-10-28: "why are
+  // some personal secrets revealed without the scene where they revealed it to Josh from the confessional")
+  const owned = new Set();
   let count = 0;
   const xs = n => (n <= 1 ? [50] : n === 2 ? [36, 64] : [28, 50, 72]);
   groups.forEach((g, gi) => {
@@ -276,23 +280,33 @@ export function ssLaunchScreens(act, ctx, host, H) {
     for (const c of (L.checkins || []).filter(x => x.after <= count && !doneCk.has(x))) {
       doneCk.add(c);
       if (c.who.some(n => !inside.includes(n))) continue;
-      out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { ...checkin(c, H), set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house' }));
+      out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house', ...checkin(c, H, host) }));
     }
     // the list of secrets: the HOST reads it (the user, 2026-10-28), on the show's own board, never saying whose
     for (const l of (L.lists || []).filter(x => x.after <= count && !doneLs.has(x))) {
       doneLs.add(l);
-      const known = n => inside.includes(n);
-      // (the public already knows the secrets of everybody inside: their faces go on the board beside them, as on the
-      // real one; the ones read tonight have no face yet)
-      const rowsNow = fresh => {
-        const seen = new Set([...listed, ...fresh].map(sx => sx.text));
-        const knownRows = inside.map(n => secretOf(n)).filter(sx => sx && !seen.has(sx.text)).filter((sx, i, a) => a.indexOf(sx) === i)
-          .map(sx => ({ text: sx.text, who: (sx.holders || []).find(known) || null }));
-        const read = [...listed, ...fresh].map(sx => ({ text: sx.text, who: (sx.holders || []).length === 1 && known(sx.holders[0]) ? sx.holders[0] : null, new: fresh.includes(sx) }));
-        return [...knownRows.slice(-Math.max(1, 5 - read.length)), ...read].slice(-5);
+      // the board, five rows: the secret being owned right now, the ones read tonight, the faces already owned, then
+      // the rest of what the public has seen. A face only beside a secret its housemate has owned on air.
+      const whoOf = sx => (sx.holders || []).find(h => owned.has(h)) || null;
+      const rowsNow = (fresh, now = null) => {
+        const mine = inside.map(n => secretOf(n)).filter(Boolean).filter((sx, i, a) => a.indexOf(sx) === i);
+        const pool = [...(now ? [now] : []), ...fresh, ...mine.filter(sx => whoOf(sx)), ...listed.slice().reverse(), ...mine];
+        const seen = new Set();
+        return pool.filter(sx => sx && !seen.has(sx.text) && seen.add(sx.text)).slice(0, 5)
+          .map(sx => ({ text: sx.text, who: whoOf(sx), new: sx === now || fresh.includes(sx) }));
       };
       /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what some of them are hiding.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${kk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
         secretlist: { rows: rowsNow([]) } }];
+      // one or two of the ones already inside own theirs, live from the confessional (a personal secret, kept alone)
+      const owners = inside.filter(n => !owned.has(n) && secretOf(n) && (secretOf(n).holders || []).length === 1 && !/^(production)$/.test(String(secretOf(n).source || '')))
+        .sort((x, y) => (hash(`${kk}|own|${x}`) - hash(`${kk}|own|${y}`))).slice(0, 2);
+      for (const n of owners) {
+        const sx = secretOf(n);
+        ls.push({ k: 'host', by: host, t: pickBy([`Before we read on, let's go to the confessional, live. ${n}, one of these is yours. Which one?`, `${n}, you're live in the confessional. Show everybody at home which one is yours.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([], sx) } },
+          { k: 'dr', by: n, live: true, owns: true, t: pickBy([`That one. "${sx.text}." Nobody in there can ever see this list.`, `"${sx.text}." That's mine. It feels so strange seeing it up there.`, `It's that one: "${sx.text}." Please don't let them find out.`], `${kk}|own|${n}`) });
+        owned.add(n);
+        ls.push({ k: 'host', by: host, t: pickBy([`There it is. ${n}'s secret, on the list.`, `Thank you, ${n}. Good luck keeping that one.`], `${kk}|got|${n}`), secretlist: { rows: rowsNow([], sx) } });
+      }
       const fresh = [];
       for (const sx of l.secrets) {
         const j = l.secrets.indexOf(sx);
@@ -309,13 +323,76 @@ export function ssLaunchScreens(act, ctx, host, H) {
   return out;
 }
 
+// the production pair's story, agreed in the bathroom with the taps running (the user: "that's our plan, that's how
+// we're going to play this, do you know where I'm from if they ask? remember this")
+const PLAN = {
+  couple: [["Okay. We met at a friend's party, two years ago. Say it back.", "A friend's party, two years ago. And who said 'I love you' first?", 'You did.', 'Obviously I did.'],
+    ["We've been together a year. We met at work. Got it?", "A year, at work. Do I like your mum?", "You love my mum.", "Great. I love your mum."]],
+  family: [["Our mum's name is Sandra, and we grew up by the sea. Say it back.", "Sandra, the sea. Who's the oldest?", 'Me. Always me.', "Fine. But I'm the favourite."],
+    ["We had a dog called Biscuit. We shared a bedroom until we were twelve.", "Biscuit. Twelve. Who got the top bunk?", 'Me.', "That's a lie, and I'll be saying it all summer."]],
+  enemies: [['First fight is tomorrow, at lunch. Make it loud.', 'And tonight?', "Tonight we don't even look at each other.", "Easy. I didn't like your shoes anyway."]],
+  other: [["We don't know each other. We've never spoken. Got it?", 'Then when do we talk?', 'When the Voice says so. Not before.', 'Fine by me.'],
+    ["In there, we're strangers. Not friends, not enemies. Strangers.", "Strangers. Do I at least get to say hello?", 'Once. Politely.', 'Politely. I can do politely.']],
+};
+const PLAN_OF = { 'fake-couple': 'couple', 'public-couple': 'couple', 'fake-siblings': 'family', 'public-family': 'family', enemies: 'enemies' };
+const ROLE_CALL = {
+  accomplice: "I do whatever the Voice asks. Nobody can ever see me do it.", spy: "Everything private in there is going to end up out here. Sorry, everybody.",
+  saboteur: "I'm going to make them chase the wrong things all summer.", oracle: 'I know something about this house that nobody else knows. That is power.',
+  'house-key': 'I know something about this house that nobody else knows. That is power.', 'access-code': 'I know something about this house that nobody else knows. That is power.',
+  protector: "There's a couple in there I have to protect, and they don't even know I exist yet.", chosen: 'The Voice picked me. I am going to deserve it.',
+  guardians: 'Every liar in that house, I am going to find.', tunnels: 'I am going to hear every single thing they say.',
+};
+
 /** One live check-in on the house (js/ss/launch.js `checkins`). */
-function checkin(c, H) {
+function checkin(c, H, host = 'Josh') {
   const { pickBy } = H;
   const [a, b, x] = c.who;
   const kk = `ssl|ck|${c.after}|${a}|${b}`;
   /** @type {any[]} */ let steps;
-  if (c.kind === 'tour') steps = [
+  if (c.kind === 'plan') {
+    const [l1, l2, l3, l4] = pickBy(PLAN[PLAN_OF[c.role] || 'other'], kk);
+    const all = c.who.join(', ').replace(/, ([^,]*)$/, ' and $1');
+    steps = [
+      { k: 'beat', t: `In the bathroom, the taps running to cover their voices, ${all} finally have a minute alone.`, tense: [a, b] },
+      { k: 'say', by: a, t: l1 }, { k: 'say', by: b, t: l2 }, { k: 'say', by: a, t: l3 }, { k: 'say', by: b, t: l4 },
+      { k: 'say', by: b, t: 'Wait. Where am I from, if they ask?' },
+      { k: 'say', by: a, t: pickBy(['Somewhere boring. Nobody asks twice about somewhere boring.', 'Near the coast. Then change the subject.'], `${kk}|from`) },
+      { k: 'say', by: a, t: "Remember this. That's our plan, that's how we play this, whatever happens." },
+      { k: 'beat', t: pickBy(['Somebody knocks on the door. "Are you two done in there?"', 'The door handle turns. They both jump, and turn the taps off.'], `${kk}|knock`) }];
+    return { title: 'The Plan', label: 'The Plan', sub: all, set: 'bathroom', plate: 'bathroom', room: 'Bathroom', cam: 9, kicker: 'Live · The bathroom', cast: c.who.map((n, i, w) => [n, w.length === 1 ? 50 : Math.round(30 + 40 * i / (w.length - 1))]), steps };
+  }
+  if (c.kind === 'role-call') {
+    steps = [
+      { k: 'host', by: host, t: `Let's go to the confessional, live. ${a}, the public knows your secret: "${c.text}." How are you going to play it?` },
+      { k: 'dr', by: a, live: true, t: ROLE_CALL[c.role] || 'Nobody in there can find out what I really am.' },
+      { k: 'host', by: host, t: pickBy(['We will be watching. Good luck.', 'The whole country is in on it now. Good luck.'], `${kk}|rc`) }];
+    return { title: 'Live in the Confessional', label: 'Live Call', sub: a, cast: [[a, 50]], steps };
+  }
+  if (c.kind === 'crush') steps = [
+    { k: 'beat', t: pickBy([`${a} and ${b} end up on the same sofa, a little closer than they need to be.`, `${a} offers ${b} the last glass of champagne. ${b} takes it, and stays.`], kk), tense: [a, b] },
+    { k: 'say', by: a, t: "So what do you do, when you're not locked in a house?" },
+    // (an answer and its reply, kept together)
+    ...pickBy([[["I'll tell you tomorrow. If you're still talking to me.", "I'll still be talking to you."]], [["Right now? Trying not to stare at you.", 'Okay. You can stare a bit.']]], `${kk}|2`)
+      .map(([q, r]) => [{ k: 'say', by: b, t: q }, { k: 'say', by: a, t: r }]).flat(),
+    { k: 'beat', t: 'Across the room, somebody notices, and grins into their glass.' }];
+  else if (c.kind === 'clash') steps = [
+    ...pickBy([['Are you going to talk this loud all summer?', 'Are you going to complain all summer?', "I'm just asking."],
+      ['Did you just take my glass?', "It's a glass. There are forty of them.", "That's not the point and you know it."]], kk)
+      .map((line, i) => ({ k: 'say', by: i % 2 ? b : a, t: line })),
+    { k: 'beat', t: 'Three hours in, and the house has its first argument. Everybody pretends not to listen.', tense: [a, b] },
+    { k: 'say', by: x || b, t: x ? pickBy(['Okay. Okay. Day one, guys.', 'Can we at least wait until everybody is in?'], `${kk}|x`) : "Fine. Let's leave it." }];
+  else if (c.kind === 'slip') steps = [
+    { k: 'say', by: a, t: pickBy(["When I was working at the... never mind.", "My family always says I'm the one who... no. Forget it."], kk) },
+    { k: 'say', by: b, t: 'At the what?' },
+    { k: 'say', by: a, t: "Nothing. Long day. Where's the wine?" },
+    { k: 'beat', t: `${b} doesn't push it. ${b} doesn't forget it either.`, tense: [a, b] }];
+  else if (c.kind === 'live') steps = [
+    { k: 'beat', t: `${a} finds the nearest camera and waves at it with both hands.` },
+    { k: 'say', by: a, t: "Hi Mum! We're live! I'm fine!" },
+    { k: 'say', by: b, t: "They can't answer you, you know." },
+    { k: 'say', by: a, t: "She can hear me. That's enough." },
+    { k: 'beat', t: `For a second, ${x ? `${b} and ${x}` : b} wave${x ? '' : 's'} at the cameras too.` }];
+  else if (c.kind === 'tour') steps = [
     { k: 'beat', t: `${b} shows ${a} round the house.` },
     { k: 'say', by: b, t: "That's the confessional. The red button in there is the buzzer." },
     { k: 'say', by: a, t: "Already? I've been here two minutes." },

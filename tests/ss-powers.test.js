@@ -124,9 +124,10 @@ describe('the week the Voice changes the nominations', () => {
     const saves = Object.entries(ss.tally).sort((a, b) => a[1] - b[1]);
     expect(ss.before).toContain(saves[0][0]);
   });
-  it('the two houses: nobody from the Immunity House is nominated', () => {
+  it("the two houses: the house's vote names nobody from the Immunity House", () => {
     const { ss } = run('houses');
-    for (const n of ss.twist.immuneHouse) expect(ss.before).not.toContain(n);
+    // (a direct nomination by the Voice, a sanction, outranks any immunity, as on the real show)
+    for (const n of ss.twist.immuneHouse) if (!(ss.dOffice || []).includes(n)) expect(ss.before).not.toContain(n);
   });
   it('the red room: who went in and who they dragged are both up', () => {
     const { ss } = run('red-room');

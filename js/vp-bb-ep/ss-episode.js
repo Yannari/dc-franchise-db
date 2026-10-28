@@ -81,6 +81,8 @@ export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
         continue;
       }
       if (portrait) { steps.push({ ...st, clip: true }); continue; }
+      // (a call already made live, with the host's question before it: js/vp-bb-ep/ss-launch.js)
+      if (st.live) { asked.add(st.by); steps.push(st); back = true; continue; }
       if (!asked.has(st.by)) {
         if (asked.size >= 2) continue;
         asked.add(st.by);

@@ -1,0 +1,95 @@
+// Launch night stands on its own (the user, 2026-10-28: "launch night is super short, too short to stand on its
+// own... production secret set up, 'that's our plan, where am I from if they ask?'... one or two personal secrets
+// revealed to Josh from the confessional... first meeting, first crush, first drama... they're live, but it's not
+// supposed to be boring"). The engine (js/ss/launch.js) and what airs (js/vp-bb-ep/ss-launch.js).
+import { describe, expect, it } from 'vitest';
+import { planLaunch } from '../js/ss/launch.js';
+import { gs, players, seasonConfig, relationships } from '../js/core.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
+import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
+import { PRODUCTION_SECRETS, productionSecret } from '../js/ss/casting.js';
+import { seedGame } from './helpers/setup.js';
+import { withSeededRandom } from './helpers/rng.js';
+
+const H = ['Ana', 'Ben', 'Cy', 'Di', 'Ed', 'Fi', 'Gus', 'Hal', 'Ivy', 'Jo', 'Kai', 'Lu'];
+const MEN = new Set(['Ben', 'Cy', 'Ed', 'Gus', 'Hal', 'Kai']);
+const STATS = { Ben: { boldness: 9, temperament: 2 }, Cy: { boldness: 9, temperament: 2 } };
+const ctx = (r = 0.3) => ({ rng: () => r, stat: (n, k) => STATS[n]?.[k] ?? 5, bond: () => 0, compat: (a, b) => MEN.has(a) !== MEN.has(b) });
+const state = () => ({ secrets: [
+  { id: 'p', poolId: 'prod-fake-couple', source: 'production', kind: 'voice-pair', holders: ['Di', 'Hal'], text: 'We are a fake couple', clues: ['a'] },
+  { id: 'q', poolId: 'prod-spy', source: 'production', kind: 'voice-mission', holders: ['Fi'], text: "I am the internet's spy", clues: ['b'] },
+  ...H.filter(n => !['Di', 'Hal', 'Fi'].includes(n)).map(n => ({ id: n, kind: 'personal', holders: [n], text: `${n}'s secret`, clues: ['c'] })),
+] });
+
+describe('launch night, decided', () => {
+  it('the house is shown live between most arrivals, not five times', () => {
+    const L = planLaunch(state(), ctx(), { house: H });
+    expect(L.checkins.length).toBeGreaterThanOrEqual(8);
+  });
+  it('a production pair makes its plan once both are in, and grows closer', () => {
+    const L = planLaunch(state(), ctx(), { house: H });
+    const plan = L.checkins.find(c => c.kind === 'plan');
+    expect(plan).toMatchObject({ who: ['Di', 'Hal'], role: 'fake-couple' });
+    expect(plan.after).toBeGreaterThan(Math.max(H.indexOf('Di'), H.indexOf('Hal')));
+    expect(L.effects.bond.some(([a, b, d]) => [a, b].sort().join() === 'Di,Hal' && d > 0)).toBe(true);
+  });
+  it('a production secret kept alone is a live call from Josh', () => {
+    const L = planLaunch(state(), ctx(), { house: H });
+    expect(L.checkins.find(c => c.kind === 'role-call')).toMatchObject({ who: ['Fi'], role: 'spy' });
+  });
+  it('a first crush only between two who could; a first clash costs them', () => {
+    const L = planLaunch(state(), ctx(), { house: H });
+    const crush = L.checkins.find(c => c.kind === 'crush');
+    if (crush) expect(MEN.has(crush.who[0]) !== MEN.has(crush.who[1])).toBe(true);
+    const clash = L.checkins.find(c => c.kind === 'clash');
+    expect(clash).toBeTruthy();
+    const [a, b] = clash.who;
+    expect(L.effects.bond.some(([x, y, d]) => [x, y].sort().join() === [a, b].sort().join() && d < 0)).toBe(true);
+  });
+  it('a near slip gives the one listening a lead', () => {
+    let st, slip;
+    for (const r of [0.05, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9]) {
+      st = state();
+      slip = planLaunch(st, ctx(r), { house: H }).checkins.find(c => c.kind === 'slip');
+      if (slip) break;
+    }
+    expect(slip).toBeTruthy();
+    const [who, heard] = slip.who;
+    expect(st.theories?.[heard]?.[who]).toBeTruthy();
+  });
+});
+
+const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb'];
+const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater'][i % 6] }));
+describe('launch night, on screen', () => {
+  const play = () => {
+    const def = id => PRODUCTION_SECRETS.find(d => d.id === id);
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off',
+      ssSecrets: { ...productionSecret(def('fake-siblings'), ['Bowie', 'Chase']), ...productionSecret(def('accomplice'), ['Ripper']) } });
+    withSeededRandom(9, () => { simulateBBEpisode(); });
+    delete seasonConfig.ssSecrets;
+    return bbWeekSteps(gs.episodeHistory.find(r => r.num === 1), { host: 'Josh' }).filter(s => /^bb-ss-launch|^bb-ss-secrets/.test(String(s.id)));
+  };
+  it("on the list of secrets, a face only goes up after that housemate owns it, live, to Josh", () => {
+    const screens = play();
+    const owned = new Set();
+    let faces = 0;
+    for (const s of screens) for (const st of s.steps) {
+      if (st.k === 'dr' && st.live && st.owns) owned.add(st.by);
+      for (const r of st.secretlist?.rows || []) if (r.who) { faces++; expect(owned.has(r.who), `${r.who}'s face on "${r.text}"`).toBe(true); }
+    }
+    expect(faces).toBeGreaterThan(0);
+  });
+  it('the production secrets are set up on the night, and the words are clean', () => {
+    const screens = play();
+    const text = screens.flatMap(s => s.steps.map(st => String(st.t || '')));
+    expect(text.some(t => /where am I from|Where am I from/.test(t))).toBe(true);
+    expect(text.filter(t => /\bundefined\b|\bNaN\b|\[object/.test(t))).toEqual([]);
+    // (no plain confessional on a live night: a live call or a portrait)
+    for (const s of screens.filter(x => !/^bb-ss-launch-(arr|open)/.test(String(x.id)))) for (const st of s.steps) if (st.k === 'dr' && s.id !== 'bb-ss-launch-role') expect(st.live, `${s.id}: ${st.t}`).toBeTruthy();
+  });
+});

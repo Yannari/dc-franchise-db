@@ -17,6 +17,7 @@
 
 import { addEvidence, secretOf } from './hunt.js';
 import { mint } from './kitty.js';
+import { roleOf } from './production.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
@@ -25,9 +26,14 @@ const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
  * What the first ones in do while they wait for the next arrival (the real
  * launch cuts to the house between arrivals): a tour, claiming beds, the
  * introductions, the superfan explaining the show, staring at the wall of
- * clues, hiding to surprise the next one. Each moves the first impressions.
+ * clues, hiding to surprise the next one; and (the user, 2026-10-28: "first
+ * meeting, first crush, first drama... they're live") a first crush, a first
+ * clash, a secret that nearly slips, waving at the cameras. Each moves the
+ * first impressions.
  */
-const CHECKIN_KINDS = ['tour', 'beds', 'intro', 'explain', 'wall', 'hide'];
+const CHECKIN_KINDS = ['tour', 'beds', 'intro', 'explain', 'wall', 'hide', 'crush', 'clash', 'slip', 'live'];
+// (the night cuts to the house after these arrivals: most of them, as the real one does)
+const SLOTS = [2, 3, 4, 6, 7, 9, 10, 12, 13, 15];
 
 /**
  * Plans the night. `house` in the order the Voice calls them; returns
@@ -57,28 +63,63 @@ export function planLaunch(state, ctx, { house = [] } = {}) {
     missions.push({ kind: 'code', who: third, by: 2, from: [first, second], ok, reward: ok ? 1000 : 0 });
     if (ok) effects.bond.push([third, first, 0.3], [third, second, 0.3]);
   }
-  // THE HOUSE BETWEEN ARRIVALS: after the 2nd, 4th, 7th, 10th and 13th arrival.
+  // THE HOUSE BETWEEN ARRIVALS
   const checkins = [];
   const used = new Set();
-  for (const after of [2, 4, 7, 10, 13]) {
+  const compat = (a, b) => (typeof ctx.compat === 'function' ? !!ctx.compat(a, b) : true);
+  const hot = n => st(ctx, n, 'boldness') - st(ctx, n, 'temperament');
+  const pairsOf = list => list.flatMap((x, i) => list.slice(i + 1).map(y => [x, y]));
+  for (const after of SLOTS) {
     if (after >= order.length) break;
     const inside = order.slice(0, after);
     if (inside.length < 2) continue;
-    const kinds = CHECKIN_KINDS.filter(k => !used.has(k) && (k !== 'explain' || inside.length >= 3));
-    const kind = kinds.length ? kinds[Math.floor(rng() * kinds.length)] : 'intro';
+    const newest = inside[inside.length - 1];
+    // a crush needs two who could; a slip needs a secret to slip
+    const crushPair = pairsOf(inside).filter(([x, y]) => compat(x, y) && compat(y, x))
+      .sort((p, q) => (st(ctx, q[0], 'social') + st(ctx, q[1], 'social') + rng()) - (st(ctx, p[0], 'social') + st(ctx, p[1], 'social') + rng()))[0];
+    const fits = k => (k !== 'explain' || inside.length >= 3) && (k !== 'crush' || !!crushPair) && (k !== 'clash' || inside.length >= 3)
+      && (k !== 'slip' || inside.some(n => secretOf(state, n)));
+    let kinds = CHECKIN_KINDS.filter(k => !used.has(k) && fits(k));
+    // (every kind once before any comes back; then the house moments that bear repeating)
+    if (!kinds.length) kinds = ['intro', 'live', 'crush', 'clash', 'slip'].filter(fits);
+    const kind = kinds[Math.floor(rng() * kinds.length)] || 'intro';
     used.add(kind);
-    // the newest in, and somebody already there
-    const who = [inside[inside.length - 1], ...inside.slice(0, -1).sort(() => rng() - 0.5)].slice(0, kind === 'wall' || kind === 'hide' ? 3 : 2);
+    let who;
+    if (kind === 'crush') who = crushPair;
+    // the first drama: the two hottest tempers in the house so far
+    else if (kind === 'clash') who = inside.slice().sort((x, y) => hot(y) - hot(x) + (rng() - 0.5)).slice(0, 2);
+    // a secret that nearly slips: the one with the least control, to the sharpest pair of ears
+    else if (kind === 'slip') {
+      const s = inside.filter(n => secretOf(state, n)).sort((x, y) => st(ctx, x, 'temperament') + st(ctx, x, 'strategic') - st(ctx, y, 'temperament') - st(ctx, y, 'strategic') + (rng() - 0.5))[0];
+      const ear = inside.filter(n => n !== s && !(secretOf(state, s)?.holders || []).includes(n)).sort((x, y) => st(ctx, y, 'intuition') - st(ctx, x, 'intuition') + (rng() - 0.5))[0];
+      who = [s, ear].filter(Boolean);
+    } else who = [newest, ...inside.slice(0, -1).sort(() => rng() - 0.5)].slice(0, kind === 'wall' || kind === 'hide' || kind === 'live' ? 3 : 2);
+    if (who.length < 2) continue;
     const [a, b] = who;
     // the superfan who knows the show by heart: the sharpest of them
     const fan = kind === 'explain' ? inside.slice().sort((x, y) => (st(ctx, y, 'mental') + st(ctx, y, 'strategic')) - (st(ctx, x, 'mental') + st(ctx, x, 'strategic')))[0] : null;
     let d = 0.3;
     // two bold ones after the same bed: the first friction of the season
-    const clash = kind === 'beds' && st(ctx, a, 'boldness') + st(ctx, b, 'boldness') >= 13;
-    if (clash) d = -0.4;
+    const clash = kind === 'clash' || (kind === 'beds' && st(ctx, a, 'boldness') + st(ctx, b, 'boldness') >= 13);
+    if (clash) d = -0.4 - Math.max(0, hot(a) + hot(b)) * 0.03;
+    if (kind === 'crush') d = 0.6 + (st(ctx, a, 'social') + st(ctx, b, 'social')) * 0.02;
+    // what nearly slipped: the one listening has a lead (the confider and the listener feel closer for it)
+    if (kind === 'slip') addEvidence(state, ctx, b, a, { strength: 0.25, how: 'launch-slip' });
     for (let i = 0; i < who.length; i++) for (let j = i + 1; j < who.length; j++) effects.bond.push([who[i], who[j], d]);
     checkins.push({ after, kind, who, fan, clash });
   }
+  // THE PRODUCTION SECRETS, SET UP (the user: "production secret set up: that's our plan, that's how we're going to
+  // play this, do you know where I'm from if they ask?"): once every holder is in, they slip away to agree on the
+  // story; a role kept alone gets a live call from the host in the confessional.
+  for (const s of (state.secrets || []).filter(x => x.source === 'production')) {
+    const role = roleOf(s);
+    const hs = (s.holders || []).filter(h => order.includes(h));
+    if (!hs.length || ['secret-box', 'intruders'].includes(String(role || ''))) continue;
+    const after = Math.max(...hs.map(h => order.indexOf(h))) + 1;
+    checkins.push({ after, kind: hs.length > 1 ? 'plan' : 'role-call', who: hs, role: role || null, text: s.text });
+    for (let i = 0; i < hs.length; i++) for (let j = i + 1; j < hs.length; j++) effects.bond.push([hs[i], hs[j], 0.5]);
+  }
+  checkins.sort((x, y) => x.after - y.after);
   // THE LIST OF SECRETS (S14): told to the public in batches, never saying whose.
   // Clues only: the story of a secret is told from what the Voice can show.
   // A batch tells the secrets of housemates still to come: the ones already in had

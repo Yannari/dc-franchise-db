@@ -30,7 +30,7 @@ import { ssLaunchScreens } from './ss-launch.js';
 import { ssFinalScreens } from './ss-final.js';
 import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssPlace } from './ss-stage.js';
-import { ssArrange } from './ss-episode.js';
+import { ssArrange, ssLiveConfessionals } from './ss-episode.js';
 import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
@@ -5640,6 +5640,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // the prime the host's (vp-bb-ep/ss-episode.js)
     const prev = ((/** @type {any} */ (globalThis).gs?.episodeHistory) || []).find(r => r && r.num === (row.num || 1) - 1);
     ssArrange(out, row, { prev, ssv, host: ctx.host });
+    ssLiveConfessionals(out, { host: ctx.host || 'Josh' });
     // a hidden space whose plate the user has not made yet plays in the closest room built (vp-bb-ep/ss-groups.js)
     const fall = p => (p && SPACE_FALLBACK[p] && !plateBuilt(p) ? SPACE_FALLBACK[p] : p);
     for (const s of out) { if (s.plate) s.plate = fall(s.plate); for (const st of s.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; }

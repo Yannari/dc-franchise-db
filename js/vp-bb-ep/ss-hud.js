@@ -131,7 +131,7 @@ export function ssLineHtml(S, st, fresh, L, H) {
   const c = H.col(st.by);
   const tx = `<div class="tx" data-full="${esc(st.t)}" data-emph="${esc(H.emph(st.t, H.names))}">${fresh ? '' : H.emph(st.t, H.names)}</div>`;
   if (st.k === 'dr') {
-    return `<div class="ssd ${fresh ? 'fresh' : ''}" style="--c:${c}"><div class="ssd-plate"><img src="${EYE}" alt=""><b>${esc(st.by)}</b><i>CONFESSIONAL</i></div>
+    return `<div class="ssd ${fresh ? 'fresh' : ''}" style="--c:${c}"><div class="ssd-plate"><img src="${EYE}" alt=""><b>${esc(st.by)}</b><i>${st.live ? 'LIVE · CONFESSIONAL' : st.clip ? 'PORTRAIT' : 'CONFESSIONAL'}</i></div>
       <div class="ssd-body">${tx}</div></div>`;
   }
   const role = st.k === 'host' ? 'HOST · LIVE' : H.nominated?.(st.by) ? 'NOMINATED' : 'HOUSEMATE';

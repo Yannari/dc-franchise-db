@@ -55,6 +55,44 @@ function asScene(F) {
  * @param {any} row the week's record
  * @param {{ prev?: any, ssv: Function, host: string }} o
  */
+// THE PRIME IS LIVE (the user, 2026-10-28: "there's no confessional during the prime unless they're talking with
+// Josh from the house"). On a live screen (launch night, the prime) a confessional line becomes a live call: Josh
+// asks from the stage, the housemate answers him from the confessional (two calls a screen at most; the rest are
+// cut). On launch night before the house (the opening, the arrivals), they are the portraits: recorded clips that
+// play while a pair walks to the airlock, captioned as such. The magnetos are recorded packages of the week and keep
+// theirs; house life after the prime is not live either.
+const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight)/;
+const CALL = [n => `${n}, you're in the confessional, and we're live. Talk to me.`, n => `Let's go to the confessional. ${n}, it's Josh. How are you feeling tonight?`,
+  n => `${n}, you're live in the confessional. What's going through your head right now?`, n => `${n}, the whole country is listening. What do you want to tell them?`];
+export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
+  for (const s of out) {
+    const id = String(s.id || '');
+    if (ssPartOf(s) === 'daily' || RECORDED.test(id) || !(s.steps || []).some(st => st.k === 'dr')) continue;
+    const portrait = /^bb-ss-launch-(arr|open)/.test(id);
+    const asked = new Set();
+    /** @type {any[]} */ const steps = [];
+    // the room the screen is in when the call ends (a scene sticks until the next one)
+    let room = null, back = false;
+    for (const st of s.steps) {
+      if (st.k !== 'dr') {
+        if (st.scene && st.scene.set !== 'dr') room = st.scene;
+        steps.push(back && !st.scene && room ? { ...st, scene: room } : st);
+        back = false;
+        continue;
+      }
+      if (portrait) { steps.push({ ...st, clip: true }); continue; }
+      if (!asked.has(st.by)) {
+        if (asked.size >= 2) continue;
+        asked.add(st.by);
+        steps.push({ k: 'host', by: host, t: pickBy(CALL, `${id}|${st.by}`)(st.by), ...(room ? { scene: room } : {}) });
+      }
+      steps.push({ ...st, live: true });
+      back = true;
+    }
+    s.steps = steps;
+  }
+}
+
 export function ssArrange(out, row, o) {
   // Big Brother's move-in night and its primer are not Secret Story's launch (the user: "move-in night conflicts
   // with the arrivals"); the Voice's week-open and after-eviction words are the narrator's now

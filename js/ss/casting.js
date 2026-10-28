@@ -119,6 +119,12 @@ export const PRODUCTION_SECRETS = [
   { id: 'fake-siblings', text: 'We are fake siblings', from: 'S6, Nadège and Thomas', min: 2, max: 2, clues: ['a family photo that has been edited', 'matching baby shoes'] },
   { id: 'access-code', text: 'I am the access code to the secret of the house', from: 'S6, Julien', min: 1, max: 1, clues: ['four numbers written on a hand', 'a keypad with one worn button'] },
   { id: 'public-family', text: 'We are the family the public chose', from: 'S7, Anaïs, Julien, Ben and Sonja', min: 3, max: 4, clues: ['a family tree with one empty branch', 'a ballot box full of hearts'] },
+  // the later seasons' roles (docs/research/secret-story-twists-s1-s14.md), each with its weekly job (js/ss/production.js)
+  { id: 'saboteur', text: 'I am the saboteur of the house', from: 'S11', min: 1, max: 1, clues: ['a pen that writes in invisible ink', 'a torn page from somebody else\'s notebook'] },
+  { id: 'spy', text: "I am the internet's spy", from: 'S11', min: 1, max: 1, clues: ['a lens hidden in a button', 'a phone charger with nothing to charge'] },
+  { id: 'guardians', text: 'We are the guardians of transparency', from: 'S13', min: 2, max: 2, clues: ['a magnifying glass', 'a lie detector with no plug'] },
+  { id: 'oracle', text: 'I am the oracle of the house', from: 'S14', min: 1, max: 1, clues: ['a key with no door', 'a phone that never rings in public'] },
+  { id: 'protector', text: "I am the couple's protector", from: 'S14', min: 1, max: 1, needsPair: true, clues: ['a padlock shaped like a heart', 'a shield drawn on a napkin'] },
 ];
 /**
  * A production secret as a cast entry for each of its holders (`group`: everybody who keeps it).
@@ -140,6 +146,8 @@ export function drawProductionSecret(cast = [], { rng = Math.random, gender = p 
   const first = rng() < 0.55 ? PRODUCTION_SECRETS.find(d => d.id === 'fake-couple') : shuffled[0];
   for (const d of [first, ...shuffled]) {
     if (d.mixed) { if (!women.length || !men.length) continue; return { def: d, holders: [pickOne(women).name, pickOne(men).name] }; }
+    // (a protector needs a couple to protect: drawn alone, it would have nothing to do)
+    if (d.needsPair) continue;
     const size = d.min === d.max ? d.min : d.min + Math.floor(rng() * (d.max - d.min + 1));
     if (free.length < size + 2) continue;
     const hs = free.slice().sort(() => rng() - 0.5).slice(0, size).map(p => p.name);

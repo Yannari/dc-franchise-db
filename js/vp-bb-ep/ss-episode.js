@@ -38,7 +38,7 @@ export const SS_PART_LABEL = { launch: 'Launch Night', daily: 'The Days', prime:
 
 // ── folding the Voice's little moments into house life ──
 // (a sanction, a clue, a mission given, the store, the masters' pick: 3 to 7 clicks each, a screen of their own)
-const FOLD = /^bb-ss-(rule|clue|houseclue|mission|role|store|houseend|vm)-/;
+const FOLD = /^bb-ss-(rule|clue|houseclue|mission|role|store|houseend|vm|prod)-/;
 const GATHER = /\b(everybody|everyone|housemates)\b[^.?!]*\bliving room\b/i;
 const MOOD_OF = id => (/^bb-ss-vm-(birthday|letter)-/.test(id) ? 'love' : /^bb-ss-vm-/.test(id) ? 'fun' : /^bb-ss-rule-/.test(id) ? 'ceremony' : /^bb-ss-(clue|houseclue)-/.test(id) ? 'secret' : /^bb-ss-(mission|role)-/.test(id) ? 'mission' : /^bb-ss-store-/.test(id) ? 'store' : 'house');
 function asScene(F) {
@@ -84,14 +84,22 @@ export function ssArrange(out, row, o) {
     const F = out[i];
     const id = String(F.id || '');
     const pz = prime0();
-    // (the Voice's moments always go into house life, however many lines; the rest only when they are short)
-    if (!FOLD.test(id) || (pz >= 0 && i > pz) || (F.steps || []).length > (/^bb-ss-vm-/.test(id) ? 16 : 7)) continue;
+    // (the Voice's moments and the production secrets' weeks always go into house life; the rest only when short)
+    if (!FOLD.test(id) || (pz >= 0 && i > pz) || (F.steps || []).length > (/^bb-ss-(vm|prod)-/.test(id) ? 16 : 7)) continue;
     let host = -1;
     // (back through up to three other screens of the days, never into launch night)
     for (let j = i - 1, seen = 0; j >= 0 && host < 0 && seen <= 3; j--) { if (out[j].kind === 'houselife') host = j; else if (/^bb-ss-(launch|secrets-v|previously)/.test(String(out[j].id || ''))) break; else if (!FOLD.test(String(out[j].id || ''))) seen++; }
     let before = false;
     if (host < 0) for (let j = i + 1, seen = 0; j < out.length && host < 0 && seen <= 3; j++) { if (out[j].kind === 'houselife') { host = j; before = true; } else if (/^bb-ss-prime-/.test(String(out[j].id || ''))) break; else if (!FOLD.test(String(out[j].id || ''))) seen++; }
     if (host < 0) continue;
+    // (a production secret's week goes to the stretch of days with the fewest of them, so the roles spread out)
+    if (/^bb-ss-prod-/.test(id)) {
+      const near = [];
+      for (let j = 0; j < out.length; j++) if (out[j].kind === 'houselife' && (pz < 0 || j < pz) && !/^bb-ss-(launch|previously)/.test(String(out[j].id || ''))) near.push(j);
+      const best = near.sort((x, y) => ((out[x]._prods || 0) - (out[y]._prods || 0)) || (Math.abs(x - i) - Math.abs(y - i)))[0];
+      if (best != null) { host = best; before = best > i; }
+      out[host]._prods = (out[host]._prods || 0) + 1;
+    }
     const steps = (F.steps || []).map((st, k) => (k === 0 ? { ...st, scene: asScene(F) } : st));
     const H = out[host];
     H.steps = before ? [...steps, ...H.steps] : [...H.steps, ...steps];

@@ -31,10 +31,11 @@ import { canonSecretsOf, pushCanonSecrets } from '../ss/canon.js';
 import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
-import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
+import { huntOf, huntDay, showClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
+import { productionWeek } from '../ss/production.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
 import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../ss/powers.js';
 import { weekTwist, twistOf, forLifeNow } from '../ss/nomination-twists.js';
@@ -558,6 +559,17 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
           : he.kind === 'clans' ? `The clan war: ${he.captains.join(' against ')}. ${he.names[he.winners]} win.`
           : `${he.who} finds a secret room ${he.where}.`, players: who.slice(0, 4), badgeText: 'THE HOUSE', badgeClass: 'gold', part: 'house-event' }] });
     }
+  }
+  // THE PRODUCTION SECRETS, playing (js/ss/production.js): every live role does its week's job, before the
+  // nominations (the chosen ones' immunity and the tunnels' nomination for life are read by them).
+  for (const p of productionWeek(state, ctx, { house: room })) {
+    applyFx(p.effects);
+    for (const [w, t, s] of p.evidence) addEvidence(state, ctx, w, t, { strength: s, how: `role:${p.role}` });
+    const { effects, evidence, ...rest } = p;
+    void effects; void evidence;
+    acts.push({ type: 'ss-production', week: ctx.week, ...rest,
+      beats: [{ text: `${p.holders.join(' and ')}: the week's production mission (${p.role.replace(/-/g, ' ')}). ${p.ok ? 'Done.' : 'It goes wrong.'}`,
+        players: p.holders.slice(0, 4), badgeText: 'PRODUCTION SECRET', badgeClass: 'purple', part: 'production' }] });
   }
   // The black buzzer: hidden by the Voice; the finder is immune and names a nominee (before the nominations).
   if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {

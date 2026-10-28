@@ -15,6 +15,7 @@ import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { publicRead, support } from '../js/ss/public.js';
 import { expectedTotal, actualTotal } from '../js/ss/kitty.js';
+import { PRODUCTION_SECRETS, productionSecret } from '../js/ss/casting.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -31,12 +32,17 @@ describe('Secret Story spec audit', () => {
       riddleSolved: 0, riddleSold: 0, winnerRead: {}, winnerTop: 0, firstOutUnseen: 0, firstOuts: 0, parties: [], storeShut: 0, errors: [],
       badText: [], ledger: 0, weeks: [], signatures: {}, primeClicks: [], launchClicks: [],
       // twist families 1 and 2: the secret room's dilemmas, the cards, the week's nomination twists
-      roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {}, primeThemes: {}, themedPrimes: 0, primes: 0 };
+      roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {}, primeThemes: {}, themedPrimes: 0, primes: 0,
+      // twist family 3: the production secrets' weekly jobs (two roles cast a season, the catalogue in turn)
+      prodJobs: {}, prodOk: {}, prodCast: 0, prodFound: 0, kindAll: {}, kindFound: {} };
     for (let s = 1; s <= SEASONS; s++) {
       const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[(i + s) % ARCH.length] }));
       seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
       Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
-      Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 4, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSecretRoom: undefined, ssSignature: undefined });
+      // (the cast screen draws a production secret for every cast of ten or more; here two, in turn through the catalogue)
+      const pd = [PRODUCTION_SECRETS[(2 * s) % PRODUCTION_SECRETS.length], PRODUCTION_SECRETS[(2 * s + 1) % PRODUCTION_SECRETS.length]];
+      const ssSecrets = { ...productionSecret(pd[0], NAMES.slice(0, pd[0].min)), ...productionSecret(pd[1], NAMES.slice(6, 6 + pd[1].min)) };
+      Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 4, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSecretRoom: undefined, ssSignature: undefined, ssSecrets });
       withSeededRandom(1000 + s * 17, () => { let n = 0; while ((gs.activePlayers || []).length > 4 && n < 26) { if (!simulateBBEpisode()) break; n++; } runBBFinale(); });
       const st = gs.bb.secretStory;
       const rows = gs.episodeHistory || [];
@@ -48,6 +54,9 @@ describe('Secret Story spec audit', () => {
       if ((st.hidden || []).length) { m.fakes++; if (st.hidden.every(h => h.back)) m.fakeBack++; }
       for (const h of st.hidden || []) bump(m.fakeKinds, `${h.kind || 'verdict'}/${h.role || 'watch'}`);
       m.roomDilemmas.push((st.roomDilemmas || []).length);
+      for (const x of st.secrets.filter(x => x.source === 'production')) { m.prodCast++; if (x.found && x.foundBy) m.prodFound++; }
+      for (const x of st.secrets) { bump(m.kindAll, x.kind); if (x.found && x.foundBy) bump(m.kindFound, x.kind); }
+      for (const a of rows.flatMap(r => (r.acts || []).filter(a => a.type === 'ss-production'))) { bump(m.prodJobs, a.role); if (a.ok) bump(m.prodOk, a.role); }
       m.cardsGiven.push((st.powers || []).length);
       for (const p of (st.powers || []).filter(x => x.used)) bump(m.cardsPlayed, p.kind);
       for (const t of Object.values(st.weekTwists || {})) if (t?.kind) { bump(m.weekTwists, t.kind); m.twistWeeks++; }
@@ -97,6 +106,8 @@ describe('Secret Story spec audit', () => {
       `fake eliminations by kind/role ${JSON.stringify(m.fakeKinds)}`,
       `secret-room dilemmas per season ${mean(m.roomDilemmas)}; cards handed out per season ${mean(m.cardsGiven)}, played ${JSON.stringify(m.cardsPlayed)}`,
       `themed primes ${pct(m.themedPrimes, m.primes)} ${JSON.stringify(m.primeThemes)}`,
+      `secrets found by kind ${Object.keys(m.kindAll).sort().map(k => `${k} ${pct(m.kindFound[k] || 0, m.kindAll[k])} of ${m.kindAll[k]}`).join(', ')}`,
+      `production secrets cast ${m.prodCast}, found by a buzz ${pct(m.prodFound, m.prodCast)}; weekly jobs by role (done/all) ${Object.keys(m.prodJobs).sort().map(k => `${k} ${m.prodOk[k] || 0}/${m.prodJobs[k]}`).join(', ')}`,
       `weeks with a nomination twist ${pct(m.twistWeeks, m.nomWeeks)} (the design: about a third from week two) ${JSON.stringify(m.weekTwists)}`,
       `engine errors ${m.errors.length}; ledger mismatches ${m.ledger}; broken or wrong-show lines ${m.badText.length}`,
       ...[...new Set(m.badText)].slice(0, 12).map(x => `  ${x}`),

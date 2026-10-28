@@ -34,6 +34,7 @@ import { ssArrange } from './ss-episode.js';
 import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
+import { ssProductionScreen } from './ss-production.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
 import { ssWeekTwistScreen } from './ss-week-twist.js';
@@ -5574,6 +5575,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-group': { const scr = ssGroupWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
+      case 'ss-production': { const scr = ssProductionScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-black-buzzer': flush(); ceremony(ssBlackBuzzerScreen(act, ctx, { ssv })); break;
       case 'ss-journeys': flush(); for (const scr of (act.facts ? ssFinalScreens(act, ctx, { ssv, listOf, euros, pickBy, pronouns }) : [ssJourneysScreen(act, ctx)])) ceremony(scr); break;

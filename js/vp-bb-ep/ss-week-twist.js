@@ -63,7 +63,7 @@ export function ssWeekTwistScreen(act, ctx, H) {
     } else if (t.kind === 'red-room') {
       title = 'The Red Room';
       steps.push(gather, ssv('A new door has appeared in the house. A red door. The Voice will not say what is behind it.'),
-        { k: 'beat', scene: { set: 'truths', plate: 'ss-truths', room: 'The Red Room', cam: 22, kicker: 'Cam 22 · The Red Room', cast: [[t.who, 50]] }, t: pickBy([`Everybody walks past it all afternoon. At six, ${t.who} can't stand it any more, and goes in.`, `${t.who} lasts an hour, then opens the red door.`], `${k}|in`) },
+        { k: 'beat', scene: { set: 'truths', plate: 'ss-red-room', room: 'The Red Room', cam: 22, kicker: 'Cam 22 · The Red Room', cast: [[t.who, 50]] }, t: pickBy([`Everybody walks past it all afternoon. At six, ${t.who} can't stand it any more, and goes in.`, `${t.who} lasts an hour, then opens the red door.`], `${k}|in`) },
         ssv(`${t.who}, welcome to the red room. Whoever enters it is nominated. And you must choose one housemate to join you.`, { nom: [t.who], shake: true }),
         { k: 'say', by: t.who, t: `${t.dragged}. Sorry. Not sorry.` },
         ssv(`${t.dragged} is nominated too.`, { nom: [t.who, t.dragged] }),

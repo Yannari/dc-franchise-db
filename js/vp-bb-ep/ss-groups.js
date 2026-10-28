@@ -96,4 +96,6 @@ export function ssGroupEntryScreen(seg, ctx, host, H) {
 // Until the user's plates exist, the spaces play in the closest room the house has
 export const SPACE_FALLBACK = { 'ss-box': 'living-sofas', 'ss-box-inside': 'ss-attic-monitors', 'ss-tower': 'ss-attic-desk', 'ss-intruders': 'bedroom2-wide',
   'ss-tunnel': 'hallway', 'ss-hotel-lobby': 'foyer', 'ss-hotel-gallery': 'library-wide', 'ss-crystal': 'lawn-pool', 'ss-yacht-deck': 'pool-wide',
-  'ss-yacht-cabin': 'bedroom-wide', 'ss-antechamber': 'foyer' };
+  'ss-yacht-cabin': 'bedroom-wide', 'ss-antechamber': 'foyer',
+  // (twist families 2 to 4, until the user's plate jobs are done: Downloads/SecretStory-plates/to-edit-family4)
+  'ss-other-house': 'ss-crystal', 'ss-other-house-bed': 'bedroom2-wide', 'ss-glass-wall': 'ss-crystal', 'ss-red-room': 'ss-truths', 'ss-bridge': 'ss-dilemma' };

@@ -9,7 +9,7 @@
 const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const pickBy = (arr, key) => arr[hash(key) % arr.length];
 const money = n => `$${Math.round(Number(n) || 0).toLocaleString('en-US')}`;
-const BRIDGE = (who) => ({ set: 'truths', plate: 'ss-dilemma', room: 'The Bridge of Sacrifices', cam: 22, kicker: 'Live · The Bridge of Sacrifices', cast: who.map((n, i, a) => [n, a.length === 1 ? 50 : 34 + i * 32]) });
+const BRIDGE = (who) => ({ set: 'truths', plate: 'ss-bridge', room: 'The Bridge of Sacrifices', cam: 22, kicker: 'Live · The Bridge of Sacrifices', cast: who.map((n, i, a) => [n, a.length === 1 ? 50 : 34 + i * 32]) });
 
 /** The Bridge of Sacrifices (S5, S13). */
 export function ssBridgeScreen(seg, ctx, host, H) {

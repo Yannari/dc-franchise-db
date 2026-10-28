@@ -36,6 +36,7 @@ import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
 import { productionWeek } from '../ss/production.js';
+import { startSplit, splitWeek, splitActive, SPLIT_KINDS } from '../ss/split.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
 import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../ss/powers.js';
 import { weekTwist, twistOf, forLifeNow } from '../ss/nomination-twists.js';
@@ -517,8 +518,35 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
           players: gw.hidden.slice(0, 4), badgeText: 'HIDDEN', badgeClass: 'purple', part: 'group' }] });
     }
   }
-  // THE WEEK'S NOMINATION TWIST (js/ss/nomination-twists.js), announced before the nominations
+  // THE SPLIT (js/ss/split.js): two houses, two clans, or the bears, for two or three weeks. An Arena house ("a wall
+  // splits the House of Secrets in two") always has one from week two; otherwise about half the seasons.
+  // state.forceSplit[wk] = kind | 'none' for tests.
+  let started = null;
   {
+    const forced = state.forceSplit?.[ctx.week];
+    const wk = ctx.week || 0;
+    const due = forced ? forced !== 'none'
+      : !state.split && wk >= 2 && wk <= 6 && room.length >= 9 && (state.houseTheme === 'arena' || rng() < 0.1);
+    if (due && !splitActive(state, wk)) {
+      const kind = forced && SPLIT_KINDS.includes(forced) ? forced
+        : room.length >= 10 && rng() < 0.25 ? 'bears' : rng() < 0.55 ? 'second-house' : 'clans';
+      const s = startSplit(state, ctx, { house: room, kind });
+      started = { kind: s.kind, names: s.names.slice(), sides: s.sides.map(x => x.slice()), apart: s.apart, captains: s.captains, parted: s.parted.map(p => p.slice()), until: s.until };
+    }
+    if (splitActive(state, wk)) {
+      const ev = splitWeek(state, ctx, { house: room });
+      if (ev) {
+        applyFx(ev.effects);
+        const { effects, ...rest } = ev;
+        void effects;
+        acts.push({ type: 'ss-split', week: ctx.week, start: started, ...rest,
+          beats: [{ text: `${started ? `The house splits: ${ev.names.join(' against ')}. ` : ''}The duel: ${ev.names[ev.duel.w]} win, and are immune.${ev.traitor ? ` ${ev.traitor.who} ${ev.traitor.took ? 'changes sides for $3,000' : 'refuses to change sides'}.` : ''}${ev.reunion ? ' The split is over.' : ''}`,
+            players: ev.duel.winners.slice(0, 4), badgeText: 'THE SPLIT', badgeClass: 'gold', part: 'split' }] });
+      }
+    }
+  }
+  // THE WEEK'S NOMINATION TWIST (js/ss/nomination-twists.js), announced before the nominations (never during a split)
+  if (!(state.split && (splitActive(state, ctx.week || 0) || state.split.over === ctx.week))) {
     const nt = weekTwist(state, ctx, { house: room, winner: gameWinner });
     if (nt && (nt.kind || nt.life)) {
       if (nt.kind === 'for-life') { pub(nt.who, 'pity', 0.3, 'was nominated for life'); if (nt.by) pub(nt.by, 'heat', 0.25, 'nominated somebody for life'); }

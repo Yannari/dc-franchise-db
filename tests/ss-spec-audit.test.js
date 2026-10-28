@@ -34,7 +34,9 @@ describe('Secret Story spec audit', () => {
       // twist families 1 and 2: the secret room's dilemmas, the cards, the week's nomination twists
       roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {}, primeThemes: {}, themedPrimes: 0, primes: 0,
       // twist family 3: the production secrets' weekly jobs (two roles cast a season, the catalogue in turn)
-      prodJobs: {}, prodOk: {}, prodCast: 0, prodFound: 0, kindAll: {}, kindFound: {}, overFive: [] };
+      prodJobs: {}, prodOk: {}, prodCast: 0, prodFound: 0, kindAll: {}, kindFound: {}, overFive: [],
+      // twist family 4: the split
+      splits: 0, splitKinds: {}, traitors: 0, traitorsTook: 0 };
     for (let s = 1; s <= SEASONS; s++) {
       const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[(i + s) % ARCH.length] }));
       seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
@@ -56,6 +58,8 @@ describe('Secret Story spec audit', () => {
       m.roomDilemmas.push((st.roomDilemmas || []).length);
       for (const x of st.secrets.filter(x => x.source === 'production')) { m.prodCast++; if (x.found && x.foundBy) m.prodFound++; }
       for (const x of st.secrets) { bump(m.kindAll, x.kind); if (x.found && x.foundBy) bump(m.kindFound, x.kind); }
+      if ((st.splits || []).length) { m.splits++; for (const x of st.splits) bump(m.splitKinds, x.kind); }
+      for (const a of rows.flatMap(r => (r.acts || []).filter(x => x.type === 'ss-split' && x.traitor))) { m.traitors++; if (a.traitor.took) m.traitorsTook++; }
       // five nominees at most, but the week the whole house is up (2026-10-28: a linked week read out eight)
       for (const r of rows) { const sx = (r.acts || []).find(a => a.secretStory)?.secretStory; if (sx && sx.twist?.kind !== 'everybody' && sx.nominees.length > 5) m.overFive.push(`s${s} w${r.num} ${sx.nominees.length} (${sx.twist?.kind || 'no twist'})`); }
       for (const a of rows.flatMap(r => (r.acts || []).filter(a => a.type === 'ss-production'))) { bump(m.prodJobs, a.role); if (a.ok) bump(m.prodOk, a.role); }
@@ -111,6 +115,7 @@ describe('Secret Story spec audit', () => {
       `secrets found by kind ${Object.keys(m.kindAll).sort().map(k => `${k} ${pct(m.kindFound[k] || 0, m.kindAll[k])} of ${m.kindAll[k]}`).join(', ')}`,
       `production secrets cast ${m.prodCast}, found by a buzz ${pct(m.prodFound, m.prodCast)}; weekly jobs by role (done/all) ${Object.keys(m.prodJobs).sort().map(k => `${k} ${m.prodOk[k] || 0}/${m.prodJobs[k]}`).join(', ')}`,
       `weeks with a nomination twist ${pct(m.twistWeeks, m.nomWeeks)} (the design: about a third from week two) ${JSON.stringify(m.weekTwists)}`,
+      `seasons with a split ${pct(m.splits, SEASONS)} ${JSON.stringify(m.splitKinds)}; traitor's offers ${m.traitors}, taken ${pct(m.traitorsTook, m.traitors)}`,
       `weeks over five nominees ${m.overFive.length}${m.overFive.length ? ` ${m.overFive.slice(0, 6).join('; ')}` : ''}`,
       `engine errors ${m.errors.length}; ledger mismatches ${m.ledger}; broken or wrong-show lines ${m.badText.length}`,
       ...[...new Set(m.badText)].slice(0, 12).map(x => `  ${x}`),

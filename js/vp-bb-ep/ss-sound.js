@@ -91,6 +91,8 @@ const BY_ID = [
   [/^bb-ss-(game|prime-return|returns)/, 'ss-epic'],
   [/^bb-ss-party-|^bb-ss-event-(pageant|housework)-/, 'ss-party'],
   [/^bb-ss-event-clans-/, 'ss-epic'],
+  [/^bb-ss-split-(start|duel)-/, 'ss-epic'],
+  [/^bb-ss-split-end-/, 'ss-love'],
   [/^bb-ss-event-room-/, 'ss-secretroom'],
   [/^bb-ss-event-mission-/, 'ss-mission'],
   [/^bb-ss-(hunt|clue|houseclue)-/, 'ss-hunt'],

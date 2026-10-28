@@ -101,9 +101,13 @@ export function bbVoicedLines(ep, fresh = false) {
 // ── playback ──────────────────────────────────────────────────────────
 const bufs = new Map();
 let playing = null;
+// Only the last few lines stay decoded: a voiced week is hundreds of clips, and
+// keeping every one held hundreds of MB in the tab. Back replays one from the network.
 function loadClip(ctx, url) {
-  if (!bufs.has(url)) bufs.set(url, fetch(url).then(r => (r.ok ? r.arrayBuffer() : null)).then(a => (a ? ctx.decodeAudioData(a) : null)).catch(() => null));
-  return bufs.get(url);
+  const got = bufs.get(url) || fetch(url).then(r => (r.ok ? r.arrayBuffer() : null)).then(a => (a ? ctx.decodeAudioData(a) : null)).catch(() => null);
+  bufs.delete(url); bufs.set(url, got);
+  while (bufs.size > 20) bufs.delete(bufs.keys().next().value);
+  return got;
 }
 /** Stop whatever line is playing (a new step, Back, a jump). */
 export function bbVoiceStop() {

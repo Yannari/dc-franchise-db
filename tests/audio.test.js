@@ -184,6 +184,24 @@ describe('AudioEngine.ambient — file beds (mp3)', () => {
     expect(fetchCount).toBe(2);             // victory fetched once; camp-day reused from cache
   });
 
+  it('keeps only the last few decoded beds, never a season of them', async () => {
+    // A decoded three-minute bed is ~70 MB; holding every bed a season played
+    // took a tab past a gigabyte (2026-10-27, "my pc feel super slow").
+    const fetched = [];
+    globalThis.fetch = (url) => { fetched.push(url); return Promise.resolve({ ok: true, arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) }); };
+    const e = makeEngine(); e.unlock();
+    const beds = ['camp-day', 'camp-night', 'tribal-tension', 'victory', 'challenge', 'aftermath'];
+    for (const b of beds) { e.ambient(b); await new Promise(r => setTimeout(r, 0)); }
+    expect(Object.keys(e._bedBufCache)).toEqual(beds.slice(-4));
+    // A recent bed comes back from memory and becomes the newest; an old one is fetched again.
+    e.ambient('tribal-tension'); await new Promise(r => setTimeout(r, 0));
+    expect(fetched.length).toBe(beds.length);
+    expect(Object.keys(e._bedBufCache).at(-1)).toBe('tribal-tension');
+    e.ambient('camp-day'); await new Promise(r => setTimeout(r, 0));
+    expect(fetched.length).toBe(beds.length + 1);
+    expect(Object.keys(e._bedBufCache).length).toBe(4);
+  });
+
   it('stays silent and never throws when the file is missing (no synth fallback)', async () => {
     globalThis.fetch = () => Promise.resolve({ ok: false, status: 404 });
     const e = makeEngine(); e.unlock();

@@ -309,6 +309,8 @@ export const CUE_CATALOG = {
 // Each bed prefers its mp3 file (looped). Drop the files in assets/audio/ to
 // enable them. If a file is set but missing/unloadable, the bed plays SILENCE
 // (not the synth pad) — `build` is kept only as an opt-in fallback when file is null.
+// How many decoded beds stay in memory (AudioEngine._keepBed).
+const BED_KEEP = 4;
 export const BED_CATALOG = {
   'camp-day':       { build: bedCampDay,       file: 'assets/audio/bed-camp-day.mp3',   volume: 0.40 },
   'camp-night':     { build: bedCampNight,     file: 'assets/audio/bed-camp-night.mp3', volume: 0.40 },
@@ -456,8 +458,26 @@ export class AudioEngine {
     if (!bed || !bed.file || !this._ctx) return;
     this._loadBed(name, bed).catch(() => {});
   }
+  // A decoded bed is raw samples, ~70 MB for three minutes of music (the mp3 is
+  // ~3 MB), and every show's viewer plays its beds through here: keeping every
+  // bed a season played held over a gigabyte in one tab. Only the last few are
+  // kept: the one playing, the one before it, and the two the race viewer
+  // preloads ahead (vp-rr-ep/sound.js). One dropped is decoded again if it
+  // comes back; one still playing keeps its own samples until it stops.
+  _cachedBed(name) {
+    const c = this._bedBufCache;
+    const got = c && c[name];
+    if (got) { delete c[name]; c[name] = got; }   // the most recent goes last
+    return got || null;
+  }
+  _keepBed(name, decoded) {
+    const c = this._bedBufCache || (this._bedBufCache = {});
+    delete c[name]; c[name] = decoded;
+    const names = Object.keys(c);
+    for (const old of names.slice(0, Math.max(0, names.length - BED_KEEP))) delete c[old];
+  }
   _loadBed(name, bed) {
-    if (this._bedBufCache && this._bedBufCache[name]) return Promise.resolve(this._bedBufCache[name]);
+    if (this._cachedBed(name)) return Promise.resolve(this._bedBufCache[name]);
     if (!this._bedLoading) this._bedLoading = {};
     if (this._bedLoading[name]) return this._bedLoading[name];
     const ctx = this._ctx;
@@ -466,7 +486,7 @@ export class AudioEngine {
     if (!p || !p.then) return Promise.reject(new Error('no fetch'));
     const done = p.then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.arrayBuffer(); })
       .then(buf => ctx.decodeAudioData(buf))
-      .then(decoded => { if (!this._bedBufCache) this._bedBufCache = {}; this._bedBufCache[name] = decoded; delete this._bedLoading[name]; return decoded; },
+      .then(decoded => { this._keepBed(name, decoded); delete this._bedLoading[name]; return decoded; },
         e => { delete this._bedLoading[name]; throw e; });
     this._bedLoading[name] = done;
     return done;
@@ -585,7 +605,7 @@ export class AudioEngine {
         };
       } catch (e) { /* node graph unavailable — stay silent */ }
     };
-    if (this._bedBufCache && this._bedBufCache[name]) { start(this._bedBufCache[name]); return; }
+    if (this._cachedBed(name)) { start(this._bedBufCache[name]); return; }
     if (opts) {
       // (opt-in) one load per bed, shared with preloadBed; a bed that cannot load leaves silence, as before
       this._loadBed(name, bed).then(start).catch(() => {
@@ -599,7 +619,7 @@ export class AudioEngine {
     if (!p || !p.then) { this._warnBedOnce(name, bed.file); return; }
     p.then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.arrayBuffer(); })
       .then(buf => ctx.decodeAudioData(buf))
-      .then(decoded => { if (!this._bedBufCache) this._bedBufCache = {}; this._bedBufCache[name] = decoded; start(decoded); })
+      .then(decoded => { this._keepBed(name, decoded); start(decoded); })
       .catch(() => this._warnBedOnce(name, bed.file)); // missing/undecodable → silence
   }
 

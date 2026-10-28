@@ -189,7 +189,7 @@ if (typeof document !== 'undefined') document.addEventListener('vp:screen', () =
 // ambience loops per venue, the effects, and the dialogue blips. A file that fails to load falls back
 // to the synthesized sound above, so a missing file is never silence.
 const TD_AUDIO = 'assets/audio/td/';
-const bufs = {};
+const bufs = {}, clipOrder = [];
 // the gain that brings a file to -20 dBFS RMS, held so its peak stays under -1 dBFS
 function normOf(b) {
   let sum = 0, n = 0, peak = 0;
@@ -201,6 +201,14 @@ function loadBuf(ctx, path) {
   // the voice test's files change between renders: never from the browser's cache
   if (!bufs[path]) bufs[path] = fetch(/^https?:/.test(path) ? path : TD_AUDIO + path).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
     .then(a => ctx.decodeAudioData(a)).then(b => ({ b, norm: normOf(b) })).catch(() => null);
+  // A voiced line (from the bucket) stays decoded only while it is one of the last
+  // few: an episode is hundreds of clips, and keeping every one held hundreds of MB.
+  // The effects, blips and ambience are a fixed few and stay.
+  if (/^https?:/.test(path)) {
+    const at = clipOrder.indexOf(path); if (at >= 0) clipOrder.splice(at, 1);
+    clipOrder.push(path);
+    while (clipOrder.length > 20) delete bufs[clipOrder.shift()];
+  }
   return bufs[path];
 }
 const AMB_VENUE = { 'hosted-camp': 'camp', 'survival-island': 'island', 'film-lot': 'filmlot', carnival: 'carnival' };

@@ -344,13 +344,25 @@ async function loadManifest() {
   } catch { manifest = null; }
   return manifest;
 }
+/* A SMALL CACHE. A decoded track is raw samples, ~70 MB for three minutes (the
+   mp3 is ~3 MB), and a season reaches most of the 31 tracks: keeping every one
+   held up to 2 GB in one tab. Only the last few are kept (the bed, a
+   transition's clip, the one before); a track dropped is decoded again if it
+   comes back, and one still playing keeps its own samples until it stops. */
+function keepLast(cache, key, val, n) {
+  delete cache[key]; cache[key] = val;   // the most recent goes last
+  const keys = Object.keys(cache);
+  for (const old of keys.slice(0, Math.max(0, keys.length - n))) delete cache[old];
+  return val;
+}
 async function bufferOf(c, file) {
-  if (buffers[file] !== undefined) return buffers[file];
+  if (buffers[file] !== undefined) return keepLast(buffers, file, buffers[file], 3);
+  let got = null;
   try {
     const res = await fetch(MINE + file);
-    buffers[file] = res.ok ? await c.decodeAudioData(await res.arrayBuffer()) : null;
-  } catch { buffers[file] = null; }
-  return buffers[file];
+    got = res.ok ? await c.decodeAudioData(await res.arrayBuffer()) : null;
+  } catch { got = null; }
+  return keepLast(buffers, file, got, 3);
 }
 // Music on/off is the simulator's (the header's music button), shared with every show.
 const musicWanted = () => (engine.isMusicEnabled ? engine.isMusicEnabled() : true);
@@ -453,13 +465,15 @@ const AMB_OF = { daybeds: 'day', lawn: 'day', roof: 'day', day: 'day', 'casa-day
 const AMB_ALONE = 0.16, AMB_UNDER = 0.05;
 let amb = null;
 const ambBuffers = {};
+// The same small cache: the place playing and the one before it.
 async function ambBuffer(c, path) {
-  if (ambBuffers[path] !== undefined) return ambBuffers[path];
+  if (ambBuffers[path] !== undefined) return keepLast(ambBuffers, path, ambBuffers[path], 2);
+  let got = null;
   try {
     const res = await fetch(path);
-    ambBuffers[path] = res.ok ? await c.decodeAudioData(await res.arrayBuffer()) : null;
-  } catch { ambBuffers[path] = null; }
-  return ambBuffers[path];
+    got = res.ok ? await c.decodeAudioData(await res.arrayBuffer()) : null;
+  } catch { got = null; }
+  return keepLast(ambBuffers, path, got, 2);
 }
 /** Where the ambience should sit right now: under a music bed, or on its own. */
 function ambLevel() {

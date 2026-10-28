@@ -44,6 +44,8 @@ let HOUSE = 'default';
 export function setPlateTheme(theme) { HOUSE = OWN_HOUSE.has(theme) ? theme : 'default'; }
 /** Whether this theme is a house of its own (no resort plate ever shows in it). */
 export const ownHouse = theme => OWN_HOUSE.has(theme);
+/** The house the plates are being chosen from right now. */
+export const plateTheme = () => HOUSE;
 const built = id => !!RESORT.have[HOUSE]?.[id];
 /** Whether a plate has been built (the writer may name a spot before the user has made it). */
 export const plateBuilt = built;

@@ -376,5 +376,49 @@ export const SS_CSS = `
 @keyframes ss-win{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}15%{transform:translate(-50%,-50%) scale(1.1);opacity:1}25%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%)}}
 @keyframes ss-lose{0%{transform:translate(-50%,-50%) scale(.6);opacity:0}15%{opacity:1;transform:translate(-50%,-50%) rotate(-3deg)}20%{transform:translate(-50%,-50%) rotate(3deg)}25%{transform:translate(-50%,-50%)}80%{opacity:1}100%{opacity:0}}
 @keyframes ss-coin{to{transform:translate(calc(-50% + cos(var(--a)) * 22cqw),calc(-50% + sin(var(--a)) * 14cqw)) rotate(360deg);opacity:0}}
+/* the dossier */
+.bbx .ssds{padding:7px 0;border-top:1px solid rgba(255,255,255,.08)}
+.bbx .ssds-w{display:flex;align-items:center;gap:4px}.bbx .ssds-w b{font:700 12.5px 'SSFredoka',sans-serif;margin-left:4px}
+.bbx .ssds q{display:block;font:italic 600 12.5px/1.35 'SSNunito',sans-serif;color:#f6d6ea;margin:4px 0 2px}
+.bbx .ssds span{font:800 10px 'SSNunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#19d3c5}
+.bbx .ssds.found span{color:#ff5c8a}.bbx .ssds.told span{color:#9ca3af}.bbx .ssds.found q,.bbx .ssds.told q{opacity:.6;text-decoration:line-through}
 @media (prefers-reduced-motion:reduce){.ss-iris,.sss-coins{display:none}.ssh-eye,.ssv-eye img,.ssrest-eye{animation:none}}
 `;
+
+// ── the dossier (the side panel) ────────────────────────────────────────
+/**
+ * Every secret the public was told at the launch, and what has become of it by the end of week
+ * `upTo`: found by a buzz (by whom, which week), told on leaving, or still kept. Built from the
+ * aired weeks only, so a replayed week never shows what happened after it.
+ */
+export function ssDossierOf(rows, upTo) {
+  const aired = (rows || []).filter(r => (r?.num || 0) <= upTo);
+  const launch = aired.flatMap(r => r.acts || []).find(a => a?.type === 'ss-secrets');
+  if (!launch) return null;
+  const out = (launch.secrets || []).map(s => ({ holders: [...(s.holders || [])], text: s.text, state: 'kept', by: null, week: null }));
+  const gone = new Set();
+  for (const r of aired) {
+    for (const a of r.acts || []) {
+      if (a?.type === 'ss-buzz' && a.outcome === 'right') {
+        const s = out.find(x => x.state === 'kept' && x.holders.includes(a.target));
+        if (s) Object.assign(s, { state: 'found', by: a.by, week: r.num });
+      }
+    }
+    if (r.evicted) gone.add(r.evicted);
+  }
+  for (const s of out) if (s.state === 'kept' && s.holders.every(h => gone.has(h))) s.state = 'told';
+  return out;
+}
+
+/** The side panel on a Secret Story week: the week, and the dossier of secrets. `mini(n)` is a small portrait. */
+export function ssSideHtml(L, S, D, mini) {
+  const row = (n, tag, cls) => `<div class="bbx-row">${mini(n)}<b>${esc(n)}</b><span class="bbx-tag ${cls}">${tag}</span></div>`;
+  const week = `<div class="bbx-panel"><h4>Week ${esc(S.week)}</h4>
+    ${L.hoh ? row(L.hoh, "Voice's game", 'hoh') : '<div class="bbx-pend">No game won yet this week.</div>'}
+    ${L.nom.map(n => row(n, L.out.includes(n) ? 'Eliminated' : 'Nominated', L.out.includes(n) ? 'out' : 'nom')).join('')}</div>`;
+  if (!D) return week;
+  const kept = D.filter(s => s.state === 'kept').length;
+  const items = D.map(s => `<div class="ssds ${s.state}"><div class="ssds-w">${s.holders.map(h => mini(h)).join('')}<b>${esc(s.holders.join(' & '))}</b></div>
+    <q>${esc(s.text)}</q><span>${s.state === 'found' ? `Found by ${esc(s.by)} · week ${esc(s.week)}` : s.state === 'told' ? 'Told on leaving' : 'Kept'}</span></div>`).join('');
+  return `${week}<div class="bbx-panel ssds-p"><h4>The secrets · only the public knows</h4><div class="bbx-pend" style="margin-bottom:6px">${kept} of ${D.length} still kept</div>${items}</div>`;
+}

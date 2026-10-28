@@ -41,9 +41,9 @@ import { chDebugHtml } from './vp-ch-ep/debug.js';
 import { bbStepScreens } from './vp-bb-ep/screens.js';
 import { tdStepScreens, tdSteppedOn, TDX_SWITCH } from './vp-td-ep/screens.js';
 import { riChoiceQuote, exileChooserReason } from './vp-td-ep/twists.js';
-import { gs as _coreGs } from './core.js';
+import { gs as _coreGs, seasonConfig as _coreSc, seasonFormat as _coreFmt } from './core.js';
 import { momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT } from './shows.js';
+import { DRAG_FORMAT, HOSTS_BY_FORMAT, CIRCLE_FORMAT, CHALLENGE_FORMAT, RACE_FORMAT, SS_FORMAT } from './shows.js';
 import { raceVpScreens } from './rr-view.js';
 import { rpBuildBBCarePackagePlay } from './vp-bb-twists.js';
 import { rpBuildBBCarePackage } from './vp-bb-care-package.js';
@@ -25674,7 +25674,8 @@ function _bbCycleScreens(view, screens, suffix = '') {
         // competition of their own — the crowning is on the split screen, and
         // drawing a competition board here would draw an empty one.
         if (act.preCrowned) break;
-        screens.push({ id: id('bb-hoh'), label: 'HOH', html: rpBuildBBComp(view, 'hoh') });
+        // (a Secret Story week's competition is the Voice's game)
+        screens.push({ id: id('bb-hoh'), label: _coreFmt(_coreSc) === SS_FORMAT ? "The Voice's Game" : 'HOH', html: rpBuildBBComp(view, 'hoh') });
         // Whatever else happened around the competition is house life, not the
         // competition — but it does NOT get a screen of its own. The comp's
         // cards already reveal the placements, and a second House Life screen

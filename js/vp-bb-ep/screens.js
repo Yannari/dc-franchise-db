@@ -29,7 +29,7 @@ import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
 import { intelHtml, INTEL_CSS } from './intel.js';
 import { BBX_COMP_CSS } from './comp-field.js';
-import { SS_CSS } from './ss-hud.js';
+import { SS_CSS, ssDossierOf, ssSideHtml } from './ss-hud.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
 import { seasonFormat } from '../core.js';
@@ -277,7 +277,12 @@ function voteHtml(L, row) {
   const rows = L.ballots.map(([v, e, chain]) => `${row(v, `evict ${esc(e)}`, 'nom')}${chain?.length ? `<div class="bbx-chain">${chain.map(esc).join(' <i>→</i> ')}</div>` : ''}`).join('');
   return `<div class="bbx-panel"><h4>The vote · the house can't see this</h4><div class="bbx-tally">${tally}</div>${rows}</div>`;
 }
-function sideHtml(L, S) {
+function sideHtml(L, S, R = null) {
+  // a Secret Story week: its own words, and the dossier of secrets as of this week (vp-bb-ep/ss-hud.js)
+  if (R?.o?.season === 'secret-story') {
+    if (R.ssDossier === undefined) R.ssDossier = ssDossierOf(globalThis.gs?.episodeHistory || [], R.num || 0);
+    return ssSideHtml(L, S, R.ssDossier, mini);
+  }
   const row = (n, tag, cls) => `<div class="bbx-row">${mini(n)}<b>${esc(n)}</b><span class="bbx-tag ${cls}">${tag}</span></div>`;
   return `<div class="bbx-panel"><h4>Week ${esc(S.week)}</h4>
       ${L.hoh ? row(L.hoh, 'HOH', 'hoh') : '<div class="bbx-pend">No Head of Household yet.</div>'}
@@ -509,7 +514,7 @@ function paint(uid, fresh) {
   });
   if (fresh && script) { const ln = /** @type {HTMLElement} */ (script.querySelector(`[data-s="${R.idx}"]`)); if (ln) script.scrollTop = ln.offsetTop - script.offsetTop - 40; }
   const side = document.getElementById(`bbx-side-${uid}`);
-  if (side) side.innerHTML = sideHtml(out.ledger, S);
+  if (side) side.innerHTML = sideHtml(out.ledger, S, R);
   // the Intel drawer follows the step; a new thought in their heads lights its button while it is shut
   const whyNow = (out.ledger?.why || []).join('|');
   if (fresh && whyNow && whyNow !== (R.lastL?.why || []).join('|') && !root?.classList.contains('intel-open')) document.getElementById(`bbi-btn-${uid}`)?.classList.add('new');

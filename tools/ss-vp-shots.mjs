@@ -21,6 +21,7 @@ page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load r
 // (outside requests, the web fonts and the CDN, are not needed for a look and can hang a headless load)
 await page.route(url => !/^https?:\/\/(localhost|127\.0\.0\.1)/.test(String(url)), r => r.abort());
 await page.goto('/simulator.html', { waitUntil: 'domcontentloaded', timeout: 90_000 });
+await page.waitForFunction(() => typeof window.renderCast === 'function' && typeof window.simulateNext === 'function', null, { timeout: 90_000 });
 // a real cast, so the faces are on the stage (falls back to the e2e testers)
 const real = await page.evaluate(async () => {
   try {
@@ -35,9 +36,10 @@ const real = await page.evaluate(async () => {
 });
 if (!real) await seedCast(page, { count: 14 });
 await page.waitForFunction(() => typeof window.simulateNext === 'function');
+await page.evaluate(m => { window.__ssMap = m; }, want.has('map'));
 await page.evaluate(() => {
   localStorage.setItem('bb-vp', 'stepped');
-  localStorage.setItem('bb-map', 'linear');
+  localStorage.setItem('bb-map', window.__ssMap ? 'map' : 'linear');
   localStorage.setItem('bb-houselife', 'segments');
   window.seasonConfig.format = 'secret-story';
   window.seasonConfig.finaleSize = 3;
@@ -58,6 +60,8 @@ const plan = await page.evaluate(wantList => {
   const seen = new Set();
   for (const r of Object.values(R)) {
     const S = r.screens[r.si];
+    // map: a House Life screen's house map, before its first line
+    if (want.has('map') && r.map && !seen.has('map')) { seen.add('map'); out.push({ uid: r.uid, idx: -1, kind: 'map', id: S.id || 'houselife' }); }
     if (!S || !/^bb-ss-/.test(S.id || '')) continue;
     if (want.has('rest')) out.push({ uid: r.uid, idx: -1, kind: 'rest', id: S.id });
     S.steps.forEach((st, k) => {
@@ -81,7 +85,8 @@ for (const m of plan.slice(0, Number(max))) {
   const el = await page.$(`#bbx-st-${m.uid}`);
   if (!el) continue;
   const file = `${OUT}/e${ep}-${String(++n).padStart(2, '0')}-${m.kind}-${m.id.replace(/[^a-z0-9-]/gi, '').slice(0, 40)}.png`;
-  await el.screenshot({ path: file });
+  // SS_PAGE=1: the whole viewer (the side panel, the nav), not only the stage
+  if (process.env.SS_PAGE) await page.screenshot({ path: file }); else await el.screenshot({ path: file });
   console.log(file);
 }
 if (errors.length) console.log('ERRORS\n' + [...new Set(errors)].slice(0, 12).join('\n'));

@@ -11,7 +11,7 @@
 // is a run of the screen's own steps (a scene marker to the step before the next one), so a
 // conversation played from the map is exactly the conversation the linear segment plays.
 import { esc, img, col, eyeSvg } from './stage.js';
-import { plateBase, isNight, PLATE_DIR, CORNER, themedFor } from './plates.js';
+import { plateBase, isNight, PLATE_DIR, CORNER, themedFor, ownHouse, plateTheme } from './plates.js';
 import { RESORT } from './resort.js';
 
 // The blueprint's rooms, as boxes in % of the map plate (map-house, the user's Resort_Blueprint_4K,
@@ -66,6 +66,57 @@ export const ISLAND = {
 };
 const ALL = { ...ZONES, ...ISLAND };
 
+// THE HOUSE OF SECRETS (part 4): the user's plan of the house (tools/bb-resort/src/secret-story/map-house),
+// its rooms in English as boxes in % of it. No island: the map is the house. The rooms that are not on the
+// plan (the Voice's rooms, the games arena, the love room, the library, the gym, the studio) are tiles in
+// the grass around it, as the resort's Diary Room is. The big rooms keep their corners (plates.js CORNER).
+export const SS_ZONES = {
+  pool: { label: 'Pool', cam: 5, box: [18, 9, 39, 30] },
+  garden: { label: 'Garden', cam: 6, box: [18, 30, 39, 49] },
+  passage: { label: 'Secret Passage', cam: 12, box: [39.6, 9, 45.6, 63] },
+  ksink: { label: 'Kitchen', corner: 'Sink', cam: 29, box: [46.5, 9, 52, 20] },
+  kitchen: { label: 'Kitchen', corner: 'Island', cam: 2, box: [52, 9, 58, 20] },
+  kstove: { label: 'Kitchen', corner: 'Stove', cam: 17, box: [58, 9, 63.2, 20] },
+  dining: { label: 'Kitchen', corner: 'Bar', cam: 33, box: [46.5, 20, 55, 27.5] },
+  dtable: { label: 'Kitchen', corner: 'Table', cam: 28, box: [55, 20, 63.2, 27.5] },
+  living: { label: 'Living Room', corner: 'Screens', cam: 4, box: [46.5, 28, 63.2, 36] },
+  lsofas: { label: 'Living Room', corner: 'Sofas', cam: 18, box: [46.5, 36, 53, 51] },
+  noms: { label: 'Living Room', corner: 'Clue Table', cam: 3, box: [53, 36, 57.5, 51] },
+  lconsole: { label: 'Living Room', corner: 'Console', cam: 19, box: [57.5, 36, 63.2, 51] },
+  wing2: { label: "Boys' Bedroom", cam: 9, box: [63.6, 9, 84, 29.5] },
+  bathroom: { label: 'Bathroom', cam: 8, box: [66.5, 30, 84, 41.5] },
+  wing: { label: "Girls' Bedroom", cam: 10, box: [66.5, 42, 84, 63] },
+  dr: { label: 'Confessional', cam: 1, box: [57.5, 52, 66, 63] },
+  foyer: { label: 'Airlock', cam: 13, box: [48, 57, 56.5, 66] },
+  pantry: { label: 'Mini-Market', cam: 11, box: [18, 50, 28.6, 63] },
+  attic: { label: 'Secret Room', cam: 21, box: [29, 51, 37, 63] },
+  front: { label: 'Driveway', cam: 16, box: [15, 64, 86, 77] },
+  truths: { label: "The Voice's Rooms", cam: 22, box: [1.5, 8, 13.5, 26], tile: 'Behind the walls' },
+  love: { label: 'Love Room', cam: 14, box: [1.5, 30, 13.5, 48], tile: 'Upstairs' },
+  library: { label: 'Library', cam: 15, box: [1.5, 52, 13.5, 70], tile: 'Through the passage' },
+  arena: { label: 'Games Arena', cam: 7, box: [86.5, 8, 98.5, 26], tile: 'Outside' },
+  gym: { label: 'Gym', cam: 23, box: [86.5, 30, 98.5, 48], tile: 'Outside' },
+  studio: { label: 'The Studio', cam: 32, box: [86.5, 52, 98.5, 70], tile: 'The prime', locked: 'Live shows' },
+};
+export const SS_ZONE_PLATE = {
+  pool: 'pool-wide', garden: 'lawn-pool', passage: 'hallway', ksink: 'kitchen-sink', kitchen: 'kitchen-room', kstove: 'kitchen-stove',
+  dining: 'dining-room', dtable: 'dining-meal', living: 'living-screens', lsofas: 'living-sofas', noms: 'nom-table', lconsole: 'living-console',
+  wing2: 'bedroom2-wide', bathroom: 'bathroom', wing: 'bedroom-wide', dr: 'confessional-close', foyer: 'foyer', pantry: 'storage',
+  attic: 'ss-attic-desk', front: 'front', truths: 'ss-truths', love: 'hoh-suite', library: 'library-wide', arena: 'ss-arena',
+  gym: 'gym-racks', studio: 'ss-studio',
+};
+/** @type {[RegExp, string][]} */
+const SS_ZONE_OF_PLATE = [[/^bedroom2-/, 'wing2'], [/^bedroom-/, 'wing'], [/^ss-attic/, 'attic'], [/^ss-(dilemma|destinies|truths|mission|switchboard|vault)/, 'truths'],
+  [/^ss-arena/, 'arena'], [/^ss-studio/, 'studio'], [/^confessional/, 'dr'], [/^(hallway|purple-hall)$/, 'passage'], [/^hoh-/, 'love'],
+  [/^library-/, 'library'], [/^gym-/, 'gym'], [/^storage/, 'pantry'], [/^foyer$/, 'foyer'], [/^(pool-|patio$)/, 'pool'], [/^lawn-/, 'garden'],
+  [/^(front|balcony)$/, 'front'], [/^bathroom$/, 'bathroom'], [/^memory-wall$/, 'living'], [/^cam-/, 'living']];
+const SS_ZONE_OF_SET = { ceremony: 'living', ceremony3: 'living', dining: 'dining', kitchen: 'kitchen', bedroom: 'wing', hoh: 'attic', yard: 'garden',
+  dr: 'dr', storage: 'pantry', bathroom: 'bathroom', door: 'foyer', attic: 'attic', truths: 'truths', arena: 'arena', 'studio-wide': 'studio', studio: 'studio' };
+const SS_PUBLIC = ['lsofas', 'living', 'kitchen', 'kstove', 'pool', 'garden', 'dtable', 'wing', 'wing2', 'lconsole'];
+/** Whether the map being drawn is a house of its own (Secret Story's), not the resort and its island. */
+const own = () => ownHouse(plateTheme());
+const allNow = () => (own() ? SS_ZONES : ALL);
+
 // Every place's own picture, for its feed when nothing is happening there (the user, 2026-10-13: "make
 // sure we're not missing any plate for all the zones"). A place whose plate the user is still making
 // names its to-edit folder instead; tests/bb-housemap.test.js holds every zone to one or the other.
@@ -98,6 +149,11 @@ const ZONE_OF_SET = { ceremony: 'living', ceremony3: 'living', dining: 'dining',
   'studio-wide': 'studio', studio: 'studio', premiere: 'studio' };
 export function zoneOf(scene) {
   const p = scene?.plate;
+  if (own()) {
+    if (p && CORNER[p] && SS_ZONES[CORNER[p]]) return CORNER[p];
+    if (p) for (const [re, z] of SS_ZONE_OF_PLATE) if (re.test(p)) return z;
+    return SS_ZONE_OF_SET[scene?.set] || 'lsofas';
+  }
   if (p && CORNER[p]) return CORNER[p];
   if (p) for (const [re, z] of ZONE_OF_PLATE) if (re.test(p)) return z;
   return ZONE_OF_SET[scene?.set] || 'living';
@@ -145,7 +201,7 @@ export function conversationsOf(S) {
     const said = new Set(steps.slice(from, to + 1).map(s => s.by).filter(Boolean));
     return { k, from: k === 0 ? 0 : from, to, scene, cast: cast.length ? cast : [...said], zone: zoneOf(scene),
       time: scene.time || '', window: Math.max(0, windowOf(scene.time)), key: isKeyScene(scene),
-      title: scene.room || ALL[zoneOf(scene)].label, dr: steps.slice(from, to + 1).every(s => s.k === 'dr' || s.k === 'beat') };
+      title: scene.room || allNow()[zoneOf(scene)]?.label || 'The House', dr: steps.slice(from, to + 1).every(s => s.k === 'dr' || s.k === 'beat') };
   });
   // a cut to an empty set (the host on the move-in stage: "let's meet the next group") opens the
   // conversation that follows in the same place, not one of its own
@@ -195,8 +251,9 @@ export function whereAt(convs, w, house = []) {
     for (const n of c.cast) if (!busy.has(n)) { (at[c.zone] ||= []).push(n); busy.add(n); }
   }
   const taken = new Set(convs.filter(x => x.window === w).map(c => c.zone));
-  const free = PUBLIC.filter(z => !taken.has(z));
-  const spots = free.length ? free : PUBLIC;
+  const pub = own() ? SS_PUBLIC : PUBLIC;
+  const free = pub.filter(z => !taken.has(z));
+  const spots = free.length ? free : pub;
   for (const n of house) {
     if (busy.has(n)) continue;
     let h = 7 + w * 13; for (const ch of String(n)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
@@ -209,7 +266,7 @@ export function whereAt(convs, w, house = []) {
 const LOCK = '<svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.6" fill="currentColor"/><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
 const CHECK = '<svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const STAR = '<svg viewBox="0 0 16 16"><path d="M8 1.5l1.9 4.1 4.5.5-3.4 3 1 4.4L8 11.3l-4 2.2 1-4.4-3.4-3 4.5-.5z" fill="currentColor"/></svg>';
-const camTag = z => (ALL[z].cam ? `CAM ${String(ALL[z].cam).padStart(2, '0')}` : 'RESORT');
+const camTag = z => (allNow()[z]?.cam ? `CAM ${String(allNow()[z].cam).padStart(2, '0')}` : own() ? 'HOUSE' : 'RESORT');
 const face = (n, cls = '') => `<i class="hm-face ${cls}" style="--c:${col(n)}" title="${esc(n)}">${img(n)}<b>${esc(String(n)[0])}</b></i>`;
 
 function bubble(uid, c, convs, watched, now) {
@@ -250,8 +307,9 @@ function resortBubble(uid, here, convs, watched, now) {
  */
 export function houseMapHtml(uid, S, st) {
   const convs = st.convs;
-  const island = st.level !== 'house';
-  const zones = island ? ISLAND : ZONES;
+  // (a house of its own has no island: its map is the house)
+  const island = !own() && st.level !== 'house';
+  const zones = island ? ISLAND : own() ? SS_ZONES : ZONES;
   const w = openWindow(convs, st.watched);
   const view = st.window ?? viewWindow(convs, st.watched);
   const now = nextConv(convs, st.watched);
@@ -260,7 +318,7 @@ export function houseMapHtml(uid, S, st) {
   for (const [z, ppl] of Object.entries(at0)) (at[island ? islandOf(z) : z] ||= []).push(...ppl);
   if (island) at.jury = [...(S.jury || [])];
   const night = view >= 3;
-  const plate = `${PLATE_DIR}/default/${island ? 'map-island' : 'map-house'}-day`;
+  const plate = `${PLATE_DIR}/${own() ? plateTheme() : 'default'}/${island ? 'map-island' : 'map-house'}-day`;
   // the island moves: the sea ripples and the palms sway (vp-td-ep/glplate.js)
   const gl = island ? `<canvas class="tdx-gl bbx-gl" data-src="${plate}" data-grade="none"></canvas>` : '';
   let h = `<div class="hm ${island ? 'hm-island' : ''} ${night ? 'night' : ''}" onclick="event.stopPropagation()"><div class="hm-plate" style="background-image:url('${plate}.webp?v=${RESORT.v}')">${gl}</div><div class="hm-scan"></div>`;
@@ -279,7 +337,7 @@ export function houseMapHtml(uid, S, st) {
     </div>`;
   }
   const left = convs.filter(c => !st.watched.has(c.k)).length;
-  h += `<div class="hm-top"><span class="hm-eye">${eyeSvg('hm-eyesvg')}</span><b>LIVE FEEDS</b><span class="hm-day">Day ${esc(S.day ?? '')}</span>${island ? '<span class="hm-where">The Island</span>' : `<button type="button" class="hm-up" onclick="event.stopPropagation();bbxMapLevel('${uid}','island')">◀ Island</button>`}</div>
+  h += `<div class="hm-top"><span class="hm-eye">${eyeSvg('hm-eyesvg')}</span><b>LIVE FEEDS</b><span class="hm-day">Day ${esc(S.day ?? '')}</span>${island ? '<span class="hm-where">The Island</span>' : own() ? '<span class="hm-where">The House of Secrets</span>' : `<button type="button" class="hm-up" onclick="event.stopPropagation();bbxMapLevel('${uid}','island')">◀ Island</button>`}</div>
     <div class="hm-tabs">${WINDOWS.map((W, i) => {
       const n = convs.filter(c => c.window === i).length;
       const state = i < w ? 'past' : i === w ? 'now' : 'later';
@@ -292,11 +350,11 @@ export function houseMapHtml(uid, S, st) {
 
 /** One room's feed: its plate, the people in it, and its conversations as feed cards. */
 export function houseFeedHtml(uid, S, st, zone, theme = 'default') {
-  const Z = ALL[zone];
+  const Z = allNow()[zone] || allNow().lsofas || ALL.living;
   const convs = st.convs;
   const view = st.window ?? viewWindow(convs, st.watched);
   const here = convs.filter(c => c.zone === zone && c.window === view);
-  const plate = here[0]?.scene?.plate || convs.find(c => c.zone === zone && c.scene?.plate)?.scene?.plate || ZONE_PLATE[zone];
+  const plate = here[0]?.scene?.plate || convs.find(c => c.zone === zone && c.scene?.plate)?.scene?.plate || (own() ? SS_ZONE_PLATE : ZONE_PLATE)[zone];
   // a themed season's room is the theme's room (it was the default house's colours behind every feed)
   const shown = plate && themedFor(plate, null, theme);
   const bg = plate ? `${plateBase(shown, theme, isNight(here[0]?.time || (WINDOWS[view].id === 'night' ? '11:00 PM' : '2:00 PM')))}.webp?v=${RESORT.v}` : '';

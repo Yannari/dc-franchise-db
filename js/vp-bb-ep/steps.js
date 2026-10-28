@@ -5453,6 +5453,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   if (row.themeId === SS_FORMAT) {
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
+    // (the week's competition is the Voice's game; its nav label was still Big Brother's)
+    for (const s of out) if (s.id === 'bb-hoh-v') s.label = "The Voice's Game";
     const NOT_HERE = /\b(veto|POV|jury|jurors?|backdoor\w*|pawns?)\b/i;
     // (on its own screens, only the house's words replayed there: the week's package, the airlock)
     for (const s of out) { const own = /^bb-ss-/.test(String(s.id || '')); s.steps = (s.steps || []).filter(st => !(typeof st.t === 'string' && st.k !== 'host' && (!own || st.k === 'beat') && NOT_HERE.test(st.t))); }

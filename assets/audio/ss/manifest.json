@@ -1,0 +1,588 @@
+{
+ "theme": {
+  "src": "01 I Wanna Chat (Aur�lien Mergault Remix 2014).mp3",
+  "kind": "shot",
+  "gain": -1.4,
+  "dur": 59.23
+ },
+ "ending": {
+  "src": "24 Epilogue.mp3",
+  "kind": "shot",
+  "gain": -3.1,
+  "dur": 59.33
+ },
+ "theme-long": {
+  "src": "04 I_Wanna_Chat_Generique_Audio_-Secret_Story_4.webm",
+  "kind": "shot",
+  "gain": -3.0,
+  "dur": 210.14
+ },
+ "previously-1": {
+  "src": "01 Precedemment_dans_Secret_Story_V1_..._Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 7.8,
+  "dur": 84.37,
+  "loop": [
+   0.0251,
+   84.3924
+  ]
+ },
+ "previously-2": {
+  "src": "02 Precedemment_dans_Secret_Story_V2_..._Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 4.3,
+  "dur": 76.59,
+  "loop": [
+   0.0251,
+   76.6138
+  ]
+ },
+ "previously-3": {
+  "src": "03 Precedemment_dans_Secret_Story_V3_..._Audio_-_Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": 9.1,
+  "dur": 35.63,
+  "loop": [
+   0.0251,
+   35.6538
+  ]
+ },
+ "launch": {
+  "src": "02 Secret Boys Secret Girls.mp3",
+  "kind": "bed",
+  "gain": -5.1,
+  "dur": 58.36,
+  "loop": [
+   0.0251,
+   58.3861
+  ]
+ },
+ "anthem": {
+  "src": "06 Hymne_des_Secrets_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": 4.7,
+  "dur": 74.52,
+  "loop": [
+   0.0251,
+   74.5472
+  ]
+ },
+ "voice": {
+  "src": "10 Jingle oeil du net tapis.mp3",
+  "kind": "bed",
+  "gain": -4.0,
+  "dur": 50.16,
+  "loop": [
+   0.0251,
+   50.1895
+  ]
+ },
+ "mission-1": {
+  "src": "11 Mission secret sympathique.mp3",
+  "kind": "bed",
+  "gain": -3.9,
+  "dur": 46.15,
+  "loop": [
+   0.0251,
+   46.1724
+  ]
+ },
+ "mission-2": {
+  "src": "13 Mister secret tapis.mp3",
+  "kind": "bed",
+  "gain": -8.0,
+  "dur": 55.3,
+  "loop": [
+   0.0251,
+   55.3211
+  ]
+ },
+ "bailiff": {
+  "src": "29 Appel_de_l_huissier_de_justice_Audio_-_Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 10.0,
+  "dur": 58.71,
+  "loop": [
+   0.0251,
+   58.7344
+  ]
+ },
+ "finalists-1": {
+  "src": "16 L_Entree_des_Finalistes_Audio_-Secret_Story_4.webm",
+  "kind": "shot",
+  "gain": -2.7,
+  "dur": 62.86
+ },
+ "finalists-2": {
+  "src": "32 L_entree_des_Finalistes_1_2_-_Tombes_du_Ciel_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": -5.0,
+  "dur": 86.18,
+  "loop": [
+   0.0251,
+   86.2036
+  ]
+ },
+ "finalists-3": {
+  "src": "33 L_entree_des_Finalistes_2_2_-_Le_compte_a_rebours_est_lance_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": -5.2,
+  "dur": 95.47,
+  "loop": [
+   0.0251,
+   95.4916
+  ]
+ },
+ "winner": {
+  "src": "34 Et_le_gagnant_est...._Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": -2.6,
+  "dur": 75.38,
+  "loop": [
+   0.0251,
+   75.4063
+  ]
+ },
+ "party-1": {
+  "src": "08 Preparation_aux_Soirees_Audio_-Secret_Story_4.m4a",
+  "kind": "bed",
+  "gain": 19.6,
+  "dur": 98.39,
+  "loop": [
+   0.0251,
+   98.4173
+  ]
+ },
+ "party-2": {
+  "src": "03 Totems Electros.mp3",
+  "kind": "bed",
+  "gain": -2.9,
+  "dur": 58.29,
+  "loop": [
+   0.0251,
+   58.3164
+  ]
+ },
+ "party-3": {
+  "src": "07 Sexy Cindy.mp3",
+  "kind": "bed",
+  "gain": -3.6,
+  "dur": 58.41,
+  "loop": [
+   0.0251,
+   58.4325
+  ]
+ },
+ "party-4": {
+  "src": "05 Big Boss John.mp3",
+  "kind": "bed",
+  "gain": -7.4,
+  "dur": 54.95,
+  "loop": [
+   0.0251,
+   54.9728
+  ]
+ },
+ "party-5": {
+  "src": "08 Gayssip Boys.mp3",
+  "kind": "bed",
+  "gain": -2.4,
+  "dur": 58.43,
+  "loop": [
+   0.0251,
+   58.4558
+  ]
+ },
+ "fun-1": {
+  "src": "04 Com�die enjou�e.mp3",
+  "kind": "bed",
+  "gain": -3.1,
+  "dur": 58.41,
+  "loop": [
+   0.0251,
+   58.4325
+  ]
+ },
+ "fun-2": {
+  "src": "20 Espi�gle com�die.mp3",
+  "kind": "bed",
+  "gain": -2.0,
+  "dur": 58.38,
+  "loop": [
+   0.0251,
+   58.4093
+  ]
+ },
+ "fun-3": {
+  "src": "17 Detente_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": -7.0,
+  "dur": 74.03,
+  "loop": [
+   0.0251,
+   74.0596
+  ]
+ },
+ "fun-4": {
+  "src": "24 Magie_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": -3.1,
+  "dur": 84.27,
+  "loop": [
+   0.0251,
+   84.2996
+  ]
+ },
+ "fun-5": {
+  "src": "22 Merveilles_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": -4.7,
+  "dur": 41.39,
+  "loop": [
+   0.0251,
+   41.4123
+  ]
+ },
+ "after": {
+  "src": "17 Ayem enchant�e.mp3",
+  "kind": "bed",
+  "gain": -6.7,
+  "dur": 58.41,
+  "loop": [
+   0.0251,
+   58.4325
+  ]
+ },
+ "quirky-1": {
+  "src": "23 Insolite_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": -0.3,
+  "dur": 88.64,
+  "loop": [
+   0.0119,
+   88.6517
+  ]
+ },
+ "quirky-2": {
+  "src": "30 Decouverte_Insolite_Audio_-_Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 6.4,
+  "dur": 58.57,
+  "loop": [
+   0.0251,
+   58.5951
+  ]
+ },
+ "store": {
+  "src": "31 Super_Zelko_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": 14.1,
+  "dur": 26.55,
+  "loop": [
+   0.0251,
+   26.5748
+  ]
+ },
+ "hunt-1": {
+  "src": "18 Sixties enqu�te.mp3",
+  "kind": "bed",
+  "gain": -0.7,
+  "dur": 58.41,
+  "loop": [
+   0.0251,
+   58.4325
+  ]
+ },
+ "hunt-2": {
+  "src": "13 Mystere_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": 15.0,
+  "dur": 95.35,
+  "loop": [
+   0.0251,
+   95.3755
+  ]
+ },
+ "hunt-3": {
+  "src": "15 Recherche_Audio_-Secret_Story_4.m4a",
+  "kind": "bed",
+  "gain": 5.8,
+  "dur": 39.51,
+  "loop": [
+   0.0251,
+   39.5315
+  ]
+ },
+ "hunt-4": {
+  "src": "11 Observations_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": -0.0,
+  "dur": 93.77,
+  "loop": [
+   0.0251,
+   93.7965
+  ]
+ },
+ "hunt-5": {
+  "src": "26 Remue-Meninges_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": -8.0,
+  "dur": 93.77,
+  "loop": [
+   0.0251,
+   93.7965
+  ]
+ },
+ "hunt-6": {
+  "src": "25 Decouvertes_Audio_-Secret_Story_5.m4a",
+  "kind": "bed",
+  "gain": -5.8,
+  "dur": 72.25,
+  "loop": [
+   0.0251,
+   72.2716
+  ]
+ },
+ "think": {
+  "src": "10 Reflexions_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": 25.2,
+  "dur": 79.84,
+  "loop": [
+   0.0251,
+   79.8646
+  ]
+ },
+ "plot": {
+  "src": "28 Complot_Audio_-_Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 18.6,
+  "dur": 31.05,
+  "loop": [
+   0.0251,
+   31.0794
+  ]
+ },
+ "drama-1": {
+  "src": "21 Incomprehension_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 6.5,
+  "dur": 102.76,
+  "loop": [
+   0.0251,
+   102.7827
+  ]
+ },
+ "drama-2": {
+  "src": "12 Stress_Audio_-Secret_Story_4.m4a",
+  "kind": "bed",
+  "gain": -0.3,
+  "dur": 21.09,
+  "loop": [
+   0.0251,
+   21.1181
+  ]
+ },
+ "tension-1": {
+  "src": "19 Expectative.mp3",
+  "kind": "bed",
+  "gain": -5.8,
+  "dur": 57.11,
+  "loop": [
+   0.0251,
+   57.1322
+  ]
+ },
+ "tension-2": {
+  "src": "21 Scary.mp3",
+  "kind": "bed",
+  "gain": -1.3,
+  "dur": 58.11,
+  "loop": [
+   0.0251,
+   58.1307
+  ]
+ },
+ "cliff": {
+  "src": "09 Ending Suspense.mp3",
+  "kind": "bed",
+  "gain": -2.6,
+  "dur": 53.16,
+  "loop": [
+   0.0251,
+   53.1848
+  ]
+ },
+ "wait": {
+  "src": "23 Waiting and Waiting (Car Version).mp3",
+  "kind": "bed",
+  "gain": -5.1,
+  "dur": 53.95,
+  "loop": [
+   0.0251,
+   53.9743
+  ]
+ },
+ "love-1": {
+  "src": "12 Love.mp3",
+  "kind": "bed",
+  "gain": -1.4,
+  "dur": 28.87,
+  "loop": [
+   0.0251,
+   28.8968
+  ]
+ },
+ "love-2": {
+  "src": "16 Love and Ends, Pt. 2.mp3",
+  "kind": "bed",
+  "gain": -0.8,
+  "dur": 58.15,
+  "loop": [
+   0.0251,
+   58.1771
+  ]
+ },
+ "love-3": {
+  "src": "20 Intimite_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 5.0,
+  "dur": 59.99,
+  "loop": [
+   0.0251,
+   60.0115
+  ]
+ },
+ "love-4": {
+  "src": "18 Douceur_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 1.4,
+  "dur": 89.57,
+  "loop": [
+   0.0251,
+   89.5937
+  ]
+ },
+ "sad-1": {
+  "src": "14 Piano Solo.mp3",
+  "kind": "bed",
+  "gain": -1.5,
+  "dur": 58.31,
+  "loop": [
+   0.0251,
+   58.3397
+  ]
+ },
+ "sad-2": {
+  "src": "09 Piano_Tristesse_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": -1.6,
+  "dur": 65.63,
+  "loop": [
+   0.0251,
+   65.6539
+  ]
+ },
+ "sad-3": {
+  "src": "14 Piano_Solitude_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": 6.0,
+  "dur": 79.38,
+  "loop": [
+   0.0251,
+   79.4002
+  ]
+ },
+ "sad-4": {
+  "src": "07 Melancholie_Audio_-Secret_Story_4.webm",
+  "kind": "bed",
+  "gain": 16.8,
+  "dur": 83.95,
+  "loop": [
+   0.0251,
+   83.9745
+  ]
+ },
+ "sad-5": {
+  "src": "22 Valse nostalgie.mp3",
+  "kind": "bed",
+  "gain": -1.8,
+  "dur": 58.38,
+  "loop": [
+   0.0251,
+   58.4093
+  ]
+ },
+ "epic": {
+  "src": "19 Epique_Audio_-Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": -6.6,
+  "dur": 65.0,
+  "loop": [
+   0.0251,
+   65.027
+  ]
+ },
+ "night": {
+  "src": "27 Ambiance_Nocturne_Audio_-_Secret_Story_5.webm",
+  "kind": "bed",
+  "gain": 12.7,
+  "dur": 147.04,
+  "loop": [
+   0.0251,
+   147.0631
+  ]
+ },
+ "secretroom": {
+  "src": "06 Terre.mp3",
+  "kind": "bed",
+  "gain": -1.8,
+  "dur": 58.31,
+  "loop": [
+   0.0251,
+   58.3397
+  ]
+ },
+ "sfx/buzz": {
+  "src": "0089.mp3",
+  "kind": "sting",
+  "gain": 4.1,
+  "dur": 2.88
+ },
+ "sfx/ring": {
+  "src": "3301.mp3",
+  "kind": "sting",
+  "gain": 6.7,
+  "dur": 2.51
+ },
+ "sfx/coin": {
+  "src": "0193.mp3",
+  "kind": "sting",
+  "gain": 22.1,
+  "dur": 0.79
+ },
+ "sfx/applause": {
+  "src": "0020.mp3",
+  "kind": "sting",
+  "gain": -0.7,
+  "dur": 6.78
+ },
+ "sfx/cheer": {
+  "src": "0237.mp3",
+  "kind": "sting",
+  "gain": 6.1,
+  "dur": 4.5
+ },
+ "sfx/whoosh": {
+  "src": "1796.mp3",
+  "kind": "sting",
+  "gain": 4.5,
+  "dur": 0.49
+ },
+ "sfx/open": {
+  "src": "1801.mp3",
+  "kind": "sting",
+  "gain": 5.4,
+  "dur": 0.44
+ }
+}

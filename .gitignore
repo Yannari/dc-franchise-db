@@ -69,6 +69,3 @@ tools/bb-resort/marks/
 # tools/ch-art/plates.py scratch (grids to read marks from)
 tools/ch-art/cuts/
 
-# Secret Story soundtrack: the user's own copies, for local use (the sound effects in sfx/ are CC0 and committed)
-assets/audio/ss/*.mp3
-assets/audio/ss/manifest.json

@@ -30,7 +30,7 @@ import { SS_FORMAT, seasonId } from '../shows.js';
 import { canonSecretsOf, pushCanonSecrets } from '../ss/canon.js';
 import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
 import { KIND_KIT } from '../ss/secret-pool.js';
-import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
+import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
@@ -563,6 +563,8 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   (state.primes ||= []).push({ week: ctx.week, name: night.name, segments: night.segments.map(s => s.kind) });
   const players = [...new Set(/** @type {any[]} */ (night.segments).flatMap(s => [s.to, s.answered, s.subject, s.target, ...(s.talkers || []), ...(s.mission?.holders || [])]).filter(Boolean))];
   return [{ type: 'ss-prime', week: ctx.week, name: night.name, nominees: [...nominees], segments: night.segments, holders: players.slice(0, 6),
+    // last week's eliminated, on the studio couch all night (S14)
+    couch: state.lastEvicted && state.lastEvicted.week === ctx.week - 1 ? state.lastEvicted.name : null,
     kitty: { ...(state.kitty || {}) },
     beats: [{ text: `The prime: ${night.name}.`, players: players.slice(0, 4), badgeText: 'THE PRIME', badgeClass: 'gold', part: 'prime' }] }];
 }
@@ -613,7 +615,24 @@ export function afterPrime({ week = undefined, evicted = null, house = [], rng =
   for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
   const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
   after.public = readThePublic(state, room);
-  return { type: 'ss-after', week: ctx.week, evicted, reveal, after, read: publicRead(state, evicted), holders: [evicted],
+  // THE FAREWELL POWER (S14 semi-final; the draw's `farewell` tool): from the studio, the eliminated
+  // gives $2,000 to the friend still inside and halves the kitty of the one they blame most
+  let farewell = null;
+  if (room.length >= 4 && rng() < (RATE.farewell?.[state.tools?.farewell] ?? 0)) {
+    const byBond = room.slice().sort((a, b) => bond(evicted, b) - bond(evicted, a));
+    const friend = byBond[0], foe = byBond[byBond.length - 1];
+    if (friend && foe && friend !== foe) {
+      mint(state, friend, 2000, `${evicted}'s farewell gift`, ctx.week);
+      const lost = burn(state, foe, Math.floor((Number(state.kitty?.[foe]) || 0) / 2), `${evicted}'s farewell power`, ctx.week);
+      farewell = { friend, foe, gift: 2000, lost };
+      pub(evicted, 'fun', 0.15, 'used the farewell power');
+      // the house hears it at the next prime: the foe knows who did it
+      try { addBond(foe, friend, -0.3); } catch { /* */ }
+    }
+  }
+  // who sits on the studio couch at the next prime
+  state.lastEvicted = { name: evicted, week: ctx.week };
+  return { type: 'ss-after', week: ctx.week, evicted, reveal, after, farewell, read: publicRead(state, evicted), holders: [evicted],
     beats: [{ text: reveal && !reveal.alreadyFound ? `${evicted}'s secret, never found, is told on the set: ${reveal.secret}.` : `${evicted} leaves the House of Secrets.`,
       players: [evicted], badgeText: 'AFTER SECRET', badgeClass: 'gold', part: 'after' }] };
 }

@@ -54,6 +54,8 @@ export const TOOLS = {
   dilemmas: { name: 'Dilemmas', levels: ['few', 'many'], weights: [0.55, 0.45] },
   parties: { name: 'Party nights', levels: ['some', 'often'], weights: [0.4, 0.6] },
   store: { name: 'The store', levels: ['off', 'on'], weights: [0.3, 0.7] },
+  // the eliminated's parting gift from the studio (S14 semi-final): a present for a friend, a price for a foe
+  farewell: { name: "The eliminated's farewell power", levels: ['none', 'some'], weights: [0.45, 0.55] },
 };
 
 /** How often a level makes a tool fire on a prime (or a week). */
@@ -63,6 +65,7 @@ export const RATE = {
   visits: { none: 0, some: 0.28, often: 0.45 },
   dilemmas: { few: 0.2, many: 0.55 },        // the chance of a second dilemma
   parties: { some: 0.45, often: 0.7 },
+  farewell: { none: 0, some: 0.45 },
 };
 
 const weighted = (levels, weights, rng) => {

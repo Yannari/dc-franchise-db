@@ -27,6 +27,7 @@ import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { ssLaunchScreens } from './ss-launch.js';
+import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
@@ -2714,7 +2715,7 @@ function ssRoleScreen(act, ctx) {
     ...(act.takes || []).map((x, i) => ({ k: 'beat', t: pickBy([`${x.to} slips ${euros(x.amount)} out of ${x.from}'s kitty.`, `${x.to} takes ${euros(x.amount)} from ${x.from}, and puts everything back exactly where it was.`, `${euros(x.amount)} of ${x.from}'s money changes hands in the dark.`], `${k}|take|${ctx.week}|${i}`) })),
     { k: 'beat', t: pickBy(['In the morning, the kitty board on the screen has changed.', 'At breakfast, somebody looks at the kitty board and stops chewing.', 'By morning, the numbers on the screen are not what they were.'], `${k}|morn|${ctx.week}`) },
     ssv(`Housemates, the House Thieves struck last night. ${(act.takes || []).map(x => `${x.from} has lost ${euros(x.amount)}`).join(', and ')}.`, { toast: ['THE THIEVES', '#c86bff'] }),
-    { k: 'dr', by: (act.takes || [])[0]?.from || a, t: pickBy(['Somebody in this house is stealing from me, and smiling at me at breakfast.', 'I will find them. I will find them and I will take it all back.'], `${k}|v`) },
+    { k: 'dr', by: (act.takes || [])[0]?.from || a, t: pickBy(['Somebody in this house is stealing from me, and smiling at me at breakfast.', "I'll find them. I'll find them, and I'll take it all back."], `${k}|v`) },
   ];
   return { id: `bb-ss-role-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: act.role === 'masters' ? 'dr' : 'ceremony',
     room: act.role === 'masters' ? 'Confessional' : ROOM_NAME.ceremony, cam: act.role === 'masters' ? CAM.dr : CAM.ceremony, time: act.role === 'masters' ? '12:00' : '03:00',
@@ -2833,7 +2834,7 @@ function ssSecretRoomWeekScreen(act, ctx) {
   for (const h of (act.heard || []).slice(0, 3)) steps.push(h.kind === 'glad'
     ? { k: 'beat', t: `On the screens, ${h.who} talks about ${n} at dinner, and laughs.`, tense: [n, h.who] }
     : { k: 'beat', t: `On the screens, ${h.who} raises a glass "to ${n}".` });
-  steps.push({ k: 'dr', by: n, t: pickBy(['When I go back down, I am going to remember all of it.', 'This room is the best thing that has happened to my game.', 'They are going to get such a shock.'], `${k}|end`) });
+  steps.push({ k: 'dr', by: n, t: pickBy(["When I go back down there, I'm going to remember all of it.", 'This room is the best thing that has happened to my game.', 'They are going to get such a shock.'], `${k}|end`) });
   return { id: `bb-ss-secretroom-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: 'The Secret Room', cam: 21, time: '15:00',
     kicker: 'Cam 21 · The Secret Room', title: 'The Secret Room', label: 'Secret Room', sub: `${n} watches the house`, cast: [[n, 50]], steps };
 }
@@ -2883,7 +2884,7 @@ function ssHouseSecretEndScreen(act, ctx) {
     ssv(`${n}, you are right. You have won a place in the final.`, { shake: true }),
     { k: 'dr', by: n, t: pickBy(['A place in the final. I just have to not wake up.', 'Weeks of looking at that stuff. Worth every minute.'], `${k}|w`) },
     ssv(`But the Voice has an offer. ${euros(act.offer)} for your kitty, right now, if you give up that place.`),
-    { k: 'dr', by: n, t: act.sold ? pickBy(['That is real money. The final is a maybe.', 'I can still get there on my own. I take the money.'], `${k}|s`) : pickBy(['No amount of money is worth the final.', 'Money comes and goes. A place in the final does not.'], `${k}|k`) },
+    { k: 'dr', by: n, t: act.sold ? pickBy(['That is real money. The final is a maybe.', 'I can still get there on my own. I take the money.'], `${k}|s`) : pickBy(['No amount of money is worth the final.', "Money comes and goes. A place in the final doesn't."], `${k}|k`) },
     { k: 'say', by: n, push: true, t: act.sold ? 'I take the money.' : 'I keep my place.' },
     ssv(act.sold ? `${euros(act.offer)} for your kitty, ${n}. The place in the final is gone.` : `${n}, you will be in the final.`),
   ];
@@ -2975,9 +2976,9 @@ function ssBuzzScreen(act, ctx) {
   if (act.outcome === 'withdrawn') {
     room.push(ssv(`${a}, do you confirm your buzz? It will cost you ${euros(5000)}.`),
       { k: 'say', by: a, t: pickBy(["No. I withdraw.", "I'm not confirming. Not today.", 'I take it back.'], `${k}|w0`), toast: ['WITHDRAWN', '#8b8fa3'] },
-      { k: 'dr', by: a, t: pickBy(["Something in how they answered... I'm not sure any more.", "If I'm wrong it costs me five thousand and tells the whole house who I suspect.", 'I needed one more clue. I did not have it.'], `${k}|w`) },
+      { k: 'dr', by: a, t: pickBy(["Something in how they answered... I'm not sure any more.", "If I'm wrong it costs me five thousand and tells the whole house who I suspect.", "I needed one more clue, and I didn't have it."], `${k}|w`) },
       { k: 'beat', t: `${a} walks out of the confessional without confirming. ${t} breathes again.` });
-    if (act.held) room.push({ k: 'dr', by: t, t: pickBy(['That was close. That was far too close.', "I kept my face straight. I don't know how.", 'They had it. They had it, and they did not press.'], `${k}|h`) });
+    if (act.held) room.push({ k: 'dr', by: t, t: pickBy(['That was close. That was far too close.', "I kept my face straight. I don't know how.", "They had it. They actually had it, and they didn't press."], `${k}|h`) });
   } else {
     room.push(ssv(`${a}, do you confirm your buzz?${act.free ? ' This one is free.' : ` It will cost you ${euros(5000)}.`}`),
       { k: 'say', by: a, push: true, t: 'I confirm.' },
@@ -2987,7 +2988,7 @@ function ssBuzzScreen(act, ctx) {
       reveal.push(ssv(`${t}, tell the house your secret.`),
         { k: 'say', by: t, push: true, t: `My secret is: "${act.secretText}."`, toast: ['SECRET FOUND', '#f5c542'] },
         ssv(`${a}, you were right. ${t}'s kitty, ${euros(act.took)}, is now yours.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
-        { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I am not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
+        { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I'm not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
     } else {
       reveal.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'] }),
         ...(act.lost ? [ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } })] : []),
@@ -3100,7 +3101,7 @@ function ssRuleScreen(act, ctx) {
       { k: 'beat', t: act.punishment === 'hot-water' ? `Every head in the room turns to ${n}. Cold showers until the Voice says otherwise.` : `${n} sits back down, and does the arithmetic.` });
   } else {
     steps.push(ssv(`${n} contested a decision of the Voice. ${euros(act.amount)} leaves ${n}'s kitty.`, { toast: ['FINED', '#ff3355'] }),
-      { k: 'dr', by: n, t: pickBy(["Fine. FINE. I'll be quiet.", 'It was worth saying. It was not worth that much.'], k) });
+      { k: 'dr', by: n, t: pickBy(["Fine. FINE. I'll be quiet.", "It was worth saying. It wasn't worth that much."], k) });
   }
   return { id: `bb-ss-rule-${n}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '19:00',
     kicker: 'Live · Living room', title: 'The Voice', label: 'The Voice', sub: `Commandment ${act.commandment}`, cast: [[n, 50]], steps };
@@ -3157,7 +3158,7 @@ function ssNomScreen(act, ctx) {
   const rows = Object.entries(ss.tally || {}).sort((x, y) => y[1] - x[1]).map(([n, v]) => ({ n, text: `${v} ${v === 1 ? 'vote' : 'votes'}` }));
   steps.push(ssv(`The nominations are in. Facing the public this week: ${listOf(act.nominees || [])}.`, { nom: (act.nominees || []).slice(), board: { title: 'THE CONFESSIONAL', rows }, toast: ['NOMINATED', '#ff3355'] }));
   if (ss.voiceTie) steps.push(ssv('The second round is tied too. They are all nominated.'));
-  for (const n of act.nominees || []) steps.push({ k: 'dr', by: n, t: pickBy(["The public decides now. All I can do is be myself and hope that is enough.", 'Nominated. I did not see that coming, and now I need the country on my side.'], `${ctx.week}|ssn|${n}`) });
+  for (const n of act.nominees || []) steps.push({ k: 'dr', by: n, t: pickBy(["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side."], `${ctx.week}|ssn|${n}`) });
   return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '13:30',
     kicker: 'Cam 01 · Confessional', title: 'Nominations', label: 'Nominations', sub: `${listOf(act.nominees || [])} face the public`, cast: (act.nominees || []).map((n, i) => [n, 35 + i * 30]),
     rules: [['THE CONFESSIONAL', `${who[0]} name ${who[1]}`], ['IMMUNE', listOf(ss.immune || []) || 'nobody'], ['THE PUBLIC', 'saves all but one']], rulesTitle: 'THE NOMINATIONS · HOW THEY WORK', steps };
@@ -3203,15 +3204,16 @@ function ssPrimeOpenScreen(act, ctx, host) {
     { k: 'beat', t: 'The studio lights come up. The crowd is on its feet before the music has even finished.', toast: ['THE PRIME · LIVE', '#e0b84a'], shake: true },
     { k: 'host', by: host, t: pickBy([`Good evening, and welcome to Secret Story, live!`, `Good evening, everybody, and welcome to the prime!`, `Good evening! Welcome to Secret Story, live from the studio.`], k) },
     { k: 'host', by: host, t: `Week ${ctx.week} in the House of Secrets. Tonight's prime: ${act.name}.`, big: ['Tonight', act.name] },
+    ...ssCouchSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }),
   ];
-  const recap = ssWeekRecap(ctx);
+  // (the week itself is told by the package before the studio opens: vp-bb-ep/ss-prime-more.js)
+  const recap = [];
   if (recap.length) {
     steps.push({ k: 'host', by: host, t: pickBy(['Here is what happened in the house this week.', "Let's look back at a week the house won't forget.", 'It has been quite a week. Let me remind you.'], `${k}|rc`) });
     for (const r of recap) steps.push({ k: 'host', by: host, t: r });
   }
   steps.push(
-    { k: 'host', by: host, t: `${listOf(noms)}, you are nominated, and one of you leaves the house tonight. The public is voting right now.`, tense: noms },
-    { k: 'host', by: host, t: 'Here is where the money stands.', board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([n, v]) => ({ n, text: euros(v) })) } },
+    { k: 'host', by: host, t: `${listOf(noms)}, you're nominated, and one of you is leaving the house tonight. The public is voting right now.`, tense: noms },
     { k: 'host', by: host, t: "Let's go and say hello to the house!" },
     { k: 'beat', t: 'On the giant screen, the living room. The housemates are lined up on the sofas, dressed for the night.' },
     { k: 'host', by: host, t: 'Good evening, House of Secrets!' },
@@ -3452,7 +3454,12 @@ function ssVisitScreen(seg, ctx, host) {
 
 /** The prime's screens, in the order of the night. */
 function ssPrimeScreens(act, ctx, host) {
-  const out = [ssPrimeOpenScreen(act, ctx, host), ssAirlockScreen(act, ctx, host), ssLiveChatScreen(act, ctx, host)];
+  // the real running order (docs/research/secret-story-transcripts.md §3): the Voice to the house, the
+  // week's package, the studio (with last week's eliminated on the couch), the nominees, the house live,
+  // the kitty board, the segments, the Golden Buzz; then the verdict, the walk, After Secret
+  const MORE = { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow };
+  const out = [ssVoiceAddressScreen(act, ctx, MORE), ssWeekPackageScreen(act, ctx, MORE), ssPrimeOpenScreen(act, ctx, host),
+    ssAirlockScreen(act, ctx, host), ssLiveChatScreen(act, ctx, host), ssKittyBoardScreen(act, ctx, host, MORE)];
   for (const seg of act.segments || []) {
     if (seg.kind === 'mission') for (const r of seg.results || []) out.push(ssMissionResultScreen(r, ctx));
     else if (seg.kind === 'return') out.push(ssReturnScreen(seg, ctx, host));
@@ -3463,6 +3470,7 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'truths') out.push(ssTruthsScreen(seg, ctx, host));
     else if (seg.kind === 'visit') out.push(ssVisitScreen(seg, ctx, host));
   }
+  out.push(ssGoldenBuzzScreen(act, ctx, host, MORE));
   return out.filter(Boolean);
 }
 
@@ -3477,9 +3485,9 @@ function ssVerdictScreen(act, ctx, host) {
   /** @type {BB.Step[]} */ const steps = [
     { k: 'host', by: host, t: `It is time. ${listOf(noms)}, please go back to the airlock.` },
     { k: 'beat', t: pickBy([`${listOf(noms)} stand in the airlock holding hands. On the sofas, the house watches the screen.`, `The airlock door closes. ${noms[0]} closes both eyes.`, `In the living room nobody is talking. Everybody is looking at the airlock door.`], k), tense: noms },
-    { k: 'host', by: host, t: 'The lines are now closed. The public has voted.', toast: ["THE PUBLIC'S VOTE", '#e0b84a'] },
+    ...ssVerdictOpening(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }),
   ];
-  for (const n of saved) steps.push({ k: 'host', by: host, t: `${n}... with ${pc[n]}% of the vote, you are staying in the House of Secrets.`, safe: n,
+  for (const n of saved) steps.push({ k: 'host', by: host, t: `${n}... with ${pc[n]}% of the vote, you're staying in the House of Secrets.`, safe: n,
     board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: x === n || saved.indexOf(x) < saved.indexOf(n) ? `${pc[x]}%` : '?' })) } });
   steps.push({ k: 'host', by: host, t: `${ev}, with ${pc[ev]}%, the public has decided that your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
     board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
@@ -3520,6 +3528,7 @@ function ssWalkScreen(act, ctx, host) {
   if (best) steps.push({ k: 'host', by: host, t: 'Who is playing the best game in there?' }, { k: 'say', by: ev, t: pickBy([`${best}. Look at the money. That's not luck.`, `${best}, no question. Watch out for ${best}.`], `${k}|b`) });
   steps.push({ k: 'host', by: host, t: 'Who do you want to win?' },
     { k: 'say', by: ev, t: pickBy([`${ctx.walkFriend || best || 'One of my friends'}. With all my heart.`, `Honestly? ${ctx.walkFriend || best || 'Anybody but the fakes'}.`], `${k}|win`) });
+  steps.push(...ssFarewellSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }));
   steps.push({ k: 'host', by: host, t: `${ev}, thank you. Everybody, ${ev}!`, exit: ev },
     { k: 'host', by: host, t: `${af.hiddenLeft ?? 'Plenty of'} secrets are still hidden in that house. Next week, the hunt goes on. Good night!` });
   return ssLive(ctx, { id: `bb-ss-prime-walk-w${ctx.week}`, ...STUDIO, title: 'The Studio', label: 'The Interview', sub: ev, cast: [[ev, 50]], steps });
@@ -3536,7 +3545,7 @@ function ssAfterScreen(act, ctx, host) {
     { k: 'host', by: host, t: `Welcome to After Secret! And next to me, the one and only ${B}.` },
     { k: 'host', by: B, t: pickBy([`Thank you, thank you. ${ev}, come here, sit next to me. We have so much to talk about.`, `Hello, everybody! ${ev}, sit down, darling. You're on my couch now.`], k) },
   ];
-  if (act.fake) steps.splice(2, 1, { k: 'host', by: B, t: `No guest on my couch tonight, darling. ${ev} is not eliminated. ${ev} is upstairs in the secret room, and the house has no idea.`, toast: ['THE SECRET ROOM', '#c86bff'] });
+  if (act.fake) steps.splice(2, 1, { k: 'host', by: B, t: `No guest on my couch tonight, darling. ${ev} isn't eliminated. ${ev}'s upstairs in the secret room, and the house has no idea.`, toast: ['THE SECRET ROOM', '#c86bff'] });
   for (const c of af.close || []) steps.push({ k: 'host', by: B, t: `${c.by} is ${pct(c.conf)} sure about ${c.target}'s secret. And ${c.by} is right.`, toast: ['THE THEORIES', '#ff8fb1'] });
   for (const w of af.wrong || []) steps.push({ k: 'host', by: B, t: `${w.by} is sure ${w.target}'s secret is "${w.guess}". It is not.` });
   if ((af.close || []).length || (af.wrong || []).length) steps.push({ k: 'say', by: ev, t: pickBy(["I had no idea anybody was that close. Wow.", "That's mad. They talk about it every night and they still don't know.", "I would never have guessed that."], `${k}|th`) });

@@ -40,7 +40,7 @@ describe('the end of a Secret Story season', () => {
     expect(gs.bb.finale.cheque).toBe(100000);
     const text = bbWeekSteps(fin, { host: 'Josh' }).flatMap(s => s.steps.map(x => x.t)).join(' ');
     expect(text).toMatch(/\$100,000/);
-    const bad = text.match(/.{0,90}(undefined|NaN|houseguest|Head of Household|jury).{0,60}/gi) || [];
+    const bad = text.match(/.{0,90}(\bundefined\b|\bNaN\b|houseguest|Head of Household|jury).{0,60}/gi) || [];
     expect(bad).toEqual([]);
   });
 });

@@ -27,6 +27,7 @@ import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { ssLaunchScreens } from './ss-launch.js';
+import { ssFinalScreens } from './ss-final.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3583,16 +3584,16 @@ function ssFinalVoteScreen(act, ctx) {
   const order = act.order || [];
   const p = act.percents || {};
   /** @type {BB.Step[]} */ const steps = [
-    { k: 'host', by: host, t: `Good evening. Tonight the public chooses the winner of Secret Story. ${listOf(order.slice().reverse())}, the lines are now closed.`, toast: ['THE FINAL', '#e0b84a'] },
+    { k: 'host', by: host, t: `${act.kept === undefined ? 'Good evening. ' : ''}The moment has come. Tonight the public chooses the winner of Secret Story. ${listOf(order.slice().reverse())}, the lines are now closed.`, toast: ['THE FINAL', '#e0b84a'] },
   ];
   const PLACE = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
   order.slice(1).reverse().forEach(n => {
     steps.push({ k: 'host', by: host, t: `In ${PLACE[order.indexOf(n)] || `${order.indexOf(n) + 1}th`} place, with ${p[n]}% of the vote... ${n}.`, push: true });
   });
   steps.push({ k: 'host', by: host, t: `And the winner of Secret Story, with ${p[order[0]]}% of the public's vote, is... ${order[0]}!`, confetti: true, big: [order[0], 'Wins Secret Story', 'safe'], toast: ['THE WINNER', '#f5c542'] });
-  steps.push(ssv(`${order[0]}, you leave this house with your kitty: ${euros(act.kitty)}.`));
+  steps.push(ssv(act.kitty ? `${order[0]}, you leave this house with your kitty: ${euros(act.kitty)}.` : `${order[0]}, your kitty is empty. But you leave this house as the winner.`));
   if (act.cheque) steps.push({ k: 'host', by: host, t: `And with the winner's cheque: ${euros(act.cheque)}. That is ${euros((act.kitty || 0) + act.cheque)} in all, ${order[0]}!`, confetti: true, toast: ['THE CHEQUE', '#f5c542'] },
-    { k: 'say', by: order[0], push: true, t: pickBy(['I can\'t... I don\'t... thank you. Thank you, everybody.', 'This is for everybody at home who voted. Every single one of you.', 'I kept my secret, I kept my head, and I kept my friends. Thank you.'], `final|${order[0]}`) });
+    { k: 'say', by: order[0], push: true, t: pickBy(['I can\'t... I don\'t... thank you. Thank you, everybody.', 'This is for everybody at home who voted. Every single one of you.', act.kept === false ? "They found my secret, and you still voted for me. Thank you. Thank you so much." : 'I kept my secret, I kept my head, and I kept my friends. Thank you.'], `final|${order[0]}`) });
   // (a secret unveiled at the semi prime has been told already)
   const kept = (act.secrets || []).filter(s => !s.found && s.unveiled == null);
   if (kept.length) steps.push(ssv(`And the secrets nobody found: ${kept.map(s => `${listOf(s.holders)}, "${s.text}"`).join('; ')}.`));
@@ -5366,7 +5367,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-house-secret': flush(); ceremony(ssHouseClueScreen(act, ctx)); beatsOf(act); break;
       case 'ss-house-secret-end': flush(); ceremony(ssHouseSecretEndScreen(act, ctx)); beatsOf(act); break;
       case 'ss-returns': flush(); ceremony(ssReturnsScreen(act, ctx)); break;
-      case 'ss-journeys': flush(); ceremony(ssJourneysScreen(act, ctx)); break;
+      // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
+      case 'ss-journeys': flush(); for (const scr of (act.facts ? ssFinalScreens(act, ctx, { ssv, listOf, euros, pickBy, pronouns }) : [ssJourneysScreen(act, ctx)])) ceremony(scr); break;
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;
       case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;

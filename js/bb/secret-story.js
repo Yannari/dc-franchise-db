@@ -495,6 +495,8 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   // the nominees: named by many, the country feels for them; named by the Voice, they asked for it
   const nomAct = (week?.acts || []).find(a => a?.secretStory)?.secretStory;
   for (const n of nominees) {
+    // (the final's Voice and awards count these: secretStoryFinalWeek)
+    (state.nominated ||= {})[n] = (state.nominated[n] || 0) + 1;
     const votes = Number(nomAct?.tally?.[n]) || 0;
     if (votes) pub(n, 'pity', Math.min(0.4, votes * 0.05), 'was nominated by the house');
     if ((nomAct?.dOffice || []).includes(n)) pub(n, 'heat', 0.1, 'was nominated by the Voice');
@@ -555,7 +557,7 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
       else { pub(s.to, 'fun', 0.22, 'took the deal'); pub(s.to, 'heat', 0.2, 'took the deal'); }
     } else if (s.kind === 'phone' && s.answered) pub(s.answered, 'fun', 0.15, 'ran for the red phone');
     else if (s.kind === 'truths') {
-      pub(s.subject, 'pity', 0.4, 'watched what the house says about them');
+      pub(s.subject, 'pity', 0.4, 'sat in the room of truths and heard what the house really thinks');
       if (s.reaction === 'explodes') pub(s.subject, 'fun', 0.25, 'lost it in the room of truths');
       for (const t of s.talkers || []) { pub(t, 'real', -0.22, `was two-faced about ${s.subject}`); pub(t, 'heat', 0.12, `was two-faced about ${s.subject}`); }
     } else if (s.kind === 'visit') { pub(s.to, 'pity', 0.2, 'got a visit from home'); pub(s.to, 'warmth', 0.25, 'got a visit from home'); pub(s.to, 'arc', 0.15, 'got a visit from home'); }
@@ -756,8 +758,31 @@ export function secretStoryFinalWeek({ finalists = [], rng = Math.random } = {})
   }
   const acts = [];
   if (visits.length) acts.push({ type: 'ss-returns', visits, beats: [{ text: `The eliminated come back for a day: ${visits.map(v => v.who).join(', ')}.`, players: visits.map(v => v.who).slice(0, 4), badgeText: 'THE RETURNS', badgeClass: 'gold', part: 'final' }] });
+  // THE SEASON, AS THE FINAL TELLS IT (the real finals: docs/research/secret-story-transcripts.md §4):
+  // each finalist's record for the Voice's farewell, and the joke awards, all from what really happened
+  const nominatedTimes = n => Number(state.nominated?.[n]) || 0;
+  const facts = Object.fromEntries(finalists.map(n => {
+    const s = (state.secrets || []).find(x => (x.holders || []).includes(n));
+    const friend = finalists.concat(eliminated).filter(x => x !== n).sort((a, b) => bond(n, b) - bond(n, a))[0] || null;
+    return [n, { secret: s?.text || null, foundBy: s?.found ? s.foundBy || null : null, foundWeek: s?.found ? s.week ?? null : null,
+      kept: !!s && !s.found, unveiled: s?.unveiled ?? null, nominated: nominatedTimes(n), friend, read: publicRead(state, n).label }];
+  }));
+  const everyone = [...finalists, ...eliminated];
+  const buzzCount = n => (state.buzzes || []).filter(b => b.by === n).length;
+  const awards = [];
+  const presser = everyone.slice().sort((a, b) => buzzCount(b) - buzzCount(a))[0];
+  if (presser && buzzCount(presser) >= 2) awards.push({ id: 'buzzer', who: presser, n: buzzCount(presser) });
+  const wild = (state.buzzes || []).find(b => !b.right && b.guess && b.target);
+  if (wild) awards.push({ id: 'theory', who: wild.by, about: wild.target, guess: wild.guess });
+  const first = (state.secrets || []).filter(x => x.found && x.foundBy).sort((a, b) => (a.week ?? 99) - (b.week ?? 99))[0];
+  if (first) awards.push({ id: 'fastest', who: first.foundBy, week: first.week, of: (first.holders || [])[0] });
+  const calm = finalists.slice().sort((a, b) => nominatedTimes(a) - nominatedTimes(b))[0];
+  if (calm && finalists.every(n => n === calm || nominatedTimes(n) > nominatedTimes(calm))) awards.push({ id: 'untouchable', who: calm, n: nominatedTimes(calm) });
   acts.push({ type: 'ss-journeys', finalists: [...finalists], journeys: Object.fromEntries(finalists.map(n => [n, journeyOf(state, n)])),
-    kitties: Object.fromEntries(finalists.map(n => [n, Number(state.kitty?.[n]) || 0])) });
+    kitties: Object.fromEntries(finalists.map(n => [n, Number(state.kitty?.[n]) || 0])),
+    studio: eliminated.slice(), facts, awards,
+    // who in the studio is behind whom (their closest finalist)
+    support: Object.fromEntries(eliminated.map(e => [e, finalists.slice().sort((a, b) => bond(e, b) - bond(e, a))[0] || null])) });
   return acts;
 }
 
@@ -774,6 +799,8 @@ export function secretStoryFinalVote({ finalists = [], rng = Math.random } = {})
   }
   const order = finalists.slice().sort((a, b) => percents[b] - percents[a]);
   const winner = order[0];
-  return { winner, order, percents, kitty: state?.kitty?.[winner] ?? KITTY_START, cheque: CHEQUE,
+  // (whether the winner's secret survived: their speech must not claim it did when it was found)
+  const kept = !(state?.secrets || []).some(s => (s.holders || []).includes(winner) && s.found);
+  return { winner, order, percents, kitty: state?.kitty?.[winner] ?? KITTY_START, cheque: CHEQUE, kept,
     secrets: (state?.secrets || []).map(x => ({ holders: [...x.holders], text: x.text, found: x.found, foundBy: x.foundBy, unveiled: x.unveiled ?? null })) };
 }

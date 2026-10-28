@@ -70,7 +70,7 @@ describe('Secret Story spec audit', () => {
         if (launch.length) m.launchClicks.push(launch.reduce((n, x) => n + x.steps.length, 0));
         for (const x of ss) for (const step of x.steps) {
           const t = String(step.t || '');
-          if (/undefined|NaN|\[object|houseguest|Head of Household|\bveto\b|\bjury\b|evicted/i.test(t)) m.badText.push(`${x.id}: ${t.slice(0, 140)}`);
+          if (/\bundefined\b|\bNaN\b|\[object|houseguest|Head of Household|\bveto\b|\bjury\b|evicted/i.test(t)) m.badText.push(`${x.id}: ${t.slice(0, 140)}`);
         }
       }
     }

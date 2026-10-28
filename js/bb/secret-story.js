@@ -32,6 +32,7 @@ import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } fro
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
+import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -264,6 +265,11 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random 
     const clue = showClue(state, ctx, { holder, how: 'voice', house: room });
     if (clue) acts.push(clue);
   }
+  // The Voice's rules (§3): breaks from behaviour, each with its price.
+  for (const r of weeklyRuleBreaks(state, ctx, { house: room, party: !!week?._ssParty })) {
+    if (r.kind === 'reveal') for (const h of r.holders) addPop(h, -0.3);
+    acts.push(r);
+  }
   const weeksLeft = Math.max(0, room.length - 5);
   for (const b of runBuzzes(state, ctx, { house: room, weeksLeft })) {
     if (b.outcome === 'right') {
@@ -305,6 +311,11 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   } else {
     voters = room; pool = eligible(room); rule = 'everybody';
   }
+  // NOMINATED D'OFFICE (§8): rule-breakers and the Voice's sanctions go up
+  // whatever their immunity; the house names its two from everybody else.
+  const state = ssState();
+  const dOffice = state ? dOfficeFor(state, wk).filter(n => room.includes(n)) : [];
+  pool = pool.filter(n => !dOffice.includes(n));
   const ballots = [];
   const tally = Object.fromEntries(pool.map(n => [n, 0]));
   for (const v of voters) {
@@ -314,10 +325,13 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
     for (const p of picks) tally[p] = (tally[p] || 0) + 1;
     ballots.push({ voter: v, picks });
   }
+  // The Voice's extra votes against (a broken commandment, the red phone).
+  const extra = state ? extraVotesFor(state, wk) : {};
+  for (const [n, k] of Object.entries(extra)) if (n in tally) tally[n] += k;
   const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a] || (rng() - 0.5));
-  const nominees = ranked.slice(0, 2);
+  const nominees = [...dOffice, ...ranked.slice(0, 2)];
   const tie = ranked.length > 2 && tally[ranked[1]] === tally[ranked[2]];
-  return { nominees, ballots, tally, rule, voiceTie: tie };
+  return { nominees, ballots, tally, rule, voiceTie: tie, dOffice, extraVotes: extra };
 }
 
 // How the country splits its vote: popularity sets the order, but nobody who made it this far is

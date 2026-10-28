@@ -9,6 +9,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
 import { BB_THEMES } from '../js/bb/themes.js';
 import { KITTY_START } from '../js/bb/secret-story.js';
+import { expectedTotal } from '../js/ss/kitty.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -54,9 +55,11 @@ describe('Secret Story', () => {
     const given = acts.find(a => a.type === 'ss-secrets');
     expect(given).toBeTruthy();
     for (const s of given.secrets) expect(['real-pair', 'real-career', 'voice-pair', 'voice-mission']).toContain(s.kind);
-    // money only changes hands: the kitties always add up to what the house walked in with
+    // money is never invented: the kitties add up to what the ledger says the house holds
+    // (what it walked in with, plus the Voice's payments, minus its fines)
     const k = gs.bb.secretStory.kitty;
-    expect(Object.values(k).reduce((a, b) => a + b, 0)).toBe(KITTY_START * NAMES.length);
+    expect(Object.values(k).reduce((a, b) => a + b, 0)).toBe(expectedTotal(gs.bb.secretStory));
+    expect(gs.bb.secretStory.kittyOpened).toBe(KITTY_START * NAMES.length);
     // the public crowns the winner
     const fv = (fin.acts || []).find(a => a.type === 'ss-final-vote');
     expect(fv?.winner).toBe(fin.winner);

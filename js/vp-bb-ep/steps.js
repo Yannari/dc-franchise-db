@@ -2729,6 +2729,33 @@ function ssClueScreen(act, ctx) {
     kicker: 'Live · Living room', title: 'A Clue', label: 'The Clue', sub: act.clue, cast: [], steps };
 }
 
+// THE VOICE'S RULES (§3): the commandment read back, and the price.
+function ssRuleScreen(act, ctx) {
+  const n = act.who;
+  const k = `${ctx.week}|ssr|${n}|${act.commandment}`;
+  const COMMAND = { 2: 'Do what the Voice asks at once, and never contest a decision.', 7: 'Never talk about the nominations with each other.', 8: 'Never reveal your secret to another housemate.' };
+  /** @type {BB.Step[]} */ const steps = [
+    ssv('Housemates, everybody to the living room. Now.', { toast: ['THE VOICE', '#e0b84a'] }),
+    ssv(`The Voice reminds the house of commandment ${act.commandment}: ${COMMAND[act.commandment] || ''}`, { rule: 1 }),
+  ];
+  if (act.kind === 'reveal') {
+    steps.push(ssv(`${n} has revealed a secret. ${listOf(act.holders || [n])}, your kitties are now empty, and you are nominated d'office.`, { toast: ['SECRET REVEALED', '#ff3355'], nom: (act.holders || [n]).slice() }),
+      ssv(`${n}, tell the house your secret.`), { k: 'dr', by: n, t: `"${act.secretText}."` },
+      { k: 'dr', by: n, t: pickBy(["I said it. I actually said it. I can't believe I said it.", 'One sentence. Weeks of keeping it, and one sentence.'], k) });
+  } else if (act.kind === 'heavy-clue') {
+    steps.push(ssv(`${n} has said far too much about their own secret. A clue goes on the table, and ${n} will carry an extra vote at the nominations.`, { toast: ['TOO MUCH SAID', '#ff3355'] }),
+      { k: 'dr', by: n, t: pickBy(["I didn't even say it. I just... said around it. Apparently that counts.", 'Now everybody is looking at me. Great.'], k) });
+  } else if (act.kind === 'nominations-talk') {
+    steps.push(ssv(act.punishment === 'hot-water' ? `${n} has talked about the nominations. Because of ${n}, the whole house loses its hot water.` : `${n} has talked about the nominations, and will carry an extra vote against them.`, { toast: ['SANCTION', '#ff3355'] }),
+      { k: 'beat', t: act.punishment === 'hot-water' ? `Every head in the room turns to ${n}. Cold showers until the Voice says otherwise.` : `${n} sits back down, and does the arithmetic.` });
+  } else {
+    steps.push(ssv(`${n} contested a decision of the Voice. ${euros(act.amount)} leaves ${n}'s kitty.`, { toast: ['FINED', '#ff3355'] }),
+      { k: 'dr', by: n, t: pickBy(["Fine. FINE. I'll be quiet.", 'It was worth saying. It was not worth that much.'], k) });
+  }
+  return { id: `bb-ss-rule-${n}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '19:00',
+    kicker: 'Live · Living room', title: 'The Voice', label: 'The Voice', sub: `Commandment ${act.commandment}`, cast: [[n, 50]], steps };
+}
+
 // THE HUNT (§4): what the house noticed this week, and the theories going round.
 function ssHuntScreen(act, ctx) {
   const ms = act.moments || [];
@@ -4532,6 +4559,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-secrets': flush(); for (const scr of ssSecretsScreen(act, ctx)) ceremony(scr); break;
       case 'ss-buzz': flush(); ceremony(ssBuzzScreen(act, ctx)); beatsOf(act); break;
       case 'ss-clue': flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-rule': flush(); ceremony(ssRuleScreen(act, ctx)); beatsOf(act); break;
       case 'ss-hunt': { flush(); const scr = ssHuntScreen(act, ctx); if (scr) ceremony(scr); beatsOf(act); break; }
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;

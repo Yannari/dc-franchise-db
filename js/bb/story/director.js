@@ -13,7 +13,9 @@
 // Each aired scene is stored on the act its step came from (`act.scenes`), so
 // the viewer and the transcript keep the week's real order.
 
-import { gs } from '../../core.js';
+import { gs, seasonConfig, seasonFormat } from '../../core.js';
+import { SS_FORMAT } from '../../shows.js';
+import { ssTalkFor } from './sstalk.js';
 import { classify, file, causeOf } from './storylines.js';
 import { lineAired } from '../script/write.js';
 import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
@@ -66,6 +68,8 @@ export const backdoorWindow = clock => (clock?.veto ? 'gone' : clock?.noms ? 'op
 /** File the week and choose what airs. Words only: no game state moves. */
 export function airStorylines(week) {
   if (!week || !Array.isArray(week.acts)) return;
+  // a Secret Story house talks about secrets, not a Head of Household's week (bb/story/sstalk.js)
+  const SS = seasonFormat(seasonConfig) === SS_FORMAT;
   resetSpots();
   let stretch = 0;
   let at = 0;
@@ -139,7 +143,7 @@ export function airStorylines(week) {
   // Which whole-house set piece opens this stretch.
   const setFor = ctx => {
     if (ctx.firstNight) return 'firstnight';
-    if (clock.hohJust && ctx.hoh) return 'hohroom';
+    if (clock.hohJust && ctx.hoh && !SS) return 'hohroom';
     if (clock.nomsJust && ctx.nominees.length >= 2) return 'afternoms';
     // the night of an eviction: the house back from the live show, about the vote and who just left (the user,
     // 2026-10-26: "house life right after the evictee interview rarely talk about the event of eviction night")
@@ -157,12 +161,13 @@ export function airStorylines(week) {
   const GAME_HOST = new Set(['alliance', 'target', 'talk', 'campaign', 'scheme']);
   // a confrontation is its own scene: folded into somebody's friendly talk it turns it ("Another comp, another
   // loss", then Beth to her own showmance: "You told everybody you were voting Axel out", read 2026-10-14)
-  const CONFRONT = /^(arc-promise-exposed|fallout-(blame|denial|hypocrisy)|arc-lie|followup-lie|social-blow|deals-exposed|arc-rogue-vote-denial|deals-broken-promise)/;
+  const CONFRONT = /^(arc-promise-exposed|fallout-(blame|denial|hypocrisy)|arc-lie|followup-lie|social-blow|deals-exposed|arc-rogue-vote-denial|deals-broken-promise|arc-wrong-person-blamed-lingers)/;
   const ROOM_OPEN = /^(the )?(kitchen|backyard|bedroom|living room|hoh room|hoh suite|storage room|bathroom|diary room|pool|hot tub|have-not|dining room)\b/i;
   const placed = sc => sc.lines.some(l => l.kind === 'beat' && ROOM_OPEN.test(String(l.text || '')));
   // what carries one conversation into the next thing said in it: sometimes nothing (people just keep
   // talking), otherwise the least-heard of these this season
-  const LINK = ['Then, quieter.', 'Neither of them gets up yet.', 'It turns, the way talk in here always does, to the vote.',
+  // (a Secret Story house has no vote to turn to: it turns to the secrets)
+  const LINK = ['Then, quieter.', 'Neither of them gets up yet.', SS ? 'It turns, the way talk in here always does, to the secrets.' : 'It turns, the way talk in here always does, to the vote.',
     'A pause. Then the thing they actually came to say.', 'Somebody checks the doorway first.', 'The voices drop.',
     'They lean in a little closer.', 'One more thing, before anybody leaves.', 'The jokes stop for a second.',
     'A glance at the camera. They keep going anyway.', 'Nobody moves to leave.', 'And then, lower:'];
@@ -335,6 +340,8 @@ export function airStorylines(week) {
         // / "What would you want from someone sitting in the final two?", read 2026-10-15)
         const host = placed(sc) || publicMoment || confront ? null : hosts.filter(x => GAME_HOST.has(x.type) && x.mood !== 'secret' && (x.folded || []).length < 2
           && !/betrayal|fight|argument|blow|confront|exposed|leftout/.test(String(x.step || ''))
+          // (a Secret Story talk is a whole scene with its own ending: bb/story/sstalk.js; nothing folds into it)
+          && !/^ss\./.test(String(x.step || ''))
           && speakers.every(s2 => talkers(x).has(s2)) && (sc.cast || []).every(n => (x.cast || []).includes(n)) && !/^texture-/.test(String(beat.eventId || ''))
           && !clashes(x, sc))
           .sort((x, y) => (x.folded || []).length - (y.folded || []).length)[0];
@@ -568,11 +575,13 @@ export function airStorylines(week) {
       // fishing, a floater, or the morning-after verdict on how the week went
       // (a week whose target changed has one more: the switch is a beat of its own)
       // (not while an Interrogation is about to take the crown: the week's plan is the new HOH's, not this one's)
-      const hw0 = clock.hoh && hohNow !== week.hoh ? [] : hohWeekFor(week, tctx, clock, talked, lastGone);
+      // (a Secret Story house has no Head of Household's week to talk about: it talks about secrets, bb/story/sstalk.js)
+      const hw0 = SS ? [] : clock.hoh && hohNow !== week.hoh ? [] : hohWeekFor(week, tctx, clock, talked, lastGone);
       const hw = hw0.slice(0, hw0.some(t => t.kind.startsWith('hohweek.switch')) ? 5 : 4);
       talks.push(...hw);
-      const game = hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
+      const game = SS || hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);
+      if (SS) talks.push(...ssTalkFor(week, tctx, { stretch, talked }));
       const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, tctx, talkedPairs) : null;
       if (bond && !talked.has(bond.kind)) talks.push(bond);
       // and one houseguest playing their own game (gametalk.js styleTalkFor)
@@ -686,10 +695,11 @@ export function airStorylines(week) {
   const roomBeats = new Set((week.acts || []).flatMap((a, i) => hohRoomBeats(week.acts, i)));
   for (const act of week.acts) {
     if (!act) continue;
-    if (act.type === 'campaign') airCampaign(act);
+    // (nobody campaigns for a house vote in Secret Story: the public decides)
+    if (act.type === 'campaign' && !SS) airCampaign(act);
     if (CEREMONY.has(act.type)) {
       choose();
-      if (act.type === 'eviction') { try { airVoteTalk(act); } catch { /* the vote airs without it */ } }
+      if (act.type === 'eviction' && !SS) { try { airVoteTalk(act); } catch { /* the vote airs without it */ } }
       stretch++;
       clock.hohJust = act.type === 'hoh';
       clock.nomsJust = act.type === 'nominations';

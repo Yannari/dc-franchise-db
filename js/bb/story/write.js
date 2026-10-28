@@ -21,7 +21,8 @@
 //
 // The words draw from their own dice (stableRng), never the engine's.
 
-import { gs } from '../../core.js';
+import { gs, seasonConfig, seasonFormat } from '../../core.js';
+import { SS_FORMAT } from '../../shows.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { fill, said, writing } from '../script/write.js';
 import { factsFor } from '../script/facts.js';
@@ -191,7 +192,17 @@ function whenOf(prior, step) {
 // an HOH or a veto, in a week already played or this week's so far
 const hasWon = (n, ctx) => (gs.bb?.weeks || []).some(w => w !== ctx.week && (w.hoh === n || w.vetoWinner === n))
   || ctx.hoh === n || (ctx.veto && ctx.week?.vetoWinner === n);
+// Big Brother's game, in its own words: none of it exists in a Secret Story house (no Head of
+// Household, no veto, no jury, no house vote), so no script that says it airs there (part 3, 2026-10-28)
+// (eviction, the block, houseguests and the Diary Room are swapped into Secret Story's words on screen:
+// vp-bb-ep/steps.js THEME_WORDS. These have no Secret Story meaning at all.)
+const BB_GAME_WORDS = /\b(HOH|Head of Household|veto|jury|jurors?|backdoor\w*|votes?|voting|voted|pawn|campaign\w*)\b/i;
+/** A written scene in Big Brother's game words does not air in a Secret Story house. */
+const ssGate = sc => (!sc || !ssSeason() || !(sc.lines || []).some(l => BB_GAME_WORDS.test(String(l?.text || ''))) ? sc : null);
+const ssSeason = () => seasonFormat(seasonConfig) === SS_FORMAT;
 function presumed(entry, ctx, who = null) {
+  if (ssSeason() && (entry.presumes || []).some(p => ['hoh', 'hohc', 'vote', 'jurors', 'preveto', 'postveto'].includes(p))) return false;
+  if (ssSeason() && BB_GAME_WORDS.test(JSON.stringify(entry.turns || []))) return false;
   for (const p of entry.presumes || []) {
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
     // earlier. For forty minutes?" about their own room)
@@ -529,7 +540,8 @@ function writeKeyed(key, t, ctx, at, o) {
 }
 
 // A scene moved to a spot (places.js) opens there, unless its own first line already sets the scene.
-function staging(sc) {
+function staging(sc0) {
+  const sc = ssGate(sc0);
   if (!sc?.spot || !Array.isArray(sc.lines) || sc.lines[0]?.kind === 'beat') return sc;
   const talkers = [...new Set(sc.lines.filter(l => l.by && l.kind === 'say').map(l => l.by))];
   if (talkers.length < 2) return sc;
@@ -840,6 +852,9 @@ const OUTCOME_WHY = {
  * alone, the case and the reply, a closing push that matches how it went, and a Diary Room.
  */
 export function writeCampaignScene(beat, ctx, at, salt) {
+  return ssGate(writeCampaignScene0(beat, ctx, at, salt));
+}
+function writeCampaignScene0(beat, ctx, at, salt) {
   // the nominee first, the voter last; anybody between came along to help make the case
   const ps = beat.players || [];
   // ...unless every one of them answers it: the same case taken round two or three voters (week.js,
@@ -993,7 +1008,10 @@ const CUT = sc => (sc.type === 'feud' ? 'clash' : sc.type === 'showmance' ? 'fli
  * (cut to, with the room still around them), and an ensemble close. Roles a..f; the HOH room
  * reveal has the HOH as a, the house after nominations the two nominees as a and b.
  */
-export function writeSetPiece(type, ctx, inside, { gone = null, at = 0 } = {}) {
+export function writeSetPiece(type, ctx, inside, opts = {}) {
+  return ssGate(writeSetPiece0(type, ctx, inside, opts));
+}
+function writeSetPiece0(type, ctx, inside, { gone = null, at = 0 } = {}) {
   let room = SET_ROOM[type] || 'living-room';
   const present = ctx.present || [];
   const salt = `${ctx.week?.num || 0}|${ctx.stretch}|${type}`;

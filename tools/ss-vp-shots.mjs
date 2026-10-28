@@ -62,6 +62,8 @@ const plan = await page.evaluate(wantList => {
     const S = r.screens[r.si];
     // map: a House Life screen's house map, before its first line
     if (want.has('map') && r.map && !seen.has('map')) { seen.add('map'); out.push({ uid: r.uid, idx: -1, kind: 'map', id: S.id || 'houselife' }); }
+    // hl: a few spoken lines of House Life (its own scenes, on the house's plates)
+    if (want.has('hl') && S && S.kind === 'houselife') { let k = 0; S.steps.forEach((st, i) => { if (st.k === 'say' && k < 4 && i % 7 === 3) { k++; out.push({ uid: r.uid, idx: i, kind: 'hl', id: `${S.id}-${i}` }); } }); }
     if (!S || !/^bb-ss-/.test(S.id || '')) continue;
     if (want.has('rest')) out.push({ uid: r.uid, idx: -1, kind: 'rest', id: S.id });
     S.steps.forEach((st, k) => {

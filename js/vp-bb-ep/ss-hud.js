@@ -83,10 +83,18 @@ function sfx(kind) {
 }
 
 // ── the HUD ─────────────────────────────────────────────────────────────
+// The room, as the House of Secrets calls it: the plate knows better than Big Brother's room names
+// ("Storage Room" is the Store; there are two bedrooms; the hallway is the secret passage).
+/** @type {[RegExp, string][]} */
+const ROOM_OF_PLATE = [[/^bedroom2-/, "Boys' Bedroom"], [/^bedroom-/, "Girls' Bedroom"], [/^storage/, 'The Store'], [/^(hallway|purple-hall)$/, 'Secret Passage'],
+  [/^foyer$/, 'The Airlock'], [/^ss-attic/, 'The Secret Room'], [/^hoh-suite$/, 'The Love Room'], [/^library-/, 'The Library'], [/^gym-/, 'The Gym'],
+  [/^(pool-|patio$)/, 'The Pool'], [/^lawn-/, 'The Garden'], [/^(front|balcony)$/, 'The Garden'], [/^nom-table$/, 'Living Room'], [/^confessional/, 'Confessional']];
+const roomOf = S => { const p = S.plate || ''; for (const [re, n] of ROOM_OF_PLATE) if (re.test(p)) return n; return S.room || ''; };
+
 /** The top of the screen: the show's bug, the room, the day, the viewer's kitty. */
 export function ssHudHtml(S, st, fresh, o) {
   const isDr = st && st.k === 'dr';
-  const room = isDr ? 'Confessional' : S.room || '';
+  const room = isDr ? 'Confessional' : roomOf(S);
   const b = bankOf(o?.ssKey);
   return `<div class="ssh">
     <div class="ssh-bug"><img class="ssh-eye" src="${EYE}" alt=""><div class="ssh-wm">SECRET STORY<span>WEEK ${esc(S.week)} · DAY ${esc(S.day)}</span></div>

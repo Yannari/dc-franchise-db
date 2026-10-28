@@ -5,8 +5,12 @@
 // category has quietly taken over the house, and that every event still
 // satisfies the scheduler contract no matter which act it lands in.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { gs, seasonConfig, setRelationships } from '../js/core.js';
-import { setBond, setLean } from '../js/bonds.js';
+import { gs, players, seasonConfig, relationships, setRelationships, setPlayers, setGs } from '../js/core.js';
+import { setBond, setLean, getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
+import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
+import { initGameState } from '../js/savestate.js';
+import { simulateBBEpisode } from '../js/bb-run.js';
+import { withSeededRandom } from './helpers/rng.js';
 import { simulateBBSeason, simulateBBWeek } from '../js/bb/week.js';
 import { scheduleHouseBeats, houseEventState } from '../js/bb/house-events.js';
 import {
@@ -66,7 +70,46 @@ function reset() {
   // rather than loosening their triggers merely to satisfy this guard.
   setLean('C', 'D', 7);
   setLean('M', 'N', 7);
+
+  // The same reasoning, for two more kinds of history a real cast arrives with.
+  // Somebody spoken for at home is the only way the cheat-* family can exist (a
+  // showmance with a partner waiting outside), and a franchise ledger is the only
+  // way past-* can (what returnees did to each other last season). Without them
+  // the sweep reported all eight as dead code.
+  const home = { B: { name: "B's husband", stage: 'married', word: 'husband' },
+    G: { name: 'Dana', stage: 'dating', word: 'girlfriend', named: true } };
+  for (const [n, at] of Object.entries(home)) {
+    const p = players.find(x => x.name === n);
+    if (p) p.partnerAtHome = { slug: null, outside: true, named: false, ...at };
+  }
+  gs.franchiseMeta = {
+    profiles: { A: { knownSchemer: 0.8 }, G: { knownSchemer: 0.6 }, C: {}, K: {}, E: {}, H: {}, L: {}, N: {} },
+    seededPairs: [
+      { a: 'C', b: 'A', kind: 'betrayal', wronged: true, bondDelta: -3, reason: 'A betrayed C (Season 1)' },
+      { a: 'A', b: 'C', kind: 'betrayal', wronged: false, bondDelta: -1, reason: 'A betrayed C (Season 1)' },
+      { a: 'K', b: 'G', kind: 'blindside', wronged: true, bondDelta: -2, reason: 'G blindsided K (Season 1)' },
+      { a: 'L', b: 'N', kind: 'rivals', bondDelta: -2, reason: 'Rivals all summer (Season 1)' },
+      { a: 'E', b: 'H', kind: 'allies', bondDelta: 2, reason: 'Rode together to the end (Season 1)' },
+    ],
+  };
 }
+
+// ── what only a themed season can reach ──
+//
+// A theme is installed by the season (bb-run's prepareHouse) and books its own
+// twists — the Machine's premiere, the Den, the hotel's mystery, the High Roller's
+// room and wildcards, the camp's Whacktivity, the school's cliques. This sweep
+// plays simulateBBWeek on an unthemed house, so every one of these families sat
+// in the dead list: 23 events across eight families, none of them dead. They are
+// asserted by the themed sweep below, which plays real themed seasons.
+const THEMED_FAMILIES = ['theme-', 'hrr-', 'wildcard-', 'returned-', 'premiere-', 'secret-comp-', 'cliques-', 'nightmare-'];
+const isThemed = id => THEMED_FAMILIES.some(p => id.startsWith(p));
+// Written, and switched off in every season that exists. The rail is the side bet
+// on who goes home, and it only opens in a theme with money AND `railBets` on; the
+// one money season, High Roller's, turned it off when it was rebuilt 1:1 with BB23
+// (2026-10-24: "the rail bets were this simulator's invention"). Nothing else opens
+// it. Listed by name so it is a decision on record, not noise in the dead list.
+const SWITCHED_OFF = new Set(['side-bet-counts-the-rail', 'side-bet-collected']);
 
 const ACTS = ['hoh', 'nominations', 'veto', 'veto-ceremony', 'campaign'];
 const ctxFor = (act, extra = {}) => ({
@@ -326,7 +369,7 @@ describe('the Big Brother event library as a whole', () => {
       .filter(id => !tally[id] && !ULTRA_RARE.has(id) && !invisibleFamily.has(id)
         && !hackerFamily.has(id) && !roadkillFamily.has(id) && !pandoraFamily.has(id)
         && !splitFamily.has(id) && !denFamily.has(id) && !whackFamily.has(id)
-        && !gatedIds.has(id));
+        && !gatedIds.has(id) && !isThemed(id) && !SWITCHED_OFF.has(id));
 
     // ── Play MORE seasons rather than fail, when something marginal misses ──
     //
@@ -393,6 +436,54 @@ describe('the Big Brother event library as a whole', () => {
       + 'no row can never fire here no matter how alive it is.').toEqual([]);
     for (const fam of familyMins) expect(seen(fam), fam.why).toBeGreaterThanOrEqual(fam.min);
   }, 240000);
+
+  // The other half of the question above: the families only a themed season has.
+  // Played the way the browser plays them — simulateBBEpisode, with the theme
+  // installed and booking its own twists — one season per theme, more seeds only
+  // when something is missing (the same escalation as above, for the same reason).
+  //
+  // One extra row: `returned-door-defender` needs the Showdown Battle Back, where
+  // the house elects somebody to defend the door. That shape is chosen in the twist
+  // schedule, and the Temptation theme books the Gauntlet, so it gets a season of
+  // its own with a Showdown on week four.
+  it('fires every theme event in seasons that run that theme', () => {
+    const ROWS = [
+      ...['machine-summer', 'summer-of-temptation', 'summer-of-mystery', 'high-rollers', 'summer-camp', 'summer-school']
+        .map(theme => ({ theme, schedule: [] })),
+      { theme: 'none', schedule: [{ episode: 4, type: 'bb-battle-back', bbStyle: 'showdown' }] },
+    ];
+    const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb', 'Beth', 'Owen', 'Jo', 'Lindsay'];
+    const ARCH = ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater', 'villain', 'loyal-soldier', 'underdog', 'goat', 'hothead', 'wildcard', 'hero', 'floater', 'challenge-beast', 'perceptive-player'];
+    const saved = { ...seasonConfig };
+    const fired = {};
+    const season = (row, seed) => {
+      setGs(null);
+      setPlayers(NAMES.map((name, i) => ({ name, slug: name.toLowerCase(), gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
+        stats: Object.fromEntries(STAT_KEYS.map((k, j) => [k, 1 + ((i * 7 + j * 3 + seed) % 10)])) })));
+      Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+      Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7, bbHaveNots: 'on', bbSafetyMode: 'off',
+        seasonNumber: 1, romance: 'enabled', theme: row.theme, twistSchedule: row.schedule.map(t => ({ ...t })) });
+      initGameState(); globalThis.gs = gs;
+      withSeededRandom(seed, () => {
+        for (let i = 0; i < 20 && (gs.activePlayers || []).length > 3; i++) if (!simulateBBEpisode()) break;
+      });
+      for (const w of gs.bb?.weeks || []) for (const a of w.acts || []) for (const b of a.socialBeats || []) {
+        if (b.eventId) fired[b.eventId] = (fired[b.eventId] || 0) + 1;
+      }
+    };
+    const owned = HOUSE_EVENTS.map(e => e.id).filter(id => isThemed(id) && !SWITCHED_OFF.has(id));
+    const missing = () => owned.filter(id => !fired[id]);
+    try {
+      for (const seed of [33, 47, 12, 19, 5, 71]) {
+        if (seed !== 33 && !missing().length) break;
+        for (const row of ROWS) season(row, seed);
+      }
+    } finally {
+      for (const k of Object.keys(seasonConfig)) if (!(k in saved)) delete seasonConfig[k];
+      Object.assign(seasonConfig, saved);
+    }
+    expect(missing(), `never fire in a themed season: ${missing().join(', ')}`).toEqual([]);
+  }, 1500000);
 
   // Measured in counts, not shares. A stretch of house life now runs 22-30
   // beats against a ceremony act's 1-3, so ceremonies are a small SHARE of all
@@ -462,11 +553,13 @@ describe('the Big Brother event library as a whole', () => {
       // upkeep, campaign pitches) are attached directly by the week, one per
       // real event, rather than drawn by the scheduler — three betrayals in a
       // week is three beats and that is correct, and so is one pitch per
-      // nominee per voter worked.
+      // nominee per voter worked. The veto ceremony's left-up scene is the same:
+      // one per nominee the holder left sitting there (bb/veto-fallout.js), so a
+      // veto kept with two on the block is two people's scene, not a repeat.
       const ids = (act.socialBeats || [])
         .map(b => b.eventId)
         .filter(Boolean)
-        .filter(id => !/^(alliance|romance|upkeep|campaign)-/.test(String(id || '')));
+        .filter(id => !/^(alliance|romance|upkeep|campaign)-/.test(String(id || '')) && id !== 'veto-left-up');
       const counts = {};
       ids.forEach(id => { counts[id] = (counts[id] || 0) + 1; });
       for (const [id, n] of Object.entries(counts)) {

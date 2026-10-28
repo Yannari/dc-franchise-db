@@ -120,7 +120,11 @@ const wheeledUp = {
     // week one, same asker, same answer.
     if (firedThisWeek('hrr-wheeled-up', Number(ctx?.week?.num) || 0)) return 0;
     const swap = ctx?.week?.rouletteSwap;
-    return swap?.up && house.includes(swap.up) ? band(11, 14) : 0;
+    // The wheel turns at the veto ceremony, so the only acts after it are the two campaign acts, two to four
+    // scenes each, every one wanted by the vote operation. At an ordinary weight it lost every draw: the wheel
+    // put somebody on the block in four seasons of six and this never once aired (measured 2026-10-27). Being
+    // wheeled onto the block is the day's news, so it is weighted to air once, like nom-lied-to.
+    return swap?.up && house.includes(swap.up) ? 60 : 0;
   },
   fire(house, ctx, api) {
     const swap = ctx.week.rouletteSwap;

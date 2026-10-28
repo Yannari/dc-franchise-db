@@ -22,6 +22,8 @@
 // Pure HTML builders and a few window handlers; stage.js calls these when o.season is
 // Secret Story's. Nothing here decides anything in the season.
 
+import { ssSfx } from './ss-sound.js';
+
 const PROPS = 'assets/sets/bb/secret-story/props';
 const EYE = `${PROPS}/eye.webp`;
 const START = 10000;
@@ -60,6 +62,8 @@ export function settleCall(key, id, answer, n) {
 // ── the sounds of the house (synthesised: a siren, a ring, coins) ───────
 let AC = null;
 function sfx(kind) {
+  // a recording when there is one (vp-bb-ep/ss-sound.js), the synth otherwise
+  if (kind !== 'lose' && ssSfx(kind)) return;
   try {
     const A = /** @type {any} */ (globalThis).audio;
     if (A?.isMuted?.()) return;
@@ -250,7 +254,9 @@ export const SS_CSS = `
 @font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700;font-display:swap}
 @font-face{font-family:'SSNunito';src:url('assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000;font-display:swap}
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
-.bbx .stage.ss .grain{opacity:.35}
+/* a clean HD picture: no film grain, no scanlines (the user, 2026-10-28: "we're not in 2006 anymore") */
+.bbx .stage.ss .grain{display:none}
+.bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
 .bbx .stage.ss .toast b{font-family:'SSFredoka',sans-serif;font-weight:700;letter-spacing:.02em}
 .bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSFredoka',sans-serif}
 .bbx .stage.ss .fboard{font-family:'SSNunito',sans-serif;border-radius:1.4cqw;background:linear-gradient(160deg,rgba(43,13,63,.92),rgba(80,12,70,.9));box-shadow:0 0 0 .25cqw var(--ssp),0 1.5cqw 4cqw rgba(0,0,0,.45)}

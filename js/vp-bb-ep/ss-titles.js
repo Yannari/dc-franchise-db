@@ -18,9 +18,9 @@ import { bbxTitleReady, bbxTitleDone } from './titles.js';
 
 const PROPS = 'assets/sets/bb/secret-story/props';
 const FRONT = 'assets/sets/bb/resort/secret-story/front-day.webp';
-// The show's music is not in the repo yet (the user brings recordings): until it is, the titles start on
-// their own clock rather than asking for a file that is not there. Set true once assets/audio/ss/ has them.
-const MUSIC = false;
+// The show's music (assets/audio/ss/, git-ignored: the user's own copies): the generic, I Wanna Chat, and the
+// Epilogue. The sequence keeps its own clock and the music fades out when it ends; a missing file plays it silent.
+const MUSIC = true;
 const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '#c8137a', '#22c55e'];
 const col = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
@@ -37,6 +37,8 @@ const CSS = `
 .sst.go .eye{animation:sst-eye 4.6s cubic-bezier(.2,.9,.2,1) both}
 .sst .line{position:absolute;left:0;right:0;top:46%;text-align:center;font:700 4cqw 'SSFredoka',sans-serif;opacity:0;text-shadow:0 .4cqw 2cqw rgba(200,19,122,.8)}
 .sst.go .line{animation:sst-line 3.4s ease both;animation-delay:var(--d)}
+.sst .line.sm{font-size:3cqw}
+.sst .line.top{top:14%;z-index:3}
 .sst .who{position:absolute;inset:0;opacity:0}
 .sst.go .who{animation:sst-who var(--slot) ease both;animation-delay:var(--d)}
 .sst .who .stripe{position:absolute;inset:0;background:repeating-linear-gradient(110deg,var(--c) 0 6cqw,color-mix(in srgb,var(--c) 70%,#fff) 6cqw 12cqw)}
@@ -94,16 +96,20 @@ export function ssTitleScreen(kind, cast = [], title = '', gone = []) {
   const people = [...cast].sort((a, b) => a.localeCompare(b));   // never in placement order: it says nothing
   let body, secs;
   if (kind === 'intro') {
-    const open = 4.4, said = 3.2;
+    // the Voice's slogan, as the real generic says it over the theme (S14 dailies: "Ils ont tous un secret…")
+    const open = 4.4, said = 3.2 * 3;
     const slot = Math.max(1.15, Math.min(1.8, 24 / Math.max(1, people.length)));
     const t0 = open + said;
     const fin = 6;
     secs = t0 + people.length * slot + fin;
     body = `<div class="burst"></div><img class="eye" src="${PROPS}/eye.webp" alt="">
-      <div class="line" style="--d:${open - 0.2}s">Every one of them has a secret.</div>
+      <div class="line" style="--d:${open - 0.2}s">They all have a secret.</div>
+      <div class="line sm" style="--d:${open + 3}s">Their mission: keep it, whatever it costs.</div>
+      <div class="line sm" style="--d:${open + 6.2}s">But will they manage without being unmasked?</div>
       ${people.map((n, i) => `<div class="who ${out.has(n) ? 'out' : ''}" style="--c:${PAL[i % PAL.length]};--d:${(t0 + i * slot).toFixed(2)}s;--slot:${slot.toFixed(2)}s">
         <div class="stripe"></div><div class="face">${img(n)}</div><div class="seal">SECRET</div><div class="nm">${esc(n)}</div></div>`).join('')}
       <div class="house" style="--d:${(secs - fin).toFixed(2)}s;--fin:${fin}s"></div>
+      <div class="line sm top" style="--d:${(secs - fin - 0.4).toFixed(2)}s">And above all, never forget: beware of appearances.</div>
       <div class="logo" style="--d:${(secs - fin + 0.6).toFixed(2)}s;--fin:${fin - 0.6}s"><b>${letters('SECRET STORY')}</b>${title ? `<i>${esc(title)}</i>` : '<i>The House of Secrets</i>'}</div>`;
   } else {
     secs = 14;
@@ -118,9 +124,9 @@ export function ssTitleScreen(kind, cast = [], title = '', gone = []) {
     id: `bb-${kind === 'intro' ? 'titles' : 'closing'}`,
     label: kind === 'intro' ? 'Opening Titles' : 'Closing',
     html: `<div class="sst bbt" data-ambient="none" data-secs="${secs.toFixed(1)}"><style>${CSS}</style>${body}
-  ${MUSIC ? `<audio src="${audio}" preload="auto" oncanplay="bbxTitleReady(this)" onplay="this.closest('.sst').classList.add('go');this.closest('.sst').classList.remove('blocked')" onerror="ssTitleSilent(this)" onended="bbxTitleDone(this)"></audio>`
+  ${MUSIC ? `<audio src="${audio}" preload="auto" oncanplay="bbxTitleReady(this)" onplay="ssTitleClock(this)" onerror="ssTitleSilent(this)" onended="bbxTitleDone(this)"></audio>`
     : `<img src="${GIF}" alt="" style="display:none" onload="ssTitleSilent(this)">`}
-  <button type="button" class="play" onclick="ssTitleSilent(this)">▶ PLAY</button>
+  <button type="button" class="play" onclick="const a=this.closest('.sst').querySelector('audio');if(a)a.play().catch(()=>ssTitleSilent(this));else ssTitleSilent(this)">▶ PLAY</button>
   <button type="button" class="skip" onclick="bbxTitleDone(this)">Skip ${kind === 'intro' ? 'intro' : 'closing'} ▶</button>
 </div>`,
   };
@@ -136,6 +142,22 @@ export function ssTitleSilent(el) {
   const secs = Number(box.dataset.secs) || 20;
   setTimeout(() => { if (box.isConnected) bbxTitleDone(box); }, secs * 1000);
 }
-if (typeof window !== 'undefined') Object.assign(window, { ssTitleSilent });
+/** The music started: the sequence runs on its clock, and the music fades out as it ends. */
+export function ssTitleClock(el) {
+  const box = el?.closest?.('.sst');
+  if (!box || box.dataset.clock) return;
+  box.dataset.clock = '1';
+  box.classList.remove('blocked');
+  box.classList.add('go');
+  const secs = Number(box.dataset.secs) || 20;
+  const v = /** @type {HTMLAudioElement} */ (el);
+  setTimeout(() => {
+    if (!box.isConnected) return;
+    const v0 = v.volume;
+    let k = 0;
+    const t = setInterval(() => { k++; v.volume = Math.max(0, v0 * (1 - k / 12)); if (k >= 12) { clearInterval(t); if (box.isConnected) bbxTitleDone(v); } }, 100);
+  }, Math.max(0, secs - 1.2) * 1000);
+}
+if (typeof window !== 'undefined') Object.assign(window, { ssTitleSilent, ssTitleClock });
 // (bbxTitleReady stays the music's way in, as Big Brother's live titles use it)
 void bbxTitleReady;

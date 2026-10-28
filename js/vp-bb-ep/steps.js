@@ -3104,27 +3104,32 @@ function ssGameScreen(act, ctx) {
 function ssRuleScreen(act, ctx) {
   const n = act.who;
   const k = `${ctx.week}|ssr|${n}|${act.commandment}`;
-  const COMMAND = { 2: 'Do what the Voice asks at once, and never contest a decision.', 7: 'Never talk about the nominations with each other.', 8: 'Never reveal your secret to another housemate.' };
-  /** @type {BB.Step[]} */ const steps = [
-    ssv('Housemates, everybody to the living room. Now.', { toast: ['THE VOICE', '#e0b84a'] }),
-    ssv(`The Voice reminds the house of commandment ${act.commandment}: ${COMMAND[act.commandment] || ''}`, { rule: 1 }),
-  ];
+  // The Voice does not recite its commandments: when it speaks about one, somebody has broken it, and it says
+  // what they did (the user, 2026-10-28: "what's the point of reminding them that much"). A secret said out loud
+  // is the whole house's business; a fine is settled in the confessional.
+  const where = pickBy(['in the kitchen', 'by the pool', 'in the bedroom', 'on the sofas', 'in the garden'], `${k}|w`);
+  /** @type {BB.Step[]} */ const steps = act.kind === 'contest'
+    ? [ssv(`${n}, please come to the confessional.`, { toast: ['THE VOICE', '#e0b84a'] }), { k: 'beat', t: `${n} sits down under the arch. The red light comes on.` }]
+    : [ssv(act.kind === 'reveal' ? 'Housemates, everybody to the living room. Now.' : 'Housemates, please join the Voice in the living room.', { toast: ['THE VOICE', '#e0b84a'] }),
+      { k: 'beat', t: pickBy(['They come in one by one and sit down without a word. Nobody knows who it is about yet.', 'The sofas fill up fast. Everybody is looking at everybody else.', 'Nobody talks on the way in. Somebody is in trouble.'], `${k}|in`) }];
   if (act.kind === 'reveal') {
     steps.push(ssv(`${n} has revealed a secret. ${listOf(act.holders || [n])}, your kitties are now empty, and you are nominated d'office.`, { toast: ['SECRET REVEALED', '#ff3355'], nom: (act.holders || [n]).slice() }),
       ssv(`${n}, tell the house your secret.`), { k: 'dr', by: n, t: `"${act.secretText}."` },
       { k: 'dr', by: n, t: pickBy(["I said it. I actually said it. I can't believe I said it.", 'One sentence. Weeks of keeping it, and one sentence.'], k) });
   } else if (act.kind === 'heavy-clue') {
-    steps.push(ssv(`${n} has said far too much about their own secret. A clue goes on the table, and ${n} will carry an extra vote at the nominations.`, { toast: ['TOO MUCH SAID', '#ff3355'] }),
+    steps.push(ssv(`${n}, ${where} today, you said far too much about your own secret. A clue goes on the table, and you will carry an extra vote at the nominations.`, { toast: ['TOO MUCH SAID', '#ff3355'] }),
       { k: 'dr', by: n, t: pickBy(["I didn't even say it. I just... said around it. Apparently that counts.", 'Now everybody is looking at me. Great.'], k) });
   } else if (act.kind === 'nominations-talk') {
-    steps.push(ssv(act.punishment === 'hot-water' ? `${n} has talked about the nominations. Because of ${n}, the whole house loses its hot water.` : `${n} has talked about the nominations, and will carry an extra vote against them.`, { toast: ['SANCTION', '#ff3355'] }),
+    steps.push(ssv(`${n}, this afternoon ${where}, you talked about the nominations. The Voice heard every word.`),
+      ssv(act.punishment === 'hot-water' ? `Because of ${n}, the whole house loses its hot water.` : `${n}, you will carry an extra vote against you at the nominations.`, { toast: ['SANCTION', '#ff3355'] }),
       { k: 'beat', t: act.punishment === 'hot-water' ? `Every head in the room turns to ${n}. Cold showers until the Voice says otherwise.` : `${n} sits back down, and does the arithmetic.` });
   } else {
-    steps.push(ssv(`${n} contested a decision of the Voice. ${euros(act.amount)} leaves ${n}'s kitty.`, { toast: ['FINED', '#ff3355'] }),
+    steps.push(ssv(`${n}, you contested a decision of the Voice. That will cost you ${euros(act.amount)}.`, { toast: ['FINED', '#ff3355'] }),
       { k: 'dr', by: n, t: pickBy(["Fine. FINE. I'll be quiet.", "It was worth saying. It wasn't worth that much."], k) });
   }
   return { id: `bb-ss-rule-${n}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '19:00',
-    kicker: 'Live · Living room', title: 'The Voice', label: 'The Voice', sub: `Commandment ${act.commandment}`, cast: [[n, 50]], steps };
+    kicker: 'Live · Living room', title: 'The Voice', label: 'The Voice', sub: `Commandment ${act.commandment}`, cast: [[n, 50]], steps,
+    ...(act.kind === 'contest' ? { set: 'dr', room: 'Confessional', cam: CAM.dr, plate: 'confessional-close', kicker: 'Cam 01 · Confessional' } : {}) };
 }
 
 // THE HUNT (§4): what the house noticed this week, and the theories going round.
@@ -5453,6 +5458,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   if (row.themeId === SS_FORMAT) {
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
+    // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
+    for (const s of out) s.ss = true;
     // (the week's competition is the Voice's game; its nav label was still Big Brother's)
     for (const s of out) if (s.id === 'bb-hoh-v') s.label = "The Voice's Game";
     const NOT_HERE = /\b(veto|POV|jury|jurors?|backdoor\w*|pawns?)\b/i;

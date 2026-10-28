@@ -14,6 +14,7 @@
 // Reveal all), and a step only ever sounds like something on screen.
 import { BED_CATALOG, CUE_CATALOG } from '../audio.js';
 import { startRoom, stopRoom } from './voices.js';
+import { SS_BEDS, isSS, ssBaseFor, ssVariantOf, ssFromBB, ssMoodBed, ssStepBed, ssSfx } from './ss-sound.js';
 
 const dir = 'assets/audio/bb/';
 const BASE_VOL = 0.4;
@@ -60,6 +61,7 @@ for (const [base, bed] of Object.entries(BB_BEDS)) {
 const hashOf = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 /** One of a kind's tracks, kept by the screen (the same screen always plays the same one). */
 export function variantOf(base, screen) {
+  if (SS_BEDS[base]) return ssVariantOf(base, screen);
   const bed = BB_BEDS[base];
   if (!bed) return base;
   const n = bed.files.length;
@@ -94,7 +96,8 @@ const BED_BY_MOOD = { drama: 'bb-drama', scheming: 'bb-scheming', plan: 'bb-plan
 
 /** The bed a screen opens on (a track of it). */
 export function bedFor(screen) {
-  const base = baseBedFor(screen);
+  // (a Secret Story week plays the House of Secrets' own music: ss-sound.js)
+  const base = isSS(screen) ? ssBaseFor(screen) : baseBedFor(screen);
   return base === 'none' ? 'none' : variantOf(base, screen);
 }
 function baseBedFor(screen) {
@@ -215,7 +218,23 @@ function momentBed(screen, idx) {
 export function soundFor(screen, idx) {
   const r = rulesFor(screen, idx);
   if (!screen?.steps?.[idx]) return r;
+  if (isSS(screen)) return { cue: r.cue, bed: ssMomentBed(screen, idx) };
   return { cue: r.cue, bed: momentBed(screen, idx) };
+}
+// The same, in the House of Secrets: its own beds for the same moments (a fight, the wait, a win), and its
+// own (the envelope opens: the bailiff; "and the winner is").
+function ssMomentBed(screen, idx) {
+  const steps = screen.steps || [];
+  let cut = -1;
+  for (let i = idx; i >= 0; i--) if (steps[i]?.scene) { cut = i; break; }
+  let held = null;
+  for (let i = Math.max(0, cut); i <= idx; i++) { const b = ssStepBed(screen, steps[i]) || ssFromBB(rulesFor(screen, i).bed); if (b) held = b; }
+  const base = held || (cut >= 0 ? ssMoodBed(steps[cut].scene.mood) : ssBaseFor(screen));
+  if (base === 'ss-winner' || base === 'ss-epic' || base === 'ss-sad' || base === 'ss-bailiff') return base;
+  for (let i = idx; i > Math.max(cut, idx - 3); i--) if (HEAT(steps[i])) return 'ss-drama';
+  const st = steps[idx];
+  if (st && (st.suspense || (st.tense && screen.kind !== 'houselife')) && base !== 'ss-wait') return 'ss-tension';
+  return base;
 }
 function rulesFor(screen, idx) {
   const st = screen?.steps?.[idx];
@@ -289,6 +308,8 @@ export function playStep(screen, idx) {
     if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(roomSet); }
     else if (bed && typeof a.ambient === 'function') { stopRoom(); a.ambient(variantOf(bed, screen)); }
     if (cue) a.sfx(cue);
+    // the studio crowd on its feet as a live show opens
+    if (isSS(screen) && idx === 0 && /^bb-ss-(prime-open|launch-open|final-open|launch-arr)/.test(screen.id || '')) ssSfx('applause', 0.8);
   } catch { /* sound must never break a screen */ }
 }
 

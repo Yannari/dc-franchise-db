@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Secret Story Music</title>
+<style>
+@font-face{font-family:'SSFredoka';src:url('../../assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700}
+@font-face{font-family:'SSNunito';src:url('../../assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000}
+:root{--p:#ff3ea5;--m:#c8137a;--t:#19d3c5;--i:#2b0d3f;--g:#f5c542}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0,#5b0d4f,#2b0d3f 45%,#0d0414);color:#fff;font:15px/1.45 'SSNunito',system-ui,sans-serif;min-height:100vh}
+main{max-width:980px;margin:0 auto;padding:28px 16px 80px}
+h1{font:700 44px/1 'SSFredoka',sans-serif;margin:0 0 6px;background:linear-gradient(90deg,#ff3ea5,#ffb2e0,#19d3c5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{opacity:.85;margin:0 0 22px;max-width:70ch}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px;align-items:center}
+.bar button,.bar a{font:700 13px 'SSFredoka',sans-serif;border:2px solid #fff;background:var(--p);color:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.bar .ghost{background:transparent}
+section{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 16px;margin:0 0 14px}
+section h2{font:700 20px 'SSFredoka',sans-serif;margin:0;color:var(--g)}
+section p.what{margin:2px 0 10px;opacity:.85}
+.trk{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px dashed rgba(255,255,255,.12)}
+.trk:first-of-type{border-top:0}
+.play{width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:var(--m);color:#fff;font-size:16px;cursor:pointer}
+.play.on{background:var(--t)}
+.nm b{display:block;font:700 15px 'SSFredoka',sans-serif}
+.nm small{opacity:.7;word-break:break-word}
+.prog{height:4px;background:rgba(255,255,255,.15);border-radius:4px;margin-top:6px;overflow:hidden;cursor:pointer}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p),var(--t))}
+.vote{display:flex;gap:4px}
+.vote button{border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:8px;padding:6px 9px;cursor:pointer;font:700 12px 'SSNunito',sans-serif}
+.vote button.yes{background:#16a34a;border-color:#16a34a}.vote button.no{background:#e11d48;border-color:#e11d48}
+.miss{color:#fca5a5;font-weight:700}
+textarea{width:100%;min-height:150px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;font:13px/1.4 ui-monospace,monospace;padding:10px}
+@media (max-width:560px){h1{font-size:32px}.trk{grid-template-columns:auto 1fr}.vote{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<main>
+<h1>Secret Story Music</h1>
+<p class="lede">Every cue the viewer plays, by the moment it plays under. Press play to listen, then mark each one 👍 or 👎 (a note helps: "too sad", "use it for the parties"). Your marks stay in this browser; <b>Copy my notes</b> gives you a text to paste back to me.</p>
+<div class="bar"><button type="button" id="copy">Copy my notes</button><button type="button" class="ghost" id="stop">Stop</button><span id="count"></span></div>
+<div id="list"></div>
+<section><h2>Your notes</h2><p class="what">Paste this back in the chat.</p><textarea id="out" readonly></textarea></section>
+</main>
+<script>
+const DIR = '../../assets/audio/ss/';
+// (the same table as js/vp-bb-ep/ss-sound.js SS_BEDS, plus the titles and the effects)
+const ROLES = [
+  ['Opening titles', 'theme', 'The generic over the cast: I Wanna Chat (2014 remix).', ['theme']],
+  ['Closing', 'ending', 'The closing wall of faces: Epilogue.', ['ending']],
+  ['The prime goes on air', 'ss-prime', 'The full generic, as the studio opens.', ['theme-long']],
+  ['"Previously in Secret Story"', 'ss-previously', "Under the narrator's recap: the start of the days, and the prime's package of the week.", ['previously-1', 'previously-2', 'previously-3']],
+  ["The narrator's cliffhanger", 'ss-cliff', 'The end of the days, before the Voice asks the public to vote.', ['cliff']],
+  ['The Voice speaks', 'ss-voice', "The Eye of the Net jingle bed, under the Voice's announcements.", ['voice']],
+  ['Launch night arrivals', 'ss-launch', 'Secret Boys Secret Girls.', ['launch']],
+  ['A secret told', 'ss-anthem', 'The Hymn of Secrets: the list of secrets, a secret found.', ['anthem']],
+  ['Missions', 'ss-mission', 'A mission given, a mission judged.', ['mission-1', 'mission-2']],
+  ['The hunt', 'ss-hunt', 'Theories, clues, the clue table.', ['hunt-1', 'hunt-2', 'hunt-3', 'hunt-4', 'hunt-5', 'hunt-6']],
+  ['Fun in the house', 'ss-fun', 'Comedy, mischief, the kitty board.', ['fun-1', 'fun-2', 'fun-3', 'fun-4', 'fun-5']],
+  ["The Voice's evening games, the Golden Buzz", 'ss-quirky', 'The odd and the funny.', ['quirky-1', 'quirky-2']],
+  ['The store', 'ss-store', 'Ninety seconds to grab what you can.', ['store']],
+  ['Parties', 'ss-party', 'Getting ready, then the party.', ['party-1', 'party-2', 'party-3', 'party-4', 'party-5']],
+  ['Love', 'ss-love', 'A flirt, a kiss, a family visit.', ['love-1', 'love-2', 'love-3', 'love-4']],
+  ['A plot', 'ss-plot', 'Schemes, the room of truths, a confrontation.', ['plot']],
+  ['A row', 'ss-drama', 'A fight breaking out.', ['drama-1', 'drama-2']],
+  ['Waiting for the axe', 'ss-tension', 'Nominations, the buzzer, dilemmas, the red phone.', ['tension-1', 'tension-2']],
+  ['The verdict', 'ss-wait', 'The nominees in the airlock, waiting.', ['wait']],
+  ["The bailiff's envelope", 'ss-bailiff', 'The call of the bailiff as the envelope opens.', ['bailiff']],
+  ['A goodbye', 'ss-sad', 'The eliminated walks out; the finalists look back.', ['sad-1', 'sad-2', 'sad-3', 'sad-4', 'sad-5']],
+  ["The Voice's game, a return", 'ss-epic', 'Epic.', ['epic']],
+  ['The secret room', 'ss-secretroom', 'Behind the bookcase.', ['secretroom']],
+  ['The house at night', 'ss-night', 'Night ambience.', ['night']],
+  ['A quiet reflection', 'ss-think', 'Thinking it over.', ['think']],
+  ['After Secret', 'ss-after', 'The after-show.', ['after']],
+  ["The finalists' entrance", 'ss-finalists', 'The final night.', ['finalists-1', 'finalists-2', 'finalists-3']],
+  ['"And the winner is…"', 'ss-winner', 'The winner crowned.', ['winner']],
+  ['Sound effects (CC0)', 'sfx', 'The buzzer, the red phone, coins, the studio crowd, the wipe.', ['sfx/buzz', 'sfx/ring', 'sfx/coin', 'sfx/applause', 'sfx/cheer', 'sfx/whoosh', 'sfx/open']],
+];
+let manifest = {};
+const KEY = 'ss-music-notes';
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; } };
+const save = n => { try { localStorage.setItem(KEY, JSON.stringify(n)); } catch { /* fine */ } };
+let notes = load();
+const player = new Audio();
+let current = null;
+function render() {
+  const el = document.getElementById('list');
+  el.innerHTML = ROLES.map(([title, id, what, files]) => `<section><h2>${title}</h2><p class="what">${what}</p>${files.map(f => {
+    const m = manifest[f];
+    const n = notes[f] || {};
+    return `<div class="trk" data-f="${f}"><button type="button" class="play" title="Play">▶</button>
+      <div class="nm"><b>${f}</b><small>${m ? `${m.src} · ${Math.round(m.dur)} s` : '<span class="miss">file missing</span>'}</small><div class="prog"><i></i></div></div>
+      <div class="vote"><button type="button" class="${n.v === 'yes' ? 'yes' : ''}" data-v="yes">👍</button><button type="button" class="${n.v === 'no' ? 'no' : ''}" data-v="no">👎</button><button type="button" data-v="note">✎${n.t ? ' ✓' : ''}</button></div></div>`;
+  }).join('')}</section>`).join('');
+  out();
+}
+function out() {
+  const lines = Object.entries(notes).filter(([, n]) => n.v || n.t).map(([f, n]) => `${f}: ${n.v === 'yes' ? 'like' : n.v === 'no' ? 'dislike' : ''}${n.t ? ` (${n.t})` : ''}`);
+  document.getElementById('out').value = lines.length ? `Secret Story music notes:\n${lines.join('\n')}` : '';
+  const total = ROLES.reduce((a, r) => a + r[3].length, 0);
+  document.getElementById('count').textContent = `${Object.values(notes).filter(n => n.v).length} of ${total} marked`;
+}
+document.addEventListener('click', e => {
+  const row = e.target.closest('.trk');
+  if (e.target.closest('.play') && row) {
+    const f = row.dataset.f;
+    document.querySelectorAll('.play.on').forEach(b => { b.classList.remove('on'); b.textContent = '▶'; });
+    if (current === f && !player.paused) { player.pause(); current = null; return; }
+    current = f; player.src = `${DIR}${f}.mp3`; player.play().catch(() => {});
+    const b = row.querySelector('.play'); b.classList.add('on'); b.textContent = '❚❚';
+  } else if (e.target.closest('.prog') && row && current === row.dataset.f && player.duration) {
+    const r = e.target.closest('.prog').getBoundingClientRect();
+    player.currentTime = player.duration * (e.clientX - r.left) / r.width;
+  } else if (e.target.dataset.v && row) {
+    const f = row.dataset.f, v = e.target.dataset.v;
+    notes[f] ||= {};
+    if (v === 'note') { const t = prompt(`A note on ${f}:`, notes[f].t || ''); if (t !== null) notes[f].t = t.trim(); }
+    else notes[f].v = notes[f].v === v ? null : v;
+    save(notes); render();
+  }
+});
+player.addEventListener('timeupdate', () => {
+  const row = document.querySelector(`.trk[data-f="${CSS.escape(current || '')}"]`);
+  if (row && player.duration) row.querySelector('.prog i').style.width = `${100 * player.currentTime / player.duration}%`;
+});
+player.addEventListener('ended', () => document.querySelectorAll('.play.on').forEach(b => { b.classList.remove('on'); b.textContent = '▶'; }));
+document.getElementById('stop').onclick = () => { player.pause(); document.querySelectorAll('.play.on').forEach(b => { b.classList.remove('on'); b.textContent = '▶'; }); };
+document.getElementById('copy').onclick = async () => { const t = document.getElementById('out').value; try { await navigator.clipboard.writeText(t); } catch { document.getElementById('out').select(); } };
+fetch(`${DIR}manifest.json`).then(r => (r.ok ? r.json() : {})).catch(() => ({})).then(m => { manifest = m || {}; render(); });
+render();
+</script>
+</body>
+</html>

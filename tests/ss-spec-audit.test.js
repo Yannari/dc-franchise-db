@@ -31,7 +31,7 @@ describe('Secret Story spec audit', () => {
       riddleSolved: 0, riddleSold: 0, winnerRead: {}, winnerTop: 0, firstOutUnseen: 0, firstOuts: 0, parties: [], storeShut: 0, errors: [],
       badText: [], ledger: 0, weeks: [], signatures: {}, primeClicks: [], launchClicks: [],
       // twist families 1 and 2: the secret room's dilemmas, the cards, the week's nomination twists
-      roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {} };
+      roomDilemmas: [], cardsGiven: [], cardsPlayed: {}, weekTwists: {}, twistWeeks: 0, nomWeeks: 0, fakeKinds: {}, primeThemes: {}, themedPrimes: 0, primes: 0 };
     for (let s = 1; s <= SEASONS; s++) {
       const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[(i + s) % ARCH.length] }));
       seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
@@ -52,6 +52,7 @@ describe('Secret Story spec audit', () => {
       for (const p of (st.powers || []).filter(x => x.used)) bump(m.cardsPlayed, p.kind);
       for (const t of Object.values(st.weekTwists || {})) if (t?.kind) { bump(m.weekTwists, t.kind); m.twistWeeks++; }
       m.nomWeeks += rows.filter(r => (r.acts || []).some(a => a.secretStory)).length;
+      for (const p of st.primes || []) { m.primes++; if (p.theme) { m.themedPrimes++; bump(m.primeThemes, p.theme); } }
       bump(m.signatures, st.draw?.signature || 'none');
       if (st.role) { bump(m.roles, st.role.id); if (st.role.exposedWeek) { m.unmasked++; m.unmaskWeek.push(st.role.exposedWeek); } }
       if (st.houseSecret?.solvedBy) { m.riddleSolved++; if (st.houseSecret.sold) m.riddleSold++; }
@@ -95,6 +96,7 @@ describe('Secret Story spec audit', () => {
       `prime clicks per week ${mean(m.primeClicks)}; launch night clicks ${mean(m.launchClicks)}`,
       `fake eliminations by kind/role ${JSON.stringify(m.fakeKinds)}`,
       `secret-room dilemmas per season ${mean(m.roomDilemmas)}; cards handed out per season ${mean(m.cardsGiven)}, played ${JSON.stringify(m.cardsPlayed)}`,
+      `themed primes ${pct(m.themedPrimes, m.primes)} ${JSON.stringify(m.primeThemes)}`,
       `weeks with a nomination twist ${pct(m.twistWeeks, m.nomWeeks)} (the design: about a third from week two) ${JSON.stringify(m.weekTwists)}`,
       `engine errors ${m.errors.length}; ledger mismatches ${m.ledger}; broken or wrong-show lines ${m.badText.length}`,
       ...[...new Set(m.badText)].slice(0, 12).map(x => `  ${x}`),

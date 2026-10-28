@@ -106,6 +106,8 @@ const BY_ID = [
   [/^bb-ss-ntwist-houses-/, 'ss-epic'],
   [/^bb-ss-ntwist-/, 'ss-tension'],
   [/^bb-ss-prime-entry-/, 'ss-epic'],
+  [/^bb-ss-prime-bridge-/, 'ss-tension'],
+  [/^bb-ss-prime-rings-/, 'ss-quirky'],
   [/^bb-ss-houseend/, 'ss-cliff'],
   [/^bb-ss-prime-package/, 'ss-previously'],
   [/^bb-ss-prime-open/, 'ss-prime'],

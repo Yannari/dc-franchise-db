@@ -703,6 +703,8 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   }
   for (const s of /** @type {any[]} */ (night.segments)) {
     for (const [a, b, d] of s.effects?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
+    // (the Bridge of Sacrifices carries the public's read of each crossing: js/ss/prime-themes.js)
+    for (const [n, axis, d, why] of s.pub || []) pub(n, axis, d, why);
     popFx(s.effects?.pop, s.kind);
     // and what the country made of it
     if (s.kind === 'return') { /* its bonds are above */ }
@@ -716,9 +718,9 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
       for (const t of s.talkers || []) { pub(t, 'real', -0.22, `was two-faced about ${s.subject}`); pub(t, 'heat', 0.12, `was two-faced about ${s.subject}`); }
     } else if (s.kind === 'visit') { pub(s.to, 'pity', 0.2, 'got a visit from home'); pub(s.to, 'warmth', 0.25, 'got a visit from home'); pub(s.to, 'arc', 0.15, 'got a visit from home'); }
   }
-  (state.primes ||= []).push({ week: ctx.week, name: night.name, segments: night.segments.map(s => s.kind) });
+  (state.primes ||= []).push({ week: ctx.week, name: night.name, theme: night.theme || null, segments: night.segments.map(s => s.kind) });
   const players = [...new Set(/** @type {any[]} */ (night.segments).flatMap(s => [s.to, s.answered, s.subject, s.target, ...(s.talkers || []), ...(s.mission?.holders || [])]).filter(Boolean))];
-  return [{ type: 'ss-prime', week: ctx.week, name: night.name, nominees: [...nominees], segments: night.segments, holders: players.slice(0, 6),
+  return [{ type: 'ss-prime', week: ctx.week, name: night.name, theme: night.theme || null, nominees: [...nominees], segments: night.segments, holders: players.slice(0, 6),
     // last week's eliminated, on the studio couch all night (S14)
     couch: state.lastEvicted && state.lastEvicted.week === ctx.week - 1 ? state.lastEvicted.name : null,
     kitty: { ...(state.kitty || {}) },
@@ -885,7 +887,7 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
     invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 });
   const before = [...dOffice, ...cast.nominees];
   // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
-  const post = state ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally }) : { nominees: before, played: [] };
+  const post = state ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };
   // linked destinies: a nominee's partner goes up too (unless immune)
   const linked = [];
   if (nt?.kind === 'linked') for (const n of [...post.nominees]) {

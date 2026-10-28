@@ -68,7 +68,7 @@ export function cardsBeforeNominations(state, ctx, { house = [], immune = [], we
  * After the nominees are read: at most one card, the one that matters most. Returns { nominees, played }.
  * `tally`: the house's votes (the replacement for a saved nominee is the next most named, when the card says so).
  */
-export function cardsAfterNominations(state, ctx, { house = [], nominees = [], immune = [], week = 0, tally = {} } = {}) {
+export function cardsAfterNominations(state, ctx, { house = [], nominees = [], immune = [], week = 0, tally = {}, locked = [] } = {}) {
   const rng = ctx.rng || Math.random;
   const B = (a, b) => Number(ctx.bond(a, b)) || 0;
   const S = (n, k) => Number(ctx.stat(n, k)) || 5;
@@ -79,7 +79,8 @@ export function cardsAfterNominations(state, ctx, { house = [], nominees = [], i
   const cards = liveCards(state, house, week);
   // the secret immunity: a holder whose name was read plays it, and the house's next name goes up
   for (const p of cards.filter(c => c.kind === 'immunity')) {
-    if (!nominees.includes(p.holder)) continue;
+    // (a nomination for life cannot be cancelled by a card: `locked`)
+    if (!nominees.includes(p.holder) || locked.includes(p.holder)) continue;
     const put = nextOfHouse([p.holder]);
     if (!put) continue;
     p.used = week;
@@ -87,7 +88,7 @@ export function cardsAfterNominations(state, ctx, { house = [], nominees = [], i
   }
   // the Switch: it covers the holder and the one they protect
   for (const p of cards.filter(c => c.kind === 'switch')) {
-    const covered = [p.holder, p.protects].filter(n => n && nominees.includes(n));
+    const covered = [p.holder, p.protects].filter(n => n && nominees.includes(n) && !locked.includes(n));
     if (!covered.length) continue;
     const saved = covered[0];
     const put = foeOf(p.holder, [saved]);
@@ -97,8 +98,8 @@ export function cardsAfterNominations(state, ctx, { house = [], nominees = [], i
   }
   // the Joker: played to save a friend, or by a strategist to swap a weak target for a strong one
   for (const p of cards.filter(c => c.kind === 'joker')) {
-    const friend = nominees.filter(n => n !== p.holder && B(p.holder, n) >= 3).sort((a, b) => B(p.holder, b) - B(p.holder, a))[0];
-    const self = nominees.includes(p.holder) ? p.holder : null;
+    const friend = nominees.filter(n => n !== p.holder && !locked.includes(n) && B(p.holder, n) >= 3).sort((a, b) => B(p.holder, b) - B(p.holder, a))[0];
+    const self = nominees.includes(p.holder) && !locked.includes(p.holder) ? p.holder : null;
     const saved = self || friend;
     const urge = self ? 0.9 : friend ? 0.45 + B(p.holder, friend) * 0.05 + S(p.holder, 'loyalty') * 0.02 : 0;
     // the longer it is held, the likelier it is played before it expires

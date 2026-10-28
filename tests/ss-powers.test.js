@@ -141,3 +141,52 @@ describe('the week the Voice changes the nominations', () => {
   });
 });
 
+describe('the themed primes', () => {
+  const run = theme => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off' });
+    withSeededRandom(8, () => { simulateBBEpisode(); gs.bb.secretStory.forcePrimeTheme = { 2: theme }; simulateBBEpisode(); });
+    const row = gs.episodeHistory.find(r => r.num === 2);
+    return { prime: row.acts.find(a => a.type === 'ss-prime'), screens: bbWeekSteps(row, { host: 'Josh' }) };
+  };
+  const clean = screens => screens.flatMap(s => s.steps.map(st => String(st.t || ''))).filter(t => /\bundefined\b|\bNaN\b/.test(t));
+  const titled = (screens, name) => screens.some(s => /^bb-ss-prime-open/.test(s.id) && s.steps.some(st => st.magneto?.title === name));
+  it('the Red Phone prime rings more than once', () => {
+    const { prime, screens } = run('red-phone');
+    expect(prime.theme).toBe('red-phone');
+    expect(prime.segments.filter(s => s.kind === 'phone').length).toBeGreaterThanOrEqual(2);
+    expect(titled(screens, 'The Red Phone')).toBe(true);
+    expect(clean(screens)).toEqual([]);
+  });
+  it('the Night of Dilemmas has three', () => {
+    const { prime, screens } = run('dilemmas');
+    expect(prime.segments.filter(s => s.kind === 'dilemma').length).toBeGreaterThanOrEqual(2);
+    expect(clean(screens)).toEqual([]);
+  });
+  it('the Bridge of Sacrifices: every crossing a choice with its consequence, called by the viewer', () => {
+    const { prime, screens } = run('bridge');
+    const b = prime.segments.find(s => s.kind === 'bridge');
+    expect(b?.crossings?.length).toBeGreaterThan(0);
+    const scr = screens.find(s => /^bb-ss-prime-bridge/.test(s.id));
+    expect(scr.steps.filter(st => st.ask).length).toBe(b.crossings.length);
+    expect(scr.steps.filter(st => st.settle).length).toBe(b.crossings.length);
+    expect(clean(screens)).toEqual([]);
+  });
+  it('the Rings: four powers handed out, the bank exchange spent tonight', () => {
+    const { prime, screens } = run('rings');
+    const r = prime.segments.find(s => s.kind === 'rings');
+    expect(r.rings.map(x => x.ring).sort()).toEqual(['bank', 'immunity', 'nominate', 'switch']);
+    expect((gs.bb.secretStory.powers || []).filter(p => p.from === 'ring').length).toBe(3);
+    expect(screens.some(s => /^bb-ss-prime-rings/.test(s.id))).toBe(true);
+    expect(clean(screens)).toEqual([]);
+  });
+  it('Truths Revealed: the room of truths, twice, two different housemates', () => {
+    const { prime, screens } = run('truths');
+    const t = prime.segments.filter(s => s.kind === 'truths');
+    expect(t.length).toBeGreaterThanOrEqual(1);
+    if (t.length === 2) expect(t[0].subject).not.toBe(t[1].subject);
+    expect(clean(screens)).toEqual([]);
+  });
+});
+

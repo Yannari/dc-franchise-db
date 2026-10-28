@@ -25,6 +25,7 @@ import { secretOf, theoryOf, showClue, hiddenSecrets } from './hunt.js';
 import { runDilemma, nominateNext, immuneNext } from './dilemmas.js';
 import { RATE } from './twists.js';
 import { grantPower } from './powers.js';
+import { primeTheme, bridgeOfSacrifices, handOutRings, PRIME_THEMES } from './prime-themes.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const bondOf = (ctx, a, b) => Number(ctx?.bond?.(a, b)) || 0;
@@ -206,10 +207,12 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
   const segs = [];
+  // the night's theme, if it has one (js/ss/prime-themes.js): it decides what the prime is made of
+  const theme = primeTheme(state, ctx, { house, tools });
   if (missions.length) segs.push({ kind: 'mission', results: missions, effects: { bond: [], pop: [] } });
-  // the dilemmas: one most weeks, two some weeks, never on a nominee's last night
+  // the dilemmas: one most weeks, two some weeks, three on the Night of Dilemmas, never on a nominee's last night
   const free = house.filter(n => !nominees.includes(n));
-  const nDil = week <= 1 ? 1 : rng() < (RATE.dilemmas[tools.dilemmas] ?? 0.35) ? 2 : 1;
+  const nDil = theme === 'dilemmas' ? 3 : theme === 'bridge' || theme === 'rings' ? 0 : week <= 1 ? 1 : rng() < (RATE.dilemmas[tools.dilemmas] ?? 0.35) ? 2 : 1;
   const used = [];
   for (let i = 0; i < nDil && free.length; i++) {
     const to = free.filter(n => !segs.some(s => s.to === n))[Math.floor(rng() * free.length)] || free[0];
@@ -219,14 +222,18 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   // the red phone: a signature tool, rings on some primes (more in the seasons that use it)
   // the season's draw sets how often each tool comes out (js/ss/twists.js)
   const phoneP = tools.phone === false ? 0 : RATE.phone[tools.phone] ?? 0.32;
-  if (week >= 2 && rng() < phoneP) { const p = ringPhone(state, ctx, { house }); if (p) segs.push(p); }
-  if (week >= 3 && rng() < (RATE.truths[tools.truths] ?? 0.28)) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }
+  if (theme === 'red-phone') { const n = 2 + (rng() < 0.4 ? 1 : 0); for (let i = 0; i < n; i++) { const p = ringPhone(state, ctx, { house }); if (p) segs.push({ ...p, ring: i + 1 }); } }
+  else if (week >= 2 && rng() < phoneP) { const p = ringPhone(state, ctx, { house }); if (p) segs.push(p); }
+  if (theme === 'truths') { const seen = new Set(); for (let i = 0; i < 2; i++) { const t = roomOfTruths(state, ctx, { house: house.filter(n => !seen.has(n)) }); if (t) { seen.add(t.subject); segs.push(t); } } }
+  else if (week >= 3 && rng() < (RATE.truths[tools.truths] ?? 0.28)) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }
+  if (theme === 'bridge') { const b = bridgeOfSacrifices(state, ctx, { house, nominees }); if (b) segs.push(b); }
+  if (theme === 'rings') { const r = handOutRings(state, ctx, { house, nominees }); if (r) segs.push(r); }
   const visited = segs.find(s => s.kind === 'dilemma' && s.visit);
   if (!visited && week >= 2 && rng() < (RATE.visits[tools.visits] ?? 0.3)) { const v = familyVisit(state, ctx, { house, nominees }); if (v) segs.push(v); }
   // the order on the night: missions early, the phone in the middle, the heart near the verdict
-  const ORDER = { mission: 1, dilemma: 2, phone: 3, truths: 4, visit: 5 };
+  const ORDER = { mission: 1, dilemma: 2, rings: 2.5, phone: 3, bridge: 3.5, truths: 4, visit: 5 };
   segs.sort((a, b) => ORDER[a.kind] - ORDER[b.kind]);
-  return { name: primeName(segs), segments: segs };
+  return { name: theme ? PRIME_THEMES[theme] : primeName(segs), theme, segments: segs };
 }
 
 /** Nobody's popularity, when the caller has none to give. */

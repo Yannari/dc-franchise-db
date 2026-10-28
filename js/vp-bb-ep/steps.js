@@ -37,6 +37,7 @@ import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
 import { ssWeekTwistScreen } from './ss-week-twist.js';
+import { ssBridgeScreen, ssRingsScreen } from './ss-prime-themes.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3343,6 +3344,11 @@ function ssPrimeOpenScreen(act, ctx, host) {
     { k: 'beat', t: ["The studio lights come up. The crowd is on its feet before the music has even finished.", "The theme music thunders in, and the studio crowd is already screaming.", "Lights, music, a wall of noise from the crowd. The prime is on air.", "The studio goes dark, then bright. The crowd cheers before anybody has said a word.", "The music hits, the lights sweep across the crowd, and the prime begins."][((ctx.week || 0) + 0) % 5], toast: ['THE PRIME · LIVE', '#e0b84a'], shake: true },
     { k: 'host', by: host, t: pickBy([`Good evening, and welcome to Secret Story, live!`, `Good evening, everybody, and welcome to the prime!`, `Good evening! Welcome to Secret Story, live from the studio.`], k) },
     { k: 'host', by: host, t: `Week ${ctx.week} in the House of Secrets. Tonight's prime: ${act.name}.`, big: ['Tonight', act.name] },
+    // a themed night gets its title card (js/ss/prime-themes.js)
+    ...(act.theme ? [{ k: 'beat', t: act.name, magneto: { title: act.name, sub: 'Tonight, live', n: 0 } },
+      { k: 'host', by: host, t: ({ 'red-phone': "Tonight the red phone will ring, and ring, and ring. Whoever answers... good luck.", dilemmas: 'Tonight, the Voice has prepared not one, not two, but three dilemmas.',
+        bridge: 'Tonight, the Bridge of Sacrifices is open. Friendships will be tested, live.', truths: 'Tonight, the truth comes out. Some of you are going to hear things you would rather not.',
+        rings: 'Tonight, four rings are hidden in the house, and each one holds a power.' })[act.theme] || '' }] : []),
     ...ssCouchSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }),
   ];
   // (the week itself is told by the package before the studio opens: vp-bb-ep/ss-prime-more.js)
@@ -3610,6 +3616,8 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'return') { if (!(seg.partner && out.some(s => s && s.id === `bb-ss-prime-return-${seg.partner}-w${ctx.week}`))) out.push(ssReturnScreen(seg, ctx, host)); }
     else if (seg.kind === 'voluntary') out.push(ssVoluntaryScreen(seg, ctx, host));
     else if (seg.kind === 'entry') out.push(ssGroupEntryScreen(seg, ctx, host, { ssv }));
+    else if (seg.kind === 'bridge') out.push(ssBridgeScreen(seg, ctx, host, { ssv }));
+    else if (seg.kind === 'rings') out.push(ssRingsScreen(seg, ctx, host, { ssv }));
     else if (seg.kind === 'accusation') out.push(ssAccusationScreen(seg, ctx, host));
     else if (seg.kind === 'unveil') out.push(ssUnveilScreen(seg, ctx, host));
     else if (seg.kind === 'dilemma') out.push(ssDilemmaScreen(seg, ctx, host));

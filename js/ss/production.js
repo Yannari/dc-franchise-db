@@ -17,6 +17,8 @@ export const MAX_A_WEEK = 3;
 /** Which role a secret plays, from its catalogue id (js/ss/casting.js) or, for an old save, its words. */
 export function roleOf(secret) {
   if (!secret) return null;
+  // a production secret the user wrote plays like the role they chose on the cast screen
+  if (secret.plays) return PLAYED.includes(secret.plays) ? secret.plays : null;
   const id = String(secret.poolId || secret.id || '');
   const m = /^prod-([a-z-]+)$/.exec(id);
   if (m) return m[1];
@@ -29,6 +31,24 @@ export function roleOf(secret) {
 
 /** The roles this engine plays (the Secret Box and the intruders are hidden groups; see hidden-groups.js). */
 export const PLAYED = ['accomplice', 'fake-couple', 'public-couple', 'fake-siblings', 'public-family', 'enemies', 'chosen', 'tunnels', 'house-key', 'access-code', 'protector', 'saboteur', 'spy', 'oracle', 'guardians'];
+/** The weekly jobs, for the cast screen's "Plays like" (`min`: how many holders the job needs). */
+export const ROLE_JOBS = [
+  { id: 'accomplice', label: "The Voice's accomplice: carries out the Voice's orders", min: 1 },
+  { id: 'fake-couple', label: 'A fake couple: keeps a romance going for the house', min: 2 },
+  { id: 'public-couple', label: "The public's couple: a romance the country chose", min: 2 },
+  { id: 'fake-siblings', label: 'Fake siblings: act like family', min: 2 },
+  { id: 'public-family', label: "The public's family: a family the country chose", min: 2 },
+  { id: 'enemies', label: 'The worst of enemies: fight in public, allies in private', min: 2 },
+  { id: 'chosen', label: "The chosen ones: the Voice's tips, and one immunity", min: 1 },
+  { id: 'tunnels', label: 'The masters of the tunnels: listen through the walls', min: 1 },
+  { id: 'house-key', label: 'The key: carries part of the secret of the house', min: 1 },
+  { id: 'access-code', label: 'The access code: carries part of the secret of the house', min: 1 },
+  { id: 'protector', label: "The couple's protector: keeps a real couple's secret safe", min: 1 },
+  { id: 'saboteur', label: 'The saboteur: sends the hunters the wrong way', min: 1 },
+  { id: 'spy', label: "The internet's spy: films private moments for the public", min: 1 },
+  { id: 'oracle', label: 'The oracle: a hidden phone, and a lock to find', min: 1 },
+  { id: 'guardians', label: 'The guardians of transparency: name a liar every week', min: 1 },
+];
 
 /**
  * The week's jobs. Returns [{ role, holders, ok, money, ...detail, effects: { bond, pub }, evidence }].
@@ -158,7 +178,8 @@ export function productionWeek(state, ctx, { house = [] } = {}) {
     }
     if (!ev) continue;
     s.lastJob = wk;
-    out.push({ ...ev, effects: fx, evidence });
+    // (a secret the user wrote keeps its own words on screen)
+    out.push({ ...ev, text: s.text, custom: !!s.plays, effects: fx, evidence });
   }
   return out;
 }

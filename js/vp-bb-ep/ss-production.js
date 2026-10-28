@@ -42,7 +42,7 @@ export function ssProductionScreen(act, ctx, H) {
   const you = hs.length > 1 ? both(hs) : a;
   const w = act.watcher;
   /** @type {any[]} */ let steps = [];
-  const brief = t => ssv(`${you}, ${t}`, { scene: DR(hs), toast: [ROLE_TITLE[act.role]?.toUpperCase() || 'PRODUCTION SECRET', '#7c5cff'] });
+  const brief = t => ssv(`${you}, ${t}`, { scene: DR(hs), toast: [(!act.custom && ROLE_TITLE[act.role]?.toUpperCase()) || 'PRODUCTION SECRET', '#7c5cff'] });
   const paid = (who, amt) => ssv(`Well done. ${money(amt)} goes into ${who.length > 1 ? 'each of your kitties' : 'your kitty'}.`, { scene: DR(who) });
   const noticed = (line, dr) => [{ k: 'beat', scene: LIVING([w, a]), t: line }, { k: 'dr', by: w, scene: DR(w), t: dr }];
   switch (act.role) {
@@ -134,5 +134,6 @@ export function ssProductionScreen(act, ctx, H) {
   }
   const first = steps[0]?.scene || DR(hs);
   return { id: `bb-ss-prod-${act.role}-${a}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '15:00', set: first.set, plate: first.plate, room: first.room, cam: first.cam,
-    kicker: first.kicker, title: ROLE_TITLE[act.role] || 'A Production Secret', label: ROLE_TITLE[act.role] || 'A Production Secret', sub: 'A production secret', cast: first.cast, steps };
+    kicker: first.kicker, title: (!act.custom && ROLE_TITLE[act.role]) || 'A Production Secret', label: (!act.custom && ROLE_TITLE[act.role]) || 'A Production Secret',
+    sub: act.custom ? act.text : 'A production secret', cast: first.cast, steps };
 }

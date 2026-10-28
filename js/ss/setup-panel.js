@@ -15,6 +15,7 @@ import { SS_FORMAT } from '../shows.js';
 import { careerOf } from '../franchise-meta.js';
 import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS, PRODUCTION_SECRETS, productionSecret, drawProductionSecret } from './casting.js';
 import { playerAvatarUrl } from '../players.js';
+import { ROLE_JOBS } from './production.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const persist = () => { try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* private mode */ } };
@@ -56,66 +57,137 @@ export function ensureSsCast() {
   if (JSON.stringify(seasonConfig.ssSecrets) !== before) persist();
 }
 
-const BADGE = { pool: ['DRAWN', '#8b8fa3'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'], production: ['PRODUCTION', '#e11d48'] };
+const BADGE = { pool: ['DRAWN', '#8b8fa3'], own: ['YOURS', '#e0b84a'], history: ['REAL', '#5fb3ff'], canon: ['CANON', '#c084fc'], production: ['PRODUCTION', '#ff3ea5'] };
+// the tag on a housemate's card, in words
+const SOURCE = { pool: ['Drawn', '#9b97b8'], own: ['Yours', '#f5c542'], history: ['From their life', '#5fb3ff'], canon: ['Canon', '#c084fc'], production: ['Production', '#ff3ea5'] };
 
 /** Is the season being cast a Secret Story season? (the cast screen asks, to show its Secrets tab) */
 export function isSecretStorySeason() { return seasonFormat(seasonConfig) === SS_FORMAT; }
 
 // THE SECRETS TAB of the cast screen (the user, 2026-10-28: "secret assignment should be better visually and be in
-// cast setup, not in season setup: a tab next to Grid/Tribes, like The Circle"). Every housemate as a card: the face,
-// the name, the secret on a pill in the show's colours, where it came from, and the ways to change it.
+// cast setup, not in season setup: a tab next to Grid/Tribes, like The Circle"; then, on the first version: "it's
+// very ugly"). A calm night board in the show's colours: every housemate's card (face, name, the secret as a quote,
+// where it came from, the ways to change it), and the production secrets as the Voice's envelopes, cast with a
+// three-step composer (choose the secret, click who keeps it, and for one of your own, the job it plays).
 const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '#c8137a', '#22c55e'];
 const colOf = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
+const EYE = `<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M2 20C12 6 22 2 32 2s20 4 30 18C52 34 42 38 32 38S12 34 2 20z" fill="#fff"/><circle cx="32" cy="20" r="13" fill="#3bb3ff"/><circle cx="32" cy="20" r="13" fill="url(#ssbEyeG)"/><circle cx="32" cy="20" r="6.5" fill="#0b0920"/><circle cx="36.5" cy="15.5" r="3" fill="#fff"/><path d="M2 20C12 6 22 2 32 2s20 4 30 18" fill="none" stroke="#ff3ea5" stroke-width="3" stroke-linecap="round"/><defs><radialGradient id="ssbEyeG" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#7fd4ff"/><stop offset="1" stop-color="#1d4fd1"/></radialGradient></defs></svg>`;
 const BOARD_CSS = `
 @font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700}
-.ssb{--p:#ff3ea5;--m:#c8137a;--t:#19d3c5;--i:#2b0d3f;--g:#f5c542;border-radius:18px;padding:20px 18px 26px;color:#fff;
-  background:radial-gradient(ellipse 60% 30% at 15% 100%,rgba(255,255,255,.18),transparent 70%),radial-gradient(ellipse 50% 26% at 90% 0%,rgba(255,255,255,.14),transparent 70%),
-  linear-gradient(170deg,#7c5cff 0%,#c8137a 45%,#5b0d4f 100%)}
-.ssb-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.ssb-t{font:700 30px/1 'SSFredoka',sans-serif;letter-spacing:.01em;background:linear-gradient(90deg,#fff,#ffd0e6 40%,#b8fff6);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
-.ssb-sub{font-size:13px;opacity:.9;max-width:62ch;margin-top:4px}
-.ssb-tally{display:flex;gap:6px;flex-wrap:wrap}
-.ssb-chip{font:800 11px/1 system-ui,sans-serif;letter-spacing:.08em;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3)}
-.ssb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.ssb-card{position:relative;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:12px 12px 10px;backdrop-filter:blur(4px);
-  box-shadow:0 10px 24px rgba(43,13,63,.35);display:flex;flex-direction:column;gap:10px;transition:transform .15s}
-.ssb-card:hover{transform:translateY(-2px)}
-.ssb-top{display:flex;align-items:center;gap:10px}
-.ssb-face{width:54px;height:54px;border-radius:50%;overflow:hidden;flex:none;background:var(--c);box-shadow:0 0 0 3px #fff}
-.ssb-face img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
-.ssb-nm{font:700 18px/1.1 'SSFredoka',sans-serif}
-.ssb-src{display:inline-block;margin-top:3px;font:800 9px/1 system-ui,sans-serif;letter-spacing:.1em;padding:4px 7px;border-radius:999px;background:#fff;color:var(--sc)}
-.ssb-pill{position:relative;border-radius:14px;padding:12px 12px 12px 14px;font:800 13.5px/1.3 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.01em;color:#fff;
-  background:linear-gradient(90deg,var(--g1),var(--g2));box-shadow:0 0 0 2px rgba(255,255,255,.85)}
-.ssb-pill.g0{--g1:#fff;--g2:#ffe3f3;color:#c8137a}.ssb-pill.g1{--g1:#3bb3ff;--g2:#ff3ea5}.ssb-pill.g2{--g1:#7c5cff;--g2:#ff7a59}.ssb-pill.g3{--g1:#ff3ea5;--g2:#f5c542}
-.ssb-pill .seal{position:absolute;right:8px;top:-9px;font:700 9px/1 'SSFredoka',sans-serif;letter-spacing:.2em;background:#e11d48;color:#fff;padding:4px 7px;border-radius:6px;border:2px solid #fff;rotate:6deg}
-.ssb-pair{font-size:12px;font-weight:700;color:#ffe14d}
-.ssb-act{display:flex;flex-wrap:wrap;gap:6px}
-.ssb-act button,.ssb-act select{font:700 12px system-ui,sans-serif;border-radius:999px;border:1.5px solid rgba(255,255,255,.7);background:rgba(43,13,63,.35);color:#fff;padding:6px 10px;cursor:pointer;max-width:100%}
-.ssb-act select{max-width:150px}
-.ssb-act button:hover{background:rgba(255,255,255,.2)}
-.ssb-lock{font-size:12px;opacity:.85}
+.ssb{--bg:#110e22;--card:#1b1734;--card2:#231e42;--line:rgba(255,255,255,.08);--ink:#f4f1ff;--dim:#a6a1c6;--pink:#ff3ea5;--gold:#f5c542;--teal:#19d3c5;
+  color:var(--ink);background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(124,92,255,.28),transparent 70%),var(--bg);border:1px solid var(--line);border-radius:18px;padding:22px 20px 26px;
+  font:400 14px/1.45 system-ui,-apple-system,'Segoe UI',sans-serif}
+.ssb *{box-sizing:border-box}
+.ssb button{font:inherit;color:inherit}
+.ssb-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.ssb-brand{display:flex;align-items:center;gap:14px}
+.ssb-eye{width:58px;height:36px;flex:none;filter:drop-shadow(0 0 12px rgba(59,179,255,.45))}
+.ssb-eye svg{width:100%;height:100%}
+.ssb-t{font:600 26px/1.1 'SSFredoka',sans-serif;letter-spacing:.01em}
+.ssb-sub{color:var(--dim);font-size:13px;margin-top:3px;max-width:60ch}
+.ssb-stats{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ssb-stat b{display:block;font:600 22px/1 'SSFredoka',sans-serif}
+.ssb-stat span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.ssb-btn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:7px 12px;font-size:12.5px!important;font-weight:600!important;cursor:pointer;transition:background .15s,border-color .15s}
+.ssb-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28)}
+.ssb-btn.primary{background:var(--pink);border-color:var(--pink);color:#fff}
+.ssb-btn.primary:hover{background:#ff5cb4}
+.ssb-btn:disabled{opacity:.4;cursor:default}
+.ssb-sec{margin:0 0 22px}
+.ssb-sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ssb-sec-h h3{margin:0;font:600 17px 'SSFredoka',sans-serif}
+.ssb-sec-h p{margin:2px 0 0;color:var(--dim);font-size:12.5px}
+/* the Voice's envelopes */
+.ssb-env-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.ssb-env{position:relative;border-radius:14px;padding:14px 14px 12px;background:linear-gradient(160deg,#2a1f45,#1d1636);border:1px solid rgba(245,197,66,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.ssb-env::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;border-radius:14px 14px 0 0;background:linear-gradient(90deg,var(--gold),var(--pink))}
+.ssb-env-k{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.ssb-env-q{font:500 15px/1.35 Georgia,'Times New Roman',serif;font-style:italic;margin:6px 0 8px}
+.ssb-env-job{font-size:12px;color:var(--dim);margin-bottom:10px}
+.ssb-env-who{display:flex;align-items:center;gap:8px}
+.ssb-faces{display:flex}
+.ssb-faces .ssb-face{width:30px;height:30px;margin-left:-8px;box-shadow:0 0 0 2px #1d1636}
+.ssb-faces .ssb-face:first-child{margin-left:0}
+.ssb-env-names{font-size:12.5px;font-weight:600}
+.ssb-x{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:8px;border:0;background:transparent;color:var(--dim)!important;cursor:pointer;font-size:14px!important}
+.ssb-x:hover{background:rgba(255,255,255,.08);color:#fff!important}
+.ssb-new{border-radius:14px;border:1.5px dashed rgba(255,255,255,.2);background:transparent;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--dim)!important;transition:border-color .15s,color .15s}
+.ssb-new:hover{border-color:var(--gold);color:var(--gold)!important}
+.ssb-new b{font:600 15px 'SSFredoka',sans-serif}
+.ssb-new span{font-size:12px}
+/* the composer */
+.ssb-comp{display:none;margin-top:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);padding:16px}
+.ssb-comp.on{display:block}
+.ssb-step{margin-bottom:16px}
+.ssb-step-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;margin-bottom:10px}
+.ssb-step-h i{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--pink);display:grid;place-items:center;font-size:12px}
+.ssb-step-h small{font-weight:400;color:var(--dim)}
+.ssb-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.ssb-tile{text-align:left;border-radius:12px;border:1px solid var(--line);background:var(--card2);padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+.ssb-tile:hover{border-color:rgba(255,255,255,.25)}
+.ssb-tile.on{border-color:var(--gold);background:#2d2440;box-shadow:0 0 0 1px var(--gold)}
+.ssb-tile b{display:block;font:italic 500 13.5px/1.3 Georgia,serif}
+.ssb-tile span{display:block;font-size:11px;color:var(--dim);margin-top:4px}
+.ssb-tile.own b{font-style:normal;font-family:inherit;font-weight:700}
+.ssb-people{display:flex;flex-wrap:wrap;gap:8px}
+.ssb-person{display:flex;flex-direction:column;align-items:center;gap:4px;width:68px;padding:6px 2px;border-radius:12px;border:1px solid transparent;background:transparent;cursor:pointer;font-size:11.5px!important}
+.ssb-person .ssb-face{width:44px;height:44px;transition:box-shadow .15s,opacity .15s;opacity:.7}
+.ssb-person:hover .ssb-face{opacity:1}
+.ssb-person.on{background:rgba(255,62,165,.12);border-color:rgba(255,62,165,.5)}
+.ssb-person.on .ssb-face{opacity:1;box-shadow:0 0 0 2.5px var(--pink)}
+.ssb-person.busy .ssb-face{filter:grayscale(.6)}
+.ssb-own{display:none;grid-template-columns:1fr 1fr;gap:8px}
+.ssb-own.on{display:grid}
+.ssb-own label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--dim);font-weight:600}
+.ssb-own label.wide{grid-column:1/-1}
+.ssb input,.ssb select{width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0f0c1f;color:var(--ink);padding:9px 11px;font:500 13px system-ui,sans-serif;outline:none}
+.ssb input:focus,.ssb select:focus{border-color:var(--pink)}
+.ssb-comp-f{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--line)}
+.ssb-comp-msg{font-size:12.5px;color:var(--dim)}
+/* the housemates */
+.ssb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.ssb-card{position:relative;border-radius:14px;background:var(--card);border:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .15s}
+.ssb-card:hover{border-color:rgba(255,255,255,.18)}
+.ssb-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:var(--sc)}
+.ssb-top{display:flex;align-items:center;gap:12px}
+.ssb-face{width:52px;height:52px;border-radius:50%;overflow:hidden;flex:none;background:var(--c);display:block}
+.ssb-face img{width:100%;height:100%;object-fit:cover;object-position:50% 15%;display:block}
+.ssb-nm{font:600 16px/1.15 'SSFredoka',sans-serif}
+.ssb-src{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:11px;font-weight:600;color:var(--sc)}
+.ssb-src::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sc)}
+.ssb-q{font:500 15px/1.4 Georgia,'Times New Roman',serif;font-style:italic;color:#fff;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.035)}
+.ssb-q::before{content:'\\201C';color:var(--pink);margin-right:1px}
+.ssb-q::after{content:'\\201D';color:var(--pink)}
+.ssb-pair{font-size:12px;color:var(--dim)}
+.ssb-pair b{color:var(--ink);font-weight:600}
+.ssb-act{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.ssb-act .ssb-btn{padding:6px 10px}
+.ssb-act select{width:auto;max-width:170px;padding:6px 8px;font-size:12px}
+.ssb-lock{font-size:12px;color:var(--dim)}
 .ssb-write{display:none;flex-direction:column;gap:6px}
 .ssb-write.on{display:flex}
-.ssb-write input,.ssb-write select{border-radius:10px;border:0;padding:8px 10px;font:600 13px system-ui,sans-serif}
-.ssb-write button{align-self:flex-start;border-radius:999px;border:0;background:#fff;color:#c8137a;font:800 12px system-ui,sans-serif;padding:7px 14px;cursor:pointer}
-.ssb-rec{margin-top:16px;padding:12px 14px;border-radius:14px;background:rgba(43,13,63,.35)}
-.ssb-rec b{font:700 15px 'SSFredoka',sans-serif;display:block;margin-bottom:6px}
-.ssb-rec span{display:inline-block;margin:3px 6px 3px 0;font-size:12px;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.14)}
-.ssb-empty{padding:30px;text-align:center;font-size:15px}
-.ssb-prod{margin:0 0 16px;padding:14px;border-radius:16px;background:rgba(43,13,63,.42);border:1px solid rgba(255,255,255,.22)}
-.ssb-prod-h b{display:block;font:700 18px 'SSFredoka',sans-serif;color:#ffe14d}.ssb-prod-h span{font-size:12.5px;opacity:.9}
-.ssb-prod-cur{margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px}.ssb-chip.on{background:#e11d48;border-color:#fff;text-transform:none;letter-spacing:0}
-.ssb-chip.on button{margin-left:6px;border:0;background:transparent;color:#fff;cursor:pointer;font-weight:900}
-.ssb-prod-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.ssb-prod-row select,.ssb-prod-row input{flex:1 1 260px;border-radius:10px;border:0;padding:8px 10px;font:600 13px system-ui,sans-serif}
-.ssb-prod-row button,.ssb-prod-go{border-radius:999px;border:1.5px solid #fff;background:rgba(255,255,255,.15);color:#fff;font:800 12px system-ui,sans-serif;padding:7px 12px;cursor:pointer}
-.ssb-prod-go{margin-top:10px;background:#ff3ea5}
-.ssb-prod-who{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:13px}
-.ssb-prod-who label{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
-@media (max-width:560px){.ssb-t{font-size:24px}.ssb-grid{grid-template-columns:1fr}}`;
+.ssb-rec{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.ssb-rec-l{display:flex;flex-wrap:wrap;gap:8px}
+.ssb-rec-i{display:inline-flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:12px}
+.ssb-rec-i .ssb-face{width:24px;height:24px}
+.ssb-rec-i em{color:var(--dim);font-style:normal}
+.ssb-empty{padding:40px;text-align:center;color:var(--dim)}
+@media (max-width:560px){.ssb{padding:16px 12px}.ssb-t{font-size:21px}.ssb-grid,.ssb-env-row{grid-template-columns:1fr}.ssb-own{grid-template-columns:1fr}.ssb-stats{gap:12px}}`;
 
-/** The cast screen's Secrets tab: one card per housemate. */
+const faceOf = p => {
+  let url = '';
+  try { url = playerAvatarUrl(p) || ''; } catch { url = ''; }
+  return `<span class="ssb-face" style="--c:${colOf(p.name)}">${url ? `<img src="${esc(url)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>`;
+};
+// (the Secret Box and the intruders play as hidden groups, js/ss/hidden-groups.js, not a weekly job of production.js)
+const GROUP_JOBS = [{ id: 'intruders', label: 'The intruders: live hidden under the house, and sneak in' }, { id: 'secret-box', label: 'The Secret Box: watch the house from a hidden room, then walk in' }];
+const jobOf = e => {
+  const id = e?.plays || (/^prod-(.+)$/.exec(String(e?.id || '')) || [])[1];
+  const j = ROLE_JOBS.find(r => r.id === id) || GROUP_JOBS.find(r => r.id === id);
+  return j ? j.label.split(': ') : null;
+};
+
+/** The cast screen's Secrets tab: the Voice's envelopes, then one card per housemate. */
 export function ssSecretsBoardHTML() {
   if (!isSecretStorySeason()) return '';
   ensureSsCast();
@@ -123,60 +195,125 @@ export function ssSecretsBoardHTML() {
   if (!c.length) return `<style>${BOARD_CSS}</style><div class="ssb"><div class="ssb-empty">Add housemates, and every one of them walks in with a secret.</div></div>`;
   const names = c.map(p => p.name);
   const all = c.map(p => seasonConfig.ssSecrets?.[p.name]);
-  const tally = Object.keys(BADGE).map(k => [k, all.filter(e => (e?.source || 'pool') === k).length]).filter(([, v]) => v);
-  const cards = c.map((p, i) => {
+  const prodN = new Set(all.filter(e => e?.source === 'production').map(e => e.text)).size;
+  const shared = all.filter(e => e?.pair || (e?.group && e.source !== 'production')).length;
+  const cards = c.map(p => {
     const e = seasonConfig.ssSecrets?.[p.name];
-    const [label, col] = BADGE[e?.source] || BADGE.pool;
+    const [label, col] = SOURCE[e?.source] || SOURCE.pool;
     const locked = e?.source === 'canon';
     const hist = locked ? [] : historySecretOptions(p.name, { cast: names, pairs: pairs(), career: careers(p.name) });
     const n = esc(p.name);
     const partner = e?.group ? e.group.filter(m => m !== p.name).join(', ') : e?.pair || Object.entries(seasonConfig.ssSecrets || {}).find(([m, x]) => m !== p.name && x?.text && x.text === e?.text)?.[0];
-    let url = '';
-    try { url = playerAvatarUrl(p) || ''; } catch { url = ''; }
-    return `<div class="ssb-card">
-      <div class="ssb-top"><span class="ssb-face" style="--c:${colOf(p.name)}">${url ? `<img src="${esc(url)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>
-        <span><div class="ssb-nm">${n}</div><span class="ssb-src" style="--sc:${col}">${locked ? '🔒 ' : ''}${label}</span></span></div>
-      <div class="ssb-pill g${i % 4}"><span class="seal">SECRET</span>${esc(e?.text || '—')}</div>
-      ${partner ? `<div class="ssb-pair">${e?.source === 'production' ? `Cast by the Voice, with ${esc(partner)}.` : `Shared with ${esc(partner)}: they walk in pretending they have never met.`}</div>` : e?.source === 'production' ? '<div class="ssb-pair">Cast by the Voice.</div>' : ''}
+    const job = e?.source === 'production' ? jobOf(e) : null;
+    return `<div class="ssb-card" style="--sc:${col}">
+      <div class="ssb-top">${faceOf(p)}
+        <div><div class="ssb-nm">${n}</div><span class="ssb-src">${locked ? '🔒 ' : ''}${label}${job ? ` · ${esc(job[0])}` : ''}</span></div></div>
+      <div class="ssb-q">${esc(e?.text || '—')}</div>
+      ${partner ? `<div class="ssb-pair">${e?.source === 'production' ? `Cast by the Voice, with <b>${esc(partner)}</b>.` : `Shared with <b>${esc(partner)}</b>. They walk in pretending they have never met.`}</div>`
+        : e?.source === 'production' ? '<div class="ssb-pair">Cast by the Voice.</div>' : ''}
       ${locked ? '<div class="ssb-lock">Canon: this secret is part of who they are now.</div>' : `<div class="ssb-act">
-        <button type="button" title="Draw another from the pool" onclick="ssReroll('${n}')">🎲 Reroll</button>
-        <button type="button" title="Write my own" onclick="ssWriteOpen('${n}')">✍️ Write</button>
-        ${hist.length ? `<select onchange="ssUseHistory('${n}',this.value)" title="Something true from their history"><option value="">Real history…</option>${hist.map((h, j) => `<option value="${j}">${esc(h.text)}</option>`).join('')}</select>` : ''}</div>
+        <button type="button" class="ssb-btn" title="Draw another secret from the pool" onclick="ssReroll('${n}')">🎲 Reroll</button>
+        <button type="button" class="ssb-btn" title="Write a secret for them" onclick="ssWriteOpen('${n}')">✎ Write</button>
+        ${hist.length ? `<select onchange="ssUseHistory('${n}',this.value)" title="Something true from their history"><option value="">From their life…</option>${hist.map((h, j) => `<option value="${j}">${esc(h.text)}</option>`).join('')}</select>` : ''}</div>
       <div class="ssb-write" id="ss-write-${n}"><input id="ss-write-text-${n}" placeholder="I have…">
         <select id="ss-write-kind-${n}">${SECRET_KINDS.map(k => `<option value="${k.id}">${esc(k.label)}</option>`).join('')}</select>
-        <button type="button" onclick="ssWriteSave('${n}')">Save the secret</button></div>`}
+        <button type="button" class="ssb-btn primary" onclick="ssWriteSave('${n}')">Save the secret</button></div>`}
     </div>`;
   }).join('');
   const recog = (seasonConfig.ssRecognitions || []).filter(r => names.includes(r.who) && names.includes(r.whom));
   return `<style>${BOARD_CSS}</style><div class="ssb">
-    <div class="ssb-h"><div><div class="ssb-t">The List of Secrets</div>
-      <div class="ssb-sub">Every housemate walks in hiding one of these. The public sees them all on launch night; the house sees none. Once the season starts, a secret becomes part of who they are.</div></div>
-      <div class="ssb-tally">${tally.map(([k, v]) => `<span class="ssb-chip">${v} ${BADGE[k][0]}</span>`).join('')}<button type="button" class="ssb-chip" style="cursor:pointer" onclick="ssRerollAll()">🎲 Reroll every drawn secret</button></div></div>
+    <div class="ssb-h"><div class="ssb-brand"><span class="ssb-eye">${EYE}</span><div><div class="ssb-t">The Secrets</div>
+      <div class="ssb-sub">Every housemate walks in hiding one. The public knows them all from launch night; the house knows none.</div></div></div>
+      <div class="ssb-stats"><div class="ssb-stat"><b>${c.length}</b><span>Housemates</span></div><div class="ssb-stat"><b>${prodN}</b><span>Production</span></div><div class="ssb-stat"><b>${shared}</b><span>Shared</span></div>
+        <button type="button" class="ssb-btn" onclick="ssRerollAll()" title="Draw again for every housemate whose secret was drawn">🎲 Redraw all</button></div></div>
     ${prodPanelHTML(c)}
-    <div class="ssb-grid">${cards}</div>
-    ${recog.length ? `<div class="ssb-rec"><b>Recognised walking in</b>${recog.map(r => `<span>${esc(r.who)} knows ${esc(r.whom)}${r.from ? ` · ${esc(r.from)}` : ''}</span>`).join('')}</div>` : ''}
+    <div class="ssb-sec"><div class="ssb-sec-h"><div><h3>The housemates</h3><p>Reroll a secret, write one, or use something true from their life.</p></div></div>
+      <div class="ssb-grid">${cards}</div></div>
+    ${recog.length ? `<div class="ssb-rec"><div class="ssb-sec-h"><div><h3>Recognised walking in</h3><p>They know each other before the doors open.</p></div></div><div class="ssb-rec-l">${recog.map(r => {
+      const a = c.find(p => p.name === r.who), b = c.find(p => p.name === r.whom);
+      return `<span class="ssb-rec-i"><span class="ssb-faces">${a ? faceOf(a) : ''}${b ? faceOf(b) : ''}</span>${esc(r.who)} knows ${esc(r.whom)}${r.from ? ` <em>· ${esc(r.from)}</em>` : ''}</span>`;
+    }).join('')}</div></div>` : ''}
   </div>`;
 }
-// The production secrets: the real ones (S1–S7), or one of your own, cast on whoever you pick.
+// The production secrets: the Voice's envelopes already cast, and the composer for a new one (the real ones from
+// the seasons, or one of your own with the weekly job it plays).
 function prodPanelHTML(c) {
   const cur = [...new Map(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'production').map(([n, e]) => [e.text, e])).values()];
-  return `<div class="ssb-prod"><div class="ssb-prod-h"><b>Production secrets</b><span>The Voice can hand a role to one housemate or a group instead of a life story: a fake couple, the intruders, the Voice's accomplice. Pick one, choose who keeps it, and cast it.</span></div>
-    ${cur.length ? `<div class="ssb-prod-cur">${cur.map(e => `<span class="ssb-chip on">"${esc(e.text)}" · ${esc((e.group || []).join(', '))} <button type="button" title="Take it away (they draw a secret of their own)" onclick="ssProdRemove('${esc(e.text).replace(/'/g, '&#39;')}')">✕</button></span>`).join('')}</div>` : ''}
-    <div class="ssb-prod-row">
-      <select id="ss-prod-def" onchange="document.getElementById('ss-prod-own').style.display=this.value==='own'?'':'none'">${PRODUCTION_SECRETS.map(d => `<option value="${d.id}">${esc(d.text)} (${esc(d.from)})</option>`).join('')}<option value="own">Write my own…</option></select>
-      <input id="ss-prod-own" placeholder="We are…" style="display:none">
-      <button type="button" onclick="ssProdDraw()" title="Let the Voice choose">🎲 Draw one</button>
-    </div>
-    <div class="ssb-prod-who">${c.map(p => `<label><input type="checkbox" value="${esc(p.name)}" class="ss-prod-pick"> ${esc(p.name)}</label>`).join('')}</div>
-    <button type="button" class="ssb-prod-go" onclick="ssProdCast()">Cast it on them</button></div>`;
+  const env = e => {
+    const job = jobOf(e);
+    const who = (e.group || []).map(n => c.find(p => p.name === n)).filter(Boolean);
+    return `<div class="ssb-env"><button type="button" class="ssb-x" title="Take it away (they draw a secret of their own)" onclick="ssProdRemove('${esc(e.text).replace(/'/g, '&#39;')}')">✕</button>
+      <div class="ssb-env-k">${job ? esc(job[0]) : 'A production secret'}</div>
+      <div class="ssb-env-q">“${esc(e.text)}”</div>
+      ${job?.[1] ? `<div class="ssb-env-job">Every week: ${esc(job[1])}.</div>` : '<div class="ssb-env-job">No weekly job: a secret to keep, nothing more.</div>'}
+      <div class="ssb-env-who"><span class="ssb-faces">${who.map(faceOf).join('')}</span><span class="ssb-env-names">${esc(who.map(p => p.name).join(', '))}</span></div></div>`;
+  };
+  const busy = new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'production' || e?.source === 'canon').map(([n]) => n));
+  return `<div class="ssb-sec"><div class="ssb-sec-h"><div><h3>Production secrets</h3><p>Roles the Voice hands out instead of a life story. Each one comes with a job, every week.</p></div>
+      <button type="button" class="ssb-btn" onclick="ssProdDraw()" title="Let the Voice choose one, and who keeps it">🎲 Let the Voice draw one</button></div>
+    <div class="ssb-env-row">${cur.map(env).join('')}
+      <button type="button" class="ssb-new" onclick="ssProdOpen()"><b>+ New production secret</b><span>Choose it, then who keeps it</span></button></div>
+    <div class="ssb-comp" id="ss-prod-comp">
+      <div class="ssb-step"><div class="ssb-step-h"><i>1</i>Choose the secret <small>· from the seasons, or write your own</small></div>
+        <div class="ssb-tiles">${PRODUCTION_SECRETS.map(d => `<button type="button" class="ssb-tile" data-def="${d.id}" data-min="${d.min || 1}" data-max="${d.max || 4}" onclick="ssProdPick(this)"><b>“${esc(d.text)}”</b><span>${esc(d.from)} · ${d.min === d.max ? d.min : `${d.min}–${d.max}`} ${d.max > 1 ? 'housemates' : 'housemate'}</span></button>`).join('')}
+          <button type="button" class="ssb-tile own" data-def="own" data-min="1" data-max="6" onclick="ssProdPick(this)"><b>✎ Write my own</b><span>Your words, and the job it plays</span></button></div></div>
+      <div class="ssb-step"><div class="ssb-own" id="ss-prod-own">
+        <label class="wide">The secret, as the Voice says it<input id="ss-prod-own-text" placeholder="We are…"></label>
+        <label class="wide">Plays like<select id="ss-prod-own-plays"><option value="">No weekly job: just a secret</option>${ROLE_JOBS.map(r => `<option value="${r.id}" data-min="${r.min}">${esc(r.label)}${r.min > 1 ? ` (${r.min} or more)` : ''}</option>`).join('')}</select></label>
+        <label>A clue the house can find<input id="ss-prod-own-c1" placeholder="optional"></label>
+        <label>A second clue<input id="ss-prod-own-c2" placeholder="optional"></label></div></div>
+      <div class="ssb-step"><div class="ssb-step-h"><i>2</i>Who keeps it <small id="ss-prod-need">· click their faces</small></div>
+        <div class="ssb-people">${c.map(p => `<button type="button" class="ssb-person${busy.has(p.name) ? ' busy' : ''}" data-name="${esc(p.name)}" onclick="ssProdWho(this)" title="${busy.has(p.name) ? 'Already has a production or canon secret: casting replaces it' : ''}">${faceOf(p)}${esc(p.name)}</button>`).join('')}</div></div>
+      <div class="ssb-comp-f"><span class="ssb-comp-msg" id="ss-prod-msg">Choose a secret, then who keeps it.</span>
+        <span><button type="button" class="ssb-btn" onclick="ssProdOpen(false)">Cancel</button> <button type="button" class="ssb-btn primary" id="ss-prod-go" onclick="ssProdCast()" disabled>Cast it</button></span></div>
+    </div></div>`;
 }
-/** Casts the chosen production secret on the ticked housemates. */
+// the composer's state lives in the page (picking a face never redraws, so what you typed stays)
+const $ = id => (typeof document !== 'undefined' ? document.getElementById(id) : null);
+function prodCheck() {
+  const tile = document.querySelector('.ssb-tile.on');
+  const who = document.querySelectorAll('.ssb-person.on').length;
+  const own = tile?.dataset.def === 'own';
+  const playsMin = own ? Number(/** @type {HTMLSelectElement|null} */ ($('ss-prod-own-plays'))?.selectedOptions?.[0]?.dataset.min || 1) : 1;
+  const min = Math.max(Number(tile?.dataset.min || 1), playsMin), max = Number(tile?.dataset.max || 4);
+  const text = own ? String(/** @type {HTMLInputElement|null} */ ($('ss-prod-own-text'))?.value || '').trim() : 'x';
+  const need = $('ss-prod-need');
+  if (need) need.textContent = tile ? `· ${min === max ? min : `${min} to ${max}`} ${max > 1 ? 'housemates' : 'housemate'}, ${who} chosen` : '· click their faces';
+  const ok = !!tile && who >= min && who <= max && !!text;
+  const go = /** @type {HTMLButtonElement|null} */ ($('ss-prod-go'));
+  if (go) go.disabled = !ok;
+  const msg = $('ss-prod-msg');
+  if (msg) msg.textContent = !tile ? 'Choose a secret, then who keeps it.' : !text ? 'Write the secret.' : who < min ? `Choose ${min - who} more.` : who > max ? `Too many: at most ${max}.` : 'Ready.';
+}
+/** Opens (or closes) the composer for a new production secret. */
+export function ssProdOpen(open = true) {
+  const el = $('ss-prod-comp');
+  if (!el) return;
+  // (the "+ New" card toggles it; Cancel closes it)
+  if (open === false) el.classList.remove('on'); else el.classList.toggle('on');
+  if (el.classList.contains('on')) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); prodCheck(); }
+  const ownT = $('ss-prod-own-text'), ownP = $('ss-prod-own-plays');
+  if (ownT && !ownT.dataset.bound) { ownT.dataset.bound = '1'; ownT.addEventListener('input', prodCheck); ownP?.addEventListener('change', prodCheck); }
+}
+/** Step 1: a secret from the seasons, or "write my own". */
+export function ssProdPick(tile) {
+  document.querySelectorAll('.ssb-tile.on').forEach(t => t.classList.remove('on'));
+  tile.classList.add('on');
+  $('ss-prod-own')?.classList.toggle('on', tile.dataset.def === 'own');
+  prodCheck();
+}
+/** Step 2: a face clicked in or out. */
+export function ssProdWho(btn) { btn.classList.toggle('on'); prodCheck(); }
+/** Casts the composed production secret on the chosen housemates. */
 export function ssProdCast() {
-  const sel = document.getElementById('ss-prod-def')?.value;
-  const def = sel === 'own' ? { text: String(document.getElementById('ss-prod-own')?.value || '').trim() } : PRODUCTION_SECRETS.find(d => d.id === sel);
-  const who = [...document.querySelectorAll('.ss-prod-pick:checked')].map(x => x.value);
+  const tile = /** @type {HTMLElement|null} */ (document.querySelector('.ssb-tile.on'));
+  const sel = tile?.dataset.def;
+  const val = id => String(/** @type {HTMLInputElement|null} */ ($(id))?.value || '').trim();
+  const clues = [val('ss-prod-own-c1'), val('ss-prod-own-c2')].filter(Boolean);
+  const def = sel === 'own' ? { text: val('ss-prod-own-text'), plays: val('ss-prod-own-plays') || undefined, ...(clues.length ? { clues } : {}) } : PRODUCTION_SECRETS.find(d => d.id === sel);
+  const who = [...document.querySelectorAll('.ssb-person.on')].map(x => /** @type {HTMLElement} */ (x).dataset.name || '').filter(Boolean);
   if (!def?.text || !who.length) return;
-  const max = def.max || 4;
+  const max = def.max || 6;
   const holders = who.slice(0, max);
   const next = { ...(seasonConfig.ssSecrets || {}) };
   // whoever already held a group secret with one of these leaves it whole for the others

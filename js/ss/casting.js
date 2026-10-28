@@ -133,7 +133,8 @@ export const PRODUCTION_SECRETS = [
 export function productionSecret(def, holders = []) {
   const group = [...new Set(holders.filter(Boolean))];
   if (!def?.text || !group.length) return null;
-  const e = { source: 'production', id: def.id ? `prod-${def.id}` : null, kind: group.length > 1 ? 'voice-pair' : 'voice-mission', text: def.text,
+  // (one the user wrote: `plays` is the weekly job it takes, js/ss/production.js ROLE_JOBS)
+  const e = { source: 'production', id: def.id ? `prod-${def.id}` : null, ...(!def.id && def.plays ? { plays: def.plays } : {}), kind: group.length > 1 ? 'voice-pair' : 'voice-mission', text: def.text,
     clues: [...(def.clues || ['a note in the Voice\'s handwriting', 'an envelope with the Eye on it'])], tells: [], difficulty: group.length > 1 ? 0.6 : 0.7, group };
   return Object.fromEntries(group.map(n => [n, { ...e }]));
 }

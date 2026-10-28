@@ -149,7 +149,7 @@ function assignChosenSecrets(room, chosen, rng) {
     const group = Array.isArray(e.group) ? e.group.filter(h => room.includes(h) && !placed.has(h)) : null;
     const holders = group && group.length > 1 && group.includes(n) ? group : e.pair && room.includes(e.pair) && !placed.has(e.pair) ? [n, e.pair] : [n];
     secrets.push({ id: `secret-${holders.join('-')}`, kind: e.source === 'production' ? (holders.length > 1 ? 'voice-pair' : 'voice-mission') : e.pair && holders.length > 1 ? 'real-pair' : 'personal',
-      source: e.source, poolId: e.id || null, secretKind: e.kind || null, holders, text: e.text,
+      source: e.source, poolId: e.id || null, ...(e.plays ? { plays: e.plays } : {}), secretKind: e.kind || null, holders, text: e.text,
       clues: [...(e.clues || [])], tells: [...(e.tells || [])], difficulty: Number(e.difficulty) || 0.55 });
     for (const h of holders) placed.add(h);
   }

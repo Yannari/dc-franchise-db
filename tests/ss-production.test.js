@@ -1,7 +1,8 @@
 // Twist family 3: the production secrets play (js/ss/production.js). Each role's weekly job on its own (paid,
 // failed, traced), the kitty ledger kept, and a season where the cast screen cast five roles: their scenes air.
 import { describe, expect, it } from 'vitest';
-import { productionWeek, roleOf, PLAYED } from '../js/ss/production.js';
+import { productionWeek, roleOf, PLAYED, ROLE_JOBS } from '../js/ss/production.js';
+import { ssProductionScreen } from '../js/vp-bb-ep/ss-production.js';
 import { PRODUCTION_SECRETS, productionSecret } from '../js/ss/casting.js';
 import { openKitties, balance, expectedTotal, actualTotal } from '../js/ss/kitty.js';
 import { gs, players, seasonConfig, relationships } from '../js/core.js';
@@ -154,6 +155,31 @@ describe('the weekly jobs', () => {
     const st = house('accomplice');
     st.secrets[0].found = true;
     expect(productionWeek(st, ctx(0.01), { house: H })).toEqual([]);
+  });
+});
+
+describe('a production secret the user wrote', () => {
+  it('plays like the role the user chose, keeps its own clues, and an unknown role plays nothing', () => {
+    expect(roleOf({ text: 'We are secretly married', plays: 'fake-couple' })).toBe('fake-couple');
+    expect(roleOf({ text: 'I am a mole', plays: 'nonsense' })).toBe(null);
+    const e = productionSecret({ text: 'We are secretly married', plays: 'fake-couple', clues: ['a ring on a chain'] }, ['Ana', 'Ben']);
+    expect(e.Ana).toMatchObject({ source: 'production', plays: 'fake-couple', group: ['Ana', 'Ben'] });
+    expect(e.Ana.clues).toContain('a ring on a chain');
+    expect(ROLE_JOBS.map(r => r.id).sort()).toEqual([...PLAYED].sort());
+  });
+  it('plays in a season, under its own words', () => {
+    const chosen = productionSecret({ text: 'We are secretly married', plays: 'fake-couple', clues: ['a ring on a chain', 'one suitcase for two'] }, ['Bowie', 'Chase']);
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off', ssSecrets: chosen });
+    withSeededRandom(3, () => { simulateBBEpisode(); simulateBBEpisode(); });
+    delete seasonConfig.ssSecrets;
+    expect(gs.bb.secretStory.secrets.find(x => x.holders.includes('Bowie'))).toMatchObject({ plays: 'fake-couple', text: 'We are secretly married' });
+    const act = gs.episodeHistory.flatMap(r => r.acts).find(a => a.type === 'ss-production');
+    expect(act).toMatchObject({ role: 'fake-couple', custom: true, text: 'We are secretly married' });
+    const scr = ssProductionScreen(act, { week: 1, house: NAMES }, { ssv: (t, x = {}) => ({ k: 'voice', t, ...x }) });
+    expect(scr.title).toBe('A Production Secret');
+    expect(scr.sub).toBe('We are secretly married');
   });
 });
 

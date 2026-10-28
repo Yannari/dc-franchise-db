@@ -2738,10 +2738,8 @@ function ssMissionScreen(act, ctx) {
     ssv(`${listOf(m.holders || [])}, please come to the confessional.`),
     ssv(`The Voice has a secret mission for you. ${m.text}`, { toast: ['SECRET MISSION', '#e0b84a'] }),
     ssv(`If you succeed before the prime, you win ${euros(m.reward)}${(m.holders || []).length > 1 ? ' each' : ''}. Remember the fifth commandment: nobody may know this mission exists.`),
-    { k: 'dr', by: a, t: m.type === 'fake-couple' ? pickBy([`Me and ${b}? Fine. I can act. I think I can act.`, `A fake couple. With ${b}. This house is going to eat it up.`], k)
-      : m.type === 'get-nominated' ? `Get ${m.target} nominated without anybody knowing it was me. I can do that.`
-        : m.type === 'seduction' ? `Make ${m.target} fall for me. In a week. No pressure.`
-          : pickBy(["Challenge accepted.", 'This is going to be so much fun.', "I'm not saying no to the Voice."], k) },
+    // The mission's own line (js/ss/missions.js `say`); part 3 writes the full scenes.
+    { k: 'dr', by: a, t: m.say || pickBy(["Challenge accepted.", 'This is going to be so much fun.', "I'm not saying no to the Voice."], k) },
   ];
   return { id: `bb-ss-mission-${m.id}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '10:00',
     kicker: 'Cam 01 · Confessional', title: 'A Secret Mission', label: 'Secret Mission', sub: listOf(m.holders || []), cast: (m.holders || []).map((n, i) => [n, 40 + i * 22]), steps };
@@ -2756,11 +2754,11 @@ function ssMissionResultScreen(act, ctx) {
   if (act.won) {
     steps.push(ssv(`Mission accomplished. ${euros(m.reward)}${(m.holders || []).length > 1 ? ' each' : ''} for your kitty.`, { toast: ['ACCOMPLISHED', '#f5c542'] }),
       { k: 'beat', t: pickBy(['A beat of silence, then the whole room groans at once.', 'Somebody laughs out loud. Somebody else does not.', 'Half the house turns to look at the other half.'], k) });
-    if (m.type === 'fake-couple') steps.push({ k: 'dr', by: m.holders[0], t: pickBy(["We had them. We had ALL of them.", "Honestly some days I forgot it wasn't real."], `${k}|c`) });
+    if (act.say) steps.push({ k: 'dr', by: m.holders[0], t: act.say });
   } else {
     steps.push(ssv('Mission failed.', { toast: ['FAILED', '#ff3355'] }));
     if (act.clue) steps.push(ssv(`And for failing, a clue about ${m.holders[0]}'s secret: ${act.clue}.`));
-    steps.push({ k: 'dr', by: m.holders[0], t: pickBy(["I tried. I really did. The house just wasn't buying it.", 'Well. That could have gone better.'], `${k}|f`) });
+    steps.push({ k: 'dr', by: m.holders[0], t: act.say || pickBy(["I tried. I really did. The house just wasn't buying it.", 'Well. That could have gone better.'], `${k}|f`) });
   }
   return { id: `bb-ss-missionres-${m.id}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '21:10',
     kicker: 'Live · The prime', title: 'The Mission', label: 'Mission Revealed', sub: act.won ? 'Accomplished' : 'Failed', cast: (m.holders || []).map((n, i) => [n, 40 + i * 22]), steps };

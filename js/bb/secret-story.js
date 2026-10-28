@@ -263,7 +263,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   acts.push(...handOutMissions(state, ctx, { house: room }));
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
-  playMissions(state, ctx, { house: room });
+  // A mission is played through the week; a seduction or a nightmare moves a bond.
+  for (const [a, b, d] of playMissions(state, ctx, { house: room })) { try { addBond(a, b, d); } catch { /* no bond */ } }
   if (moments.length) {
     acts.push({ type: 'ss-hunt', week: ctx.week, moments: moments.slice(0, 6),
       beats: moments.slice(0, 3).map(m => ({ text: m.kind === 'tell'

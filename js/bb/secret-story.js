@@ -926,8 +926,15 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
     const keep = new Set([...dOffice, lifer, ...linked.map(l => l.to), ...post.played.map(p => p.put)].filter(Boolean));
     const T = cast.tally || {};
     const cut = nominees.filter(n => !keep.has(n)).sort((a, b) => (cast.inverted ? (T[b] || 0) - (T[a] || 0) : (T[a] || 0) - (T[b] || 0)));
-    // (and off the list the Voice reads out: the screen reads `before`)
-    while (nominees.length > 5 && cut.length) { const x = cut.shift(); nominees = nominees.filter(n => n !== x); before = before.filter(n => n !== x); }
+    // (a name that comes off takes the partner it brought up with it; and off the list the Voice reads out too)
+    while (nominees.length > 5 && cut.length) {
+      const x = cut.shift();
+      const gone = [x, ...linked.filter(l => l.from === x).map(l => l.to)];
+      nominees = nominees.filter(n => !gone.includes(n)); before = before.filter(n => !gone.includes(n));
+      for (let i = linked.length - 1; i >= 0; i--) if (gone.includes(linked[i].from) || gone.includes(linked[i].to)) linked.splice(i, 1);
+    }
+    // (still over, when the Voice's own names bring partners: the last partners linked stay safe this time)
+    while (nominees.length > 5 && linked.length) { const l = linked.pop(); nominees = nominees.filter(n => n !== l?.to); }
   }
   return { nominees, before, cards: [...pre.played, ...post.played], twist: nt ? { kind: nt.kind, who: nt.who || null, dragged: nt.dragged || null, pairs: nt.pairs || null,
     immuneHouse: nt.immuneHouse || null, nominationHouse: nt.nominationHouse || null } : null, lifer, linked, inverted: !!cast.inverted, exclusive, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,

@@ -503,24 +503,36 @@ const rogueVoteDenial = {
 // 8 — the accusation nobody took back
 // ══════════════════════════════════════════════════════════════════════
 
-const ACCUSED_TYPES = ['wrongly-accused', 'made-it-up', 'petty', 'nobody-would-speak'];
+// Only an accusation of a vote somebody did not cast: the rogue-vote hunt (fallout.js) and an alliance
+// pinning its stray on the wrong member (alliance-life.js). It also took 'petty' (a row over a pan),
+// 'nobody-would-speak' (a silent house meeting) and 'made-it-up' as every bystander remembers it, none of
+// which accused anybody of anything, and the scene names no subject of its own: Dominic told Paisley
+// "you were wrong about me" over nothing the season ever showed (the user's read, 2026-10-28).
+const ACCUSED_TYPES = ['wrongly-accused', 'blamed-me-for-a-vote-i-did-not-cast'];
+/** The eviction the accusation was about, so the scene can say which vote. */
+const accusedOver = m => m?.details?.gone
+  || (/^the vote for (.+)$/.exec(String(m?.details?.about || '')) || [])[1] || null;
+const _accusedPair = (house, ctx) =>
+  pairFromMemory(house, ACCUSED_TYPES, 'accuser-confronted', ctx, (a, b, m) => !!accusedOver(m));
 
 const wrongPersonBlamedLingers = {
   id: 'arc-wrong-person-blamed-lingers',
   category: 'social',
   location: 'backyard',
   weight(house, ctx) {
-    const pair = pairFromMemory(house, ACCUSED_TYPES, 'accuser-confronted', ctx);
+    const pair = _accusedPair(house, ctx);
     return pair ? fit(ctx, 4.5 + Math.min(2.5, grudge(pair.a, pair.b) * 0.25)) : 0;
   },
   fire(house, ctx, api) {
-    const { a: accused, b: accuser } = pairFromMemory(house, ACCUSED_TYPES, 'accuser-confronted', ctx)
-      || { a: house[0], b: house[1] };
+    const pair = _accusedPair(house, ctx);
+    if (!pair) return null;
+    const { a: accused, b: accuser, m } = pair;
     // Days later, and with the room having moved on, an accusation nobody
     // withdrew is the only thing still attached to a name.
     const owns = pStats(accuser).temperament >= 6 || nice(accuser);
 
-    const scene = makeScene('arc.wronged', { a: accused, b: accuser }, { ending: owns ? 'retracts' : 'refuses' }, [], 'backyard');
+    const scene = makeScene('arc.wronged', { a: accused, b: accuser },
+      { ending: owns ? 'retracts' : 'refuses', gone: accusedOver(m) }, [], 'backyard');
 
     api.addBond(accused, accuser, owns ? -0.5 : -1.4);
     api.popDelta(accuser, owns ? 1 : -1);

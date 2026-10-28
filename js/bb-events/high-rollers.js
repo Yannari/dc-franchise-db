@@ -123,8 +123,10 @@ const wheeledUp = {
     // The wheel turns at the veto ceremony, so the only acts after it are the two campaign acts, two to four
     // scenes each, every one wanted by the vote operation. At an ordinary weight it lost every draw: the wheel
     // put somebody on the block in four seasons of six and this never once aired (measured 2026-10-27). Being
-    // wheeled onto the block is the day's news, so it is weighted to air once, like nom-lied-to.
-    return swap?.up && house.includes(swap.up) ? 60 : 0;
+    // wheeled onto the block is the day's news, so it is weighted to air once, like nom-lied-to. 400, not 60:
+    // the campaign act's other ~120 events add up to ~650 a beat (measured 2026-10-28), so 60 was an 8% chance a
+    // beat and about one week in three; 400 is ~38% a beat and ~90% over the act's four to five beats.
+    return swap?.up && house.includes(swap.up) ? 400 : 0;
   },
   fire(house, ctx, api) {
     const swap = ctx.week.rouletteSwap;
@@ -159,7 +161,11 @@ const secondVeto = {
     // week one, same asker, same answer.
     if (firedThisWeek('hrr-derby-second-veto', Number(ctx?.week?.num) || 0)) return 0;
     const dv = ctx?.week?.derbyVeto;
-    return dv?.holder && house.includes(dv.holder) ? band(11, 14) : 0;
+    // Spent at the veto ceremony, so like the wheel (hrr-wheeled-up) it only has the campaign acts left, and an
+    // ordinary weight aired it by luck: one change to the week's other draws and it stopped airing in every
+    // themed season of the sweep (2026-10-28). A veto bought with a bet is the day's news: weighted to air once
+    // (400, measured against the campaign act's ~650 a beat: see hrr-wheeled-up).
+    return dv?.holder && house.includes(dv.holder) ? 400 : 0;
   },
   fire(house, ctx, api) {
     const dv = ctx.week.derbyVeto;

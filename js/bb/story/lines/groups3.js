@@ -10,7 +10,7 @@
 
 export default {
   'story.target.lobby.group': [
-    { id: 'gl3.1', room: 'bedroom', presumes: ['noms'], turns: [
+    { id: 'gl3.1', room: 'bedroom', presumes: ['noms', 'final'], turns: [
       { beat: '{a} finds {b}, {c} and {d} together in the bedroom and shuts the door.' },
       { by: 'a', say: "I know. I know. Everyone's sick of being talked to." },
       { by: 'b', say: "You're the fourth person today." },
@@ -56,13 +56,13 @@ export default {
       { by: 'b', say: "Talk to everyone." },
       { by: 'c', say: "Talk to nobody. Let them come to you." },
       { by: 'd', say: "Win the veto." },
-      { by: 'a', say: "If I even get picked to play." },
+      { by: 'a', say: "I'm in it whether I like it or not. Winning it is the hard part." },
       { by: 'd', say: "Then talk to everyone too." },
       { by: 'a', say: "Great. So I've got a fifty-fifty on advice." },
       { by: 'b', say: "You've got three people right here who want you to stay. Start with us." },
       { by: 'a', dr: "Three votes on three loungers. I'm not saying I cried. I'm saying the sun was very bright." },
     ] },
-    { id: 'gl3.5', presumes: ['noms'], when: { register: ['fiery', 'competitor'] }, turns: [
+    { id: 'gl3.5', presumes: ['noms', 'final'], when: { register: ['fiery', 'competitor'] }, turns: [
       { by: 'a', say: "Right, everyone in here. I'm not begging. I'm telling you facts." },
       { by: 'b', say: "Here we go." },
       { by: 'a', say: "Fact one. I win comps. If I stay, I'm a shield. People come after me, not you." },

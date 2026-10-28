@@ -394,7 +394,7 @@ const wrongBlame = {
       api.addBond(n, blamed, -0.8);
       api.suspicion(n, blamed, 1.0);
     });
-    api.remember(blamed, accuser, 'blamed-me-for-a-vote-i-did-not-cast', 3, { about: al.name });
+    api.remember(blamed, accuser, 'blamed-me-for-a-vote-i-did-not-cast', 3, { about: al.name, gone: evicted });
     api.addBond(blamed, accuser, -0.7);
     gs.bb ||= {};
     gs.bb.allianceWrongBlameSeen = key;

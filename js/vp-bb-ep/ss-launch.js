@@ -147,7 +147,8 @@ export function ssLaunchScreens(act, ctx, host, H) {
         ? ssv(`${n}, you're the first to enter the House of Secrets, and that's a privilege. But every privilege comes with a price. Tonight, it's the public who will reveal your secret. Right now.`)
         : { k: 'host', by: host, t: `${n}, turn around. Everyone at home is about to find out your secret.` },
       { k: 'beat', t: `The audience lifts its signs, all at once: "${s.text}."`, toast: ['ONLY THE PUBLIC KNOWS', '#7c5cff'], shake: i === 0 },
-      { k: 'say', by: n, t: pickBy(["Yeah... that's my secret.", "Oh no. Yep, that's it.", "That's me. Nobody in there can ever know."], `${kk}|yes`) });
+      { k: 'say', by: n, t: pickRot(["Yeah... that's my secret.", "Oh no. Yep, that's it.", "That's me. Nobody in there can ever know.", "Seeing it written down like that is so weird.",
+        "That's mine. Please don't show that to anybody else.", "Wow. Okay. That's real now.", "Yep. That's the one thing I can't let slip."], i) });
       if ((s.holders || []).length > 1) steps.push({ k: 'host', by: host, t: `And ${n} isn't the only one keeping it. Somebody else in that house shares this secret.` });
     }
     // the portrait, in their own words
@@ -168,7 +169,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
     steps.push({ k: 'beat', t: `In the airlock, ${n} puts in an earpiece.`, cut: { plate: 'foyer', who: n } },
       { k: 'host', by: host, t: `${n}, can you hear me? What's going to be your biggest strength in there?` },
       { k: 'say', by: n, t: `Honestly? ${pickRot(ASSET[stat] || ASSET.social, i).replace(/^./, c => c.toUpperCase())}.` },
-      { k: 'host', by: host, t: "Well, we'll see if that's enough. I think the Voice has something to tell you." });
+      { k: 'host', by: host, t: pickRot(["Well, we'll see if that's enough. I think the Voice has something to tell you.", "I like it. Now listen carefully, because the Voice wants a word.",
+        "We'll find out soon enough. Hold on, the Voice is about to speak to you.", "Good answer. Stay right there. The Voice has something for you.",
+        "That could take you a long way. But first, the Voice.", "I hope you're right. Now, quiet. The Voice is speaking."], i) });
     // the first missions (js/ss/launch.js)
     const hide = mission('hide-sign');
     const code = mission('code');
@@ -208,7 +211,8 @@ export function ssLaunchScreens(act, ctx, host, H) {
     for (const l of (L.lists || []).filter(x => x.after === i + 1)) {
       /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: "It's time for the list of secrets. Let's find out what some of them are hiding." }];
       for (const sx of l.secrets) {
-        ls.push(ssv('Let us lift the veil on one more secret.', { toast: ['THE LIST OF SECRETS', '#7c5cff'] }));
+        const j = l.secrets.indexOf(sx);
+        ls.push(ssv(pickRot(['Let us lift the veil on one more secret.', 'Here is another secret, hidden among you.', 'And another one.', 'This next secret belongs to one of you.', 'One more. Listen carefully.'], j + i), j ? {} : { toast: ['THE LIST OF SECRETS', '#7c5cff'] }));
         // (a clue is a noun phrase, singular or not: "somewhere in the house: five rings on a string")
         if ((sx.clues || [])[0]) ls.push({ k: 'beat', t: `Hidden somewhere in the house: ${sx.clues[0]}.${sx.clues[1] ? ` And ${sx.clues[1]}.` : ''}` });
         ls.push(ssv(sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : `One of our housemates, man or woman, is hiding this: "${sx.text}."`));

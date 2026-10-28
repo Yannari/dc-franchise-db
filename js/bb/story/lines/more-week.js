@@ -44,7 +44,7 @@ export default {
     ] },
   ],
   'story.target.lobby.group': [
-    { id: 'gl3.7', room: 'bedroom', presumes: ['noms'], turns: [
+    { id: 'gl3.7', room: 'bedroom', presumes: ['noms', 'final'], turns: [
       { beat: '{a} sits down on the end of a bed where {b}, {c} and {d} are mid-conversation. The conversation stops.' },
       { by: 'a', say: "Don't stop on my account." },
       { by: 'b', say: "We were just..." },

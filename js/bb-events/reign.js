@@ -114,6 +114,10 @@ const saysItOutLoud = {
     _spend(this.id, ctx);
     const mark = targetOf(hoh) || furthestFrom(hoh, _others(house, hoh));
     const audience = _quiet(_others(house, hoh, mark)).slice(0, 2);
+    // The mark heard it from the house, so the HOH-room "am I going up?" is not asked this week
+    // (bb/hoh-fish.js reads this): it is decided later but airs earlier, and Fatima asked "who told you
+    // that?" of Dominic a day after Dominic told her himself (the user's read, 2026-10-28).
+    if (ctx?.week) ctx.week._announcedTarget = mark;
     const scene = makeScene('reign.announce', { a: hoh, b: mark, c: audience[0] || null }, { ending: 'scene' }, [],
       _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, hoh, mark));
     api.suspicion(mark, hoh, 2);

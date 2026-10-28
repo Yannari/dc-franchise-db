@@ -379,7 +379,7 @@ const rogueHunt = {
       api.addBond(name, hunter, -0.8);
     });
     wrongAccused.forEach(name => {
-      api.remember(name, hunter, 'wrongly-accused', 2, { about: `the vote for ${gone}` });
+      api.remember(name, hunter, 'wrongly-accused', 2, { about: `the vote for ${gone}`, gone });
       api.setTarget(name, hunter, `accused me of a rogue vote I never cast`);
     });
     if (!correct) strays.forEach(name => api.popDelta(name, 1));
@@ -457,8 +457,16 @@ const wordGetsAround = {
 function _teller(house, week) {
   const gone = week?.evicted;
   if (!gone) return null;
+  // The count is read out, so a vote is only news when it could have gone the other way. On a unanimous
+  // eviction everybody voted {gone} out and everybody heard it: Dominic and Lacey wondering whether Fatima
+  // "voted Alexander out" over a vote all three of them cast the same way (the user's read, 2026-10-28).
+  if (!(week.ballots || []).some(b => b.evict && b.evict !== gone)) return null;
+  // Even on a split vote, voting with the majority is what most people did. The vote worth passing on is
+  // the one the listener would not have guessed: somebody who was close to {gone} and wrote the name anyway,
+  // which is what every line in the pool says ("I really thought {target} was with {gone}").
+  const abouts = house.filter(n => bond(n, gone) >= 1).sort((a, b) => bond(b, gone) - bond(a, gone));
   for (const teller of _quiet(house)) {
-    for (const about of house) {
+    for (const about of abouts) {
       if (about === teller || !knowsVote(teller, about, gone)) continue;
       const listener = _quiet(house).find(n => n !== teller && n !== about
         && !knowsVote(n, about, gone) && bond(teller, n) >= 1);

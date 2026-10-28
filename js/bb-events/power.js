@@ -75,6 +75,10 @@ function _room(rooms, ctx, ...people) {
 }
 
 /** Is the block known yet? Everything on this list depends on that. */
+// The nominees who are still sweating it: between the veto competition and the meeting a nominee who won the
+// veto is taking themselves off, and is not "on the block, and done smiling about it" (bb-chronology, 2026-10-28:
+// Millie, holding the veto in week two). The story layer's blockNow (bb/story/director.js) does the same.
+const _stillUp = ctx => _noms(ctx).filter(n => !(ctx?.week?.vetoWinner === n && !(ctx.week.finalNominees || []).includes(n)));
 const _blockKnown = ctx => ['post-noms', 'post-veto', 'campaign', 'eviction'].includes(ctx?.phase)
   || ['nominations', 'veto', 'veto-ceremony', 'campaign', 'eviction', 'safety'].includes(ctx?.act);
 // The name the Head of Household is really after this week, once the plan is made (bb/week.js
@@ -318,12 +322,12 @@ const nomCampaign = {
     // Needs somebody to pitch to — the "has run out of people to talk to"
     // fallback was a card with nothing in it.
     // (on eviction night the campaign is over: the speeches were the last word)
-    return _blockKnown(ctx) && ctx?.act !== 'eviction' && ctx?.phase !== 'eviction' && _noms(ctx).length && house.length >= 4
+    return _blockKnown(ctx) && ctx?.act !== 'eviction' && ctx?.phase !== 'eviction' && _stillUp(ctx).length && house.length >= 4
       && _others(house, ..._noms(ctx), _hoh(ctx)).length ? band(9) : 0;
   },
   fire(house, ctx, api, rng) {
     const noms = _noms(ctx);
-    const nom = _quiet(noms)[0];
+    const nom = _quiet(_stillUp(ctx))[0];
     const voters = _others(house, ...noms, _hoh(ctx));
     if (!voters.length) {
       return { text: `${nom} has run out of people to talk to.`, players: [nom],
@@ -336,7 +340,7 @@ const nomCampaign = {
     // The actual pitch, drawn from the board. These cards used to describe
     // somebody making "the only argument that matters" without ever saying
     // what it was.
-    const other = _noms(ctx).find(n => n !== nom) || null;
+    const other = _stillUp(ctx).find(n => n !== nom) || null;
     api.addBond(nom, mark, works ? 1.0 : -0.3);
     if (works) {
       api.remember(mark, nom, 'trust', 1, { about: 'came to me honestly' });
@@ -371,10 +375,10 @@ const blockPressure = {
   id: 'power-block-pressure',
   category: 'social',
   weight(house, ctx) {
-    return _blockKnown(ctx) && _noms(ctx).length ? band(8) : 0;
+    return _blockKnown(ctx) && _stillUp(ctx).length ? band(8) : 0;
   },
   fire(house, ctx, api) {
-    const noms = _noms(ctx);
+    const noms = _stillUp(ctx);
     const nom = _quiet(noms)[0];
     const s = pStats(nom);
     const arch = archetype(nom);

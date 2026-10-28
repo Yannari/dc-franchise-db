@@ -459,11 +459,14 @@ export const beatsInvolving = name => beatCounts()[name] || 0;
 // right cache stamp — the same one beatsInvolving already keys on.
 let _spotAt = -1;
 let _spotMap = new Map();
+// the history itself, not only its length: a new season starts at the length the last one left (see blocs.js _views)
+let _spotHist = null;
 
 export function spotlightWeight(name) {
   if (!name) return 0;
-  const stamp = (houseEventState().eventHistory || []).length;
-  if (_spotAt !== stamp) { _spotAt = stamp; _spotMap = new Map(); }
+  const hist = houseEventState().eventHistory || [];
+  const stamp = hist.length;
+  if (_spotAt !== stamp || _spotHist !== hist) { _spotAt = stamp; _spotHist = hist; _spotMap = new Map(); }
   const hit = _spotMap.get(name);
   if (hit !== undefined) return hit;
   const value = _spotlightWeightRaw(name);

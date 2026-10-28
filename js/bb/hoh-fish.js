@@ -39,6 +39,8 @@ export function decideFish(week, hoh, plan, house) {
   if (!week || !hoh || !fisher || fisher === hoh || !(house || []).includes(fisher) || week.hohSecret) return null;
   // somebody who already went up and pitched themselves this week (bb-events/power.js) is not shown asking as well
   if (week._selfPitched === fisher) return null;
+  // somebody the HOH already named to the house (bb-events/reign.js) heard it second-hand and has nothing to ask
+  if (week._announcedTarget === fisher) return null;
   const s = pStats(hoh), f = pStats(fisher);
   const bond = getBond(hoh, fisher) || 0;
   const backdoor = plan.backdoorTarget === fisher;

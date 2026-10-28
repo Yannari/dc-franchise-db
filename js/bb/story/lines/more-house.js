@@ -223,7 +223,7 @@ export default {
       { by: 'b', say: "...Okay. I'll keep that in mind." },
       { by: 'b', dr: "No crying, no begging, just a deal. {a} knows how to campaign." },
     ] },
-    { id: 'tl2.2', presumes: ['noms'], turns: [
+    { id: 'tl2.2', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "Do you have a minute? I know everyone's been coming at you." },
       { by: 'b', say: "You're the fifth person today." },
       { by: 'a', say: "Then I'll be quick. Who would you rather live with next week? Me or {target}?" },
@@ -257,7 +257,7 @@ export default {
       { by: 'b', say: "It's a maybe with a laugh in it." },
       { by: 'a', dr: "A maybe with a laugh in it. That's better than most yeses I've had this week." },
     ] },
-    { id: 'tl2.5', presumes: ['noms'], when: { band: ['cold', 'neutral'] }, turns: [
+    { id: 'tl2.5', presumes: ['noms', 'final'], when: { band: ['cold', 'neutral'] }, turns: [
       { by: 'a', say: "I know we're not close." },
       { by: 'b', say: "We're really not." },
       { by: 'a', say: "And I know you've got no reason to save me." },
@@ -268,7 +268,7 @@ export default {
       { by: 'b', say: "...Okay. I'll ask." },
       { by: 'a', dr: "If I can't make {b} like me, I can make {b} scared of {target}. A scared vote is still a vote." },
     ] },
-    { id: 'tl2.6', presumes: ['noms'], turns: [
+    { id: 'tl2.6', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "Can I tell you something nobody else knows?" },
       { by: 'b', say: "That depends." },
       { by: 'a', say: "{target} has a final two. And it's not with you." },

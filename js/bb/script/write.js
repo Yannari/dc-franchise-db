@@ -159,7 +159,11 @@ let tokenSeq = 0;
 export function lineAired(token) { if (token) PENDING.delete(token); }
 export function refundUnaired() {
   const u = gs.bb?.lineLedger;
-  if (u) for (const { id, speakers, pairKey } of PENDING.values()) {
+  // (only into the ledger it was taken from: a season that ended mid-week left its picks here, and the next
+  // season's first refund took them off ITS ledger, so the same seed played twice wrote two different weeks —
+  // the volume sweep's replay test, run after the themed seasons, 2026-10-28)
+  if (u) for (const { id, speakers, pairKey, book } of PENDING.values()) {
+    if (book && book !== u) continue;
     if (u.uses?.[id] > 0) { u.uses[id]--; if (!u.uses[id]) delete u.uses[id]; }
     for (const sp of speakers) { const by = u.by?.[id]; const i = by ? by.lastIndexOf(sp) : -1; if (i >= 0) by.splice(i, 1); }
     const pr = u.pairs?.[id]; const j = pr ? pr.lastIndexOf(pairKey) : -1; if (j >= 0) pr.splice(j, 1);
@@ -184,7 +188,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
   const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
   if (!entry) throw new Error(`no lines for ${key}`);
   let lineToken = null;
-  if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey }); }
+  if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey, book: gs.bb?.lineLedger || null }); }
   const lines = entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;

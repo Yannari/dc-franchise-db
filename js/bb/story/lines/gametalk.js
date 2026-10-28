@@ -26,7 +26,7 @@
 
 export default {
   'talk.bb.hoh': [
-    { id: 'gt.bh1', room: 'hoh-room', turns: [
+    { id: 'gt.bh1', room: 'hoh-room', presumes: ['postveto'], turns: [
       { beat: 'HOH room, door shut. {a} is lying across the bed. {b} is sitting on the floor.' },
       { by: 'b', say: "Okay. Three on the block. Talk me through it." },
       { by: 'a', say: "{c} is the target. The other two are there to fill seats." },
@@ -62,7 +62,7 @@ export default {
       { beat: '{a} sits down, then stands straight back up.' },
       { by: 'a', dr: "If {c} wins on Thursday, I've made an enemy for nothing. That's the risk of swinging big." },
     ] },
-    { id: 'gt.bh4', turns: [
+    { id: 'gt.bh4', presumes: ['postveto'], turns: [
       { beat: '{a} and {b}, by the pool, talking quietly with their backs to the house.' },
       { by: 'b', say: "Who do you think wins the Block Buster?" },
       { by: 'a', say: "Not {c}. Please, not {c}." },
@@ -72,7 +72,7 @@ export default {
       { by: 'a', say: "Silently, then. Very silently." },
       { by: 'a', dr: "I'm the Head of Household and I've never been more nervous. My week comes down to a game I'm not even playing." },
     ] },
-    { id: 'gt.bh5', room: 'hoh-room', turns: [
+    { id: 'gt.bh5', room: 'hoh-room', presumes: ['postveto'], turns: [
       { beat: 'HOH room. {a} has the camera screen on and is watching the kitchen. {b} comes in.' },
       { by: 'b', say: "Spying?" },
       { by: 'a', say: "Watching {c} campaign. Look at that. Third person in ten minutes." },
@@ -82,6 +82,28 @@ export default {
       { by: 'a', say: "Same plan. Smaller. Whoever's left in the chairs, we pick the one who'd come after us." },
       { by: 'b', dr: "There's no clean week with three on the block. Somebody gets lucky, and you deal with it." },
     ] },
+    // before the veto the veto comes first: "what if {c} wins the Block Buster?" skipped it (the user, 2026-10-28:
+    // "they should said blockbuster or veto when the veto didnt happen yet")
+    { id: 'gt.bh6', room: 'hoh-room', presumes: ['preveto'], turns: [
+      { beat: 'HOH room. {a} has the camera screen on and is watching the kitchen. {b} comes in.' },
+      { by: 'b', say: "Spying?" },
+      { by: 'a', say: "Watching {c} campaign. Look at that. Third person in ten minutes." },
+      { by: 'b', say: "Does {c} know it's about {c}?" },
+      { by: 'a', say: "{c} knows. Everyone on that block thinks they're the target." },
+      { by: 'b', say: "So what's the plan if {c} wins the veto, or the Block Buster?" },
+      { by: 'a', say: "If {c} wins the veto, I put somebody else up. If {c} wins the Block Buster, whoever's left in the chairs, we pick the one who'd come after us." },
+      { by: 'b', dr: "There's no clean week with three on the block. {c} has two ways off it, and {a} needs {c} to miss both." },
+    ] },
+    { id: 'gt.bh7', room: 'hoh-room', presumes: ['preveto'], turns: [
+      { beat: 'HOH room, door shut. {a} is lying across the bed. {b} is sitting on the floor.' },
+      { by: 'b', say: "Okay. Three on the block. Talk me through it." },
+      { by: 'a', say: "{c} is the target. The other two are there to fill seats." },
+      { by: 'b', say: "And if {c} wins the veto?" },
+      { by: 'a', say: "Then {c} comes off, and I name somebody in {c}'s place." },
+      { by: 'b', say: "And if {c} loses the veto, there's still the Block Buster." },
+      { by: 'a', say: "Two chances to get off that block. I need {c} to lose both of them." },
+      { by: 'a', dr: "Three people on the block sounds like more control. It's actually less. The veto can take one off, the Block Buster another." },
+    ] },
   ],
   'talk.bb.nominee': [
     // three on the block: before the veto it comes first (the user, 2026-10-27: a nominee planning the Block Buster
@@ -89,8 +111,8 @@ export default {
     { id: 'gt.bn5', room: 'bedroom', presumes: ['preveto'], turns: [
       { beat: 'Bedroom. {a} is sitting on the bed in workout gear. {b} comes in and shuts the door.' },
       { by: 'b', say: "You okay?" },
-      { by: 'a', say: "The veto first. If I get picked to play, I'm winning it." },
-      { by: 'b', say: "And if you don't get picked?" },
+      { by: 'a', say: "The veto first. I'm playing in it, and I'm winning it." },
+      { by: 'b', say: "And if you don't win it?" },
       { by: 'a', say: "Then there's still the Block Buster. Two chances to get off this block before anybody votes." },
       { by: 'b', say: "And if both go wrong?" },
       { by: 'a', say: "Then I need you getting me votes. Talk to everybody you trust." },
@@ -100,16 +122,16 @@ export default {
       { beat: 'The backyard. {a} is doing laps round the yard. {b} falls in alongside.' },
       { by: 'b', say: "Training?" },
       { by: 'a', say: "For the veto. Then for the Block Buster, if I need it." },
-      { by: 'b', say: "You don't even know if you'll get picked to play." },
-      { by: 'a', say: "Then I'll be ready if I do." },
+      { by: 'b', say: "You don't even know what the comp is yet." },
+      { by: 'a', say: "Then I'll be ready for whatever it is." },
       { by: 'b', say: "And {c}?" },
       { by: 'a', say: "{c} put me up. If I win the veto, {c} has to watch me take myself off." },
-      { by: 'b', dr: "{a} is doing laps for a competition {a} might not even play in. I'm not going to tell {a} to stop." },
+      { by: 'b', dr: "{a} is doing laps for a competition nobody has even seen yet. I'm not going to tell {a} to stop." },
     ] },
     { id: 'gt.bn7', room: 'kitchen', presumes: ['preveto'], turns: [
       { beat: 'The kitchen, quiet. {a} is eating standing up. {b} sits on the counter.' },
       { by: 'b', say: "Are you nervous?" },
-      { by: 'a', say: "About the veto draw? Yes. I can't win it if I'm not playing." },
+      { by: 'a', say: "About the veto draw? Yes. I'm playing, but I need somebody in there on my side." },
       { by: 'b', say: "If I get picked, I'm playing for you." },
       { by: 'a', say: "You'd use it on me?" },
       { by: 'b', say: "If I win it, yes." },
@@ -166,8 +188,8 @@ export default {
     { id: 'gt.vh1', room: 'bedroom', turns: [
       { beat: 'Bedroom. {a} is staring at the ceiling. {b} sits on the edge of the bed.' },
       { by: 'a', say: "The veto is my best way off this thing." },
-      { by: 'b', say: "You have to get picked to play first." },
-      { by: 'a', say: "Don't. I know. It's the draw, and then it's luck." },
+      { by: 'b', say: "You'll be in it. You just have to beat everybody else who is." },
+      { by: 'a', say: "Don't. I know. And the draw decides who that is." },
       { by: 'b', say: "If you get to pick, pick me." },
       { by: 'a', say: "Obviously I'll pick you." },
       { by: 'b', say: "Then if I win it, it's coming off you." },

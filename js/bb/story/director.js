@@ -161,7 +161,7 @@ export function airStorylines(week) {
   const GAME_HOST = new Set(['alliance', 'target', 'talk', 'campaign', 'scheme']);
   // a confrontation is its own scene: folded into somebody's friendly talk it turns it ("Another comp, another
   // loss", then Beth to her own showmance: "You told everybody you were voting Axel out", read 2026-10-14)
-  const CONFRONT = /^(arc-promise-exposed|fallout-(blame|denial|hypocrisy)|arc-lie|followup-lie|social-blow|deals-exposed|arc-rogue-vote-denial|deals-broken-promise|arc-wrong-person-blamed-lingers)/;
+  const CONFRONT = /^(arc-promise-exposed|fallout-(blame|denial|hypocrisy)|arc-lie|followup-lie|social-blow|deals-exposed|arc-rogue-vote-denial|deals-broken-promise|arc-wrong-person-blamed-lingers|power-ceremony-confrontation)/;
   const ROOM_OPEN = /^(the )?(kitchen|backyard|bedroom|living room|hoh room|hoh suite|storage room|bathroom|diary room|pool|hot tub|have-not|dining room)\b/i;
   const placed = sc => sc.lines.some(l => l.kind === 'beat' && ROOM_OPEN.test(String(l.text || '')));
   // what carries one conversation into the next thing said in it: sometimes nothing (people just keep
@@ -319,7 +319,10 @@ export function airStorylines(week) {
         };
         const into = hosts.filter(x => (x.folded || []).length < 2).find(fits);
         if (into) { airs(); into.lines.push(...drs); (into.folded ||= []).push(sc.id || null); continue; }
-        if (wt >= 4) { airs(); round.push({ ea, sc }); }
+        // one a stretch: a run of them, each about something else and none about the scene before it, read as
+        // "a lot of random confessional" (the user, 2026-10-28: Michele on The Collective and Ivyna on Lacey and
+        // Ben, after Dominic and Paisley in the kitchen). The rest stay off camera; the transcript keeps them.
+        if (wt >= 4 && !round.length) { airs(); round.push({ ea, sc }); }
         continue;
       }
       const n = spokenOf(sc);
@@ -362,7 +365,13 @@ export function airStorylines(week) {
       const sp = sc => new Set(sc.lines.filter(l => l.kind === 'say' && l.by).map(l => l.by));
       const same = (x, y) => x.size === y.size && [...x].every(n => y.has(n));
       const castOf = sc => new Set(sc.cast || []);
-      const mate = a.confront ? null : loose.find(b => b !== a && !used.has(b) && !b.confront && !placed(b.sc) && same(sp(b.sc), sp(a.sc)) && sp(a.sc).size >= 2 && same(castOf(b.sc), castOf(a.sc)) && !clashes(a.sc, b.sc));
+      // ...and the same subject: the same two people were not enough either. Dominic's "You've played a good
+      // game" (courting a jury vote) ran straight into Paisley's "You could have told me first" (the nomination),
+      // and "No regrets about last week?" into "You were wrong about me" (the user, 2026-10-28: "random switch of
+      // conversation subject for seemingly no reason"). Two moments of one kind of game (deals-, power-, reign-)
+      // are one conversation; two kinds are two.
+      const fam = x => String(x?.beat?.eventId || '').split('-')[0];
+      const mate = a.confront ? null : loose.find(b => b !== a && !used.has(b) && !b.confront && !placed(b.sc) && fam(b) === fam(a) && same(sp(b.sc), sp(a.sc)) && sp(a.sc).size >= 2 && same(castOf(b.sc), castOf(a.sc)) && !clashes(a.sc, b.sc));
       if (mate) {
         used.add(a); used.add(mate);
         a.airs(); mate.airs();

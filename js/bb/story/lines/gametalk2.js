@@ -50,7 +50,7 @@ export default {
     { id: 'gt2.vh5', room: 'living-room', turns: [
       { beat: 'Living room. {a} is curled up in the corner of the sofa. {b} sits right next to {a}.' },
       { by: 'b', say: "Talk to me." },
-      { by: 'a', say: "If I play in the veto and lose, that's it, isn't it?" },
+      { by: 'a', say: "If I lose the veto, that's it, isn't it?" },
       { by: 'b', say: "It's not it. You'd still have the vote." },
       { by: 'a', say: "The vote's a guess. The veto's a sure thing." },
       { by: 'b', say: "So make it a sure thing." },
@@ -71,10 +71,10 @@ export default {
     { id: 'gt2.vh7', room: 'kitchen', turns: [
       { beat: 'Kitchen, morning. {a} is eating a huge breakfast very slowly. {b} watches.' },
       { by: 'b', say: "That's a lot of eggs." },
-      { by: 'a', say: "In case I get picked to play veto." },
-      { by: 'b', say: "You don't even know if you're playing." },
-      { by: 'a', say: "Then I'll be very full and very disappointed." },
-      { by: 'b', say: "If you play, what's the plan?" },
+      { by: 'a', say: "For the veto." },
+      { by: 'b', say: "You don't even know what the comp is." },
+      { by: 'a', say: "Then I'll be very full and ready for anything." },
+      { by: 'b', say: "And if you win it, what's the plan?" },
       { by: 'a', say: "Win. Then smile at {c} all the way through the ceremony." },
       { by: 'a', dr: "I'm going to win the veto and take myself off the block. And {c} is going to have to sit there and watch me do it." },
     ] },
@@ -154,7 +154,7 @@ export default {
     ] },
   ],
   'talk.bb.hoh': [
-    { id: 'gt2.bh1', room: 'hoh-room', turns: [
+    { id: 'gt2.bh1', room: 'hoh-room', presumes: ['postveto'], turns: [
       { beat: 'HOH room. {a} is sitting cross-legged on the bed with a notepad. {b} peers over.' },
       { by: 'b', say: "Are you making a list?" },
       { by: 'a', say: "I'm making three lists. One for each way Thursday goes." },
@@ -164,7 +164,7 @@ export default {
       { by: 'a', say: "Ugly enough that I don't want to say it out loud." },
       { by: 'a', dr: "Three on the block means three ways the week can go. Only one of them is the way I want." },
     ] },
-    { id: 'gt2.bh2', turns: [
+    { id: 'gt2.bh2', presumes: ['postveto'], turns: [
       { beat: 'The backyard. {a} and {b} are sitting on the steps, watching {c} talk to people across the yard.' },
       { by: 'b', say: "{c}'s working hard." },
       { by: 'a', say: "{c} has to. If the Block Buster doesn't save {c}, the votes are against {c}." },
@@ -174,7 +174,7 @@ export default {
       { by: 'a', say: "Yeah. That's the job now." },
       { by: 'b', dr: "{a} spent all week making a plan. Now it's sitting on whether {c} can win one competition." },
     ] },
-    { id: 'gt2.bh3', room: 'hoh-room', turns: [
+    { id: 'gt2.bh3', room: 'hoh-room', presumes: ['postveto'], turns: [
       { beat: 'HOH room. {b} is lying across the foot of the bed. {a} is eating the HOH snacks one at a time.' },
       { by: 'b', say: "What happens if {d} wins the Block Buster?" },
       { by: 'a', say: "Then {c} and the other one are in the chairs. And {c} goes." },

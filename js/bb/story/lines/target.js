@@ -8,6 +8,7 @@
 //   pitch      a pushes b to go after {target} (b may be the HOH)   lands | overplayed
 //   gossip     a tells b something about {target}
 //   lobby      a, a nominee, asks b for the vote; {target} the other nominee   lands | refused
+//              (an entry that weighs a against {target} by name presumes 'final': the two who face the vote)
 //   block      a is on the block; b sits with a
 //   backdoor   a, the HOH, tells b the real plan: {target}, after the veto
 //   count      a counts the vote with b                               holds | short
@@ -226,7 +227,7 @@ export default {
   ],
 
   'story.target.lobby.lands': [
-    { id: 'tl.l1', presumes: ['noms'], turns: [
+    { id: 'tl.l1', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "Hey. Can I talk to you for a sec?" },
       { by: 'b', say: "I knew this was coming." },
       { by: 'a', say: "I'm not going to waste your time. I want to stay. And I need your vote to do it." },
@@ -247,7 +248,7 @@ export default {
       { by: 'a', say: "Thank you. Seriously." },
       { by: 'a', dr: "'I think so' turned into 'yes' in ten seconds. I'll take it." },
     ] },
-    { id: 'tl.l3', presumes: ['noms'], turns: [
+    { id: 'tl.l3', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "I'm not going to pretend. I'm scared." },
       { by: 'b', say: "I know." },
       { by: 'a', say: "And I know you're friends with {target}. I know that. But I'm asking anyway." },
@@ -259,7 +260,7 @@ export default {
       { by: 'b', say: "Okay. You've got my vote." },
       { by: 'b', dr: "{a} looked me in the eye and promised. {target} has never done that. Not once." },
     ] },
-    { id: 'tl.l4', presumes: ['noms'], turns: [
+    { id: 'tl.l4', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "Let's do the maths together." },
       { by: 'b', say: "Okay…" },
       { by: 'a', say: "If {target} stays, who does {target} go after next?" },
@@ -295,7 +296,7 @@ export default {
     ] },
   ],
   'story.target.lobby.refused': [
-    { id: 'tl.r1', presumes: ['noms'], turns: [
+    { id: 'tl.r1', presumes: ['noms', 'final'], turns: [
       { by: 'a', say: "Can I talk to you about Thursday?" },
       { by: 'b', say: "I don't think there's anything to talk about." },
       { by: 'a', say: "What does that mean?" },

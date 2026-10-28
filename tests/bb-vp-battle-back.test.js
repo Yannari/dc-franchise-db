@@ -7,7 +7,8 @@ import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps, REPLACED } from '../js/vp-bb-ep/steps.js';
-import { stageHtml } from '../js/vp-bb-ep/stage.js';
+import { stageHtml, ledgerAt } from '../js/vp-bb-ep/stage.js';
+import { bbStepScreens } from '../js/vp-bb-ep/screens.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -67,6 +68,31 @@ describe('Battle Back on the stepped stage', () => {
         expect(stageHtml(screens, si, i, true, { season: 'default', host: 'Valeria' }).html).not.toMatch(/undefined|NaN/);
       }
     }
+  });
+
+  // the user, 2026-10-28: "battle back should update the intro and the memory wall, the one coming back is still grey"
+  it('puts the returnee back in colour: on the wall from the moment, on the closing, and from the next intro on', () => {
+    const titleGrey = (screens, id, n) => [...String(screens.find(x => x.id === id)?.html || '').matchAll(/class="wt (out)?"[^>]*>([^]*?)<\/div>/g)]
+      .filter(m => m[2].toLowerCase().includes(n.toLowerCase())).map(m => !!m[1]);
+    let checked = 0;
+    for (const { ep, act } of WEEKS) {
+      if (!act.returned) continue;
+      // evicted before this episode (the ladder also holds tonight's evictee, who opened the episode in the house)
+      const prior = act.contenders.filter(n => n !== ep.eliminated && n !== ep.alsoEliminated);
+      const screens = bbWeekSteps(ep, { priorEvicted: prior });
+      const si = screens.findIndex(s => s.steps.some(st => st.bkBack));
+      const idx = screens[si].steps.findIndex(st => st.bkBack);
+      expect(ledgerAt(screens, si, idx - 1).status[act.returned]).toBe('out');
+      expect(ledgerAt(screens, si, idx).status[act.returned] || '').toBe('');
+      const full = bbStepScreens(ep, [], { priorEvicted: prior });
+      expect(titleGrey(full, 'bb-titles', act.returned)).toEqual([prior.includes(act.returned)]);
+      expect(titleGrey(full, 'bb-closing', act.returned)).toEqual([false]);
+      // a week that starts with them in the house: the evicted list still has them, the opening does not grey them
+      const next = bbStepScreens({ ...ep, houseAtStart: [...(ep.houseAtStart || []), act.returned] }, [], { priorEvicted: prior });
+      expect(titleGrey(next, 'bb-titles', act.returned)).toEqual([false]);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 
   it('replaces the classic Battle Back screen', () => {

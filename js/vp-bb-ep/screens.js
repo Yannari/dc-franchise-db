@@ -302,7 +302,12 @@ function seasonOf(row) { return SEASON_DIR[row.themeId] || 'default'; }
  * and House Life screens are replaced; its twist screens are kept, after the
  * part of the week they follow.
  */
-export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted = [], plea = null, intro = null, firstRead = null } = {}) {
+export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted: everOut = [], plea = null, intro = null, firstRead = null } = {}) {
+  // Evicted is not forever: somebody a Battle Back or a Camp Comeback put back in the house starts this week in it,
+  // in colour on the opening and the memory wall (the user, 2026-10-28: "battle back should update the intro and the
+  // memory wall, the one coming back is still grey")
+  const backIn = new Set(row.houseAtStart || []);
+  const priorEvicted = everOut.filter(n => !backIn.has(n));
   const steps = bbWeekSteps(row, { host, priorEvicted, plea, intro, firstRead });
   const houseLife = steps.some(S => S.kind === 'houselife');
   if (!steps.length) return legacy;
@@ -433,18 +438,21 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // the people who have been in the house by the start of this episode, evicted or not: never a
   // Rivals latecomer before they walk in, never the twin nobody knows exists
   const lateNow = new Set((row.acts || []).find(a => a?.type === 'rivals-open')?.arrived || []);
-  const been = [...new Set([...(priorEvicted || []), ...(row.houseAtStart || row.house || [])])].filter(n => !lateNow.has(n));
+  const been = [...new Set([...(everOut || []), ...(row.houseAtStart || row.house || [])])].filter(n => !lateNow.has(n));
   const castNow = (() => { try { return ((globalThis.players || []).map(p => p?.name).filter(Boolean)); } catch { return []; } })();
   const cast = been.length ? been : castNow;
   const seasonTitle = sc.seasonName || sc.title || '';
   // the opening greys out whoever had already gone before this episode; the closing, whoever has
   // gone by the end of it (the user, 2026-10-06: "closing should grey out the eliminated")
   const goneBefore = [...(priorEvicted || [])];
+  // ...and whoever came back during it is in colour again by the closing
+  const cameBack = new Set(steps.flatMap(S => (S.steps || []).flatMap(st => [st.bkBack, st.campBack])).filter(Boolean));
   // the record names them 'eliminated' (and 'alsoEliminated', 'extraEvictions' on a double); the
   // eviction act carries them too
   const goneNow = [row.eliminated, row.alsoEliminated, row.evicted, row.secondEvicted, ...(row.extraEvictions || []).map(x => x?.evicted),
     ...(row.acts || []).filter(a => a && /evict/.test(a.type || '')).map(a => a.evicted)];
-  const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string'))];
+  // (tonight's evictee too, when the Battle Back that night sent them straight back in)
+  const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string' && !cameBack.has(x)))];
   out.unshift(titleScreen('intro', key, cast, seasonTitle, goneBefore));
   out.push(titleScreen('outro', key, cast, seasonTitle, goneAfter));
   // the Debug screen is not part of the episode: it goes after the closing, never before it

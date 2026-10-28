@@ -20,7 +20,7 @@ export function ssVoiceAddressScreen(act, ctx, H) {
   return { id: `bb-ss-prime-voice-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '20:55', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     kicker: 'Live · Living room', title: 'Tonight', label: 'Tonight', sub: 'Before the prime', cast: noms.map((n, i) => [n, 30 + i * 22]),
     steps: [
-      { k: 'beat', t: 'Five minutes to the prime. The house is dressed up and sitting very still.' },
+      { k: 'beat', t: ["Five minutes to the prime. The house is dressed up and sitting very still.", "The countdown clock on the living-room screen says four minutes. Nobody is talking.", "Everybody is ready too early. They sit on the sofas and wait, fiddling with their microphones.", "Hair done, shoes on, nerves everywhere. The prime is minutes away.", "Somebody checks their reflection for the tenth time. The prime is about to start."][((ctx.week || 0) + 0) % 5] },
       ssv(`Housemates, this is the Voice. Tonight is the prime. ${listOf(noms)}, the public has been voting all week. Tonight, one of you leaves the House of Secrets.`, { toast: ['THE VOICE', '#e0b84a'] }),
       ssv("Everything you've done this week, the public has seen. That is all for now."),
       { k: 'dr', by: noms[0], t: pickBy(["My hands haven't stopped shaking since this morning.", "I've done everything I could. Now it's up to them.", "I keep telling myself it's only a game. It doesn't help."], `${k}|0`) },
@@ -88,7 +88,7 @@ export function ssKittyBoardScreen(act, ctx, host, H) {
     steps: [
       { k: 'host', by: host, t: "Let's talk money. Here are the kitties, after the week you've all had.", board: { title: 'THE KITTIES', rows: rows.map(([n, v]) => ({ n, text: euros(v) })) }, toast: ['THE KITTIES', '#e0b84a'] },
       { k: 'host', by: host, t: `${rich} leads with ${euros(rows[0][1])}. ${poor} is at the bottom with ${euros(rows[rows.length - 1][1])}. Let's show the house.` },
-      { k: 'beat', t: 'The board lights up on the living-room screen. Everybody leans in at once.' },
+      { k: 'beat', t: ["The board lights up on the living-room screen. Everybody leans in at once.", "The kitties appear on the screen, one by one. Somebody groans.", "Every eye in the house goes to the screen as the numbers come up.", "The board fills the giant screen. Somebody starts doing the maths out loud."][((ctx.week || 0) + 0) % 4] },
       { k: 'say', by: rows[1][0], t: pickBy([`${euros(rows[0][1])}? ${rich}, what have you been doing?`, `${rich} is rich. Look at that.`, `How does ${rich} have that much?`], `${k}|r`) },
       { k: 'say', by: rich, t: pickBy(["I've been working. That's all I'm saying.", "Don't look at me like that, I earned it.", 'I earned every single dollar of it.'], `${k}|rr`) },
       { k: 'dr', by: poor, t: pickBy([`${euros(rows[rows.length - 1][1])}. That's the number everybody in here just saw next to my name.`, "I'm the poorest person in the house. Great.", 'At the bottom of the board. I need a mission, and fast.'], `${k}|p`) },

@@ -125,6 +125,9 @@ export function ledgerAt(screens, si, idx) {
       if (st.stance && s === si) L.stances[st.stance[0]] = st.stance;
       if (st.votes && s === si) L.votes = st.votes;
       if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
+      // back in the game (a Battle Back, a Camp Comeback): back in colour on the wall from the moment it is said
+      const back = st.bkBack || st.campBack;
+      if (back) { L.out = L.out.filter(n => n !== back); if (L.status[back] === 'out') L.status[back] = ''; }
       (st.pops || []).forEach(p => L.moves.push(p));
     }
   }

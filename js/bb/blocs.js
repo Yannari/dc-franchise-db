@@ -408,6 +408,15 @@ function _invalidateKnowledge() {
   _knowVersion++;
   _viewCache = new Map();
 }
+// ...and a different game is a different cache. The key (house, alliances, episode, knowledge version) says
+// nothing about WHICH game: a season loaded or started in the same session, with the same names at the same
+// episode, read the last one's numbers until its first knowledge write (the volume sweep's same-seed replay
+// differed at beat 1079 once other seasons had played first, 2026-10-28).
+let _viewGs = null;
+function _views() {
+  if (_viewGs !== gs) { _viewGs = gs; _viewCache = new Map(); }
+  return _viewCache;
+}
 
 export function knowledgeOf(observer, blocId) {
   const state = ensure();
@@ -624,7 +633,7 @@ export function visibleCentrality(name) {
   // cache discipline as the per-observer view: house shape plus knowledge
   // version, both of which change rarely compared to how often this is read.
   const key = `vc|${name}|${_signature()}|${_knowVersion}`;
-  const hit = _viewCache.get(key);
+  const hit = _views().get(key);
   if (hit !== undefined) return hit;
   const value = _computeCentrality(name);
   _viewCache.set(key, value);
@@ -737,7 +746,7 @@ export function knownBlocsFor(observer) {
   // season runs tens of thousands of beats. Uncached it made the test suite
   // four times slower on its own.
   const key = `${observer}|${_signature()}|${_knowVersion}`;
-  const hit = _viewCache.get(key);
+  const hit = _views().get(key);
   if (hit) return hit;
   const view = listBlocs()
     .filter(bloc => !bloc.members.includes(observer))

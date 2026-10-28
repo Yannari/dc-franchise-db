@@ -200,8 +200,8 @@ const BB_GAME_WORDS = /\b(HOH|Head of Household|veto|jury|jurors?|backdoor\w*|vo
 /** A written scene in Big Brother's game words does not air in a Secret Story house. */
 const ssGate = sc => (!sc || !ssSeason() || !(sc.lines || []).some(l => BB_GAME_WORDS.test(String(l?.text || ''))) ? sc : null);
 const ssSeason = () => seasonFormat(seasonConfig) === SS_FORMAT;
-function presumed(entry, ctx, who = null) {
-  if (ssSeason() && (entry.presumes || []).some(p => ['hoh', 'hohc', 'vote', 'jurors', 'preveto', 'postveto'].includes(p))) return false;
+function presumed(entry, ctx, who = null, data = null) {
+  if (ssSeason() && (entry.presumes || []).some(p => ['hoh', 'hohc', 'vote', 'jurors', 'preveto', 'postveto', 'final'].includes(p))) return false;
   if (ssSeason() && BB_GAME_WORDS.test(JSON.stringify(entry.turns || []))) return false;
   for (const p of entry.presumes || []) {
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
@@ -222,6 +222,11 @@ function presumed(entry, ctx, who = null) {
     if (p === 'preveto' && ctx.veto) return false;
     // ...and after it: the veto has been played (a Block Buster nominee talks about the Block Buster once the veto is done)
     if (p === 'postveto' && !ctx.veto) return false;
+    // final: the two who face the vote are settled and {target} is one of them. A voter telling one nominee "I've
+    // already decided, and it's not you... because Fatima has never lied to me" before the veto meeting talks as if
+    // the block could not change (the user, 2026-10-28: "is it a spoil that the final nominees are paisley and fatima?")
+    if (p === 'final' && !(ctx.cer && (ctx.nominees || []).length === 2
+      && (!data?.target || ctx.nominees.includes(data.target)))) return false;
     if (p === 'vote' && !(gs.bb?.weeks || []).some(w => w !== ctx.week && w.evicted)) return false;
     if (p === 'jurors' && !(ctx.jurors > 0)) return false;
     // won: {a} has really won something (the user, 2026-10-26, on "Because I keep winning?" from somebody who had
@@ -328,7 +333,7 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   const voters = e => !PLEDGE.test(JSON.stringify(e.turns)) || (e.turns || []).every(t => !t.by || t.by === 'a' || !noVote.has(who[t.by]));
   // a pact the engine named (a final two, a jury pact) is only told by a scene that makes that deal
   const sameDeal = e => !e.deal || !data.pact || e.deal === data.pact;
-  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx, who) && can(e) && fits(e) && voters(e) && sameDeal(e));
+  for (const k of keys) pools[k] = (STORY_POOLS[k] || []).filter(e => presumed(e, ctx, who, data) && can(e) && fits(e) && voters(e) && sameDeal(e));
   // nothing airs twice in a season while something unused still fits
   const used = ledger().uses || {};
   // inside a set piece the room is the set's: a scene that stages its own room waits, unless nothing else

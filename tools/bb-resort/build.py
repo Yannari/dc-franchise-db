@@ -41,7 +41,7 @@ OUT = os.path.join(REPO, 'assets', 'sets', 'bb', 'resort')
 MARKS = os.path.join(HERE, 'marks')                        # overlay checks (gitignored)
 PLATES = os.path.join(HERE, 'plates.json')
 JS = os.path.join(REPO, 'js', 'vp-bb-ep', 'resort.js')
-THEMES = ['default', 'temptation', 'machine', 'mystery', 'high-rollers', 'summer-camp', 'summer-school']
+THEMES = ['default', 'temptation', 'machine', 'mystery', 'high-rollers', 'summer-camp', 'summer-school', 'secret-story']
 K = 3840 / 1600.0                                          # 4K pixels per reference pixel
 
 
@@ -185,6 +185,10 @@ def build(pid, P, theme):
             save(os.path.join(d, f'{pid}-water.webp'), np.dstack([np.full_like(a, 255)] * 3 + [a]), 90)
             info['water'] = 1
     nsrc = P.get('nightsrc')
+    # a theme's night is its own painting or baked from its day: never the resort's night frame
+    # (the House of Secrets' front came out as the resort's, its RR sign lit, 2026-10-28)
+    if nsrc and theme != 'default':
+        nsrc = f'{theme}/{nsrc}' if os.path.exists(os.path.join(SRC, theme, nsrc + '.webp')) else None
     if nsrc:
         night = sharpen_4k(os.path.join(SRC, nsrc + '.webp'), P.get('anchor', 0.5))
     elif P.get('nightonly'):
@@ -279,11 +283,16 @@ if __name__ == '__main__':
     marks_only = '--marks' in args
     js_only = '--js' in args
     for pid in ids:
-        P = plates[pid]
+        # a theme's own overrides (plates.json _themes); a plate that is one theme's alone is built only there
+        P = {**plates[pid], **plates.get('_themes', {}).get(theme, {}).get(pid, {})}
+        if P.get('only') and P['only'] != theme:
+            continue
         if not js_only and not marks_only:
             t0 = time.time()
             info = build(pid, P, theme)
             print(pid, theme, info, f'{time.time() - t0:.1f}s', flush=True)
+            if info is None:
+                continue          # this theme has no copy of the room
         if marks_only or (not js_only and (P.get('anchors') or P.get('lights') or P.get('pool'))):
             overlay(pid, P, theme)
     write_js(plates)

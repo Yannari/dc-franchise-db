@@ -78,17 +78,19 @@ export function ssEveningScreen(act, ctx, H) {
     { k: 'beat', t: 'A buzzer is set on the coffee table. Everybody shuffles a little closer to it.' });
   (act.rounds || []).forEach((r, i) => {
     cast.add(r.first); cast.add(r.subject);
-    steps.push(ssv(`One of you ${r.fact}.`),
+    const pool = [...new Set([r.subject, r.first, r.guess, ...(act.rounds || []).flatMap(x => [x.subject, x.first])])].filter(Boolean);
+    const opts = pool.slice(0, 4).sort();
+    steps.push(ssv(`One of you ${r.fact}.`, { ask: { id: `ss-mini|${act.week}|${i}`, q: 'Whose mini-secret is it?', people: true, opts } }),
       { k: 'beat', t: [`${r.first} slams the buzzer first.`, `${r.first} gets there a hair before everybody else.`, `${r.first} practically dives over the coffee table.`][i % 3] },
       { k: 'say', by: r.first, t: r.right ? [`It's ${r.guess}. It has to be ${r.guess}.`, `${r.guess}. I'd put money on it.`, `That's ${r.guess}!`][i % 3] : [`${r.guess}! It's ${r.guess}, right?`, `Is it ${r.guess}?`, `${r.guess}. Final answer.`][i % 3] });
     if (r.right) {
-      steps.push(ssv(`That is correct. ${r.first}, that's ${WORD[r.money] || `$${r.money}`} for you.`),
+      steps.push(ssv(`That is correct. ${r.first}, that's ${WORD[r.money] || `$${r.money}`} for you.`, { settle: { id: `ss-mini|${act.week}|${i}`, answer: r.subject, n: opts.length } }),
         r.close ? { k: 'say', by: r.subject, t: `${r.first}! You promised you'd never tell anybody that.` } : { k: 'say', by: r.subject, t: 'How did you know that? I never told anybody in here!' },
         r.close ? { k: 'say', by: r.first, t: "I didn't tell anybody. I just buzzed." } : { k: 'say', by: r.first, t: 'I had a feeling. You just look like somebody who would.' });
     } else {
       steps.push(ssv(r.money ? `That is wrong. It costs you ${WORD[r.money] || `$${r.money}`}.` : 'That is wrong. Luckily for you, your kitty is already empty.'),
         { k: 'say', by: r.guess, t: "Me? I've never done that in my life!" },
-        ssv(`It was ${r.subject}.`),
+        ssv(`It was ${r.subject}.`, { settle: { id: `ss-mini|${act.week}|${i}`, answer: r.subject, n: opts.length } }),
         { k: 'say', by: r.subject, t: "Yes, it's me. Please don't laugh." },
         { k: 'beat', t: 'Everybody laughs.' });
       cast.add(r.guess);
@@ -111,9 +113,10 @@ export function ssBlackBuzzerScreen(act, ctx, H) {
     steps: [
       { k: 'beat', t: `Behind a cushion on the sofa, ${f}'s hand closes on something hard and cold.` },
       { k: 'say', by: f, t: 'Oh my God. Oh my God, it\'s the black buzzer.' },
-      ssv(`${f}, you have found the black buzzer. You are immune this week. And you must nominate one of your housemates. Right now.`, { toast: ['BLACK BUZZER', '#c0392b'] }),
+      ssv(`${f}, you have found the black buzzer. You are immune this week. And you must nominate one of your housemates. Right now.`, { toast: ['BLACK BUZZER', '#c0392b'],
+        ask: { id: `ss-black|${act.week}`, q: `Who will ${f} nominate?`, people: true, opts: [n, ...(ctx.house || []).filter(x => x !== f && x !== n).slice(0, 3)].sort() } }),
       { k: 'beat', t: `${f} looks around the room. Nobody breathes.` },
-      { k: 'say', by: f, t: pick },
+      { k: 'say', by: f, t: pick, settle: { id: `ss-black|${act.week}`, answer: n, n: Math.min(4, Math.max(2, (ctx.house || []).length - 1)) } },
       { k: 'beat', t: `${n} stares at ${f} for a long moment.` },
       { k: 'say', by: n, t: act.why === 'grudge' ? "Of course it's me. You've been waiting for this." : "Wow. Okay. I'll remember that." },
       { k: 'dr', by: f, t: "I had immunity in my hand, and I had to choose. Whatever happens now, I'll live with it." },

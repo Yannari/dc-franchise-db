@@ -120,7 +120,7 @@ export function ssVerdictOpening(act, ctx, host, H) {
   const noms = act.nominees || [];
   return [
     { k: 'host', by: host, t: 'The lines are now closed. The bailiff has brought me the envelope.' },
-    { k: 'beat', t: 'The bailiff walks onto the set and hands the host a sealed envelope.', toast: ['THE ENVELOPE', '#e0b84a'] },
+    { k: 'beat', t: 'The bailiff walks onto the set and hands the host a sealed envelope.', toast: ['THE ENVELOPE', '#e0b84a'], prop: 'envelope', press: true },
     { k: 'host', by: host, t: `${listOf(noms)}, you walked into this house with a secret, and you've been through highs and lows. You've watched friends leave. The public has seen all of it, and the public has made its decision.` },
   ];
 }

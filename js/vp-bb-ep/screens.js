@@ -29,6 +29,7 @@ import { BBX_WHACK_CSS } from './style-whack.js';
 import { bedFor, playStep } from './sound.js';
 import { intelHtml, INTEL_CSS } from './intel.js';
 import { BBX_COMP_CSS } from './comp-field.js';
+import { SS_CSS } from './ss-hud.js';
 import { titleScreen } from './titles.js';
 import { seasonId } from '../shows.js';
 import { seasonFormat } from '../core.js';
@@ -311,7 +312,8 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const steps = bbWeekSteps(row, { host, priorEvicted, plea, intro, firstRead });
   const houseLife = steps.some(S => S.kind === 'houselife');
   if (!steps.length) return legacy;
-  const o = { season: seasonOf(row), host };
+  // (ssKey: the season the viewer's own Secret Story kitty belongs to, vp-bb-ep/ss-hud.js)
+  const o = { season: seasonOf(row), host, ssKey: seasonOf(row) === 'secret-story' ? seasonId(seasonFormat(globalThis.seasonConfig || {}), (globalThis.seasonConfig || {}).seasonNumber || row.seasonNumber || 1) : null };
   const fp = episodeKey(row, steps);
   const kept = watchAll()[fp]?.s || {};
   // Twist and House Life screens, by the part of the week they followed in the old running
@@ -396,7 +398,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     out.push({
       id: feed[0]?.id || ids[si],
       label: S.label || S.title,
-      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}${BBX_COMP_CSS}</style>
+      html: `<div class="bbx" data-uid="${uid}" data-ambient="${bedFor(S)}"><style>${BBX_FONTS}${BBX_CSS}${BBX_SUITE_CSS}${BBX_CHAIN_CSS}${BBX_HUNT_CSS}${BBX_PX_CSS}${BBX_DUO_CSS}${BBX_CAMP_CSS}${BBX_WILD_CSS}${BBX_SPOWER_CSS}${BBX_CAPSULE_CSS}${BBX_INTERRO_CSS}${BBX_WHACK_CSS}${HM_CSS}${SHELL_CSS}${INTEL_CSS}${BBX_COMP_CSS}${o.season === 'secret-story' ? SS_CSS : ''}</style>
   <div class="bbx-screen" id="bbx-scr-${uid}">
   <div class="bbx-stage stage" id="bbx-st-${uid}" onclick="bbxNext('${uid}')" title="Click for the next line">${R0.map ? mapHtml(uid, R0) : stageHtml(steps, si, -1, false, o).html}</div>
   <div class="bbi" id="bbi-${uid}" onclick="event.stopPropagation();bbxIntelClick('${uid}', event)"></div>

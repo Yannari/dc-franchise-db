@@ -17,7 +17,9 @@ const ROOT = path.resolve(__dirname, '..');
 const PLATES = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/bb-resort/plates.json'), 'utf8'));
 const IDS = Object.keys(PLATES).filter(k => !k.startsWith('_'));
 const SETS = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', 'hoh', 'yard', 'dr', 'storage', 'havenot',
-  'bathroom', 'juryhouse', 'door', 'premiere', 'comp', 'wall', 'cutaway', 'studio', 'studio-wide', 'finale', 'finale-jury', 'villa', 'map']);
+  'bathroom', 'juryhouse', 'door', 'premiere', 'comp', 'wall', 'cutaway', 'studio', 'studio-wide', 'finale', 'finale-jury', 'villa', 'map',
+  // Secret Story's own rooms (its house is its own theme: plates.json `only`)
+  'attic', 'truths', 'arena']);
 const USES = new Set(['eviction', 'ceremony', 'nominations', 'house', 'meal', 'quiet', 'secret', 'dr']);
 // the stage's sets for the engine's rooms (ROOM_SET in vp-bb-ep/steps.js) and their Blender rooms
 const ROOM_SETS = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', yard: 'yard', dr: 'dr',
@@ -27,7 +29,8 @@ describe('the plate list', () => {
   it('every plate has a source, a real room, known sets and known moments', () => {
     for (const id of IDS) {
       const P = PLATES[id];
-      expect(fs.existsSync(path.join(ROOT, 'tools/bb-resort/src', `${id}.webp`)), id).toBe(true);
+      // (a plate one theme has alone, Secret Story's attic or studio, has its source in that theme's folder)
+      expect(fs.existsSync(path.join(ROOT, 'tools/bb-resort/src', ...(P.only ? [P.only] : []), `${id}.webp`)), id).toBe(true);
       if (P.nightsrc) expect(fs.existsSync(path.join(ROOT, 'tools/bb-resort/src', `${P.nightsrc}.webp`)), id).toBe(true);
       expect(BB_ROOMS, id).toContain(P.room);
       for (const s of P.sets) expect(SETS.has(s), `${id}: set ${s}`).toBe(true);
@@ -37,7 +40,7 @@ describe('the plate list', () => {
   });
 
   it('every plate is built, and every file the manifest names is on disk', () => {
-    for (const id of IDS) expect(RESORT.have.default?.[id], `${id} is not built`).toBeTruthy();
+    for (const id of IDS) expect(RESORT.have[PLATES[id].only || 'default']?.[id], `${id} is not built`).toBeTruthy();
     for (const [theme, plates] of Object.entries(RESORT.have)) {
       for (const [id, tods] of Object.entries(plates)) {
         for (const tod of tods) {

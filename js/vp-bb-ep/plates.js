@@ -22,7 +22,10 @@ const WIDE = /(-wide|-room|-suite)$|^(living-screens|bedroom-two|hallway|storage
 // living room with a wider view so we can see people in the bg"): the screens wall is the ceremony's, and its
 // close views ("living-screens-wide" is a close-up of the screens, whatever its name) are a cut, not the room.
 // The console is only ever where the lines put it ("by the plants").
-const ROOM_WEIGHT = { 'living-sofas-2': 5, 'living-sofas': 4, 'living-reverse': 3, 'living-screens': 1, 'living-screens-wide': 1, 'living-console': 0 };
+const ROOM_WEIGHT = { 'living-sofas-2': 5, 'living-sofas': 4, 'living-reverse': 3, 'living-screens': 1, 'living-screens-wide': 1, 'living-console': 0,
+  // Secret Story's own (part 4): a confessional is a close-up of one housemate; the wide one is the buzz and a crowd,
+  // the showdown only ever a confrontation; the attic's watching desk is the secret room at its best
+  'confessional-close': 5, 'confessional-showdown': 0, 'living-screens-close': 0, 'ss-attic-desk': 4, 'ss-attic': 3, 'ss-attic-stairs': 0, 'ss-attic-door': 0 };
 const weightOf = id => ROOM_WEIGHT[id] ?? (WIDE.test(id) && !/^bar-/.test(id) ? 3 : 1);
 /** One of the plates, by the key's hash, weighted toward the wide views. */
 function weighted(list, key) {
@@ -32,7 +35,16 @@ function weighted(list, key) {
   for (const id of list) { at -= weightOf(id); if (at < 0) return id; }
   return list[0];
 }
-const built = id => !!RESORT.have.default?.[id];
+// A theme that is a whole house of its own (Secret Story's House of Secrets, part 4): every room is that
+// theme's, and a room it does not have is not there, never the resort's colours in its place. The
+// other themes redecorate the resort, and fall back to it (themedFor).
+const OWN_HOUSE = new Set(['secret-story']);
+let HOUSE = 'default';
+/** The house the plates are chosen from: a season's theme (its id or plate folder); call before choosing. */
+export function setPlateTheme(theme) { HOUSE = OWN_HOUSE.has(theme) ? theme : 'default'; }
+/** Whether this theme is a house of its own (no resort plate ever shows in it). */
+export const ownHouse = theme => OWN_HOUSE.has(theme);
+const built = id => !!RESORT.have[HOUSE]?.[id];
 /** Whether a plate has been built (the writer may name a spot before the user has made it). */
 export const plateBuilt = built;
 const STUDIO = new Set(['studio', 'studio-wide', 'finale', 'finale-jury', 'comp']);
@@ -127,7 +139,9 @@ export function plateFor(S) {
   }
   if (S.plate && built(S.plate)) return S.plate;
   const use = S.set === 'dining' ? (S.kind === 'nominations' ? 'nominations' : 'meal') : 'house';
-  return pickPlate(S.set, S.id || S.set, '', use);
+  const id = pickPlate(S.set, S.id || S.set, '', use);
+  // a house of its own has no Blender room to fall back on: a room it does not have is its living room
+  return id || (OWN_HOUSE.has(HOUSE) ? pickPlate('ceremony', S.id || S.set || 'room', '', 'house') : null);
 }
 
 /** The seats of a screen's plate (anchors.js units), or null for a Blender room. */
@@ -174,7 +188,7 @@ export function depthAttr(id, theme = 'default') {
  * island, the gym) keeps its default plate, and a ceremony's seated plate is never swapped.
  */
 export function themedFor(id, S, theme) {
-  if (!id || !theme || theme === 'default' || RESORT.have[theme]?.[id]) return id;
+  if (!id || !theme || theme === 'default' || RESORT.have[theme]?.[id] || OWN_HOUSE.has(theme)) return id;
   if (S == null) S = { set: (RESORT.plates[id]?.sets || [])[0], id };
   const P = RESORT.plates[id];
   if (!P || P.anchors || P.place) return id;

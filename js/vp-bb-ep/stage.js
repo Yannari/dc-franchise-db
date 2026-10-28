@@ -13,14 +13,15 @@
 // and the seats are the plate's own; the Blender room stays the fallback.
 import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
-import { plateHtml, plateAnchors, plateTv, plateFor } from './plates.js';
+import { plateHtml, plateAnchors, plateTv, plateFor, setPlateTheme } from './plates.js';
+import { ssHudHtml, ssLineHtml, ssPiecesHtml, ssRestHtml } from './ss-hud.js';
 import { compFieldHtml, KEY, MEDAL_SVG } from './comp-field.js';
 import { HUNT_SPOTS } from './steps.js';
 
 const ROOM_FILE = { kitchen: 'kitchen', ceremony: 'living', ceremony3: 'living3', bedroom: 'bedroom', hoh: 'hoh', dr: 'dr', yard: 'yard', dining: 'dining',
   storage: 'storage', havenot: 'havenot', bathroom: 'bathroom', juryhouse: 'juryhouse' };
 export const SEASON_DIR = { 'summer-of-temptation': 'temptation', 'machine-summer': 'machine', 'summer-of-mystery': 'mystery',
-  'high-rollers': 'high-rollers', 'summer-camp': 'summer-camp', 'summer-school': 'summer-school' };
+  'high-rollers': 'high-rollers', 'summer-camp': 'summer-camp', 'summer-school': 'summer-school', 'secret-story': 'secret-story' };
 const V = 7;   // bump when the renders change, so a browser never shows a stale room
 const roomUrl = (season, set) => `assets/bb/house/${season}/${ROOM_FILE[set] || set}-td-b.webp?v=${V}`;
 
@@ -935,6 +936,9 @@ function juryCut(S, idx) {
 
 /** The whole stage for step `idx` of screen `si`. `o` = { season, host }. */
 export function stageHtml(screens, si, idx, fresh, o) {
+  setPlateTheme(o?.season);
+  // Secret Story wears its own house, lettering and game (vp-bb-ep/ss-hud.js)
+  const SSN = o?.season === 'secret-story';
   // A House Life segment cuts room to room: the latest `scene` marker up to
   // this step says which room, camera and people are on screen.
   const S0 = screens[si];
@@ -1037,9 +1041,12 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (L.votes && st && st.k === 'host' && !st.big && !S.exitPhase) {
     h += `<div class="votes ${fresh && st.votes ? 'fresh' : ''}"><div class="v"><div class="n">${L.votes[0]}</div><div class="k">Votes</div></div><i class="sep"></i><div class="v"><div class="n">${L.votes[1]}</div><div class="k">Votes</div></div></div>`;
   }
-  h += hudHtml(S, st, prevSt, fresh);
-  if (idx < 0) h += `<div class="rest">${eyeSvg('eye')}<div class="k">${esc(S.kicker)}</div><div class="t">${esc(S.title)}</div><div class="s">${esc(S.sub)}</div><div class="go">▶ PLAY</div></div>`;
-  else h += lineHtml(S, st, fresh, L);
+  if (SSN && idx >= 0) h += ssPiecesHtml(S, st, idx, fresh, o, { col, img });
+  h += SSN ? ssHudHtml(S, st, fresh, o) : hudHtml(S, st, prevSt, fresh);
+  if (idx < 0 && SSN) h += ssRestHtml(S);
+  else if (idx < 0) h += `<div class="rest">${eyeSvg('eye')}<div class="k">${esc(S.kicker)}</div><div class="t">${esc(S.title)}</div><div class="s">${esc(S.sub)}</div><div class="go">▶ PLAY</div></div>`;
+  else h += SSN ? ssLineHtml(S, st, fresh, L, { emph, names: [...namesOf(S), st?.by], col, nominated: n => L.nom.includes(n) && !L.out.includes(n) })
+    : lineHtml(S, st, fresh, L);
   if (fresh && st) {
     if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b style="font-size:${Math.min(6, 64 / Math.max(1, st.toast[0].length)).toFixed(2)}cqw;white-space:nowrap">${esc(st.toast[0])}</b></div>`;
     // the chip comes up out of the bag face down, and turns over
@@ -1048,5 +1055,5 @@ export function stageHtml(screens, si, idx, fresh, o) {
       + `<i>${esc(st.chip.drawer)} draws${st.chip.chip !== 'choice' ? ` · ${esc(st.chip.chip)}` : ''}</i></div>`;
     if (cut) h += `<div class="flash"></div>`;
   }
-  return { html: h, cls: `stage ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && (st.k === 'bb' || st.k === 'voice') ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
+  return { html: h, cls: `stage ${SSN ? 'ss' : ''} ${S.exitPhase ? `exitcut ${S.exitPhase}` : ''} ${S.lodge ? 'lodge' : ''} ${st && (st.k === 'bb' || st.k === 'voice') ? 'bbspeaks' : ''} ${st && st.rule != null ? 'rulesup' : ''} ${S.bright && !(st && st.k === 'dr') ? 'lightset' : ''} ${S.nv && !(st && st.k === 'dr') ? 'nv' : ''} ${fresh && st && st.shake ? 'shake' : ''}`, cam: camNow, ledger: L };
 }

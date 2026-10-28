@@ -702,7 +702,11 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   // Who names whom, and why (js/ss/nominations.js); the Voice's extra votes
   // against (a broken commandment, the red phone) count on top.
   const extra = state ? extraVotesFor(state, wk) : {};
-  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra });
+  // How many go up this week (the real show varies it: two most weeks, three or four on a big week). Read off the
+  // week and the room, not the season's dice, so the rest of the season plays as it did.
+  const roll = [...`${wk}|${room.join(',')}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 100;
+  const seats = wk <= 1 || room.length < 9 ? 2 : roll < 60 ? 2 : roll < 88 ? 3 : 4;
+  const cast = castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, seats: Math.max(2, Math.min(seats, pool.length - 1, 5 - dOffice.length)) });
   const nominees = [...dOffice, ...cast.nominees];
   return { nominees, ballots: cast.ballots, tally: cast.tally, rule, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
     dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };

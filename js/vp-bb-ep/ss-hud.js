@@ -195,6 +195,21 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const xs = Object.fromEntries((S.cast || []).filter(Array.isArray));
     h += st.signs.map((n, i) => `<div class="sso ${fresh ? 'fresh' : ''}" style="left:${xs[n] ?? 30 + i * 20}%;--i:${i}"><b>OOPS!</b><i></i></div>`).join('');
   }
+  // THE LIST OF SECRETS, as the show draws it: a sky of pink clouds, a pill per secret, the face of whoever the
+  // public already knows it belongs to on a cloud beside it (the user's reference, S14)
+  if (st.secretlist) {
+    const L = st.secretlist;
+    h += `<div class="ssls ${fresh ? 'fresh' : ''}"><div class="ssls-sky"></div><b class="ssls-h"><span>THE LIST</span><span>OF SECRETS</span></b><div class="ssls-r">${(L.rows || []).map((r, i) => `
+      <div class="ssls-row ${r.new ? 'new' : ''} g${i % 4}" style="--i:${i}">${r.who ? `<span class="ssls-who"><span class="ssls-f" style="--c:${H.col(r.who)}">${H.img(r.who)}</span><em>${esc(r.who)}</em></span>` : ''}<span class="ssls-p">${esc(r.text)}</span></div>`).join('')}</div>
+      <img class="ssls-eye" src="${EYE}" alt=""></div>`;
+  }
+  // the call to vote: every nominee under a big number, and how to vote
+  if (st.votecall) {
+    const V = st.votecall;
+    h += `<div class="ssvc ${fresh ? 'fresh' : ''}"><div class="ssvc-sky"></div><div class="ssvc-r">${V.map((n, i) => `
+      <div class="ssvc-c" style="--i:${i}"><b class="ssvc-n">${i + 1}</b><span class="ssvc-f" style="--c:${H.col(n)}">${H.img(n)}</span><em>${esc(n)}</em></div>`).join('')}</div>
+      <div class="ssvc-how"><span>TEXT <b>THE NUMBER</b> TO <b>71 700</b></span><span><b>CALL</b> 3690 · OR VOTE IN <b>THE APP</b></span><small>The public decides who stays</small></div></div>`;
+  }
   if (st.ask) h += askHtml(st.ask, o, H);
   if (st.settle && fresh) {
     const r = settleCall(o?.ssKey, st.settle.id, st.settle.answer, st.settle.n || 2);
@@ -457,6 +472,48 @@ export const SS_CSS = `
 .sso i{width:.4cqw;height:3cqw;background:#f5deb3;border-radius:.2cqw}
 .sso.fresh{animation:ss-signup .55s calc(var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
 @keyframes ss-signup{from{transform:translateX(-50%) translateY(6cqw) rotate(-12deg);opacity:0}}
+/* (under the dialogue box: the host reads it, the line stays on top) */
+.ssls,.ssvc{position:absolute;inset:0;z-index:24;overflow:hidden;display:flex;flex-direction:column;align-items:center}
+.ssls-sky,.ssvc-sky{position:absolute;inset:0;background:
+  radial-gradient(ellipse 38% 22% at 12% 92%,#fff 0 40%,transparent 70%),radial-gradient(ellipse 34% 20% at 88% 96%,#ffe9f6 0 40%,transparent 70%),
+  radial-gradient(ellipse 30% 16% at 50% 104%,#fff 0 50%,transparent 75%),radial-gradient(ellipse 40% 24% at 8% 6%,rgba(255,255,255,.75) 0 30%,transparent 70%),
+  radial-gradient(ellipse 36% 20% at 92% 10%,rgba(255,230,250,.8) 0 30%,transparent 70%),
+  linear-gradient(180deg,#7c5cff 0%,#ff5fb7 38%,#ff8fc7 62%,#ffd0e6 100%)}
+.ssls-sky::after,.ssvc-sky::after{content:"";position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 50% 0%,rgba(255,255,255,.12) 0 4deg,transparent 4deg 12deg);animation:ss-rays 30s linear infinite}
+@keyframes ss-rays{to{transform:rotate(8deg)}}
+.ssls.fresh,.ssvc.fresh{animation:ss-fade .5s ease}
+.ssls-h{position:relative;margin-top:5.6cqw;display:flex;flex-direction:column;align-items:center;font:700 4.2cqw/0.95 'SSFredoka',sans-serif;letter-spacing:.02em}
+.ssls-h span{background:linear-gradient(90deg,#19d3c5,#3bb3ff 30%,#7c5cff 55%,#ff3ea5 80%,#ff7a59);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(.25cqw .25cqw 0 #fff) drop-shadow(-.12cqw -.12cqw 0 #fff) drop-shadow(0 .6cqw 1cqw rgba(124,92,255,.5))}
+.ssls.fresh .ssls-h{animation:ss-boxin .6s cubic-bezier(.2,1.4,.4,1) both}
+.ssls-r{position:relative;margin-top:1.2cqw;width:56cqw;display:flex;flex-direction:column;gap:.9cqw}
+.ssls-row{position:relative;display:flex;align-items:center;min-height:3.8cqw}
+.ssls-p{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;min-height:3.8cqw;padding:.4cqw 2.4cqw;border-radius:3cqw;
+  font:800 1.45cqw/1.15 'SSNunito',sans-serif;text-transform:uppercase;color:#fff;box-shadow:0 0 0 .25cqw rgba(255,255,255,.9),0 .8cqw 1.6cqw rgba(124,92,255,.35)}
+.ssls-row.g0 .ssls-p{background:linear-gradient(90deg,#fff,#ffe3f3);color:#c8137a}
+.ssls-row.g1 .ssls-p{background:linear-gradient(90deg,#3bb3ff,#7c5cff 50%,#ff3ea5)}
+.ssls-row.g2 .ssls-p{background:linear-gradient(90deg,#7c5cff,#ff3ea5 55%,#ff7a59)}
+.ssls-row.g3 .ssls-p{background:linear-gradient(90deg,#ff3ea5,#ff7a59 60%,#f5c542)}
+.ssls.fresh .ssls-row{animation:ss-pill .5s calc(.25s + var(--i) * .12s) cubic-bezier(.2,1.4,.4,1) both}
+.ssls-row.new .ssls-p{animation:ss-glow 1.6s ease-in-out infinite}
+@keyframes ss-pill{from{opacity:0;transform:translateX(-6cqw) scale(.9)}}
+@keyframes ss-glow{50%{box-shadow:0 0 0 .25cqw #fff,0 0 2.4cqw #fff}}
+.ssls-who{position:absolute;left:-1.6cqw;top:50%;translate:-100% -50%;display:flex;align-items:center;gap:.5cqw;z-index:2}
+.ssls-f{width:3.8cqw;height:3.8cqw;border-radius:50%;overflow:hidden;background:var(--c);box-shadow:0 0 0 .3cqw #fff,0 1cqw 2cqw rgba(0,0,0,.25)}
+.ssls-f img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
+.ssls-who em{order:-1;font:700 1.2cqw 'SSFredoka',sans-serif;font-style:normal;color:#fff;background:linear-gradient(90deg,#ff3ea5,#7c5cff);padding:.15cqw .8cqw;border-radius:2cqw;box-shadow:0 0 0 .18cqw #fff}
+.ssls-eye{position:absolute;right:2.4cqw;bottom:1.6cqw;width:7cqw;filter:drop-shadow(0 .6cqw 1cqw rgba(0,0,0,.25))}
+.ssvc-r{position:relative;margin-top:8cqw;display:flex;gap:1.6cqw;justify-content:center;align-items:flex-end;width:92%}
+.ssvc-c{position:relative;flex:0 1 11cqw;margin-left:3.4cqw;display:flex;flex-direction:column;align-items:center}
+.ssvc-n{position:absolute;top:-3.4cqw;left:-4.6cqw;font:700 11cqw/1 'SSFredoka',sans-serif;color:#ff8fd0;-webkit-text-stroke:.3cqw #fff;text-shadow:0 .6cqw 1.4cqw rgba(124,92,255,.55);z-index:0}
+.ssvc-f{position:relative;z-index:1;width:100%;aspect-ratio:3/4;border-radius:1.4cqw 1.4cqw .6cqw .6cqw;overflow:hidden;background:linear-gradient(180deg,var(--c),#fff0);box-shadow:0 1.2cqw 2.4cqw rgba(124,92,255,.35)}
+.ssvc-f img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.ssvc-c em{position:relative;z-index:2;margin-top:-1.4cqw;font:700 1.9cqw 'SSFredoka',sans-serif;font-style:normal;text-transform:uppercase;color:#fff;
+  background:linear-gradient(90deg,#3bb3ff,#7c5cff,#ff3ea5);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(.18cqw .18cqw 0 #fff) drop-shadow(-.1cqw -.1cqw 0 #fff)}
+.ssvc.fresh .ssvc-c{animation:ss-pill .55s calc(.2s + var(--i) * .1s) cubic-bezier(.2,1.4,.4,1) both}
+.ssvc-how{position:relative;margin-top:1.8cqw;width:72%;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:1cqw 2cqw;border-radius:1.4cqw;
+  background:linear-gradient(90deg,rgba(124,92,255,.85),rgba(200,19,122,.85));box-shadow:0 0 0 .2cqw rgba(255,255,255,.7);font:800 1.6cqw/1.25 'SSNunito',sans-serif;color:#fff;text-align:center}
+.ssvc-how b{color:#ffe14d}.ssvc-how small{font-size:1cqw;opacity:.85;letter-spacing:.1em;text-transform:uppercase}
 @media (prefers-reduced-motion:reduce){.ss-iris,.sss-coins{display:none}.ssh-eye,.ssv-eye img,.ssrest-eye{animation:none}}
 `;
 

@@ -112,7 +112,7 @@ const BY_ID = [
   [/^bb-ss-final-awards/, 'ss-fun'],
 ];
 // a house scene sounds like what it is; ordinary talk is the room (silence, like Big Brother's house)
-const BY_MOOD = { drama: 'ss-drama', scheming: 'ss-plot', plan: 'ss-hunt', campaign: 'ss-plot', ceremony: 'ss-tension', secret: 'ss-hunt', fun: 'ss-fun', love: 'ss-love', deals: null, house: null };
+const BY_MOOD = { mission: 'ss-mission', store: 'ss-store', drama: 'ss-drama', scheming: 'ss-plot', plan: 'ss-hunt', campaign: 'ss-plot', ceremony: 'ss-tension', secret: 'ss-hunt', fun: 'ss-fun', love: 'ss-love', deals: null, house: null };
 // Big Brother's moment beds, in the House of Secrets
 const FROM_BB = { 'bb-drama': 'ss-drama', 'bb-scheming': 'ss-plot', 'bb-planning': 'ss-hunt', 'bb-campaign': 'ss-plot', 'bb-brewing': 'ss-tension', 'bb-secret': 'ss-hunt',
   'bb-light': 'ss-fun', 'bb-house': 'ss-fun', 'bb-live-wait': 'ss-wait', 'bb-live-vote': 'ss-wait', 'bb-celebration': 'ss-winner', 'bb-comp-win': 'ss-epic', 'bb-comp': 'ss-epic',

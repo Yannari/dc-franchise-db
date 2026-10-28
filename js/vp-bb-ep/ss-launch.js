@@ -88,6 +88,29 @@ const topStat = (p, i) => {
   return keys.sort((a, b) => Number(s[b]) - Number(s[a]))[0];
 };
 
+/**
+ * The arrivals in groups, as the real launch brings them on: the first alone (the privilege), then two by two, a
+ * three when the numbers need it. A pair who share a secret come on together about half the time.
+ * @param {string[]} order @param {any[]} secrets @param {string} key
+ */
+export function arrivalGroups(order, secrets, key) {
+  const h = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const partnerOf = n => { const s = secrets.find(x => (x.holders || []).includes(n) && (x.holders || []).length === 2); return s ? s.holders.find(x => x !== n) : null; };
+  const rest = order.slice(1);
+  /** @type {string[][]} */ const groups = order.length ? [[order[0]]] : [];
+  while (rest.length) {
+    const x = rest.shift();
+    const p = partnerOf(x);
+    if (p && rest.includes(p) && h(`${key}|${x}|${p}`) % 2 === 0) { rest.splice(rest.indexOf(p), 1); groups.push([x, p]); continue; }
+    // (never split a partner off from a pair that is about to come on together)
+    const y = rest.find(z => !(partnerOf(z) && rest.includes(/** @type {string} */ (partnerOf(z))) && partnerOf(z) !== x && h(`${key}|${z}|${partnerOf(z)}`) % 2 === 0));
+    if (y && rest.length !== 2) { rest.splice(rest.indexOf(y), 1); groups.push([x, y]); }
+    else if (rest.length === 2) { groups.push([x, ...rest.splice(0)]); }
+    else groups.push([x]);
+  }
+  return groups;
+}
+
 /** The launch night's screens. */
 export function ssLaunchScreens(act, ctx, host, H) {
   const { ssv, pickBy, listOf, euros, ROSTER, ROOM_NAME, CAM, pronouns } = H;
@@ -130,95 +153,150 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const recog = act.recognitions || [];
   const mission = kind => (L.missions || []).find(m => m.kind === kind);
   const lifeUsed = new Set();
+  const code = mission('code');
+  const hide = mission('hide-sign');
 
-  order.forEach((n, i) => {
-    const p = P(n);
-    const s = secretOf(n);
-    const kk = `${k}|${n}`;
-    const steps = [];
-    // the walk on
-    steps.push({ k: 'host', by: host, t: i === 0 ? `Please give a huge welcome to our very first housemate: ${n}!` : pickBy([`Please welcome ${n}!`, `Here comes ${n}!`, `Ladies and gentlemen, ${n}!`], `${kk}|on`) },
-      { k: 'beat', t: pickBy([`${n} walks down the stairs onto the set, waving at the crowd.`, `${n} comes out to the music, and nearly misses the last step.`, `${n} walks on, both hands over ${pronouns(n).posAdj || 'their'} mouth.`], `${kk}|walk`), toast: ['ARRIVING', '#e0b84a'] },
-      { k: 'host', by: host, t: pickBy([`${n}, welcome! How are you feeling?`, `${n}! Welcome to Secret Story. Nervous?`, `${n}, come here. Your heart must be racing.`], `${kk}|hi`) },
-      { k: 'say', by: n, t: ARRIVE[(i + (ctx.week || 1) * 7) % ARRIVE.length] });
-    // the secret, to the public only: the audience holds up the signs
-    if (s) {
+  // ── the arrivals, two by two (the real S14 launch: the first alone, for the privilege; then in twos, now and
+  // then a three; a pair who share a secret sometimes walk on together, wait in the airlock side by side, and are
+  // sent in one at a time so the house sees nothing) ──
+  const groups = arrivalGroups(order, act.secrets || [], k);
+  const listed = [];          // the list of secrets read so far, in order
+  const doneCk = new Set(), doneLs = new Set();
+  let count = 0;
+  const xs = n => (n <= 1 ? [50] : n === 2 ? [36, 64] : [28, 50, 72]);
+  groups.forEach((g, gi) => {
+    const kk = `${k}|g${gi}`;
+    const shared = g.length === 2 && secretOf(g[0]) && secretOf(g[0]) === secretOf(g[1]) && (secretOf(g[0]).holders || []).length > 1;
+    const they = g.length > 1 ? 'they' : (pronouns(g[0]).sub || 'they');
+    const them = g.length > 1 ? 'them' : (pronouns(g[0]).obj || 'them');
+    const STU = { set: 'studio-wide', plate: 'ss-studio', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio', cast: g.map((n, i) => [n, xs(g.length)[i]]) };
+    const SAS = { set: 'door', plate: 'foyer', room: 'The Airlock', cam: 13, kicker: 'Live · The Airlock', cast: g.map((n, i) => [n, xs(g.length)[i]]) };
+    /** @type {any[]} */ const steps = [];
+    // the walk on, in the studio
+    const first = gi === 0 && g.length === 1;
+    steps.push({ k: 'host', by: host, scene: STU, toast: ['ARRIVING', '#e0b84a'],
+      t: first ? `Please give a huge welcome to our very first housemate: ${g[0]}!` : g.length === 1 ? pickBy([`Please welcome ${g[0]}!`, `Here comes ${g[0]}!`, `Ladies and gentlemen, ${g[0]}!`], `${kk}|on`)
+        : pickBy([`Our next housemates are coming down together. Please welcome ${listOf(g)}!`, `Two at a time now! Ladies and gentlemen, ${listOf(g)}!`, `Here they come: ${listOf(g)}!`], `${kk}|on`) });
+    steps.push({ k: 'beat', t: g.length === 1
+      ? pickBy([`${g[0]} walks down the stairs onto the set, waving at the crowd.`, `${g[0]} comes out to the music, and nearly misses the last step.`, `${g[0]} walks on, both hands over ${pronouns(g[0]).posAdj || 'their'} mouth.`], `${kk}|walk`)
+      : pickBy([`${listOf(g)} come down the stairs side by side, waving at the crowd.`, `${g[0]} takes the stairs two at a time. ${g.slice(1).join(' and ')} follow${g.length > 2 ? '' : 's'}, laughing.`, `${listOf(g)} walk on to a wall of noise.`], `${kk}|walk`) });
+    steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing.`], `${kk}|hi`)
+      : pickBy(['Welcome, both of you! How are you feeling?', 'Welcome to Secret Story! Nervous?', 'Look at you two. How are the nerves?'], `${kk}|hi`) });
+    g.forEach((n, j) => steps.push({ k: 'say', by: n, t: ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length] }));
+    if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, you two didn't arrive together by accident, did you?`, `You two seem very comfortable together. Interesting...`], `${kk}|pair`) },
+      { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
+    // the secrets, to the public only: the audience holds up the signs
+    g.forEach((n, j) => {
+      const s = secretOf(n);
+      if (!s || (shared && j === 1)) return;
+      const i = count + j;
       steps.push(i === 0
         ? ssv(`${n}, you're the first to enter the House of Secrets, and that's a privilege. But every privilege comes with a price. Tonight, it's the public who will reveal your secret. Right now.`)
-        : { k: 'host', by: host, t: `${n}, turn around. Everyone at home is about to find out your secret.` },
+        : { k: 'host', by: host, t: shared ? `${listOf(g)}, turn around. Everyone at home is about to find out what you're hiding.` : `${n}, turn around. Everyone at home is about to find out your secret.` },
       { k: 'beat', t: `The audience lifts its signs, all at once: "${s.text}."`, toast: ['ONLY THE PUBLIC KNOWS', '#7c5cff'], shake: i === 0 },
       { k: 'say', by: n, t: pickRot(["Yeah... that's my secret.", "Oh no. Yep, that's it.", "That's me. Nobody in there can ever know.", "Seeing it written down like that is so weird.",
         "That's mine. Please don't show that to anybody else.", "Wow. Okay. That's real now.", "Yep. That's the one thing I can't let slip."], i) });
-      if ((s.holders || []).length > 1) steps.push({ k: 'host', by: host, t: `And ${n} isn't the only one keeping it. Somebody else in that house shares this secret.` });
-    }
-    // the portrait, in their own words
-    const bits = [p.age ? `${p.age}` : null, p.hometown ? `from ${p.hometown}` : null].filter(Boolean).join(', ');
-    const job = p.occupation ? ` ${String(p.occupation).replace(/^./, c => c.toUpperCase())}.` : '';
-    steps.push({ k: 'host', by: host, t: `While ${n} heads to the airlock, let's get to know ${pronouns(n).obj || 'them'} a little better.` },
-      { k: 'beat', t: bits || job ? `${n}${bits ? `, ${bits}` : ''}.${job}` : `${n}, the ${NTH[i] || 'next'} housemate of the season.`, toast: ['PORTRAIT', '#e0b84a'] });
-    const arch = (ROSTER || []).find(x => x.name === n)?.archetype || 'social-butterfly';
-    steps.push({ k: 'dr', by: n, t: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i) });
-    let li = (i * 3) % LIFE.length;
-    while (lifeUsed.has(li) && lifeUsed.size < LIFE.length) li = (li + 1) % LIFE.length;
-    lifeUsed.add(li);
-    steps.push({ k: 'dr', by: n, t: LIFE[li] },
-      { k: 'dr', by: n, t: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social },
-      { k: 'dr', by: n, t: pickRot(PROMISE, i) });
-    // the airlock
-    const stat = topStat(p, i);
-    steps.push({ k: 'beat', t: `In the airlock, ${n} puts in an earpiece.`, cut: { plate: 'foyer', who: n } },
-      { k: 'host', by: host, t: `${n}, can you hear me? What's going to be your biggest strength in there?` },
-      { k: 'say', by: n, t: `Honestly? ${pickRot(ASSET[stat] || ASSET.social, i).replace(/^./, c => c.toUpperCase())}.` },
-      { k: 'host', by: host, t: pickRot(["Well, we'll see if that's enough. I think the Voice has something to tell you.", "I like it. Now listen carefully, because the Voice wants a word.",
-        "We'll find out soon enough. Hold on, the Voice is about to speak to you.", "Good answer. Stay right there. The Voice has something for you.",
-        "That could take you a long way. But first, the Voice.", "I hope you're right. Now, quiet. The Voice is speaking."], i) });
+      if (shared) steps.push({ k: 'host', by: host, t: `One secret, two of you. And nobody in that house can ever know you've met before tonight.` });
+      else if ((s.holders || []).length > 1) steps.push({ k: 'host', by: host, t: `And ${n} isn't the only one keeping it. Somebody else in that house shares this secret.` });
+    });
+    steps.push({ k: 'host', by: host, t: `${listOf(g)}, the airlock is waiting for you. While ${they} head${g.length > 1 ? '' : 's'} over there, let's get to know ${them} a little better.` });
+    // the portraits, in their own words
+    g.forEach((n, j) => {
+      const p = P(n), i = count + j;
+      const bits = [p.age ? `${p.age}` : null, p.hometown ? `from ${p.hometown}` : null].filter(Boolean).join(', ');
+      const job = p.occupation ? ` ${String(p.occupation).replace(/^./, c => c.toUpperCase())}.` : '';
+      steps.push({ k: 'beat', t: bits || job ? `${n}${bits ? `, ${bits}` : ''}.${job}` : `${n}, the ${NTH[i] || 'next'} housemate of the season.`, toast: ['PORTRAIT', '#e0b84a'] });
+      const arch = (ROSTER || []).find(x => x.name === n)?.archetype || 'social-butterfly';
+      steps.push({ k: 'dr', by: n, t: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i) });
+      let li = (i * 3) % LIFE.length;
+      while (lifeUsed.has(li) && lifeUsed.size < LIFE.length) li = (li + 1) % LIFE.length;
+      lifeUsed.add(li);
+      if (g.length === 1) steps.push({ k: 'dr', by: n, t: LIFE[li] });
+      steps.push({ k: 'dr', by: n, t: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social }, { k: 'dr', by: n, t: pickRot(PROMISE, i) });
+    });
+    // the airlock: the host on the earpiece, the Voice's word, the door
+    steps.push({ k: 'beat', scene: SAS, t: g.length === 1 ? `In the airlock, ${g[0]} puts in an earpiece and checks ${pronouns(g[0]).posAdj || 'their'} hair in the mirror.` : `In the airlock, ${listOf(g)} put in their earpieces, side by side, and check their hair in the mirror.` },
+      { k: 'host', by: host, t: g.length === 1 ? `${g[0]}, can you hear me? What's going to be your biggest strength in there?` : `Can you hear me, ${g.length > 2 ? 'all of you' : 'both of you'}? Quickly: what's your biggest strength in there?` });
+    g.forEach((n, j) => steps.push({ k: 'say', by: n, t: `${j ? '' : 'Honestly? '}${pickRot(ASSET[topStat(P(n), count + j)] || ASSET.social, count + j).replace(/^./, c => c.toUpperCase())}.` }));
+    steps.push({ k: 'host', by: host, t: pickRot(["Well, we'll see if that's enough. I think the Voice has something to tell you.", "I like it. Now listen carefully, because the Voice wants a word.",
+      "We'll find out soon enough. Hold on, the Voice is about to speak to you.", "Good answers. Stay right there. The Voice has something for you.", "I hope you're right. Now, quiet. The Voice is speaking."], gi) });
     // the first missions (js/ss/launch.js)
-    const hide = mission('hide-sign');
-    const code = mission('code');
-    if (hide && hide.who === n) {
-      steps.push(ssv(`${n}, the Voice has played a little trick on you. The signs are gone, all except one. Somewhere in the house, there's still a sign with your secret written on it.`),
-        ssv("Find it, take it down and hide it before the next housemate walks in. You've got a few minutes. That is all for now.", { toast: ['FIRST MISSION', '#e0b84a'] }),
-        { k: 'beat', t: `${n} runs into the house and starts opening every door.` },
-        { k: 'beat', t: hide.ok ? `${n} finds it in the pantry, tears it into pieces, and pushes the pieces under a mattress just as the doorbell goes.` : `${n} finds it, rips it in half, and stuffs it behind a cushion. Half the words are still showing.` });
-    } else if (code && code.who === n) {
-      steps.push(ssv(`${n}, here is your first mission. A key is waiting for you in locker number four in the laundry. The code is four numbers: ${code.from[0]}'s shoe size, then the number of eggs in the pantry.`),
-        ssv(`Only ${listOf(code.from)} can help you, and they mustn't find out why. That is all for now.`, { toast: ['FIRST MISSION', '#e0b84a'] }));
-    } else {
-      steps.push(ssv(`${n}, you may now enter the House of Secrets. That is all for now.`));
+    for (const n of g) {
+      if (hide && hide.who === n) steps.push(ssv(`${n}, the Voice has played a little trick on you. The signs are gone, all except one. Somewhere in the house, there's still a sign with your secret written on it.`),
+        ssv("Find it, take it down and hide it before the next housemate walks in. You've got a few minutes.", { toast: ['FIRST MISSION', '#e0b84a'] }));
+      if (code && code.who === n) steps.push(ssv(`${n}, here is your first mission. A key is waiting for you in locker number four in the laundry. The code is four numbers: ${code.from[0]}'s shoe size, then the number of eggs in the pantry.`),
+        ssv(`Only ${listOf(code.from)} can help you, and they mustn't find out why.`, { toast: ['FIRST MISSION', '#e0b84a'] }));
     }
-    // in
-    steps.push({ k: 'beat', t: pickBy([`The door opens. ${n} steps into the House of Secrets.`, `${n} walks through the airlock and into the house.`, `${n} takes a breath, and goes in.`], `${kk}|in`) });
-    if (!inside.length) steps.push({ k: 'dr', by: n, t: pickBy(["It's beautiful. It's so pink. I don't trust it at all.", "There's nobody here. It's just me and a house full of secrets."], `${kk}|alone`) });
-    else {
-      const met = recog.filter(r => r.whom === n && inside.includes(r.who));
-      if (met.length) for (const r of met) steps.push({ k: 'say', by: r.who, t: `Wait. Aren't you from ${r.from}?`, tense: [r.who, n] },
-        { k: 'dr', by: n, t: pickBy(['Two minutes in, and somebody already knows who I am.', 'I hoped nobody in here would recognise me.', 'If they know where I am from, they are one step closer to my secret.'], `${kk}|rec`) });
-      else steps.push({ k: 'beat', t: pickBy([`${inside[inside.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${n} shakes hands with everybody, one at a time.`, `${listOf(inside.slice(-2))} pretend to have been there for years.`], `${kk}|greet`) });
-      const partner = s && (s.holders || []).find(x => x !== n && inside.includes(x));
-      if (partner) steps.push({ k: 'beat', t: `${partner} shakes ${n}'s hand like they have never met.`, tense: [n, partner] },
-        { k: 'dr', by: partner, t: pickBy([`I have to act like I don't know ${n}. That is going to be the hardest part.`, `${n} walked in and I didn't even blink. I'm proud of that.`], `${kk}|pair`) });
+    if (shared) steps.push(ssv(`${listOf(g)}, the Voice welcomes you to Secret Story. To keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${g[1]}, you wait here.`),
+      { k: 'beat', t: `${g[1]} squeezes ${g[0]}'s hand once, and lets go.`, tense: [g[0], g[1]] });
+    const goers = shared ? [g[0]] : g;
+    steps.push(ssv(`${listOf(goers)}, you may now enter the House of Secrets. That is all for now.`));
+    // in: the house, live
+    const enter = (who, alone) => {
+      const here = [...inside];
+      const HOUSE = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: 4, kicker: 'Live · The House', cast: [...here.slice(-4), ...who].map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(14 + 72 * i / (a.length - 1))]) };
+      steps.push({ k: 'beat', scene: HOUSE, t: who.length === 1 ? pickBy([`The door opens. ${who[0]} steps into the House of Secrets.`, `${who[0]} walks through the airlock and into the house.`, `${who[0]} takes a breath, and goes in.`], `${kk}|in|${who[0]}`)
+        : pickBy([`The door opens. ${listOf(who)} step into the House of Secrets together.`, `${listOf(who)} walk through the airlock and into the house, screaming.`], `${kk}|in`) });
+      if (!here.length) { steps.push({ k: 'dr', by: who[0], t: pickBy(["It's beautiful. It's so pink. I don't trust it at all.", "There's nobody here. It's just me and a house full of secrets."], `${kk}|alone`) }); return; }
+      for (const n of who) {
+        const met = recog.filter(r => r.whom === n && here.includes(r.who));
+        if (met.length) for (const r of met) steps.push({ k: 'say', by: r.who, t: `Wait. Aren't you from ${r.from}?`, tense: [r.who, n] },
+          { k: 'dr', by: n, t: pickBy(['Two minutes in, and somebody already knows who I am.', 'I hoped nobody in here would recognise me.', 'If they know where I am from, they are one step closer to my secret.'], `${kk}|rec|${n}`) });
+        const partner = secretOf(n) && (secretOf(n).holders || []).find(x => x !== n && here.includes(x));
+        if (partner) steps.push({ k: 'beat', t: `${partner} shakes ${n}'s hand like they have never met.`, tense: [n, partner] },
+          { k: 'dr', by: partner, t: pickBy([`I have to act like I don't know ${n}. That is going to be the hardest part.`, `${n} walked in and I didn't even blink. I'm proud of that.`], `${kk}|pair|${n}`) });
+      }
+      if (!alone) steps.push({ k: 'beat', t: pickBy([`${here[here.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${listOf(who)} shake${who.length > 1 ? '' : 's'} hands with everybody, one at a time.`, `${listOf(here.slice(-2))} pretend to have been there for years.`], `${kk}|greet|${who[0]}`) });
+    };
+    enter(goers, false);
+    inside.push(...goers);
+    if (hide && goers.includes(hide.who)) steps.push({ k: 'beat', t: `${hide.who} runs off and starts opening every door.` },
+      { k: 'beat', t: hide.ok ? `${hide.who} finds it in the pantry, tears it into pieces, and pushes the pieces under a mattress just in time.` : `${hide.who} finds it, rips it in half, and stuffs it behind a cushion. Half the words are still showing.` });
+    if (shared) {
+      steps.push({ k: 'beat', scene: SAS && { ...SAS, cast: [[g[1], 50]] }, t: `Back in the airlock, ${g[1]} waits alone, counting to a hundred.` },
+        ssv(`${g[1]}, you may now enter the House of Secrets. That is all for now.`));
+      enter([g[1]], false);
+      inside.push(g[1]);
     }
-    if (code && code.who === n) steps.push({ k: 'say', by: n, t: `${code.from[0]}, random question. What shoe size are you?` },
+    if (code && g.includes(code.who)) steps.push({ k: 'say', by: code.who, t: `${code.from[0]}, random question. What shoe size are you?` },
       { k: 'say', by: code.from[0], t: pickBy(['Why do you want to know that?', "That's the weirdest first question anyone's ever asked me."], `${kk}|shoe`) },
-      { k: 'beat', t: code.ok ? `${n} laughs it off, gets the number, and counts the eggs while making tea. The locker opens. ${euros(code.reward)} for the kitty.` : `${n} gets the shoe size, miscounts the eggs, and the locker stays shut.` });
-    inside.push(n);
-    out.push(base(`bb-ss-launch-arr-${i + 1}`, { set: 'door', room: 'The Studio and the Airlock', cam: 7, kicker: `Live · Arrival ${i + 1} of ${order.length}`,
-      title: n, label: `Arrival ${i + 1}`, sub: s ? 'A secret, to the public only' : 'Arriving', cast: [[n, 50]], steps }));
+      { k: 'beat', t: code.ok ? `${code.who} laughs it off, gets the number, and counts the eggs while making tea. The locker opens. ${euros(code.reward)} for the kitty.` : `${code.who} gets the shoe size, miscounts the eggs, and the locker stays shut.` });
+    count += g.length;
+    out.push(base(`bb-ss-launch-arr-${gi + 1}`, { ...STU, sceneful: true, kicker: `Live · Arrival ${gi + 1} of ${groups.length}`,
+      title: listOf(g), label: `Arrival ${gi + 1}`, sub: g.length > 1 ? `${g.length} housemates` : 'Arriving', steps }));
 
     // the house, live, between arrivals
-    for (const c of (L.checkins || []).filter(x => x.after === i + 1)) out.push(base(`bb-ss-launch-house-${c.after}`, { ...checkin(c, H), set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house' }));
-    // the list of secrets, told as clues, never whose
-    for (const l of (L.lists || []).filter(x => x.after === i + 1)) {
-      /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: "It's time for the list of secrets. Let's find out what some of them are hiding." }];
+    for (const c of (L.checkins || []).filter(x => x.after <= count && !doneCk.has(x))) {
+      doneCk.add(c);
+      if (c.who.some(n => !inside.includes(n))) continue;
+      out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { ...checkin(c, H), set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house' }));
+    }
+    // the list of secrets: the HOST reads it (the user, 2026-10-28), on the show's own board, never saying whose
+    for (const l of (L.lists || []).filter(x => x.after <= count && !doneLs.has(x))) {
+      doneLs.add(l);
+      const known = n => inside.includes(n);
+      // (the public already knows the secrets of everybody inside: their faces go on the board beside them, as on the
+      // real one; the ones read tonight have no face yet)
+      const rowsNow = fresh => {
+        const seen = new Set([...listed, ...fresh].map(sx => sx.text));
+        const knownRows = inside.map(n => secretOf(n)).filter(sx => sx && !seen.has(sx.text)).filter((sx, i, a) => a.indexOf(sx) === i)
+          .map(sx => ({ text: sx.text, who: (sx.holders || []).find(known) || null }));
+        const read = [...listed, ...fresh].map(sx => ({ text: sx.text, who: (sx.holders || []).length === 1 && known(sx.holders[0]) ? sx.holders[0] : null, new: fresh.includes(sx) }));
+        return [...knownRows.slice(-Math.max(1, 5 - read.length)), ...read].slice(-5);
+      };
+      /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what some of them are hiding.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${kk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
+        secretlist: { rows: rowsNow([]) } }];
+      const fresh = [];
       for (const sx of l.secrets) {
         const j = l.secrets.indexOf(sx);
-        ls.push(ssv(pickRot(['Let us lift the veil on one more secret.', 'Here is another secret, hidden among you.', 'And another one.', 'This next secret belongs to one of you.', 'One more. Listen carefully.'], j + i), j ? {} : { toast: ['THE LIST OF SECRETS', '#7c5cff'] }));
+        fresh.push(sx);
+        ls.push({ k: 'host', by: host, t: sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : pickRot([`One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Next on the list: "${sx.text}."`, `And this one: "${sx.text}."`], j + gi), secretlist: { rows: rowsNow(fresh) } });
         // (a clue is a noun phrase, singular or not: "somewhere in the house: five rings on a string")
-        if ((sx.clues || [])[0]) ls.push({ k: 'beat', t: `Hidden somewhere in the house: ${sx.clues[0]}.${sx.clues[1] ? ` And ${sx.clues[1]}.` : ''}` });
-        ls.push(ssv(sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : `One of our housemates, man or woman, is hiding this: "${sx.text}."`));
+        if ((sx.clues || [])[0]) ls.push({ k: 'host', by: host, t: `A little clue for you at home: hidden somewhere in the house, ${sx.clues[0]}.`, secretlist: { rows: rowsNow(fresh) } });
       }
-      ls.push({ k: 'host', by: host, t: `That's ${l.secrets.length} more on the list. Who's hiding what? You've got all summer to work it out.` });
-      out.push(base(`bb-ss-launch-list-${l.after}`, { ...STUDIO, title: 'The List of Secrets', label: 'List of Secrets', sub: `${l.secrets.length} secrets`, cast: [], steps: ls }));
+      listed.push(...fresh);
+      ls.push({ k: 'host', by: host, t: `That's ${l.secrets.length} more on the list. Who's hiding what? You've got all summer to work it out.`, secretlist: { rows: rowsNow([]) } });
+      out.push(base(`bb-ss-launch-list-${count}`, { ...STUDIO, title: 'The List of Secrets', label: 'List of Secrets', sub: `${l.secrets.length} secrets`, cast: [], steps: ls }));
     }
   });
   return out;

@@ -2,7 +2,8 @@
 // opened on an episode, and one shot per kind of moment (the Voice, a confessional, a call, a prop,
 // the secret card, a title card), so the House of Secrets' look can be checked by eye.
 //   (python serve.py 4173; 127.0.0.1, since headless Chromium's localhost can be IPv6)   node tools/ss-vp-shots.mjs [episode] [max] [kinds]
-//   kinds: comma list of voice,dr,say,host,beat,ask,prop,card,rest (default: all)
+//   kinds: comma list of voice,dr,say,host,beat,ask,prop,card,rest,list,vote,scene,map,hl,kitties,signs,coins (default: the first nine)
+//   SS_PART=launch|daily|prime plays that part of the week; SS_ONLY=<regex> keeps the screens whose id matches
 // Shots land in $SS_SHOTS (default shots/ss-vp)/e<ep>-<n>-<kind>-<screen>.png.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -52,8 +53,13 @@ for (let i = 0; i < Number(ep); i++) {
 await page.evaluate(n => window.openVisualPlayer(n), Number(ep));
 await page.waitForFunction(() => (window.vpScreens || []).length > 3, null, { timeout: 60_000 });
 await page.waitForTimeout(800);
+// SS_PART=launch|daily|prime: the part of the week to play (a week airs as its own episodes)
+if (process.env.SS_PART) {
+  await page.evaluate(([n, p]) => window.bbxSsPart(n, p), [Number(ep), process.env.SS_PART]);
+  await page.waitForTimeout(1500);
+}
 // every screen's steps, by kind; the first of each kind on each screen
-const plan = await page.evaluate(wantList => {
+const plan = await page.evaluate(([wantList, only]) => {
   const want = new Set(wantList);
   const out = [];
   const R = window._bbx || {};
@@ -64,17 +70,18 @@ const plan = await page.evaluate(wantList => {
     if (want.has('map') && r.map && !seen.has('map')) { seen.add('map'); out.push({ uid: r.uid, idx: -1, kind: 'map', id: S.id || 'houselife' }); }
     // hl: a few spoken lines of House Life (its own scenes, on the house's plates)
     if (want.has('hl') && S && S.kind === 'houselife') { let k = 0; S.steps.forEach((st, i) => { if (st.k === 'say' && k < 4 && i % 7 === 3) { k++; out.push({ uid: r.uid, idx: i, kind: 'hl', id: `${S.id}-${i}` }); } }); }
-    if (!S || !/^bb-ss-/.test(S.id || '')) continue;
+    if (!S || !(/^bb-ss-/.test(S.id || '') || S.sceneful)) continue;
+    if (only && !new RegExp(only).test(S.id || '')) continue;
     if (want.has('rest')) out.push({ uid: r.uid, idx: -1, kind: 'rest', id: S.id });
     S.steps.forEach((st, k) => {
-      const kind = st.kitties ? 'kitties' : st.signs ? 'signs' : st.coins ? 'coins' : st.ask ? 'ask' : st.prop ? 'prop' : st.card ? 'card' : st.k;
-      const key = `${S.id.replace(/-w\d+.*/, '')}|${kind}`;
+      const kind = st.secretlist ? 'list' : st.votecall ? 'vote' : (st.scene && S.sceneful) ? 'scene' : st.kitties ? 'kitties' : st.signs ? 'signs' : st.coins ? 'coins' : st.ask ? 'ask' : st.prop ? 'prop' : st.card ? 'card' : st.k;
+      const key = kind === 'scene' ? `${S.id}|${st.scene.set}|${k}` : `${S.id.replace(/-w\d+.*/, '')}|${kind}`;
       if (!want.has(kind) || seen.has(key)) return;
       seen.add(key); out.push({ uid: r.uid, idx: k, kind, id: S.id });
     });
   }
   return out;
-}, [...want]);
+}, [[...want], process.env.SS_ONLY || ""]);
 console.log('moments', plan.length);
 let n = 0;
 for (const m of plan.slice(0, Number(max))) {

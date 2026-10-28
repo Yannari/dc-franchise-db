@@ -388,6 +388,7 @@ export function crRenderGrid() {
   if (fc) { fc.textContent = `${active} filter${active === 1 ? '' : 's'} · ${shown.length}/${players.length}`; fc.hidden = active === 0; }
   if (clr) clr.hidden = active === 0;
 
+  if (view === 'secrets' && _isSecretStory()) { host.innerHTML = window.ssSecretsBoardHTML?.() || ''; return; }
   if (view === 'tribes') { host.innerHTML = _tribesBodyHTML(shown); return; }
   if (view === 'teams' && _chCustom() === 'teams') { host.innerHTML = _tribesBodyHTML(shown, { teams: true }); return; }
   if (view === 'pairs' && _chCustom() === 'pairs') { host.innerHTML = _pairsBodyHTML(shown); return; }
@@ -635,6 +636,7 @@ function _shellHTML() {
           <button class="cr-viewbtn" data-view="pairs" onclick="crSetView('pairs')" hidden>Pairs</button>
           <button class="cr-viewbtn" data-view="villa" onclick="crSetView('villa')" hidden>Villa</button>
           <button class="cr-viewbtn" data-view="circle" onclick="crSetView('circle')" hidden>&#11093; Circle</button>
+          <button class="cr-viewbtn" data-view="secrets" onclick="crSetView('secrets')" hidden>&#128065; Secrets</button>
         </div>
         <button class="cr-viewbtn cr-statsbtn${typeof window !== 'undefined' && window._crShowAllStats ? ' active' : ''}" id="cr-statsbtn"
           onclick="crToggleStats()" title="Show all 9 stats on every card" aria-pressed="${typeof window !== 'undefined' && !!window._crShowAllStats}">⚏ Stats</button>
@@ -796,6 +798,10 @@ function _isVilla() {
 function _isCircle() {
   try { return !!window.isCircleSeason?.(); } catch { return false; }
 }
+// Secret Story: every housemate's secret, on a tab of its own (js/ss/setup-panel.js draws it).
+function _isSecretStory() {
+  try { return !!window.isSecretStorySeason?.(); } catch { return false; }
+}
 // The Challenge: no tribes. Each card shows the player's division and their
 // vet or rookie billing, set in the usual cast form.
 function _isChallenge() {
@@ -825,13 +831,15 @@ function _syncViewButtons(room) {
   const challenge = _isChallenge() || _isRace();
   const custom = _chCustom();
   let view = window._crView || 'grid';
-  if ((view === 'villa' && !villa) || (view === 'circle' && !circle)
+  const secrets = _isSecretStory();
+  if ((view === 'villa' && !villa) || (view === 'circle' && !circle) || (view === 'secrets' && !secrets)
     || (view === 'tribes' && (villa || challenge)) || (view === 'teams' && custom !== 'teams') || (view === 'pairs' && custom !== 'pairs')) view = 'grid';
   room.dataset.view = view;
   room.querySelectorAll('.cr-viewbtn[data-view]').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
     if (b.dataset.view === 'villa') b.hidden = !villa;
     if (b.dataset.view === 'circle') b.hidden = !circle;
+    if (b.dataset.view === 'secrets') b.hidden = !secrets;
     if (b.dataset.view === 'tribes') { b.hidden = villa || challenge; b.textContent = circle ? 'Categories' : 'Tribes'; }
     if (b.dataset.view === 'teams') b.hidden = custom !== 'teams';
     if (b.dataset.view === 'pairs') b.hidden = custom !== 'pairs';
@@ -1047,6 +1055,7 @@ const CR_CSS = `
 #cast-room[data-view="villa"] #cr-body, #cast-room[data-view="villa"] #cr-filterwrap { display:none; }
 #cast-room:not([data-view="villa"]) #sec-pm-cast { display:none !important; }
 #cast-room[data-view="circle"] #cr-body, #cast-room[data-view="circle"] #cr-filterwrap { display:none; }
+#cast-room[data-view="secrets"] #cr-filterwrap { display:none; }
 #cast-room:not([data-view="circle"]) #sec-ci-cast { display:none !important; }
 .cr-topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
 .cr-title-wrap { display:flex; align-items:baseline; gap:12px; }

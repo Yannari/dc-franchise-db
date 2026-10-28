@@ -32,6 +32,7 @@ import { BBX_COMP_CSS } from './comp-field.js';
 import { SS_CSS, ssDossierOf, ssSideHtml } from './ss-hud.js';
 import { titleScreen } from './titles.js';
 import { ssTitleScreen } from './ss-titles.js';
+import { ssPartOf, SS_PART_LABEL } from './ss-episode.js';
 import { seasonId } from '../shows.js';
 import { seasonFormat } from '../core.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
@@ -321,6 +322,10 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // (ssKey: the season the viewer's own Secret Story kitty belongs to, vp-bb-ep/ss-hud.js)
   const o = { season: seasonOf(row), host, ssKey: seasonOf(row) === 'secret-story' ? seasonId(seasonFormat(globalThis.seasonConfig || {}), (globalThis.seasonConfig || {}).seasonNumber || row.seasonNumber || 1) : null };
   const fp = episodeKey(row, steps);
+  // A Secret Story week airs as its own episodes (the user, 2026-10-28: "the prime being the same episode as the
+  // others makes them super long"): launch night (week one), the days, the prime. One plays at a time.
+  const ssParts = o.season === 'secret-story' ? [...new Set(steps.map(S => ssPartOf(S)))].filter(p => SS_PART_LABEL[p]) : [];
+  const ssPart = ssParts.length ? (ssParts.includes(ssPartNow(row.num)) ? ssPartNow(row.num) : ssParts[0]) : null;
   const kept = watchAll()[fp]?.s || {};
   // Twist and House Life screens, by the part of the week they followed in the old running
   // order. Counted by OCCURRENCE: on a double or triple eviction the first cycle's eviction
@@ -414,6 +419,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   <div class="bbx-ctrl">
     <button type="button" class="bbx-btn" onclick="bbxAll('${uid}')">Reveal all</button>
     <button type="button" class="bbx-btn" onclick="bbxReset('${uid}')">Restart</button>
+    ${ssParts.length > 1 ? ssParts.map(p => `<button type="button" class="bbx-btn ${p === ssPart ? 'on' : ''}" onclick="bbxSsPart(${Number(row.num) || 0}, '${p}')" title="Play this part of the week as its own episode">${SS_PART_LABEL[p]}</button>`).join('') : ''}
     <button type="button" class="bbx-btn" onclick="bbxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
     ${S.kind === 'houselife' ? `<button type="button" class="bbx-btn ${mapOn() ? 'on' : ''}" onclick="bbxMapMode()" title="House Life as the house map you explore, or as one segment in story order">${mapOn() ? 'Linear view' : 'House map'}</button>` : ''}
     <button type="button" class="bbx-btn" onclick="bbxHouseLife()" title="House life as one segment per stretch, or one scene per screen">${houseLifeMode() === 'scenes' ? 'House Life view' : 'Scenes view'}</button>
@@ -439,6 +445,14 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     if (at >= 0) out.splice(at + 1, 0, ...after[k]); else out.push(...after[k]);
     placed.add(k);
   }
+  // a Secret Story week: only the part being watched (a classic screen goes with the stepped screen before it)
+  let ssNext = null;
+  if (ssPart) {
+    let cur = ssParts[0];
+    const keep = out.filter(x => { if (x?.html?.includes('class="bbx"') || /^bb-ss-/.test(x?.id || '')) { const m = /data-uid="(bbx[^"]+)"/.exec(x.html || ''); const S = m ? reg()[m[1]] : null; cur = ssPartOf(S ? S.screens[S.si] : x.id); } return cur === ssPart; });
+    out.length = 0; out.push(...keep);
+    ssNext = ssParts[ssParts.indexOf(ssPart) + 1] || null;
+  }
   // Every episode opens on the titles and closes on the closing (vp-bb-ep/titles.js),
   // both rendered in Blender with this season's cast, both skippable.
   const sc = (typeof globalThis !== 'undefined' && globalThis.seasonConfig) || {};
@@ -463,8 +477,12 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string' && !cameBack.has(x)))];
   // (Secret Story opens on its own sequence: vp-bb-ep/ss-titles.js)
   const titled = o.season === 'secret-story' ? (k, g) => ssTitleScreen(k, cast, seasonTitle, g) : (k, g) => titleScreen(k, key, cast, seasonTitle, g);
-  out.unshift(titled('intro', goneBefore));
-  out.push(titled('outro', goneAfter));
+  // (Secret Story: the days open on "Previously…" and then the generic; the prime opens on its own live generic)
+  if (ssPart === 'prime') { /* the studio's own opening */ }
+  else if (ssPart && /^bb-ss-previously/.test(out[0]?.id || '')) out.splice(1, 0, titled('intro', goneBefore));
+  else out.unshift(titled('intro', goneBefore));
+  out.push(titled('outro', ssPart && ssPart !== 'prime' ? goneBefore : goneAfter));
+  if (ssNext) out.push({ id: `bb-ss-next-${ssNext}`, label: `Up next: ${SS_PART_LABEL[ssNext]}`, html: ssNextCard(row.num, ssNext) });
   // the Debug screen is not part of the episode: it goes after the closing, never before it
   for (let i = out.length - 2; i >= 0; i--) if (/debug/.test(out[i]?.id || '')) out.push(...out.splice(i, 1));
   lastBuilt = { fp, num: row.num, ids: out.map(x => x?.id).filter(Boolean) };
@@ -828,6 +846,32 @@ function tvWake() {
 }
 /** Switch between the stepped viewer and the classic screens, and redraw this week. */
 /** Flip house life between one segment per stretch and one scene per screen, and redraw. */
+// ── Secret Story: the part of the week being watched ──
+/** @type {Record<string, string>} */
+const ssPartState = {};
+function ssPartNow(num) { return ssPartState[String(num)] || null; }
+/** Plays another part of a Secret Story week (launch night, the days, the prime) as its own episode. */
+export function bbxSsPart(num, part) {
+  ssPartState[String(num)] = part;
+  try {
+    const ep = window.vpEpNum ?? window._vpEpNum ?? num;
+    if (typeof window.openVisualPlayer === 'function') { window.openVisualPlayer(ep); if (typeof window.vpGoTo === 'function') window.vpGoTo(0); }
+  } catch { /* the viewer is not open */ }
+}
+/** The card at the end of a part: what comes next, and the way to it. */
+function ssNextCard(num, part) {
+  const blurb = { daily: 'The days in the House of Secrets: the hunt, the Voice, the nominations.', prime: 'Live from the studio: the kitties, the dilemmas, and the verdict of the public.' }[part] || '';
+  return `<div class="sst-next" style="position:relative;aspect-ratio:16/9;max-width:1200px;margin:0 auto;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+    background:radial-gradient(ellipse at 50% 40%,#c8137a 0%,#5b0d4f 40%,#2b0d3f 70%,#0d0414 100%);color:#fff;font-family:'SSFredoka',system-ui,sans-serif;text-align:center;padding:24px" data-ambient="none">
+    <style>@font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700}</style>
+    <img src="assets/sets/bb/secret-story/props/eye.webp" alt="" style="width:14%;filter:drop-shadow(0 0 24px rgba(255,62,165,.8))">
+    <div style="font-size:clamp(14px,1.6vw,20px);letter-spacing:.35em;opacity:.85">UP NEXT</div>
+    <div style="font-size:clamp(30px,5vw,64px);font-weight:700;text-shadow:3px 3px 0 #c8137a">${esc(SS_PART_LABEL[part] || part)}</div>
+    <div style="max-width:52ch;font-size:clamp(13px,1.4vw,18px);opacity:.9;font-family:system-ui,sans-serif">${esc(blurb)}</div>
+    <button type="button" onclick="bbxSsPart(${Number(num) || 0}, '${part}')" style="font:700 18px 'SSFredoka',sans-serif;padding:12px 26px;border-radius:999px;border:3px solid #fff;background:#ff3ea5;color:#fff;cursor:pointer;box-shadow:0 0 24px rgba(255,62,165,.7)">Watch ${esc(SS_PART_LABEL[part] || part)} ▶</button>
+  </div>`;
+}
+
 export function bbxHouseLife(keep = false) {
   if (keep !== true) try { localStorage.setItem('bb-houselife', houseLifeMode() === 'scenes' ? 'segments' : 'scenes'); } catch { /* per-viewer convenience */ }
   try {
@@ -894,7 +938,7 @@ if (typeof document !== 'undefined') document.addEventListener('keydown', e => {
   else if (e.key === 'Escape' && root.classList.contains('intel-open')) { e.preventDefault(); e.stopImmediatePropagation(); bbxIntel(root.dataset.uid); }
 });
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxVoices, bbxMusicLevel, bbxJump, bbxJumpFromLine, bbxResumeAt });
+if (typeof window !== 'undefined') Object.assign(window, { bbxSeek, bbxSeekHover, bbxSeekTip, bbxSpeed, bbxScene, bbxIntel, bbxIntelClick, bbxLive, bbxMapExit, bbxMapLevel, bbxMapPlay, bbxMapRoom, bbxMapBack, bbxMapWindow, bbxMapMode, bbxNext, bbxBack, bbxAll, bbxReset, bbxAuto, bbxTv, bbxSwitchViewer, bbxHouseLife, bbxSsPart, bbxVoices, bbxMusicLevel, bbxJump, bbxJumpFromLine, bbxResumeAt });
 // Closing the Viewing Party only hides it: stop every Auto run and the line typing out,
 // or Auto keeps clicking through the week (and its music) behind a closed window.
 if (typeof document !== 'undefined') document.addEventListener('vp:close', () => {

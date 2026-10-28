@@ -30,6 +30,7 @@ import { ssLaunchScreens } from './ss-launch.js';
 import { ssFinalScreens } from './ss-final.js';
 import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssPlace } from './ss-stage.js';
+import { ssArrange } from './ss-episode.js';
 import { ssVoiceAddressScreen, ssWeekPackageScreen, ssCouchSteps, ssKittyBoardScreen, ssGoldenBuzzScreen, ssVerdictOpening, ssFarewellSteps } from './ss-prime-more.js';
 import { pickPlate, placeOf, plateBuilt, CORNER, CORNER_CAM, cornerPlate, setPlateTheme } from './plates.js';
 import { seatedJurors } from '../bb/jury.js';
@@ -3153,43 +3154,72 @@ function ssHuntScreen(act, ctx) {
 
 function ssNomScreen(act, ctx) {
   const ss = act.secretStory;
-  const who = ss.rule === 'women-nominate-men' ? ['the women', 'two men'] : ss.rule === 'men-nominate-women' ? ['the men', 'two women'] : ['every houseguest', 'two houseguests'];
-  /** @type {BB.Step[]} */ const steps = [
-    ssv(`Houseguests, it is time for the nominations. This week ${who[0]} will each nominate ${who[1]}, in the confessional.`, { rule: 1, toast: ['NOMINATIONS', '#e0b84a'] }),
-    ...((ss.immune || []).length ? [ssv(`${listOf(ss.immune)} cannot be nominated this week.`, { rule: 2 })] : []),
-    ...((ss.dOffice || []).length ? [ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'are' : 'is'} already nominated d'office.`, { rule: 3, nom: ss.dOffice.slice() })] : []),
-  ];
+  const who = ss.rule === 'women-nominate-men' ? ['the women', 'two men'] : ss.rule === 'men-nominate-women' ? ['the men', 'two women'] : ['every housemate', 'two housemates'];
+  const noms = (act.nominees || []).slice();
+  const k = `${ctx.week}|ssnom`;
+  const house = (ctx.house || []).filter(Boolean);
+  const DR = n => ({ set: 'dr', plate: 'confessional-close', room: 'Confessional', cam: CAM.dr, kicker: 'Cam 01 · Confessional', cast: [[n, 50]] });
   // Commandment 6: every nomination is justified out loud. A mission's holder
   // gives a cover reason: commandment 5 forbids revealing the mission.
   const WHY = {
-    'suspects-me': ['I see the way they watch me. They are getting too close.', 'they keep asking me questions they should not be asking'],
-    'buzzed-me': ['they buzzed me, and I have not forgotten it', 'after that buzz, I cannot trust them'],
-    'took-my-kitty': ['they took my whole kitty', 'they found my secret and took everything'],
-    'cost-me': ['I lost five thousand dollars on them', 'I was wrong about them once, and it cost me'],
-    'cannot-stand': ['we just do not get on', 'living with them is hard every single day'],
-    threat: ['they are a big threat in this game', 'they are playing very, very well'],
-    mission: ['they are playing a strong game', 'they are a threat, honestly'],
-    'talked-into-it': ['some people have opened my eyes about them', 'I have heard things about them this week'],
-    annoying: ['they have been impossible all week', 'I cannot take another week of this'],
-    gut: ['it is a feeling, and I trust my feelings', 'something about them does not add up'],
+    'suspects-me': ["I see the way they watch me, and they're getting too close", "they keep asking me questions they shouldn't be asking", "they've had their eye on me all week", "every time my secret comes up, they look at me"],
+    'buzzed-me': ["they buzzed me, and I haven't forgotten it", "after that buzz, I can't trust them", "they went after my secret, so now I'm going after them"],
+    'took-my-kitty': ['they took my whole kitty', 'they found my secret and took everything', "they've got my money, and I want them out"],
+    'cost-me': ['I lost five thousand dollars on them', 'I was wrong about them once, and it cost me', "they're the reason my kitty is empty"],
+    'cannot-stand': ["we just don't get on", "living with them is hard every single day", "we've clashed since day one", "honestly, we're never going to be friends"],
+    threat: ["they're a big threat in this game", "they're playing really, really well", "everybody likes them, and that's dangerous", "if they make the final, nobody beats them", "they've got half the house wrapped round their finger"],
+    mission: ["they're playing a strong game", "they're a threat, honestly", "I don't think they're showing us their real game"],
+    'talked-into-it': ['some people have opened my eyes about them', "I've heard things about them this week", "a few people told me to watch out for them"],
+    annoying: ["they've been impossible all week", "I can't take another week of this", "they get on everybody's nerves, not just mine"],
+    gut: ["it's a feeling, and I trust my feelings", "something about them doesn't add up", "I can't explain it, but I don't trust them", "my gut says they're hiding more than a secret"],
   };
-  (ss.ballots || []).slice(0, 6).forEach(b => {
+  // the nominations, in the confessional: one housemate at a time, nobody else in the room (the user, 2026-10-28:
+  // "why are we viewing two people sit in the confessional for no reason")
+  /** @type {BB.Step[]} */ const steps = [];
+  const ballots = (ss.ballots || []).slice(0, 6);
+  const saidWhy = new Set();
+  ballots.forEach((b, i) => {
     const [x, y] = b.picks || [];
-    const why = n => pickBy(WHY[b.reasons?.[n]] || WHY.gut, `${ctx.week}|why|${b.voter}|${n}`);
-    steps.push({ k: 'dr', by: b.voter, t: y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.` });
+    // (no reason said twice in one night: each pool is walked from a different start)
+    const why = n => { const pool = WHY[b.reasons?.[n]] || WHY.gut; let j = hash(`${ctx.week}|why|${b.voter}|${n}`) % pool.length; for (let t = 0; t < pool.length && saidWhy.has(pool[j]); t++) j = (j + 1) % pool.length; saidWhy.add(pool[j]); return pool[j]; };
+    if (i === 0) steps.push(ssv(`${b.voter}, it's time for your nominations. Which two housemates do you nominate, and why?`, { scene: DR(b.voter), toast: ['NOMINATIONS', '#e0b84a'] }));
+    steps.push({ k: 'dr', by: b.voter, t: y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.`, ...(i ? { scene: DR(b.voter) } : {}) });
   });
+  if ((ss.ballots || []).length > 6) steps.push({ k: 'beat', t: 'One by one, the others go into the confessional and name their two.' });
   if (ss.secondRound) steps.push(ssv(`There is a tie between ${listOf(ss.secondRound.tied || [])}. Everybody back to the confessional, one name each.`, { toast: ['SECOND ROUND', '#e0b84a'] }));
-  if ((ss.ballots || []).length > 6) steps.push({ k: 'beat', t: `One by one the rest of ${who[0]} go into the confessional and name their two.` });
+  // the result, live, to the whole house in the living room (the user: "announced with everyone in the living room
+  // with actual live reaction")
+  const LIV = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: house.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(10 + 80 * i / (a.length - 1))]) };
+  steps.push(ssv('Housemates, please gather in the living room.', { scene: LIV }),
+    { k: 'beat', t: pickBy(['Everybody squeezes onto the sofas. Nobody is talking. A few of them are holding hands.', 'They come in fast and sit down in silence. All eyes on the screen.', 'The sofas fill up. Somebody jokes to break the silence. Nobody laughs.'], `${k}|in`) });
+  if ((ss.immune || []).length) steps.push(ssv(`${listOf(ss.immune)} could not be nominated this week.`));
+  if ((ss.dOffice || []).length) steps.push(ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'were' : 'was'} already nominated.`, { nom: ss.dOffice.slice() }));
+  const NW = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
+  steps.push(ssv(`The Voice has the results of the nominations. ${NW[noms.length] || noms.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+  const LIVE_SAY = ["Okay. Okay. It's fine.", 'Me? Seriously?', 'I knew it. I knew it was going to be me.', 'Fine. Let the public decide.', "Wow. Okay. I didn't see that one coming.", "That's the game. It's fine.", 'Of course. Of course it is.', "Great. Love that for me.", "Whoever did that, I see you.", "It's fine. I'm fine. Everything's fine."];
+  const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `They'll never vote you out, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
+  const used = new Set();
+  const once = (arr, key, tag) => { let j = hash(key) % arr.length; for (let t = 0; t < arr.length && used.has(`${tag}${j}`); t++) j = (j + 1) % arr.length; used.add(`${tag}${j}`); return arr[j]; };
+  const LIVE_BEAT = n => [`${n} closes ${pronouns(n).posAdj || 'their'} eyes for a second, then nods.`, `A gasp goes round the sofas. ${n} laughs, a bit too loud.`, `${n} stares at the screen and doesn't move.`, `Somebody puts an arm round ${n} straight away.`];
+  noms.forEach((n, i) => {
+    const friend = house.filter(x => x !== n && !noms.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0];
+    steps.push(ssv(i === noms.length - 1 && i > 0 ? `And the ${ORD[i] || 'last'} housemate nominated is... ${n}.` : `The ${ORD[i] || 'next'} housemate nominated is... ${n}.`, { nom: noms.slice(0, i + 1), tense: [n] }),
+      { k: 'beat', t: once(LIVE_BEAT(n), `${k}|b|${n}`, 'b') },
+      { k: 'say', by: n, t: once(LIVE_SAY, `${k}|s|${n}`, 's') });
+    if (friend && hash(`${k}|f|${n}`) % 2 === 0) steps.push({ k: 'say', by: friend, t: once(FRIEND_SAY(n), `${k}|fs|${n}`, 'f') });
+  });
   const rows = Object.entries(ss.tally || {}).sort((x, y) => y[1] - x[1]).map(([n, v]) => ({ n, text: `${v} ${v === 1 ? 'vote' : 'votes'}` }));
-  steps.push(ssv(`The nominations are in. Facing the public this week: ${listOf(act.nominees || [])}.`, { nom: (act.nominees || []).slice(), board: { title: 'THE CONFESSIONAL', rows }, toast: ['NOMINATED', '#ff3355'] }));
-  if (ss.voiceTie) steps.push(ssv('The second round is tied too. They are all nominated.'));
-  for (const n of act.nominees || []) steps.push({ k: 'dr', by: n, t: ["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side.",
+  steps.push(ssv(`${listOf(noms)}, it is now up to the public. That is all for now.`, { nom: noms.slice(), board: { title: 'THE CONFESSIONAL', rows }, toast: ['NOMINATED', '#ff3355'] }));
+  if (ss.voiceTie) steps.push(ssv('The second round was tied too. They are all nominated.'));
+  steps.push({ k: 'beat', t: pickBy(['The screen goes dark. For a second nobody gets up.', 'The Eye closes. The room breaks into little groups, whispering.', 'As soon as the screen goes off, everybody starts talking at once.'], `${k}|out`) });
+  // ...and later, alone, in the confessional
+  for (const n of noms) steps.push({ k: 'dr', by: n, scene: DR(n), t: ["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side.",
     'Being nominated hurts. But it also means the public finally gets to say what they think of me.', "I'm up this week. I'm not going to change who I am to stay. That's not why I came.",
     "I'm scared, honestly. But I'd rather be scared and real than safe and fake.", 'Every time I walk past a camera now, I think: are they with me out there?',
-    "I've seen people go home who didn't deserve it. I just hope that's not me this week.", 'Nominated. Fine. Now I find out if the country actually likes me.'][(hash(`${ctx.week}|ssn|${n}`) + (ctx.week || 0) * 3 + (act.nominees || []).indexOf(n)) % 8] });
-  return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '13:30',
-    kicker: 'Cam 01 · Confessional', title: 'Nominations', label: 'Nominations', sub: `${listOf(act.nominees || [])} face the public`, cast: (act.nominees || []).map((n, i) => [n, 35 + i * 30]),
-    rules: [['THE CONFESSIONAL', `${who[0]} name ${who[1]}`], ['IMMUNE', listOf(ss.immune || []) || 'nobody'], ['THE PUBLIC', 'saves all but one']], rulesTitle: 'THE NOMINATIONS · HOW THEY WORK', steps };
+    "I've seen people go home who didn't deserve it. I just hope that's not me this week.", 'Nominated. Fine. Now I find out if the country actually likes me.'][(hash(`${ctx.week}|ssn|${n}`) + (ctx.week || 0) * 3 + noms.indexOf(n)) % 8] });
+  return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, time: '13:30', sceneful: true,
+    kicker: 'Cam 04 · Living room', title: 'Nominations', label: 'Nominations', sub: `${listOf(noms)} face the public`, cast: LIV.cast, steps };
 }
 
 // ── THE PRIME (js/ss/prime.js): a full episode, the week's live show ─────
@@ -5458,14 +5488,18 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   if (row.themeId === SS_FORMAT) {
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
-    // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
-    for (const s of out) s.ss = true;
     // (the week's competition is the Voice's game; its nav label was still Big Brother's)
     for (const s of out) if (s.id === 'bb-hoh-v') s.label = "The Voice's Game";
     const NOT_HERE = /\b(veto|POV|jury|jurors?|backdoor\w*|pawns?)\b/i;
     // (on its own screens, only the house's words replayed there: the week's package, the airlock)
     for (const s of out) { const own = /^bb-ss-/.test(String(s.id || '')); s.steps = (s.steps || []).filter(st => !(typeof st.t === 'string' && st.k !== 'host' && (!own || st.k === 'beat') && NOT_HERE.test(st.t))); }
     for (let i = out.length - 1; i >= 0; i--) if (!(out[i].steps || []).length) out.splice(i, 1);
+    // laid out as the real show airs it: the narrator around the days, the Voice's little moments inside house life,
+    // the prime the host's (vp-bb-ep/ss-episode.js)
+    const prev = ((/** @type {any} */ (globalThis).gs?.episodeHistory) || []).find(r => r && r.num === (row.num || 1) - 1);
+    ssArrange(out, row, { prev, ssv, host: ctx.host });
+    // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
+    for (const s of out) s.ss = true;
   }
   // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
   // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two

@@ -70,7 +70,7 @@ export function nominationWish(state, ctx, voter, cand) {
  * go to a second round among the tied (the real show did this), and a tie that
  * survives it puts all of them up.
  */
-export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {} } = {}) {
+export function castNominations(state, ctx, { voters = [], pool = [], extraVotes = {}, seats = 2 } = {}) {
   const ballots = [];
   const tally = Object.fromEntries(pool.map(n => [n, 0]));
   for (const v of voters) {
@@ -81,12 +81,15 @@ export function castNominations(state, ctx, { voters = [], pool = [], extraVotes
   }
   for (const [n, k] of Object.entries(extraVotes)) if (n in tally) tally[n] += k;
   const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a]);
-  let nominees = ranked.slice(0, 2);
+  // (how many go up is the Voice's call each week: two, sometimes three or four; the caller says)
+  const S = Math.max(1, Math.min(seats, ranked.length));
+  let nominees = ranked.slice(0, S);
   let secondRound = null;
-  if (ranked.length > 2 && tally[ranked[1]] === tally[ranked[2]]) {
-    const tied = ranked.filter(n => tally[n] === tally[ranked[1]] && n !== (tally[ranked[0]] > tally[ranked[1]] ? ranked[0] : null));
-    const keep = tally[ranked[0]] > tally[ranked[1]] ? [ranked[0]] : [];
-    const need = 2 - keep.length;
+  if (ranked.length > S && tally[ranked[S - 1]] === tally[ranked[S]]) {
+    const cutT = tally[ranked[S - 1]];
+    const tied = ranked.filter(n => tally[n] === cutT);
+    const keep = ranked.filter(n => tally[n] > cutT);
+    const need = S - keep.length;
     const second = Object.fromEntries(tied.map(n => [n, 0]));
     for (const v of voters) {
       const choice = tied.filter(n => n !== v).map(n => ({ n, s: nominationWish(state, ctx, v, n).score })).sort((a, b) => b.s - a.s)[0];

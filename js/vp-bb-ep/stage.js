@@ -138,7 +138,7 @@ export function ledgerAt(screens, si, idx) {
 // ── where people are ──────────────────────────────────────────────────
 function seatsAt(S, i) {
   const seated = { ...(S.seated || {}) };
-  const j0 = SCENE_KINDS.has(S.kind) ? sceneStartOf(S, i) : 0;
+  const j0 = (SCENE_KINDS.has(S.kind) || S.sceneful) ? sceneStartOf(S, i) : 0;
   for (let j = Math.max(0, j0); j <= i; j++) Object.assign(seated, S.steps[j]?.seat || {});
   return seated;
 }
@@ -638,7 +638,7 @@ export function focusAt(S, idx) {
   const out = [];
   const add = n => { if (n && names.has(n) && !out.includes(n)) out.push(n); };
   const st = S.steps[idx];
-  if (st?.k === 'beat') for (const n of names) if (String(st.t).includes(n)) add(n);
+  if (st?.k === 'beat' || st?.k === 'voice' || st?.k === 'host') for (const n of names) if (String(st.t).includes(n)) add(n);
   // the speaker and whoever they are talking to; a third only if three people are trading
   // lines right now (inside the last four spoken lines)
   let said = 0;
@@ -802,7 +802,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   // the host on the stage with them (move-in night), not on a screen
   if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
-  if (SCENE_KINDS.has(S.kind) && !seated && cast.length > 3) {
+  if ((SCENE_KINDS.has(S.kind) || S.sceneful) && !seated && cast.length > 3) {
     const focus = focusAt(S, idx);
     const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
     const back = cast.map(([n]) => n).filter(n => !focus.includes(n));
@@ -943,7 +943,8 @@ export function stageHtml(screens, si, idx, fresh, o) {
   // this step says which room, camera and people are on screen.
   const S0 = screens[si];
   let sc = null;
-  if (SCENE_KINDS.has(S0.kind)) for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
+  // (a screen that moves room to room on its own, Secret Story's arrivals: studio, airlock, house, opts in with `sceneful`)
+  if (SCENE_KINDS.has(S0.kind) || S0.sceneful) for (let i = Math.max(0, idx); i >= 0; i--) { if (S0.steps[i]?.scene) { sc = S0.steps[i].scene; break; } }
   const S = exitCut(juryCut(sc ? { ...S0, ...sc } : S0, idx), S0.steps[idx]);
   const st = idx >= 0 ? S.steps[idx] : null;
   const prevSt = idx > 0 ? S.steps[idx - 1] : null;

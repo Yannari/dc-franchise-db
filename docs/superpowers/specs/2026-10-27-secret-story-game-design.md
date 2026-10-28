@@ -771,3 +771,35 @@ and why, the one it loves to hate, the one it never sees.
 Measured over six seasons: 24 sweethearts, 19 love-to-hate villains, 10 big
 characters by the end; a villain survived four public votes in a row on his fan
 base; the barely-seen went early.
+
+**The user's finished plates and where they play** (to wire in part 4; the
+folder names are French for reference only, everything on screen is English):
+
+| plate (user's file) | plays |
+|---|---|
+| 01-salon "Pick1#myfavourite" | the living room, main view |
+| 02 "Confessional--Closeup--Fortalking" | a confessional talking-head |
+| 02 "Confessional--Wideview" | the buzz announcement, a confessional with four or more |
+| 02 "Rainbow Arch Confessional Showdown" | THE CONFRONTATION: the buzzer and the target on facing sofas (`plate: 'confessional-showdown'` on the buzz's second screen) |
+| 02 "Rainbow-lit Confessional Camera Close-Up" | the confessional's camera insert |
+
+The buzz now airs as three screens: the alarm (living room), the confrontation
+(confessional, the showdown plate), the reveal (living room, only if confirmed).
+
+## 27. Un vrai joueur (built, M7b)
+
+The user: "what about strategic player or secret hunter or like they in france
+said un joueur". The public gets an eighth axis, `game` (respect for playing
+Secret Story's own game: right buzzes, a secret kept with a hunter closing in,
+missions, a kitty that grew, the Voice's game; a wrong buzz is still playing;
+three weeks without pressing costs it). The audience is four GROUPS, each
+wanting something else: the hearts (warmth, pity; heat drives them off), the
+drama fans (fun, some heat), the romantics (the story), the gamers (the game;
+heat barely bothers them). The calculateur (two-faced, heat, authenticity down)
+and the joueur (respect) are different people; the plante verte has no group.
+
+The hunt plays each housemate's BB game style (bb/game-style.js): readers watch
+more people and press sooner, provokers press early, manipulators hide their
+secret and bluff in the confrontation, floaters, coattail riders and the lowkey
+barely play (and the country forgets them) until a lowkey player rises. After
+Secret names the group carrying the favourite and the gamers' own favourite.

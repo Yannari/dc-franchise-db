@@ -28,7 +28,9 @@ import { BUZZ_STAKE, balance, transfer, takeAll } from './kitty.js';
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const readSkill = (ctx, n) => (st(ctx, n, 'mental') * 0.6 + st(ctx, n, 'intuition') * 0.4) / 10;
-const guard = (ctx, n) => (st(ctx, n, 'strategic') * 0.5 + st(ctx, n, 'temperament') * 0.5) / 10;
+const guard = (ctx, n) => Math.min(1, ((st(ctx, n, 'strategic') * 0.5 + st(ctx, n, 'temperament') * 0.5) / 10) + (Number(playOf(ctx, n).guard) || 0));
+/** How a housemate plays the hunt (the adapter's ctx.play, from their game style): watch, bar, press, guard, bluff. */
+const playOf = (ctx, n) => ctx?.play?.(n) || {};
 const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
 
 /** The secret a housemate holds (shared secrets have several holders). */
@@ -132,7 +134,9 @@ export function huntDay(state, ctx, { house = [], watchesPer = 2 } = {}) {
   const moments = [];
   for (const n of house) {
     const others = house.filter(x => x !== n && !partnersOf(state, n).includes(x) && !secretOf(state, x)?.found);
-    for (let k = 0; k < watchesPer && others.length; k++) {
+    // a hunter watches more people; a housemate lying low watches fewer (ctx.play: their game style)
+    const watches = Math.max(1, watchesPer + (Number(playOf(ctx, n).watch) || 0));
+    for (let k = 0; k < watches && others.length; k++) {
       const t = others.splice(Math.floor(rng() * others.length), 1)[0];
       const s = secretOf(state, t);
       if (!s) continue;
@@ -187,8 +191,9 @@ export function runBuzzes(state, ctx, { house = [], weeksLeft = 6, maxPerWeek = 
     if (!best) continue;
     const [target, th] = best;
     // ...and how it will look on air (the adapter's ctx.buzzCost: a friend, the country's favourite)
-    const bar = buzzBar(state, ctx, n, { weeksLeft }) - (free ? 0.12 : 0) + (Number(ctx.buzzCost?.(n, target)) || 0);
-    if (th.conf >= bar && rng() < 0.55 + st(ctx, n, 'boldness') * 0.03) candidates.push({ n, target, th, free });
+    const p = playOf(ctx, n);
+    const bar = buzzBar(state, ctx, n, { weeksLeft }) - (free ? 0.12 : 0) + (Number(ctx.buzzCost?.(n, target)) || 0) + (Number(p.bar) || 0);
+    if (th.conf >= bar && rng() < 0.55 + st(ctx, n, 'boldness') * 0.03 + (Number(p.press) || 0)) candidates.push({ n, target, th, free });
   }
   candidates.sort((a, b) => b.th.conf - a.th.conf);
   const acts = [];
@@ -211,7 +216,8 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
   const th = theoryOf(state, by, target) || { text: '…', right: false, conf: 0.5, ev: [] };
   const confBefore = th.conf;
   // ── the confrontation: the target defends without revealing anything ──
-  const defence = (st(ctx, target, 'strategic') * 0.4 + st(ctx, target, 'temperament') * 0.3 + st(ctx, target, 'social') * 0.3) / 10;
+  // a calculating player bluffs better in the confessional (ctx.play)
+  const defence = (st(ctx, target, 'strategic') * 0.4 + st(ctx, target, 'temperament') * 0.3 + st(ctx, target, 'social') * 0.3) / 10 + (Number(playOf(ctx, target).bluff) || 0);
   const read = readSkill(ctx, by);
   let shift;
   let leak = false;
@@ -226,7 +232,9 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
   th.conf = clamp(confBefore + shift, 0, 0.98);
   const confirmed = th.conf >= bar * 0.9 || (free && th.conf >= bar * 0.75);
   const rec = { week, by, target, guess: th.text, right: !!th.right, free, confBefore: Math.round(confBefore * 100) / 100,
-    confAfter: Math.round(th.conf * 100) / 100, leak, outcome: confirmed ? (th.right ? 'right' : 'wrong') : 'withdrawn', took: 0, lost: 0 };
+    confAfter: Math.round(th.conf * 100) / 100, leak, outcome: confirmed ? (th.right ? 'right' : 'wrong') : 'withdrawn', took: 0, lost: 0,
+    // the hunter was RIGHT and the holder talked their way out of it: a secret kept under pressure
+    held: !!th.right && !confirmed };
   if (free) state.freeBuzz[by] = Math.max(0, (state.freeBuzz[by] || 0) - 1);
   if (confirmed && th.right && secret) {
     rec.took = takeAll(state, target, by, `found ${target}'s secret`, week);

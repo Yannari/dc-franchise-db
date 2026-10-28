@@ -37,10 +37,11 @@ import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
-import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf } from '../ss/public.js';
+import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
+import { styleOf } from './game-style.js';
 
 // The ledger owns the amounts (js/ss/kitty.js); re-exported for v1's callers.
 export const KITTY_START = LEDGER_START;
@@ -61,7 +62,28 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 // THE PUBLIC (js/ss/public.js): what the country noticed, on its axis. The
 // engine's one-number popularity moves with it (other screens read it), and
 // the public's own copy of that number is kept in step so it is not read back.
-const POP_OF = { warmth: 1, pity: 0.7, fun: 0.4, arc: 0.6, real: 0.3, heat: -0.6, seen: 0 };
+const POP_OF = { warmth: 1, pity: 0.7, fun: 0.4, arc: 0.6, real: 0.3, heat: -0.6, seen: 0, game: 0.3 };
+/*
+ * How a housemate plays the HUNT, from how they play the game (bb/game-style.js):
+ * the reader is a hunter, the provoker presses early, the manipulator hides and
+ * bluffs, the alliance player hides behind the group, and the floaters, the
+ * coattail riders and the ones lying low barely play it at all (the 'plante
+ * verte', who the public forgets) until a lowkey player rises.
+ */
+const SS_PLAY = {
+  read: { watch: 1, bar: -0.04, press: 0.05 },
+  provoke: { bar: -0.07, press: 0.12 },
+  manipulate: { guard: 0.2, bluff: 0.15, bar: -0.02 },
+  alliance: { guard: 0.1, bluff: 0.08 },
+  social: { bar: 0.03 },
+  loyal: { bar: 0.02 },
+  comp: {},
+  float: { watch: -1, bar: 0.08, press: -0.15 },
+  coattail: { watch: -1, bar: 0.07, press: -0.12 },
+  lowkey: { watch: -1, bar: 0.1, press: -0.2, guard: 0.1 },
+  rise: { watch: 1, bar: -0.06, press: 0.1 },
+};
+const playStyle = n => { try { return styleOf(n); } catch { return null; } };
 function pub(n, axis, d, why = '') {
   const state = ssState();
   if (!state || !n) return;
@@ -261,6 +283,8 @@ export function huntCtx(week, rng) {
     pop: n => (state ? standing(state, n, (gs.activePlayers || []).filter(Boolean)) : pop(n)) };
   // how much a housemate weighs how a choice will LOOK (grows with the weeks)
   ctx.looks = n => awareness(ctx, n);
+  // how they play the hunt
+  ctx.play = n => SS_PLAY[playStyle(n)] || {};
   // buzzing a friend, or the country's favourite, on air: it looks bad
   ctx.buzzCost = (n, t) => ctx.looks(n) * (Math.max(0, bond(n, t)) / 10 * 0.12 + Math.max(0, ctx.pop(t)) * 0.04);
   return ctx;
@@ -280,6 +304,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   const acts = [];
   state._week = ctx.week;
   state.publicRoom = room.slice();
+  state.kittyAtWeekStart = Object.fromEntries(room.map(n => [n, Number(state.kitty?.[n]) || 0]));
   // a new week: last week's headlines fade, the stories stay (js/ss/public.js)
   for (const n of room) fileOf(state, n);
   if (ctx.week > 1) weekPasses(state, room);
@@ -289,7 +314,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     week._ssImmune = g.immune; week._ssMaster = g.masterPick;
     if (g.act) acts.push(g.act);
     if (g.clueAct) acts.push(g.clueAct);
-    pub(gameWinner, 'fun', 0.12, "won the Voice's game");
+    pub(gameWinner, 'fun', 0.12, "won the Voice's game"); pub(gameWinner, 'game', 0.1, "won the Voice's game");
   } else if (week) { week._ssImmune = []; week._ssMaster = null; }
   // Monday: the Voice's missions (§7), played through the week.
   acts.push(...handOutMissions(state, ctx, { house: room }));
@@ -297,6 +322,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
   // A mission is played through the week; a seduction or a nightmare moves a bond.
   for (const [a, b, d] of playMissions(state, ctx, { house: room })) { try { addBond(a, b, d); } catch { /* no bond */ } }
+  // the hunt on screen: the ones watching and talking are seen, and seen playing
+  for (const m of moments.slice(0, 6)) { pub(m.who, 'seen', 0.15, ''); pub(m.who, 'game', 0.04, 'on the hunt'); }
   if (moments.length) {
     acts.push({ type: 'ss-hunt', week: ctx.week, moments: moments.slice(0, 6),
       beats: moments.slice(0, 3).map(m => ({ text: m.kind === 'tell'
@@ -316,7 +343,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   for (const r of weeklyRuleBreaks(state, ctx, { house: room, party: !!week?._ssParty })) {
     // a slip is human (a little pity); arguing with the Voice or talking
     // nominations is a character, and a bit of a rule-breaker
-    if (r.kind === 'reveal') for (const h of r.holders) { pub(h, 'pity', 0.15, 'gave their own secret away'); pub(h, 'fun', 0.1, 'gave their own secret away'); }
+    if (r.kind === 'reveal') for (const h of r.holders) { pub(h, 'pity', 0.15, 'gave the secret away'); pub(h, 'fun', 0.1, 'gave the secret away'); }
     else if (r.kind === 'contest') { pub(r.who, 'fun', 0.2, 'argued with the Voice'); pub(r.who, 'heat', 0.12, 'argued with the Voice'); }
     else { pub(r.who, 'fun', 0.1, "broke the Voice's rules"); pub(r.who, 'heat', 0.08, "broke the Voice's rules"); }
     acts.push(r);
@@ -326,25 +353,29 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     if (b.outcome === 'right') {
       // the hunter is a character; buzzing a FRIEND on air is a betrayal the country saw
       const friend = bond(b.by, b.target) > 3;
-      pub(b.by, 'fun', 0.4, `found ${b.target}'s secret`);
-      if (friend) { pub(b.by, 'heat', 0.45, `buzzed their friend ${b.target}`); pub(b.by, 'real', -0.15, `buzzed their friend ${b.target}`); }
+      pub(b.by, 'fun', 0.4, `found ${b.target}'s secret`); pub(b.by, 'game', 0.55, `found ${b.target}'s secret`);
+      if (friend) { pub(b.by, 'heat', 0.45, `buzzed a friend, ${b.target}`); pub(b.by, 'real', -0.15, `buzzed a friend, ${b.target}`); }
       else pub(b.by, 'warmth', 0.12, `found ${b.target}'s secret`);
-      pub(b.target, 'pity', friend ? 0.5 : 0.3, 'lost their secret and their money');
+      pub(b.target, 'pity', friend ? 0.5 : 0.3, 'lost the secret and the money');
       // the secret itself, told to the country: a moving one wins hearts, a fake couple is a story
       const sk = secretOf(state, b.target);
-      if (MOVING.includes(sk?.secretKind)) for (const h of b.holders) { pub(h, 'pity', 0.35, 'the story behind their secret'); pub(h, 'warmth', 0.2, 'the story behind their secret'); }
+      if (MOVING.includes(sk?.secretKind)) for (const h of b.holders) { pub(h, 'pity', 0.35, 'the story behind the secret'); pub(h, 'warmth', 0.2, 'the story behind the secret'); }
       if (sk?.kind === 'voice-pair') for (const h of b.holders) pub(h, 'arc', 0.35, 'the fake couple, found out');
       try { addBond(b.target, b.by, -2); for (const h of b.holders) if (h !== b.target) addBond(h, b.by, -1.2); } catch { /* no bond */ }
     } else if (b.outcome === 'wrong') {
       // a wrong buzz is funny to watch, and a bit embarrassing
       pub(b.by, 'fun', 0.15, `buzzed ${b.target}, wrongly`); pub(b.by, 'warmth', -0.12, `buzzed ${b.target}, wrongly`);
+      // playing and missing is still playing
+      pub(b.by, 'game', 0.1, `went for ${b.target}'s secret`);
       pub(b.target, 'pity', 0.12, `wrongly accused by ${b.by}`);
       try { addBond(b.target, b.by, -1.4); } catch { /* no bond */ }
       for (const n of room) if (n !== b.by && n !== b.target && rng() < 0.3) { try { addBond(n, b.by, -0.2); } catch { /* */ } }
     } else {
       try { addBond(b.target, b.by, -0.6); } catch { /* */ }
-      pub(b.by, 'fun', 0.06, 'lost their nerve at the buzzer');
+      pub(b.by, 'fun', 0.06, 'backed down at the buzzer');
     }
+    // the hunter had it right and the holder talked their way out: kept under pressure
+    if (b.held) { pub(b.target, 'game', 0.4, `kept a secret with ${b.by} closing in`); pub(b.target, 'fun', 0.1, `kept a secret with ${b.by} closing in`); }
     acts.push(b);
   }
   return acts;
@@ -372,9 +403,17 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     if (votes) pub(n, 'pity', Math.min(0.4, votes * 0.05), 'nominated by the house');
     if ((nomAct?.dOffice || []).includes(n)) pub(n, 'heat', 0.1, 'nominated by the Voice');
   }
+  // the money: a kitty that grew this week is a player's work; nobody plays the hunt
+  // for three weeks after the first, and the country notices that too
+  for (const n of room) {
+    const grew = (Number(state.kitty?.[n]) || 0) - (Number(state.kittyAtWeekStart?.[n]) || 0);
+    if (grew > 0) pub(n, 'game', Math.min(0.4, grew / 25000), 'grew the kitty');
+    const lastPress = Math.max(0, ...(state.buzzes || []).filter(b => b.by === n).map(b => b.week || 0));
+    if (ctx.week >= 4 && ctx.week - lastPress >= 3) notice(state, n, 'game', -0.08, '', ctx.week);
+  }
   const missions = [];
   for (const r of settleMissions(state, ctx, { house: room, nominees })) {
-    if (r.won) for (const h of r.mission.holders) pub(h, 'fun', 0.35, 'pulled off a secret mission');
+    if (r.won) for (const h of r.mission.holders) { pub(h, 'fun', 0.35, 'pulled off a secret mission'); pub(h, 'game', 0.3, 'pulled off a secret mission'); }
     else for (const h of r.mission.holders) pub(h, 'pity', 0.08, 'failed a secret mission');
     missions.push(r);
   }
@@ -386,7 +425,7 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     popFx(s.effects?.pop, s.kind);
     // and what the country made of it
     if (s.kind === 'dilemma') {
-      if (s.heart) pub(s.to, 'warmth', 0.35, 'chose their heart over the money');
+      if (s.heart) pub(s.to, 'warmth', 0.35, 'chose the heart over the money');
       else { pub(s.to, 'fun', 0.22, 'took the deal'); pub(s.to, 'heat', 0.2, 'took the deal'); }
     } else if (s.kind === 'phone' && s.answered) pub(s.answered, 'fun', 0.15, 'ran for the red phone');
     else if (s.kind === 'truths') {
@@ -414,7 +453,7 @@ export function afterPrime({ week = undefined, evicted = null, house = [], rng =
   const ctx = huntCtx(week, rng);
   const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
   // a partner left in the house is exposed with it: the house knows now
-  for (const p of reveal?.partners || []) pub(p, 'pity', 0.2, 'their shared secret came out on the set');
+  for (const p of reveal?.partners || []) pub(p, 'pity', 0.2, 'the shared secret came out on the set');
   // the ones who were right and never pressed: "I knew it", and the house hears it
   for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
   const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
@@ -427,7 +466,11 @@ export function afterPrime({ week = undefined, evicted = null, house = [], rng =
     favourite: pick(reads.slice().sort((a, b) => b.s - a.s)),
     villain: pick(reads.filter(x => x.r.key === 'villain' || x.r.key === 'hated').sort((a, b) => b.f.heat - a.f.heat)),
     unseen: pick(reads.filter(x => x.r.key === 'unseen').sort((a, b) => a.f.seen - b.f.seen)),
+    // the gamers' favourite: the best player, whatever the country thinks of them otherwise
+    player: (() => { const p = reads.filter(x => x.f.game > 0.6).sort((a, b) => b.f.game - a.f.game)[0]; return p ? { name: p.n, why: whyOf(p.f, 'game') } : null; })(),
   };
+  // which group of the audience carries the favourite
+  if (after.public.favourite) { const g = carriedBy(state, after.public.favourite.name); after.public.favourite.carriedBy = g ? GROUP_LABEL[g] : null; }
   return { type: 'ss-after', week: ctx.week, evicted, reveal, after, holders: [evicted],
     beats: [{ text: reveal && !reveal.alreadyFound ? `${evicted}'s secret, never found, is told on the set: ${reveal.secret}.` : `${evicted} leaves the House of Secrets.`,
       players: [evicted], badgeText: 'AFTER SECRET', badgeClass: 'gold', part: 'after' }] };

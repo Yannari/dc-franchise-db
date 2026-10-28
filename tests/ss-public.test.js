@@ -1,6 +1,8 @@
 // The public (js/ss/public.js): a fan base, not a number. Votes save.
 import { describe, expect, it } from 'vitest';
-import { notice, support, voteShares, publicRead, readHouseBeats, weekPasses, fileOf, standing } from '../js/ss/public.js';
+import { notice, support, voteShares, publicRead, readHouseBeats, weekPasses, fileOf, standing, fanGroups, carriedBy } from '../js/ss/public.js';
+import { openKitties } from '../js/ss/kitty.js';
+import { runBuzzes } from '../js/ss/hunt.js';
 import { seededRandom } from './helpers/rng.js';
 
 const rngFor = seed => { const r = seededRandom((seed * 2654435761) % 2147483647); r(); r(); return r; };
@@ -57,5 +59,37 @@ describe('the public', () => {
     expect(Math.round(p.A + p.B)).toBe(100);
     expect(p.A).toBeGreaterThan(0);
     expect(standing(s, 'B', ['A', 'B'])).toBeGreaterThan(standing(s, 'A', ['A', 'B']));
+  });
+  it('un vrai joueur: the gamers back a player the hearts do not', () => {
+    const s = fresh();
+    for (let i = 0; i < 5; i++) { notice(s, 'Pro', 'game', 0.5, 'found a secret'); notice(s, 'Pro', 'heat', 0.2); }
+    fileOf(s, 'Plant');
+    expect(publicRead(s, 'Pro').key).toBe('player');
+    expect(carriedBy(s, 'Pro')).toBe('gamers');
+    expect(fanGroups(s, 'Pro').hearts).toBe(0);
+    expect(support(s, 'Pro')).toBeGreaterThan(support(s, 'Plant'));
+  });
+  it('the calculateur is not the joueur: heat drives the hearts away, barely the gamers', () => {
+    const s = fresh();
+    notice(s, 'C', 'game', 2); notice(s, 'C', 'warmth', 2); notice(s, 'C', 'heat', 3);
+    const g = fanGroups(s, 'C');
+    expect(g.gamers).toBeGreaterThan(g.hearts);
+  });
+});
+
+describe('how they play the hunt', () => {
+  const H = ['Ana', 'Ben', 'Cy', 'Di'];
+  const presses = style => {
+    let n = 0;
+    for (let seed = 1; seed <= 150; seed++) {
+      const st = { secrets: H.map(x => ({ id: x, holders: [x], text: `s ${x}`, found: false })), theories: { Ana: { Ben: { text: 's Ben', right: true, conf: 0.72, ev: [] } } } };
+      openKitties(st, H);
+      const ctx = { rng: rngFor(seed), week: 4, stat: () => 5, bond: () => 0, play: x => (x === 'Ana' ? style : {}) };
+      n += runBuzzes(st, ctx, { house: H, weeksLeft: 6 }).length;
+    }
+    return n;
+  };
+  it('the hunter presses, the one lying low does not', () => {
+    expect(presses({ bar: -0.07, press: 0.12 })).toBeGreaterThan(presses({ bar: 0.1, press: -0.2 }) + 20);
   });
 });

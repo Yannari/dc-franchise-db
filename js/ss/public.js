@@ -49,13 +49,28 @@
 //
 // Pure: plain JSON on the season's Secret Story state.
 
-export const AXES = ['seen', 'warmth', 'pity', 'fun', 'real', 'arc', 'heat'];
+//   · "UN VRAI JOUEUR" (the user, 2026-10-27: "what about strategic player or secret
+//     hunter or like they in france said un joueur"). French viewers respect a
+//     housemate who plays SECRET STORY's own game: hunts, keeps their secret
+//     under pressure, grows the kitty, pulls off missions. That respect is its
+//     own axis, `game`, and it is not heat: the calculateur who works his
+//     friends earns heat and loses authenticity; the joueur earns respect; the
+//     plante verte who never plays earns nothing and goes.
+//   · THE AUDIENCE IS NOT ONE CROWD. A fan base is the sum of GROUPS that want
+//     different things: the hearts (warmth, pity), the drama fans (fun, a bit
+//     of heat), the romantics (the story), the gamers (the game). A pure
+//     strategist has a real but narrow base; a villain who also plays has two
+//     groups behind them; a bit of everything collects a slice of each.
+
+export const AXES = ['seen', 'warmth', 'pity', 'fun', 'real', 'arc', 'heat', 'game'];
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 /** The public's file on one housemate, created on first touch. */
 export function fileOf(state, n) {
   state.public ||= {};
-  return (state.public[n] ||= { seen: 1, warmth: 0, pity: 0, fun: 0, real: 0, arc: 0, heat: 0, log: [] });
+  const f = (state.public[n] ||= { seen: 1, warmth: 0, pity: 0, fun: 0, real: 0, arc: 0, heat: 0, game: 0, log: [] });
+  if (f.game == null) f.game = 0;   // a file from before the game axis
+  return f;
 }
 
 /**
@@ -68,7 +83,7 @@ export function notice(state, n, axis, d, why = '', week = 0) {
   f[axis] = Math.round((f[axis] + d) * 1000) / 1000;
   // anything the country notices, it has seen
   if (axis !== 'seen') f.seen = Math.round((f.seen + Math.abs(d) * 0.35) * 1000) / 1000;
-  if (why) { f.log.push({ week, axis, d: Math.round(d * 100) / 100, why }); if (f.log.length > 24) f.log.shift(); }
+  if (why) { f.log.push({ week, axis, d: Math.round(d * 100) / 100, why }); if (f.log.length > 40) f.log.shift(); }
 }
 
 /** A week passes: the headlines fade, the story stays. Quiet housemates fade fastest. */
@@ -76,7 +91,7 @@ export function weekPasses(state, names = []) {
   for (const n of names) {
     const f = fileOf(state, n);
     f.seen *= 0.8; f.warmth *= 0.88; f.pity *= 0.8; f.fun *= 0.82; f.heat *= 0.85; f.real *= 0.9;
-    f.arc *= 0.97;
+    f.arc *= 0.97; f.game *= 0.92;   // the story stays; respect lingers
   }
 }
 
@@ -132,6 +147,36 @@ export function absorbPopularity(state, popularity = {}, names = [], week = 0) {
  *   devoted core entertainment: the people who tune in FOR you, villain or not
  *   authenticity a multiplier, both ways
  */
+/** The audience's groups and how much of the country each is. */
+export const GROUPS = { hearts: 1, drama: 0.8, romantics: 0.6, gamers: 0.55 };
+export const GROUP_LABEL = { hearts: 'the hearts at home', drama: 'the drama fans', romantics: 'the romantics', gamers: 'the gamers' };
+
+/**
+ * The fans each group gives a housemate. Heat drives the hearts away most, the
+ * romantics some, the gamers barely (they respect a player, nice or not), the
+ * drama fans not at all, until there is so much heat and so little warmth that
+ * even they turn.
+ */
+export function fanGroups(state, n) {
+  const f = fileOf(state, n);
+  const pity = f.pity / (1 + Math.max(0, f.pity) * 0.45);
+  const heat = Math.max(0, f.heat);
+  const turned = Math.max(0, f.heat - 2.5 - Math.max(0, f.warmth)) * 0.35;
+  return {
+    hearts: Math.max(0, Math.max(0, f.warmth) + Math.max(0, pity) * 0.9 - heat * 0.55),
+    drama: Math.max(0, Math.max(0, f.fun) * 0.75 + Math.min(heat, 1.5) * 0.25 - turned),
+    romantics: Math.max(0, Math.max(0, f.arc) * 1.1 - heat * 0.3),
+    gamers: Math.max(0, Math.max(0, f.game) * 1.1 - heat * 0.12),
+  };
+}
+
+/** The group carrying a housemate (null when nobody much is). */
+export function carriedBy(state, n) {
+  const g = fanGroups(state, n);
+  const [top] = Object.entries(g).map(([k, v]) => [k, v * GROUPS[k]]).sort((a, b) => b[1] - a[1]);
+  return top && top[1] > 0.4 ? top[0] : null;
+}
+
 export function support(state, n) {
   const f = fileOf(state, n);
   // recognition is RELATIVE: against how much the country sees of the house as a whole
@@ -139,16 +184,11 @@ export function support(state, n) {
   const room = (state.publicRoom || []).filter(x => state.public?.[x]);
   const meanSeen = room.length ? room.reduce((a, x) => a + Math.max(0, state.public[x].seen), 0) / room.length : 2.2;
   const recognition = 1 - Math.exp(-Math.max(0, f.seen) / Math.max(1, meanSeen * 0.7));
-  // pity helps, then wears thin: a housemate who is only ever the victim
-  const pity = f.pity / (1 + Math.max(0, f.pity) * 0.45);
-  const love = Math.max(0, f.warmth) + Math.max(0, pity) * 0.9 + Math.max(0, f.arc) * 0.8;
-  const casual = Math.max(0, love - Math.max(0, f.heat) * 0.55);
-  // the love-to-hate core: entertainment, and some heat is fuel too
-  const core = Math.max(0, f.fun) * 0.75 + Math.min(Math.max(0, f.heat), 1.5) * 0.25;
-  // too much heat with nothing warm underneath turns even the core
-  const turned = Math.max(0, f.heat - 2.5 - Math.max(0, f.warmth)) * 0.35;
+  // the audience in groups (fanGroups): each group's fans, by the size of the group
+  const g = fanGroups(state, n);
+  const fans = Object.entries(g).reduce((s, [k, v]) => s + v * GROUPS[k], 0);
   const real = clamp(1 + f.real * 0.12, 0.6, 1.35);
-  return Math.max(0.05, recognition * (0.6 + casual + Math.max(0, core - turned)) * real);
+  return Math.max(0.05, recognition * (0.6 + fans) * real);
 }
 
 /** Where a housemate stands with the country against the rest of the house: about -1..+1. */
@@ -178,7 +218,7 @@ export function voteShares(state, names = [], rng = Math.random, noise = 0.18) {
 export function publicRead(state, n) {
   const f = fileOf(state, n);
   const pity = f.pity / (1 + Math.max(0, f.pity) * 0.45);
-  const parts = { warmth: f.warmth, pity: pity * 0.9, fun: f.fun * 0.9, arc: f.arc * 0.8, heat: f.heat * 0.7 };
+  const parts = { warmth: f.warmth, pity: pity * 0.9, fun: f.fun * 0.9, arc: f.arc * 0.8, heat: f.heat * 0.7, game: f.game * 0.95 };
   const room = (state.publicRoom || []).filter(x => state.public?.[x]);
   const meanSeen = room.length ? room.reduce((a, x) => a + Math.max(0, state.public[x].seen), 0) / room.length : 2;
   if (f.seen < Math.max(1.2, meanSeen * 0.45)) return { key: 'unseen', label: 'barely seen' };
@@ -188,7 +228,7 @@ export function publicRead(state, n) {
   if ((top[0] === 'heat' || top[0] === 'fun') && f.heat >= 0.8 && f.heat > Math.max(0, f.warmth) && f.fun > f.heat * 0.6) return { key: 'villain', label: 'the one they love to hate' };
   return { warmth: { key: 'sweetheart', label: 'the sweetheart' }, pity: { key: 'underdog', label: 'the underdog' },
     fun: { key: 'character', label: 'the big character' }, arc: { key: 'story', label: 'the story everybody follows' },
-    heat: { key: 'hated', label: 'the one the country is cross with' } }[top[0]];
+    heat: { key: 'hated', label: 'the one the country is cross with' }, game: { key: 'player', label: 'a real player' } }[top[0]];
 }
 
 /**

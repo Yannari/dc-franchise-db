@@ -33,6 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor } from '../ss/voice.js';
+import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
@@ -201,6 +202,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     buzzes: [],
     // How the confessional nominates all season (js/ss/casting.js).
     rule: resolveNominationRule(seasonConfig?.ssNominations, rng),
+    // Classic (the Voice's game pays prizes) or revival (a Master of the House).
+    weekly: resolveWeekly(seasonConfig?.ssWeekly, rng),
     // The season's house (a pick, or the draw made now) and its name.
     houseTheme: SS_HOUSE_THEMES.some(h => h.id === seasonConfig?.ssHouseTheme)
       ? seasonConfig.ssHouseTheme : SS_HOUSE_THEMES[Math.floor(rng() * SS_HOUSE_THEMES.length)].id,
@@ -241,13 +244,20 @@ export function huntCtx(week, rng) {
  * Voice's clue on the table, then the buzzer. Returns the acts, in order.
  * Bonds and the public move with every buzz (§5 consequences).
  */
-export function runSecretHunt({ week = undefined, house = [], rng = Math.random } = {}) {
+export function runSecretHunt({ week = undefined, house = [], rng = Math.random, gameWinner = null } = {}) {
   const state = ssState();
   if (!state) return [];
   ledgerOf(state); huntOf(state);
   const room = house.filter(Boolean);
   const ctx = huntCtx(week, rng);
   const acts = [];
+  // The Voice's game: what the week's winner wins (§8, §15).
+  if (week && gameWinner && room.includes(gameWinner)) {
+    const g = settleWeeklyGame(state, ctx, { winner: gameWinner, house: room });
+    week._ssImmune = g.immune; week._ssMaster = g.masterPick;
+    if (g.act) acts.push(g.act);
+    if (g.clueAct) acts.push(g.clueAct);
+  } else if (week) { week._ssImmune = []; week._ssMaster = null; }
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
   if (moments.length) {
@@ -292,7 +302,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random 
  * Odd weeks the women nominate the men; even weeks the men nominate the women. A side too small
  * to nominate from (or a house with no gender on the roster) nominates freely.
  */
-export function secretStoryNominations({ week = undefined, house = [], immune = [], rng = Math.random } = {}) {
+export function secretStoryNominations({ week = undefined, house = [], immune = [], direct = null, rng = Math.random } = {}) {
   const room = house.filter(Boolean);
   const wk = Number(week?.num) || 1;
   const nominateMen = wk % 2 === 1;
@@ -314,7 +324,8 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   // NOMINATED D'OFFICE (§8): rule-breakers and the Voice's sanctions go up
   // whatever their immunity; the house names its two from everybody else.
   const state = ssState();
-  const dOffice = state ? dOfficeFor(state, wk).filter(n => room.includes(n)) : [];
+  // ...and the Master of the House's direct nomination (revival seasons).
+  const dOffice = [...new Set([...(state ? dOfficeFor(state, wk) : []), ...(direct ? [direct] : [])])].filter(n => room.includes(n));
   pool = pool.filter(n => !dOffice.includes(n));
   const ballots = [];
   const tally = Object.fromEntries(pool.map(n => [n, 0]));
@@ -331,7 +342,7 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const ranked = Object.keys(tally).sort((a, b) => tally[b] - tally[a] || (rng() - 0.5));
   const nominees = [...dOffice, ...ranked.slice(0, 2)];
   const tie = ranked.length > 2 && tally[ranked[1]] === tally[ranked[2]];
-  return { nominees, ballots, tally, rule, voiceTie: tie, dOffice, extraVotes: extra };
+  return { nominees, ballots, tally, rule, voiceTie: tie, dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
 }
 
 // How the country splits its vote: popularity sets the order, but nobody who made it this far is

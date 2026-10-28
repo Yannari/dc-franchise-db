@@ -2729,6 +2729,30 @@ function ssClueScreen(act, ctx) {
     kicker: 'Live · Living room', title: 'A Clue', label: 'The Clue', sub: act.clue, cast: [], steps };
 }
 
+// THE VOICE'S GAME (§8, §15): what the week's winner wins.
+function ssGameScreen(act, ctx) {
+  const w = act.winner;
+  const k = `${ctx.week}|ssg|${w}`;
+  const PRIZE = {
+    master: `${w}, you are Master of the House this week. You cannot be nominated, and you will nominate one housemate directly${act.masterPick ? ` : ${act.masterPick}` : ''}.`,
+    immunity: `${w}, you have won immunity. You cannot be nominated this week.`,
+    clue: `${w}, you have won a clue. Choose whose secret it is about.`,
+    money: `${w}, you have won ${euros(act.amount)} for your kitty.`,
+    'free-buzz': `${w}, you have won a free buzz. Use it whenever you like: it will cost you nothing.`,
+    none: `${w}, well played. This one was for the glory.`,
+  };
+  /** @type {BB.Step[]} */ const steps = [
+    ssv(`${w} wins the Voice's game.`, { toast: ["THE VOICE'S GAME", '#e0b84a'] }),
+    ssv(PRIZE[act.prize] || PRIZE.none, { toast: act.prize === 'master' ? ['MASTER OF THE HOUSE', '#f5c542'] : undefined }),
+    { k: 'dr', by: w, t: act.prize === 'clue' && act.target ? `I chose ${act.target}. I've had a feeling about ${act.target} for days.`
+      : act.prize === 'master' && act.masterPick ? `${act.masterPick}. Nothing personal. Well. A little personal.`
+        : pickBy(["I'll take it. I needed something to go my way.", "Finally! I've been waiting for a good week.", 'That feels good. Really good.'], k) },
+  ];
+  if (act.prize === 'master' && act.masterPick) steps.push({ k: 'beat', t: `${act.masterPick} hears their name and does not look at ${w}.`, nom: [act.masterPick] });
+  return { id: `bb-ss-game-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '17:00',
+    kicker: 'Live · Living room', title: "The Voice's Game", label: 'The Prize', sub: `${w} wins`, cast: [[w, 50]], steps };
+}
+
 // THE VOICE'S RULES (§3): the commandment read back, and the price.
 function ssRuleScreen(act, ctx) {
   const n = act.who;
@@ -2780,7 +2804,8 @@ function ssNomScreen(act, ctx) {
   const who = ss.rule === 'women-nominate-men' ? ['the women', 'two men'] : ss.rule === 'men-nominate-women' ? ['the men', 'two women'] : ['every houseguest', 'two houseguests'];
   /** @type {BB.Step[]} */ const steps = [
     ssv(`Houseguests, it is time for the nominations. This week ${who[0]} will each nominate ${who[1]}, in the confessional.`, { rule: 1, toast: ['NOMINATIONS', '#e0b84a'] }),
-    ...(ctx.hoh ? [ssv(`${ctx.hoh} won immunity this week and cannot be nominated.`, { rule: 2 })] : []),
+    ...((ss.immune || []).length ? [ssv(`${listOf(ss.immune)} cannot be nominated this week.`, { rule: 2 })] : []),
+    ...((ss.dOffice || []).length ? [ssv(`${listOf(ss.dOffice)} ${ss.dOffice.length > 1 ? 'are' : 'is'} already nominated d'office.`, { rule: 3, nom: ss.dOffice.slice() })] : []),
   ];
   (ss.ballots || []).slice(0, 5).forEach(b => steps.push({ k: 'dr', by: b.voter, t: `I nominate ${listOf(b.picks || [])}.` }));
   if ((ss.ballots || []).length > 5) steps.push({ k: 'beat', t: `One by one the rest of ${who[0]} go into the confessional and name their two.` });
@@ -2790,7 +2815,7 @@ function ssNomScreen(act, ctx) {
   for (const n of act.nominees || []) steps.push({ k: 'dr', by: n, t: pickBy(["The public decides now. All I can do is be myself and hope that is enough.", 'Nominated. I did not see that coming, and now I need the country on my side.'], `${ctx.week}|ssn|${n}`) });
   return { id: 'bb-noms-v', kind: 'noms', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '13:30',
     kicker: 'Cam 01 · Confessional', title: 'Nominations', label: 'Nominations', sub: `${listOf(act.nominees || [])} face the public`, cast: (act.nominees || []).map((n, i) => [n, 35 + i * 30]),
-    rules: [['THE CONFESSIONAL', `${who[0]} name ${who[1]}`], ['IMMUNE', ctx.hoh || 'the immunity winner'], ['THE PUBLIC', 'evicts one']], rulesTitle: 'THE NOMINATIONS · HOW THEY WORK', steps };
+    rules: [['THE CONFESSIONAL', `${who[0]} name ${who[1]}`], ['IMMUNE', listOf(ss.immune || []) || 'nobody'], ['THE PUBLIC', 'saves all but one']], rulesTitle: 'THE NOMINATIONS · HOW THEY WORK', steps };
 }
 
 function ssFinalVoteScreen(act, ctx) {
@@ -4228,11 +4253,13 @@ export function truthTime(text, week) {
 // A theme's own names for the engine's mechanics (BB26 called the Block Buster's shape the AI Arena,
 // and its Saboteur the AI Instigator).
 const THEME_WORDS = {
-  'secret-story': [[/^Head of Household$/g, 'Immunity'], [/\bwins Head of Household\b/g, 'wins immunity'], [/\bHead of Household competition\b/g, 'immunity competition'],
-    [/\bHEAD OF HOUSEHOLD\b/g, 'IMMUNITY'], [/\bHead of Household\b/g, 'immunity winner'],
-    [/\bHOH Room\b/g, 'Bedroom'], [/\bHOH room\b/g, 'bedroom'], [/\bthe HOH bed\b/g, 'the big bed'], [/\bHOH bed\b/g, 'big bed'], [/\bthe HOH\b/g, 'the immunity winner'],
-    [/\bwin HOH\b/g, 'win immunity'], [/\bwon HOH\b/g, 'won immunity'], [/\bHOH comp\b/g, 'immunity comp'], [/\bas HOH\b/g, 'with immunity'],
-    [/\ban HOH\b/g, 'an immunity winner'], [/\bHOHs\b/g, 'immunity winners'], [/\bHOH\b/g, 'immunity'],
+  // The weekly competition is the VOICE'S GAME: winning it is not immunity
+  // unless the prize says so (js/ss/games.js), so the swap never claims it.
+  'secret-story': [[/^Head of Household$/g, "The Voice's Game"], [/\bwins Head of Household\b/g, "wins the Voice's game"], [/\bHead of Household competition\b/g, "Voice's game"],
+    [/\bHEAD OF HOUSEHOLD\b/g, "THE VOICE'S GAME"], [/\bHead of Household\b/g, "winner of the Voice's game"],
+    [/\bHOH Room\b/g, 'Bedroom'], [/\bHOH room\b/g, 'bedroom'], [/\bthe HOH bed\b/g, 'the big bed'], [/\bHOH bed\b/g, 'big bed'], [/\bthe HOH\b/g, "the game's winner"],
+    [/\bwin HOH\b/g, "win the Voice's game"], [/\bwon HOH\b/g, "won the Voice's game"], [/\bHOH comp\b/g, "Voice's game"], [/\bas HOH\b/g, "as the game's winner"],
+    [/\ban HOH\b/g, "a game winner"], [/\bHOHs\b/g, "game winners"], [/\bHOH\b/g, "the game's winner"],
     // Secret Story is its own show (2026-10-27): its house, its people, its exit.
     // Scenes about a veto or a jury it does not have are part 3's to rewrite;
     // these are the words a swap can honestly fix.
@@ -4560,6 +4587,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-buzz': flush(); ceremony(ssBuzzScreen(act, ctx)); beatsOf(act); break;
       case 'ss-clue': flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
       case 'ss-rule': flush(); ceremony(ssRuleScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-game': flush(); ceremony(ssGameScreen(act, ctx)); beatsOf(act); break;
       case 'ss-hunt': { flush(); const scr = ssHuntScreen(act, ctx); if (scr) ceremony(scr); beatsOf(act); break; }
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;

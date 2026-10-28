@@ -1612,6 +1612,7 @@ export function saveConfig() {
     ssName: g('cfg-ss-name') ? g('cfg-ss-name').value.trim() : (seasonConfig.ssName || ''),
     ssHouseTheme: g('cfg-ss-house')?.value || seasonConfig.ssHouseTheme || 'random',
     ssNominations: g('cfg-ss-noms')?.value || seasonConfig.ssNominations || 'random',
+    ssWeekly: g('cfg-ss-weekly')?.value || seasonConfig.ssWeekly || 'random',
     ssSecrets: seasonConfig.ssSecrets || {},
     ssRecognitions: seasonConfig.ssRecognitions || null,
     ssRecognitionsCast: seasonConfig.ssRecognitionsCast || '',
@@ -1845,6 +1846,7 @@ export function renderConfig() {
   set('cfg-ss-name', seasonConfig.ssName || '');
   set('cfg-ss-house', seasonConfig.ssHouseTheme || 'random');
   set('cfg-ss-noms', seasonConfig.ssNominations || 'random');
+  set('cfg-ss-weekly', seasonConfig.ssWeekly || 'random');
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();
   window.renderSsSecrets?.();

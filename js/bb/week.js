@@ -2998,7 +2998,8 @@ export function simulateBBWeek(options = {}) {
         const given = assignSecrets({ house, rng });
         if (given) week.acts.push(given);
       }
-      week._ssHunt = runSecretHunt({ week, house, rng });
+      // The engine's weekly competition is the Voice's game (js/ss/games.js).
+      week._ssHunt = runSecretHunt({ week, house, rng, gameWinner: hoh });
     } catch (err) { (week._ssError ||= []).push(String(err?.message || err)); }
   }
 
@@ -4669,7 +4670,8 @@ export function simulateBBWeek(options = {}) {
   let ssNom = null;
   if (ss && !chainNoms.length) {
     try {
-      ssNom = secretStoryNominations({ week, house, immune: [hoh, ...keySafe].filter(Boolean), rng });
+      // Immune only if the Voice's game paid an immunity (or made a Master of the House).
+      ssNom = secretStoryNominations({ week, house, immune: [...(week._ssImmune || []), ...keySafe].filter(Boolean), direct: week._ssMaster || null, rng });
       if (ssNom?.nominees?.length >= 2) {
         nominees = [...ssNom.nominees];
         week.initialNominees = [...nominees];

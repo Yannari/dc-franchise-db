@@ -803,3 +803,25 @@ more people and press sooner, provokers press early, manipulators hide their
 secret and bluff in the confrontation, floaters, coattail riders and the lowkey
 barely play (and the country forgets them) until a lowkey player rises. After
 Secret names the group carrying the favourite and the gamers' own favourite.
+
+## 28. Party nights and the store (built, M8)
+
+`js/ss/parties.js`. Most weekends the Voice throws a party from eight real
+themes (pink and white, samba, the fantasy night, the garden party, karaoke,
+Halloween, the masked ball, the eighties), never the same one twice a season.
+Everyone dresses to it (no two shown in the same outfit; a dress or a gown only
+for a woman). Guards come down by temperament and boldness, so: the night's
+star (the public sees them), the wallflower (the public does not), a flirt or a
+kiss between two who like each other (romanticCompat first, always) and the one
+who watches it jealous, a feud that blows up and who steps in, a SLIP (a holder
+says too much: the ones who heard get evidence, and the Voice's commandment 8 is
+likelier that week), the Voice's party mission ($2,000), and three in the
+morning (who slept where, who cried, who sat outside the door).
+
+THE STORE (the supérette; English on screen): ninety seconds, two runners (the
+game's winner and a friend, or the house's fastest). A great haul warms the
+house, a poor one ("six yoghurts and no bread") starts grumbling, champagne
+from the top shelf costs $1,000 of a kitty and buys the house a night, and
+sometimes an envelope behind the cereal is a clue only the runners see. A
+house-wide punishment for talking nominations is now the hot water OR the
+shopping, and the house knows who cost them it.

@@ -110,10 +110,12 @@ export function weeklyRuleBreaks(state, ctx, { house = [], party = false } = {})
     if (rng() < talkP) {
       broke.add(n);
       const houseWide = rng() < 0.5;
-      if (houseWide) rulesOf(state).house[week] = 'hot-water';
+      // the whole house pays: the hot water, or the week's shopping (the store stays shut)
+      const what = rng() < 0.5 ? 'hot-water' : 'no-shopping';
+      if (houseWide) { rulesOf(state).house[week] = what; (rulesOf(state).houseBlame ||= {})[week] = n; }
       else addVote(state, week + 1, n, 1);
-      acts.push({ type: 'ss-rule', week, who: n, commandment: 7, kind: 'nominations-talk', punishment: houseWide ? 'hot-water' : 'extra-vote',
-        beats: [{ text: houseWide ? `${n} talks about the nominations. The whole house loses its hot water.` : `${n} talks about the nominations, and will carry an extra vote against them.`,
+      acts.push({ type: 'ss-rule', week, who: n, commandment: 7, kind: 'nominations-talk', punishment: houseWide ? what : 'extra-vote',
+        beats: [{ text: houseWide ? `${n} talks about the nominations. The whole house loses ${what === 'hot-water' ? 'its hot water' : "this week's shopping"}.` : `${n} talks about the nominations, and will carry an extra vote against them.`,
           players: [n], badgeText: 'COMMANDMENT 7', badgeClass: 'red', part: 'rule' }] });
       continue;
     }

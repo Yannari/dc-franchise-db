@@ -63,7 +63,7 @@ describe('the week\'s breaks', () => {
       const { state, names } = fresh();
       for (const act of weeklyRuleBreaks(state, ctx({ Ana: { temperament: 1, boldness: 9, strategic: 1 } }, seed), { house: names })) {
         expect(act.beats?.length).toBeGreaterThan(0);
-        const visible = act.punishment === 'hot-water' || act.punishment === 'fine' ? true
+        const visible = act.punishment === 'hot-water' || act.punishment === 'no-shopping' || act.punishment === 'fine' ? true
           : dOfficeFor(state, 4).length + Object.keys(extraVotesFor(state, 4)).length > 0;
         expect(visible, JSON.stringify(act)).toBe(true);
       }

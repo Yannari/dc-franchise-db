@@ -37,6 +37,8 @@ import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
+import { throwParty, runSuperette } from '../ss/parties.js';
+import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
@@ -95,6 +97,11 @@ function pub(n, axis, d, why = '') {
 const FX_WHY = { dilemma: 'their dilemma on the prime', phone: 'answered the red phone', truths: 'the room of truths', visit: 'a visit from home', mission: 'a secret mission' };
 const popFx = (list, kind) => { for (const [n, d] of list || []) pub(n, d >= 0 ? 'warmth' : 'heat', Math.abs(d), FX_WHY[kind] || ''); };
 const MOVING = ['survived', 'family', 'love', 'body'];
+/** An act's `effects` (bonds, the public), applied. */
+function applyFx(fx) {
+  for (const [a, b, d] of fx?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
+  for (const [n, axis, d, why] of fx?.pub || []) pub(n, axis, d, why);
+}
 
 /** The season's secret-story state, created on first touch. Plain JSON. */
 export function ssState() {
@@ -285,6 +292,9 @@ export function huntCtx(week, rng) {
   ctx.looks = n => awareness(ctx, n);
   // how they play the hunt
   ctx.play = n => SS_PLAY[playStyle(n)] || {};
+  // a flirt or a kiss checks romantic compatibility first (CLAUDE.md), real or fake
+  ctx.compat = (a, b) => { try { return !!romanticCompat(a, b); } catch { return false; } };
+  ctx.gender = n => genderOf(n);
   // buzzing a friend, or the country's favourite, on air: it looks bad
   ctx.buzzCost = (n, t) => ctx.looks(n) * (Math.max(0, bond(n, t)) / 10 * 0.12 + Math.max(0, ctx.pop(t)) * 0.04);
   return ctx;
@@ -318,6 +328,11 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   } else if (week) { week._ssImmune = []; week._ssMaster = null; }
   // Monday: the Voice's missions (§7), played through the week.
   acts.push(...handOutMissions(state, ctx, { house: room }));
+  // The weekend: the Voice throws a party most weeks (§15). Guards come down; a slip is likelier.
+  if (room.length >= 4 && rng() < (ctx.week <= 1 ? 0.5 : 0.65)) {
+    const party = throwParty(state, ctx, { house: room });
+    if (party) { applyFx(party.effects); acts.push(party); if (week) week._ssParty = true; }
+  } else if (week) week._ssParty = false;
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
   // A mission is played through the week; a seduction or a nightmare moves a bond.
@@ -347,6 +362,13 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     else if (r.kind === 'contest') { pub(r.who, 'fun', 0.2, 'argued with the Voice'); pub(r.who, 'heat', 0.12, 'argued with the Voice'); }
     else { pub(r.who, 'fun', 0.1, "broke the Voice's rules"); pub(r.who, 'heat', 0.08, "broke the Voice's rules"); }
     acts.push(r);
+  }
+  // Wednesday: the store (§15). The game's winner picks who runs in with them;
+  // a house-wide punishment this week keeps it shut.
+  {
+    const shut = state.rules?.house?.[ctx.week] === 'no-shopping' ? (state.rules.houseBlame?.[ctx.week] || true) : false;
+    const shop = runSuperette(state, ctx, { house: room, closed: shut, picker: gameWinner && room.includes(gameWinner) ? gameWinner : null });
+    if (shop) { applyFx(shop.effects); acts.push(shop); }
   }
   const weeksLeft = Math.max(0, room.length - 5);
   for (const b of runBuzzes(state, ctx, { house: room, weeksLeft })) {

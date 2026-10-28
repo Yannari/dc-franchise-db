@@ -2671,6 +2671,63 @@ function ssSecretsScreen(act, ctx) {
     rulesTitle: 'SECRET STORY · HOW IT WORKS', steps }];
 }
 
+// THE PARTY (js/ss/parties.js): the Voice's party night, from the dressing up
+// to three in the morning.
+function ssPartyScreen(act, ctx) {
+  const k = `${ctx.week}|ssparty`;
+  const m = act.mission || {};
+  /** @type {BB.Step[]} */ const steps = [
+    ssv(`Housemates, tonight the Voice is throwing you a party: ${act.name}.`, { toast: ['PARTY NIGHT', '#c86bff'] }),
+    { k: 'beat', t: `The house is transformed: ${act.look}.` },
+  ];
+  if (m.holder) steps.push(ssv(`${m.holder}, please come to the confessional.`),
+    ssv(`${m.holder}, the Voice has a mission for you tonight. ${m.text} Nobody may know.`),
+    { k: 'dr', by: m.holder, t: pickBy(["Tonight is going to be fun.", "Easy. I think.", "Okay. I can do that without anybody noticing.", `${m.target} won't see it coming.`, "A mission at a party. The Voice knows me too well.", "I just have to act normal. At a party. Easy."], `${k}|mh|${m.holder}|${m.id}`) });
+  for (const o of (act.outfits || []).slice(0, 5)) steps.push({ k: 'beat', t: `${o.n} comes down in ${o.wear}.` });
+  if ((ctx.house || []).length > Math.min(5, (act.outfits || []).length)) steps.push({ k: 'beat', t: 'Everybody else is dressed for it too, more or less.' });
+  for (const x of act.moments || []) {
+    const [a, b] = x.who || [];
+    if (x.kind === 'star') steps.push({ k: 'beat', t: x.text }, { k: 'dr', by: a, t: pickBy(["I came here to have fun, and tonight I did.", "Music on, and I'm a different person.", "I danced for three hours. My feet are destroyed.", "Parties are where I come alive.", "For one night I forgot about secrets and money. It felt good."], `${k}|st|${a}|${act.theme}`) });
+    else if (x.kind === 'wallflower') steps.push({ k: 'beat', t: x.text });
+    else if (x.kind === 'flirt' || x.kind === 'kiss') steps.push({ k: 'beat', t: x.text, toast: x.kind === 'kiss' ? ['A KISS', '#ff8fb1'] : undefined },
+      { k: 'dr', by: a, t: x.kind === 'kiss' ? pickBy([`I kissed ${b}. I don't know what that means yet.`, `That kiss with ${b} wasn't planned. Not at all.`, `Everybody saw me kiss ${b}. I don't care.`], `${k}|kiss`) : pickBy([`${b} and I danced all night. Nobody else was there for me.`, `I like ${b}. There, I said it.`], `${k}|fl`) });
+    else if (x.kind === 'jealous') steps.push({ k: 'beat', t: x.text }, { k: 'dr', by: a, t: pickBy([`I'm fine. I'm fine. I'm going to bed.`, `I didn't think it would hurt to watch that. It did.`], `${k}|je`) });
+    else if (x.kind === 'fight') steps.push({ k: 'beat', t: x.text, shake: true, toast: ['IT BLOWS UP', '#ff3355'], tense: [a, b] },
+      { k: 'say', by: a, push: true, t: pickBy([`You've been talking about me all week, ${b}. Say it to my face.`, `I'm done pretending with you, ${b}.`, `Don't talk about me, and don't come near me, ${b}.`, `Everybody's scared to say it, so I will. You're fake, ${b}.`], `${k}|f1|${a}|${b}`) },
+      { k: 'say', by: b, t: pickBy([`You've had too much to drink. Go to bed.`, `Here we go again. Every single party.`, `I'm not doing this with you tonight.`, `Say what you want. Everybody's watching you, not me.`], `${k}|f2|${a}|${b}`) });
+    else if (x.kind === 'peacemaker') steps.push({ k: 'beat', t: x.text });
+    else if (x.kind === 'slip') steps.push({ k: 'beat', t: x.text, toast: ['A SLIP', '#e0b84a'] },
+      { k: 'dr', by: b || a, t: pickBy([`Did you hear what ${a} just said? That was a clue. I'm sure of it.`, `${a} said a bit too much tonight. I'm writing that down.`, `Drinks make people talk. ${a} talked.`], `${k}|sl`) });
+    else if (x.kind === 'mission') steps.push({ k: 'beat', t: x.text });
+  }
+  if (m.holder) steps.push(ssv(m.won ? `${m.holder}, mission accomplished. ${euros(m.reward)} for your kitty.` : `${m.holder}, mission failed.`, { toast: [m.won ? 'ACCOMPLISHED' : 'FAILED', m.won ? '#f5c542' : '#ff3355'] }));
+  for (const x of act.aftermath || []) steps.push({ k: 'beat', t: x.text });
+  return { id: `bb-ss-party-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: 'The Garden', cam: CAM.yard, time: '23:30',
+    kicker: 'Cam 05 · The Garden', title: act.name, label: 'Party Night', sub: act.look, cast: [], steps };
+}
+
+// THE STORE (js/ss/parties.js): ninety seconds to fill the trolleys.
+function ssStoreScreen(act, ctx) {
+  const k = `${ctx.week}|ssstore`;
+  if (act.closed) return { id: `bb-ss-store-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'storage', room: 'The Store', cam: CAM.storage, time: '11:00',
+    kicker: 'Cam 06 · The Store', title: 'The Store', label: 'The Store', sub: 'Closed', cast: act.blamed ? [[act.blamed, 50]] : [],
+    steps: [ssv("Housemates, the store will not open this week. You have broken the Voice's rules.", { toast: ['NO SHOPPING', '#ff3355'] }),
+      { k: 'beat', t: act.blamed ? `Every head in the kitchen turns to ${act.blamed}.` : 'The house looks at what is left in the fridge.' },
+      ...(act.blamed ? [{ k: 'dr', by: act.blamed, t: pickBy([`Yes, it's my fault. I know. Everybody keeps telling me.`, `One sentence about the nominations, and now nobody eats properly for a week.`], k) }] : [])] };
+  const r = act.runners || [];
+  /** @type {BB.Step[]} */ const steps = [
+    ssv(`Housemates, the store is open. ${listOf(r)}, you have ninety seconds.`, { toast: ['THE STORE', '#3ddc84'] }),
+    { k: 'beat', t: `${listOf(r)} sprint in with a trolley each. The clock on the wall starts counting down.` },
+  ];
+  for (const x of act.moments || []) {
+    steps.push({ k: 'beat', t: x.text, toast: x.kind === 'envelope' ? ['A CLUE', '#e0b84a'] : undefined });
+    if (x.kind === 'envelope') steps.push({ k: 'dr', by: r[0], t: pickBy([`I'm not telling anybody about that envelope. Not yet.`, `That clue stays between ${r[1] || 'us'} and me.`], `${k}|env`) });
+  }
+  if (act.grade === 'poor') steps.push({ k: 'say', by: (ctx.house || []).find(n => !r.includes(n)) || r[0], t: pickBy(['Where is the bread? How do you forget bread?', 'Six yoghurts. For sixteen people. Brilliant.'], `${k}|poor`) });
+  return { id: `bb-ss-store-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'storage', room: 'The Store', cam: CAM.storage, time: '11:00',
+    kicker: 'Cam 06 · The Store', title: 'The Store', label: 'The Store', sub: listOf(r), cast: r.map((n, i) => [n, 40 + i * 22]), steps };
+}
+
 // THE BUZZ (part 2 §5): three screens, as the show cut it. The alarm in the
 // living room; the CONFRONTATION in the confessional, the two of them on the
 // facing sofas under the arch (the user's showdown plate, 2026-10-27: "use it
@@ -5059,6 +5116,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'americas-coup': flush(); ceremony(americasCoupScreen(act, ctx)); beatsOf(act); break;
       case 'ss-secrets': flush(); for (const scr of ssSecretsScreen(act, ctx)) ceremony(scr); break;
       case 'ss-buzz': flush(); for (const scr of ssBuzzScreen(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'ss-party': flush(); ceremony(ssPartyScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-superette': flush(); ceremony(ssStoreScreen(act, ctx)); beatsOf(act); break;
       case 'ss-clue': flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
       case 'ss-rule': flush(); ceremony(ssRuleScreen(act, ctx)); beatsOf(act); break;
       case 'ss-game': flush(); ceremony(ssGameScreen(act, ctx)); beatsOf(act); break;

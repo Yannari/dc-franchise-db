@@ -2671,27 +2671,81 @@ function ssSecretsScreen(act, ctx) {
     rulesTitle: 'SECRET STORY · HOW IT WORKS', steps }];
 }
 
+// THE BUZZ (part 2 §5): the alarm, the confrontation with the Voice present,
+// withdraw or confirm, and the reveal in the living room.
 function ssBuzzScreen(act, ctx) {
   const a = act.by, t = act.target;
+  const k = `${ctx.week}|ssb|${a}|${t}`;
   /** @type {BB.Step[]} */ const steps = [
-    { k: 'beat', t: 'The buzzer goes off in the living room. Every head in the house turns.', shake: true, toast: ['BUZZ', '#e0b84a'] },
-    ssv(`${a}, come to the confessional.`),
-    { k: 'dr', by: a, t: `I think I know ${t}'s secret. "${act.guess}."` },
+    { k: 'beat', t: 'The buzzer goes off. The alarm rings through every room of the house, and everybody stops.', shake: true, toast: ['BUZZ', '#e0b84a'] },
+    { k: 'dr', by: a, t: pickBy([`I've been watching ${t} for days. I think I know.`, `I'm pressing it. ${t} has been hiding something, and I know what.`, `It's ${t}. I'm sure enough to put money on it.`], k) },
+    ssv(`${t}, please come to the confessional. ${a} has buzzed you.`),
+    ssv(`${a}, tell ${t} what you think their secret is.`, { toast: ['THE CONFRONTATION', '#e0b84a'] }),
+    { k: 'dr', by: a, t: `I think your secret is: "${act.guess}."` },
+    ssv(`${t}, you may defend yourself. You may not reveal anything.`),
+    { k: 'dr', by: t, t: act.right
+      ? pickBy(["That's not even close. Where did you get that?", "Honestly? I don't know what you're talking about.", 'You can think what you want. I know who I am.'], `${k}|d`)
+      : pickBy(["What? No. That's not me at all.", "I'd love to know where that came from, because it's wrong.", 'You are so far off it is almost funny.'], `${k}|d`) },
   ];
-  if (act.right) {
-    steps.push(ssv(`${a}, that is correct. ${t}'s secret was: "${act.secretText}."`, { toast: ['SECRET FOUND', '#f5c542'] }),
-      ssv(`${t}'s kitty, ${euros(act.took)}, is now yours.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
-      { k: 'beat', t: `The Voice tells the whole house. ${t} goes very quiet.` },
-      { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I am not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.'], `${ctx.week}|ssf|${t}`) });
+  if (act.leak) steps.push({ k: 'beat', t: `${t} answers a beat too fast, and looks away. ${a} notices.` });
+  if (act.outcome === 'withdrawn') {
+    steps.push(ssv(`${a}, do you confirm your buzz? It will cost you ${euros(5000)}.`),
+      { k: 'dr', by: a, t: pickBy(["No. I withdraw. Something in how they answered... I'm not sure any more.", "I'm not confirming. If I'm wrong it costs me five thousand and tells the whole house who I suspect.", 'I take it back. Not today.'], `${k}|w`), toast: ['WITHDRAWN', '#8b8fa3'] },
+      { k: 'beat', t: `${a} walks out of the confessional without confirming. ${t} breathes again.` });
   } else {
-    steps.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'] }),
-      ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
-      { k: 'beat', t: `${t} finds out who buzzed, and why. So does everybody else.` },
-      { k: 'dr', by: a, t: pickBy(["I was so sure. Now the whole house knows I suspect them, and they got paid for it.", 'Five thousand dollars to find out I was wrong. Cheap, if it stops me doing it again.'], `${ctx.week}|ssw|${a}`) });
+    steps.push(ssv(`${a}, do you confirm your buzz?${act.free ? ' This one is free.' : ` It will cost you ${euros(5000)}.`}`),
+      { k: 'dr', by: a, t: 'I confirm.' },
+      ssv('Everybody, to the living room.', { toast: ['THE REVEAL', '#e0b84a'] }));
+    if (act.outcome === 'right') {
+      steps.push(ssv(`${t}, tell the house your secret.`),
+        { k: 'dr', by: t, t: `My secret is: "${act.secretText}."`, toast: ['SECRET FOUND', '#f5c542'] },
+        ssv(`${a}, you were right. ${t}'s kitty, ${euros(act.took)}, is now yours.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
+        { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I am not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
+    } else {
+      steps.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'] }),
+        ...(act.lost ? [ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } })] : []),
+        { k: 'beat', t: `Now the whole house knows ${a} suspected ${t}, and what ${a} guessed.` },
+        { k: 'dr', by: a, t: pickBy(["I was so sure. Now the whole house knows I suspect them, and they got paid for it.", 'Five thousand dollars to find out I was wrong. Cheap, if it stops me doing it again.', "Wrong. In front of everybody. Brilliant."], `${k}|x`) });
+    }
   }
-  return { id: `bb-ss-buzz-${a}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '16:00',
-    kicker: 'Cam 01 · Confessional', title: 'The Buzzer', label: 'The Buzzer', sub: `${a} buzzes on ${t}`, cast: [[a, 50]],
+  return { id: `bb-ss-buzz-${a}-${t}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '16:00',
+    kicker: 'Cam 01 · Confessional', title: 'The Buzzer', label: 'The Buzzer', sub: `${a} buzzes ${t}`, cast: [[a, 40], [t, 62]],
     rules: [['THE STAKE', '$5,000'], ['RIGHT', "the target's whole kitty"], ['WRONG', 'the stake goes to the target']], rulesTitle: 'THE BUZZER · HOW IT WORKS', steps };
+}
+
+// A CLUE ON THE TABLE (§4): what the house sees, and who it makes surer.
+function ssClueScreen(act, ctx) {
+  const who = act.holders || [];
+  const k = `${ctx.week}|ssc|${who.join('-')}|${act.clue}`;
+  const HOW = { voice: 'The Voice has put a clue on the living-room table.', game: 'The winners of the Voice\'s game have earned a clue.',
+    auction: 'The clue the house bid for is on the table.', mission: 'A failed mission costs a clue.', sacrifice: 'Nobody paid to protect it: the clue goes on the table.' };
+  /** @type {BB.Step[]} */ const steps = [
+    ssv(HOW[act.how] || HOW.voice, { toast: ['A CLUE', '#e0b84a'] }),
+    ssv(`It is about somebody's secret. This clue: ${act.clue}.`),
+    { k: 'beat', t: pickBy(['Everybody leans over the table at once. Nobody says a name out loud, yet.', 'The house goes quiet around the table. Then everybody starts whispering at once.', 'A few people glance at each other. One person very carefully does not.'], k) },
+  ];
+  if (who[0]) steps.push({ k: 'dr', by: who[0], t: pickBy(["That's mine. That's about me. Nobody look at me, nobody look at me.", 'Of course it had to be that one. Act normal.', "They won't get it from that. I hope."], `${k}|h`) });
+  return { id: `bb-ss-clue-w${ctx.week}-${who.join('-')}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '18:00',
+    kicker: 'Live · Living room', title: 'A Clue', label: 'The Clue', sub: act.clue, cast: [], steps };
+}
+
+// THE HUNT (§4): what the house noticed this week, and the theories going round.
+function ssHuntScreen(act, ctx) {
+  const ms = act.moments || [];
+  if (!ms.length) return null;
+  /** @type {BB.Step[]} */ const steps = [];
+  ms.slice(0, 4).forEach((m, i) => {
+    const k = `${ctx.week}|ssh|${i}|${m.who}`;
+    if (m.kind === 'tell') {
+      steps.push({ k: 'beat', t: `${m.about} ${m.tell}. ${m.who} sees it.` },
+        { k: 'dr', by: m.who, t: pickBy([`${m.about} does this thing whenever it comes up. I'm writing that down.`, `Watch ${m.about}. Just watch. There's something there.`, `I think ${m.about}'s secret is "${m.theory}". Not sure yet. Getting there.`], k) });
+    } else {
+      steps.push({ k: 'beat', t: `${m.who} and ${m.to}, in a corner, comparing notes about ${m.about}.` },
+        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me their theory about ${m.about}. It makes sense. Too much sense.`], k) });
+    }
+  });
+  return { id: `bb-ss-hunt-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '14:00',
+    kicker: 'Cam 04 · The house', title: 'The Hunt', label: 'The Hunt', sub: 'Who is watching whom', cast: [], steps };
 }
 
 function ssNomScreen(act, ctx) {
@@ -4477,6 +4531,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'americas-coup': flush(); ceremony(americasCoupScreen(act, ctx)); beatsOf(act); break;
       case 'ss-secrets': flush(); for (const scr of ssSecretsScreen(act, ctx)) ceremony(scr); break;
       case 'ss-buzz': flush(); ceremony(ssBuzzScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-clue': flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-hunt': { flush(); const scr = ssHuntScreen(act, ctx); if (scr) ceremony(scr); beatsOf(act); break; }
       case 'ss-final-vote': flush(); for (const scr of ssFinalVoteScreen(act, ctx)) ceremony(scr); break;
       case 'americas-prankster': flush(); ceremony(pranksterScreen(act, ctx)); beatsOf(act); break;
       case 'split-house': flush(); for (const scr of splitScreens(act, ctx, KIT)) ceremony(scr); ctx.split = act; beatsOf(act); break;

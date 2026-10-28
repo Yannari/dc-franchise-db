@@ -4677,7 +4677,7 @@ export function simulateBBWeek(options = {}) {
       } else ssNom = null;
     } catch { ssNom = null; }
   }
-  for (const a of week._ssHunt || []) week.acts.push(addBeats(a, { players: [a.by, a.target] }));
+  for (const a of week._ssHunt || []) week.acts.push(addBeats(a, { players: a.type === 'ss-buzz' ? [a.by, a.target] : [...(a.holders || [])] }));
   delete week._ssHunt;
   if (!chainNoms.length) week.acts.push(addBeats({ type: 'nominations', nominees: [...nominees], target: plan.target, pawn: plan.pawn, backdoorTarget: plan.backdoorTarget,
     secretStory: ssNom,

@@ -8,7 +8,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, runBBFinale, isBigBrotherSeason } from '../js/bb-run.js';
 import { currentTheme } from '../js/bb/themes.js';
 import { buildBigBrotherSeasonDocument } from '../js/stats-export.js';
-import { themeWords } from '../js/vp-bb-ep/steps.js';
+import { themeWords, bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -91,5 +91,22 @@ describe('the viewer speaks Secret Story', () => {
   it('swaps the house, its people and its exit', () => {
     const t = themeWords('Houseguests, welcome to the Big Brother house. Tonight one of you is evicted on eviction night, and Ana is on the block.', 'secret-story');
     expect(t).toBe('Housemates, welcome to the House of Secrets. Tonight one of you is eliminated on elimination night, and Ana is nominated.');
+  });
+});
+
+describe('the hunt airs', () => {
+  it('every buzz, clue and hunt act reaches a screen with no undefined or Big Brother words', () => {
+    play(13);
+    const eps = gs.episodeHistory.filter(e => e && e.format === 'big-brother');
+    let buzz = 0, clue = 0, hunt = 0;
+    for (const ep of eps) {
+      for (const a of ep.acts || []) { if (a.type === 'ss-buzz') buzz++; if (a.type === 'ss-clue') clue++; if (a.type === 'ss-hunt') hunt++; }
+      for (const scr of bbWeekSteps(ep)) for (const st of scr.steps || []) expect(String(st.t || '')).not.toMatch(/undefined|NaN/);
+      const ids = bbWeekSteps(ep).map(s => s.id);
+      for (const a of ep.acts || []) if (a.type === 'ss-buzz') expect(ids.some(i => i.startsWith(`bb-ss-buzz-${a.by}-${a.target}`))).toBe(true);
+    }
+    expect(clue).toBeGreaterThan(3);
+    expect(hunt).toBeGreaterThan(3);
+    expect(buzz).toBeGreaterThan(0);
   });
 });

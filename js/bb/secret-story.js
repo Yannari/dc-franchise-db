@@ -29,12 +29,16 @@ import { gs, players, seasonConfig, kinshipPairs, seasonFormat } from '../core.j
 import { SS_FORMAT, seasonId } from '../shows.js';
 import { canonSecretsOf, pushCanonSecrets } from '../ss/canon.js';
 import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
+import { KIND_KIT } from '../ss/secret-pool.js';
+import { openKitties, ledgerOf, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
+import { huntOf, huntDay, showClue, runBuzzes, secretOf } from '../ss/hunt.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf } from '../franchise-meta.js';
 
-export const KITTY_START = 10000;
-export const BUZZ_STAKE = 5000;
+// The ledger owns the amounts (js/ss/kitty.js); re-exported for v1's callers.
+export const KITTY_START = LEDGER_START;
+export const BUZZ_STAKE = LEDGER_STAKE;
 // The show, not a knob: a Secret Story season (or an old Big Brother one that
 // ran the theme, which seasonFormat reads as Secret Story).
 export const ssOn = () => seasonFormat(seasonConfig) === SS_FORMAT;
@@ -179,10 +183,19 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     recog = recognitions(room, { careers, fame, rng });
   }
 
+  // Every secret needs something to hunt with: a v1 role or a real tie has
+  // no written clues, so it takes its kind's kit (js/ss/secret-pool.js).
+  const KIT_FOR = { 'real-pair': 'family', 'voice-pair': 'love', 'voice-mission': 'past', 'real-career': 'past' };
+  for (const s of secrets) {
+    const kit = KIND_KIT[s.secretKind] || KIND_KIT[KIT_FOR[s.kind]] || KIND_KIT.past;
+    if (!s.clues?.length) s.clues = [...kit.clues];
+    if (!s.tells?.length) s.tells = [...kit.tells];
+    if (!s.secretKind) s.secretKind = KIND_KIT[KIT_FOR[s.kind]] ? KIT_FOR[s.kind] : 'past';
+  }
   gs.bb ||= {};
   gs.bb.secretStory = {
     secrets: secrets.map(s => ({ ...s, found: false, foundBy: null, week: null })),
-    kitty: Object.fromEntries(room.map(n => [n, KITTY_START])),
+    kitty: {},
     suspicion: {},
     buzzes: [],
     // How the confessional nominates all season (js/ss/casting.js).
@@ -193,6 +206,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     name: String(seasonConfig?.ssName || '').trim() || null,
     recognitions: recog.filter(r => room.includes(r.who) && room.includes(r.whom)),
   };
+  openKitties(gs.bb.secretStory, room, KITTY_START, 1);
+  huntOf(gs.bb.secretStory);
   // THE SECRETS BECOME CANON NOW (js/ss/canon.js): from this browser if it can;
   // the published season carries them as well, for the worker to finish.
   if (asShow && typeof window !== 'undefined') {
@@ -214,72 +229,54 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   };
 }
 
-const secretOf = (state, n) => (state?.secrets || []).find(s => s.holders.includes(n)) || null;
+
+/** The engine context the hunt reads (js/ss/hunt.js is pure). */
+export function huntCtx(week, rng) {
+  return { rng, week: Number(week?.num) || 0, stat: (n, k) => st(n, k), bond: (a, b) => bond(a, b) };
+}
 
 /**
- * The week's hunt: suspicion grows, and the bold press the buzzer. Returns the buzz acts.
+ * The week's hunt (part 2 §4–§5): four days of watching and talking, the
+ * Voice's clue on the table, then the buzzer. Returns the acts, in order.
+ * Bonds and the public move with every buzz (§5 consequences).
  */
 export function runSecretHunt({ week = undefined, house = [], rng = Math.random } = {}) {
   const state = ssState();
   if (!state) return [];
+  ledgerOf(state); huntOf(state);
   const room = house.filter(Boolean);
+  const ctx = huntCtx(week, rng);
   const acts = [];
-  // ── suspicion: everybody watches somebody ──
-  for (const n of room) {
-    const looks = room.filter(x => x !== n && !(secretOf(state, x)?.found) && !secretOf(state, n)?.holders.includes(x));
-    for (let k = 0; k < 2 && looks.length; k++) {
-      const t = looks.splice(Math.floor(rng() * looks.length), 1)[0];
-      const s = secretOf(state, t);
-      if (!s) continue;
-      // a pair gives itself away by being together; a nervous holder by being nervous
-      const tell = s.holders.length > 1 ? 0.12 : 0.04;
-      const gain = (st(n, 'intuition') * 0.03 + tell + (10 - st(t, 'temperament')) * 0.01) * (1 - s.difficulty * 0.6) * (0.5 + rng());
-      state.suspicion[n] ||= {};
-      state.suspicion[n][t] = Math.round(clamp((state.suspicion[n][t] || 0) + gain, 0, 1) * 100) / 100;
-    }
+  const moments = [];
+  for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
+  if (moments.length) {
+    acts.push({ type: 'ss-hunt', week: ctx.week, moments: moments.slice(0, 6),
+      beats: moments.slice(0, 3).map(m => ({ text: m.kind === 'tell'
+        ? `${m.who} notices something about ${m.about}: ${m.about} ${m.tell}.`
+        : `${m.who} tells ${m.to} what they think ${m.about} is hiding.`,
+      players: [m.who, m.to || m.about].filter(Boolean), badgeText: m.kind === 'tell' ? 'NOTICED' : 'THEORY', badgeClass: 'blue', part: 'hunt' })) });
   }
-  // ── the buzzer ──
-  const candidates = [];
-  for (const n of room) {
-    const sus = state.suspicion[n] || {};
-    const [t, conf] = Object.entries(sus).filter(([x]) => room.includes(x) && !secretOf(state, x)?.found).sort((a, b) => b[1] - a[1])[0] || [];
-    if (!t || (state.kitty[n] || 0) < BUZZ_STAKE) continue;
-    if ((Number(week?.num) || 1) < 2) continue;
-    const nerve = (conf - 0.35) * 1.3 + st(n, 'boldness') * 0.02;
-    if (rng() < clamp(nerve, 0, 0.6)) candidates.push({ n, t, conf });
+  // The Voice's clue of the week (until the weekly game hands them out, M3).
+  for (let c = 0; c < 2; c++) {
+    const hidden = room.filter(n => secretOf(state, n) && !secretOf(state, n).found);
+    if (!hidden.length) break;
+    const holder = hidden[Math.floor(rng() * hidden.length)];
+    const clue = showClue(state, ctx, { holder, how: 'voice', house: room });
+    if (clue) acts.push(clue);
   }
-  candidates.sort((a, b) => b.conf - a.conf);
-  for (const c of candidates.slice(0, 2)) {
-    const s = secretOf(state, c.t);
-    if (!s || s.found) continue;
-    const right = rng() < clamp(c.conf * 0.75 + st(c.n, 'intuition') * 0.025 - s.difficulty * 0.2, 0.05, 0.9);
-    const others = (state.secrets || []).filter(x => x !== s && !x.found).map(x => x.text);
-    const wrongGuess = others.length ? others[Math.floor(rng() * others.length)] : 'We are a couple';
-    const record = { week: week?.num || 0, by: c.n, target: c.t, guess: right ? s.text : wrongGuess, right };
-    if (right) {
-      const took = state.kitty[c.t] || 0;
-      state.kitty[c.n] = (state.kitty[c.n] || 0) + took;
-      state.kitty[c.t] = 0;
-      s.found = true; s.foundBy = c.n; s.week = week?.num || 0;
-      record.took = took;
-      addPop(c.n, 1.2); addPop(c.t, 0.4);
-      try { addBond(c.t, c.n, -2); for (const h of s.holders) if (h !== c.t) addBond(h, c.n, -1.2); } catch { /* */ }
+  const weeksLeft = Math.max(0, room.length - 5);
+  for (const b of runBuzzes(state, ctx, { house: room, weeksLeft })) {
+    if (b.outcome === 'right') {
+      addPop(b.by, 1.0); addPop(b.target, 0.4);
+      try { addBond(b.target, b.by, -2); for (const h of b.holders) if (h !== b.target) addBond(h, b.by, -1.2); } catch { /* no bond */ }
+    } else if (b.outcome === 'wrong') {
+      addPop(b.by, -0.4);
+      try { addBond(b.target, b.by, -1.4); } catch { /* no bond */ }
+      for (const n of room) if (n !== b.by && n !== b.target && rng() < 0.3) { try { addBond(n, b.by, -0.2); } catch { /* */ } }
     } else {
-      state.kitty[c.n] = (state.kitty[c.n] || 0) - BUZZ_STAKE;
-      state.kitty[c.t] = (state.kitty[c.t] || 0) + BUZZ_STAKE;
-      record.lost = BUZZ_STAKE;
-      addPop(c.n, -0.4);
-      try { addBond(c.t, c.n, -1.4); } catch { /* */ }
-      // and the house now knows who suspects whom
-      for (const n of room) if (n !== c.n && n !== c.t && rng() < 0.3) { try { addBond(n, c.n, -0.2); } catch { /* */ } }
+      try { addBond(b.target, b.by, -0.6); } catch { /* */ }
     }
-    state.buzzes.push(record);
-    acts.push({
-      type: 'ss-buzz', week: week?.num || 0, by: c.n, target: c.t, right, secretText: s.text, holders: [...s.holders], guess: record.guess,
-      took: record.took || 0, lost: record.lost || 0, kitty: { [c.n]: state.kitty[c.n], [c.t]: state.kitty[c.t] },
-      beats: [{ text: right ? `${c.n} presses the buzzer, names ${c.t}'s secret, and takes the kitty.` : `${c.n} presses the buzzer on ${c.t} and gets the secret wrong.`,
-        players: [c.n, c.t], badgeText: right ? 'SECRET FOUND' : 'WRONG BUZZ', badgeClass: right ? 'gold' : 'red', part: right ? 'found' : 'wrong' }],
-    });
+    acts.push(b);
   }
   return acts;
 }

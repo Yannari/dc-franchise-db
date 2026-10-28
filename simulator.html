@@ -842,6 +842,15 @@
                 </select>
               </div>
               <div class="form-group">
+                <label class="form-label">Nominees each week</label>
+                <select id="cfg-ss-nominees" onchange="saveConfig()" class="form-input">
+                  <option value="auto">Follow the nominations (two in the classic seasons, three or four in the revival)</option>
+                  <option value="classic">Two most weeks (the classic seasons, 2007-2017)</option>
+                  <option value="revival">Three or four, sometimes five (the revival, 2024-2026)</option>
+                </select>
+                <div class="hint hint-tight">Twists still change it: a red room, a card, a week when the whole house faces the public.</div>
+              </div>
+              <div class="form-group">
                 <label class="form-label">The weekly game</label>
                 <select id="cfg-ss-weekly" onchange="saveConfig()" class="form-input">
                   <option value="random">Random</option>

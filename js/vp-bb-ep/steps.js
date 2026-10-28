@@ -3266,14 +3266,16 @@ function ssNomScreen(act, ctx) {
   if ((ss.blocked || []).length) steps.push(ssv(`${listOf(ss.blocked)} could not vote this week.`), { k: 'say', by: ss.blocked[0], t: pickBy(['Why me? Who did that?', "Somebody up there doesn't like me."], `${k}|blk`) });
   if ((ss.double || []).length) steps.push(ssv(`One of you voted twice this week. The Voice will not say who.`), { k: 'beat', t: 'Everybody looks at everybody.' });
   const NW = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
-  steps.push(ssv(`The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
+  if (ss.twist?.kind === 'everybody') {
+    steps.push(ssv('This week, every one of you faces the public. There is no list to read.', { nom: noms.slice(), toast: ['EVERYBODY IS NOMINATED', '#ff3355'] }));
+  } else steps.push(ssv(`The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
   const LIVE_SAY = ["Okay. Okay. It's fine.", 'Me? Seriously?', 'I knew it. I knew it was going to be me.', 'Fine. Let the public decide.', "Wow. Okay. I didn't see that one coming.", "That's the game. It's fine.", 'Of course. Of course it is.', "Great. Love that for me.", "Whoever did that, I see you.", "It's fine. I'm fine. Everything's fine."];
   const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `They'll never vote you out, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
   const used = new Set();
   const once = (arr, key, tag) => { let j = hash(key) % arr.length; for (let t = 0; t < arr.length && used.has(`${tag}${j}`); t++) j = (j + 1) % arr.length; used.add(`${tag}${j}`); return arr[j]; };
   const LIVE_BEAT = n => [`${n} closes ${pronouns(n).posAdj || 'their'} eyes for a second, then nods.`, `A gasp goes round the sofas. ${n} laughs, a bit too loud.`, `${n} stares at the screen and doesn't move.`, `Somebody puts an arm round ${n} straight away.`];
-  read.forEach((n, i) => {
+  if (ss.twist?.kind !== 'everybody') read.forEach((n, i) => {
     const friend = house.filter(x => x !== n && !read.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0];
     steps.push(ssv(i === read.length - 1 && i > 0 ? `And the ${ORD[i] || 'last'} housemate nominated is... ${n}.` : `The ${ORD[i] || 'next'} housemate nominated is... ${n}.`, { nom: read.slice(0, i + 1), tense: [n] }),
       { k: 'beat', t: once(LIVE_BEAT(n), `${k}|b|${n}`, 'b') },

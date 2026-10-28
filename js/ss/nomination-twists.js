@@ -16,8 +16,8 @@
 // Pure: decides and records on state.weekTwists[week]; the nominations (js/bb/secret-story.js) read it.
 
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-export const WEEK_TWISTS = ['linked', 'for-life', 'inverted', 'houses', 'red-room', 'exclusive'];
-export const WEEK_TWIST_NAMES = { linked: 'Linked Destinies', 'for-life': 'Nominated for Life', inverted: 'The Inverted Nominations', houses: 'Immunity House against Nomination House', 'red-room': 'The Red Room', exclusive: 'One Name for Everybody' };
+export const WEEK_TWISTS = ['linked', 'for-life', 'inverted', 'houses', 'red-room', 'exclusive', 'everybody'];
+export const WEEK_TWIST_NAMES = { linked: 'Linked Destinies', 'for-life': 'Nominated for Life', inverted: 'The Inverted Nominations', houses: 'Immunity House against Nomination House', 'red-room': 'The Red Room', exclusive: 'One Name for Everybody', everybody: 'Everybody Is Nominated' };
 
 /**
  * This week's nomination twist, decided before the nominations (or null). Also keeps a running
@@ -47,7 +47,9 @@ export function weekTwist(state, ctx, { house = [], winner = null } = {}) {
   if (!forced && (wk < 2 || house.length < 7)) return lifeNews ? { kind: null, life: lifeNews } : null;
   const last = state.weekTwists[wk - 1]?.kind;
   if (!forced && rng() > 0.33) return lifeNews ? { kind: null, life: lifeNews } : null;
-  const can = WEEK_TWISTS.filter(k => k !== last && (k !== 'for-life' || !life || life.over) && (k !== 'houses' || house.length >= 8));
+  // (the whole house in front of the public is rare: never before week three, and half as likely as the rest)
+  const can = WEEK_TWISTS.filter(k => k !== last && (k !== 'for-life' || !life || life.over) && (k !== 'houses' || house.length >= 8)
+    && (k !== 'everybody' || (wk >= 3 && house.length >= 8 && Object.values(state.weekTwists).every(x => x?.kind !== 'everybody') && rng() < 0.5)));
   const kind = forced || can[Math.floor(rng() * can.length) % can.length];
   const t = { kind, week: wk };
   if (kind === 'linked') {

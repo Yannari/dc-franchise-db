@@ -68,6 +68,12 @@ export function ssWeekTwistScreen(act, ctx, H) {
         { k: 'say', by: t.who, t: `${t.dragged}. Sorry. Not sorry.` },
         ssv(`${t.dragged} is nominated too.`, { nom: [t.who, t.dragged] }),
         { k: 'dr', by: t.dragged, t: pickBy([`I didn't even go near that door! And I'm nominated because ${t.who} was curious?`, `${t.who} had one choice and chose me. Message received.`], `${k}|d`) });
+    } else if (t.kind === 'everybody') {
+      title = 'Everybody Is Nominated';
+      steps.push(gather, ssv('This week, there will be no nominations.'), { k: 'beat', t: 'Relief, for about a second.' },
+        ssv('Because this week, every one of you is nominated. The whole house faces the public, and one of you will leave.', { shake: true, nom: house.slice() }),
+        { k: 'beat', t: pickBy(['The room goes very, very quiet.', 'Somebody laughs. Nobody else does.'], `${k}|e`) },
+        { k: 'dr', by: house[0], t: pickBy(["Everybody? Then it's all about who the public likes. Which is terrifying.", "No hiding this week. Not for anybody."], `${k}|e2`) });
     } else if (t.kind === 'exclusive') {
       title = 'One Name for Everybody';
       steps.push(gather, ssv(`This week, there will be no vote. ${t.who}, you alone will name the nominees, in the confessional, and you will tell the house why.`, { scene: LIV(house) }),

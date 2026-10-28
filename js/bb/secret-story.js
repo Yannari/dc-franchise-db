@@ -872,8 +872,14 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const extra = state ? extraVotesFor(state, wk) : {};
   // How many go up this week (the real show varies it: two most weeks, three or four on a big week). Read off the
   // week and the room, not the season's dice, so the rest of the season plays as it did.
+  // The setting (season setup, "Nominees each week"): the classic seasons put two up most weeks; the revival
+  // (2024-2026, fr.wikipedia: S13 averaged 3.6) three or four, sometimes five. 'auto' follows the nominations rule.
   const roll = [...`${wk}|${room.join(',')}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 100;
-  const seats = wk <= 1 || room.length < 9 ? 2 : roll < 60 ? 2 : roll < 88 ? 3 : 4;
+  const style = seasonConfig?.ssNomineeCount === 'classic' || seasonConfig?.ssNomineeCount === 'revival' ? seasonConfig.ssNomineeCount
+    : (ssState()?.rule === 'mixed' ? 'revival' : 'classic');
+  const seats = room.length < 7 ? 2 : style === 'revival'
+    ? (room.length < 9 ? (roll < 60 ? 3 : 2) : roll < 50 ? 3 : roll < 85 ? 4 : 5)
+    : (wk <= 1 || room.length < 9 ? 2 : roll < 85 ? 2 : 3);
   // The secret room's trades this week (js/ss/secret-room.js): a vote taken away, a vote doubled.
   const blocked = (state?.rules?.blockedVote?.[wk] || []).filter(n => voters.includes(n));
   const double = (state?.rules?.doubleVote?.[wk] || []).filter(n => voters.includes(n) && !blocked.includes(n));
@@ -884,11 +890,13 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   if (exclusive) { voters = [exclusive]; pool = pool.filter(n => n !== exclusive); }
   // (five at most: direct nominations take the house's seats first, and four of them leave the house no vote)
   const seatsNow = dOffice.length >= 4 ? 0 : Math.max(dOffice.length >= 3 ? 1 : 2, Math.min(seats, pool.length - 1, 5 - dOffice.length));
-  const cast = seatsNow ? castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
+  // the whole house faces the public this week (S7's opening, S12 weeks one and five): no vote at all
+  const everybody = nt?.kind === 'everybody';
+  const cast = seatsNow && !everybody ? castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
     invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 }) : { nominees: [], ballots: [], tally: {}, secondRound: null };
-  const before = [...dOffice, ...cast.nominees];
+  const before = everybody ? room.slice() : [...dOffice, ...cast.nominees];
   // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
-  const post = state ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };
+  const post = state && !everybody ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };
   // linked destinies: a nominee's partner goes up too (unless immune)
   const linked = [];
   if (nt?.kind === 'linked') for (const n of [...post.nominees]) {

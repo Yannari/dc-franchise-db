@@ -1287,6 +1287,7 @@ const CONFIG_SCOPE = {
     'cfg-ss-name':           ['secret-story'],
     'cfg-ss-house':          ['secret-story'],
     'cfg-ss-noms':           ['secret-story'],
+    'cfg-ss-nominees':       ['secret-story'],
     'cfg-ss-weekly':         ['secret-story'],
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama', 'the-circle'],  // a house has no tribes to join; the Circle's are its categories

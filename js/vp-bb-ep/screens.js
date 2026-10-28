@@ -31,6 +31,7 @@ import { intelHtml, INTEL_CSS } from './intel.js';
 import { BBX_COMP_CSS } from './comp-field.js';
 import { SS_CSS, ssDossierOf, ssSideHtml } from './ss-hud.js';
 import { titleScreen } from './titles.js';
+import { ssTitleScreen } from './ss-titles.js';
 import { seasonId } from '../shows.js';
 import { seasonFormat } from '../core.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
@@ -460,8 +461,10 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     ...(row.acts || []).filter(a => a && /evict/.test(a.type || '')).map(a => a.evicted)];
   // (tonight's evictee too, when the Battle Back that night sent them straight back in)
   const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string' && !cameBack.has(x)))];
-  out.unshift(titleScreen('intro', key, cast, seasonTitle, goneBefore));
-  out.push(titleScreen('outro', key, cast, seasonTitle, goneAfter));
+  // (Secret Story opens on its own sequence: vp-bb-ep/ss-titles.js)
+  const titled = o.season === 'secret-story' ? (k, g) => ssTitleScreen(k, cast, seasonTitle, g) : (k, g) => titleScreen(k, key, cast, seasonTitle, g);
+  out.unshift(titled('intro', goneBefore));
+  out.push(titled('outro', goneAfter));
   // the Debug screen is not part of the episode: it goes after the closing, never before it
   for (let i = out.length - 2; i >= 0; i--) if (/debug/.test(out[i]?.id || '')) out.push(...out.splice(i, 1));
   lastBuilt = { fp, num: row.num, ids: out.map(x => x?.id).filter(Boolean) };

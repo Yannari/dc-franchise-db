@@ -185,7 +185,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
       const up = r.to - r.from;
       return `<div class="ssk-c" style="--i:${i};--h:${Math.max(4, Math.round(r.to / top * 100))}%"><div class="ssk-stack"><i></i></div>
         <span class="ssk-n" style="--from:${Math.round(r.from)};--to:${Math.round(r.to)}" data-v="${money(r.to)}"></span>${up ? `<em class="${up > 0 ? 'up' : 'down'}">${up > 0 ? '+' : '−'}${money(Math.abs(up)).slice(1)}</em>` : ''}
-        <span class="ssk-f" style="--c:${H.col(r.n)}">${H.img(r.n)}</span><b>${esc(r.n)}</b></div>`;
+        <span class="ssk-f" style="--c:${H.col(r.n)}">${H.img(r.n)}</span><b>${esc(r.n)}</b>${st.kittyStamp ? `<i class="ssk-v" style="--i:${i}">${esc(st.kittyStamp)}</i>` : ''}</div>`;
     }).join('')}</div></div>`;
   }
   // money changing hands: coins fly from one housemate to the other
@@ -476,6 +476,12 @@ export const SS_CSS = `${SS_TYPE_CSS}
   background:repeating-linear-gradient(0deg,#b8860b 0 .25cqw,#f5c542 .25cqw 1.1cqw);box-shadow:0 0 1.4cqw rgba(245,197,66,.55)}
 .ssk.fresh .ssk-stack i{animation:ss-grow 1.4s calc(var(--i) * .08s) cubic-bezier(.2,1,.3,1) both}
 .ssk-n{font:700 1.5cqw 'SSAachen',sans-serif;margin-top:.4cqw;--ssn:var(--to);counter-reset:k var(--ssn)}
+/* the semi-final's validation: a stamp slams onto each kitty in turn */
+.ssk-c{position:relative}
+.ssk-v{position:absolute;left:50%;top:38%;translate:-50% 0;rotate:-14deg;font:700 1.15cqw 'SSAachen',sans-serif;font-style:normal;letter-spacing:.12em;color:#f5c542;
+  border:.25cqw solid #f5c542;border-radius:.5cqw;padding:.2cqw .7cqw;background:rgba(43,13,63,.75);box-shadow:0 .3cqw 1cqw rgba(0,0,0,.45);
+  animation:ssk-stamp .45s calc(1.5s + var(--i) * .35s) cubic-bezier(.2,1.6,.4,1) both}
+@keyframes ssk-stamp{0%{opacity:0;scale:2.6}100%{opacity:1;scale:1}}
 /* (a counter cannot print a thousands separator: it rolls, then the amount as the show writes it takes over) */
 .ssk-n{display:inline-grid}.ssk-n::before,.ssk-n::after{grid-area:1/1;justify-self:center}
 .ssk-n::before{content:'$' counter(k);opacity:0}.ssk-n::after{content:attr(data-v)}

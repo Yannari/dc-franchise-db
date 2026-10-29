@@ -37,10 +37,13 @@ export function openKitties(state, names, amount = KITTY_START, week = 0) {
 
 export const balance = (state, n) => Number(state?.kitty?.[n]) || 0;
 
+/** What a housemate can still lose: everything, until the semi-final validates the kitty (js/ss/final.js). */
+const spendable = (state, n) => Math.max(0, balance(state, n) - (Number(state?.kittyValidated?.amounts?.[n]) || 0));
+
 /** Money from one housemate to another. Clamped to what the payer has. */
 export function transfer(state, from, to, amount, why, week = 0) {
   ledgerOf(state);
-  const amt = Math.max(0, Math.min(Math.round(amount), balance(state, from)));
+  const amt = Math.max(0, Math.min(Math.round(amount), spendable(state, from)));
   if (!amt) return 0;
   state.kitty[from] = balance(state, from) - amt;
   state.kitty[to] = balance(state, to) + amt;
@@ -62,7 +65,7 @@ export function mint(state, to, amount, why, week = 0) {
 /** Money taken by the Voice (a punishment, a price). Clamped to the balance. */
 export function burn(state, from, amount, why, week = 0) {
   ledgerOf(state);
-  const amt = Math.max(0, Math.min(Math.round(amount), balance(state, from)));
+  const amt = Math.max(0, Math.min(Math.round(amount), spendable(state, from)));
   state.kitty[from] = balance(state, from) - amt;
   state.kittyBurned += amt;
   state.kittyLog.push({ week, name: from, delta: -amt, why, to: 'the Voice' });

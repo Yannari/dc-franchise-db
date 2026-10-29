@@ -29,6 +29,7 @@ import { players as ROSTER, seasonConfig as SEASON_CFG } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { ssLaunchScreens } from './ss-launch.js';
 import { ssFinalScreens } from './ss-final.js';
+import { ssLastPartyScreen } from './ss-last-party.js';
 import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssPlace } from './ss-stage.js';
 import { ssArrange, ssLiveConfessionals } from './ss-episode.js';
@@ -2967,18 +2968,40 @@ function ssHouseSecretEndScreen(act, ctx) {
     kicker: 'Cam 01 · Confessional', title: 'The Secret of the House', label: 'House Secret', sub: `${n} solves it`, cast: [[n, 50]], steps };
 }
 
-// THE SEMI PRIME's unveiling: the hunt is over; every secret kept this long, told and paid.
+// THE SEMI PRIME's unveiling: the hunt is over; every secret kept this long, told, and its kitty doubled; then every
+// kitty in the house validated (js/ss/final.js; a season saved before has the flat payment)
 function ssUnveilScreen(seg, ctx, host) {
+  const doubles = !!seg.validated;
   /** @type {BB.Step[]} */ const steps = [
     { k: 'host', by: host, t: 'Housemates, tonight the hunt is over. Nobody can press the buzzer again.', toast: ['THE HUNT IS OVER', '#e0b84a'] },
-    { k: 'host', by: host, t: (seg.list || []).length === 1
-      ? `One of you has kept a secret all the way to the semi-final. The Voice pays ${(seg.list[0].holders || []).length > 1 ? 'each of you' : 'you'} ${euros(seg.bonus)}. But first, the house is going to hear it.`
-      : `Some of you have kept your secret all the way to the semi-final. The Voice pays every one of you ${euros(seg.bonus)}. But first, the house is going to hear them.` },
   ];
-  for (const u of seg.list || []) steps.push({ k: 'say', by: u.holders[0], push: true, t: u.holders.length > 1 ? `Our secret is: "${u.text}."` : `My secret is: "${u.text}."`, toast: ['UNVEILED', '#7c5cff'] },
-    { k: 'beat', t: pickBy(['The room erupts.', 'Somebody covers their mouth with both hands.', 'A long silence, then everybody laughs at once.', 'Nobody had come close. You can see it on every face.'], `${ctx.week}|unv|${u.text}`) });
-  if (!(seg.list || []).length) steps.push({ k: 'host', by: host, t: 'Every secret in this house has already been found. Nobody is paid tonight.' });
+  if ((seg.list || []).length) steps.push({ k: 'host', by: host, t: doubles
+      ? ((seg.list || []).length === 1
+        ? 'One of you has kept a secret all the way to the semi-final, and tonight that doubles a kitty. But first, the house is going to hear it.'
+        : 'Some of you have kept your secret all the way to the semi-final, and tonight that doubles your kitty. But first, the house is going to hear them.')
+      : (seg.list || []).length === 1
+        ? `One of you has kept a secret all the way to the semi-final. The Voice pays ${(seg.list[0].holders || []).length > 1 ? 'each of you' : 'you'} ${euros(seg.bonus)}. But first, the house is going to hear it.`
+        : `Some of you have kept your secret all the way to the semi-final. The Voice pays every one of you ${euros(seg.bonus)}. But first, the house is going to hear them.` });
+  for (const u of seg.list || []) {
+    steps.push({ k: 'say', by: u.holders[0], push: true, t: u.holders.length > 1 ? `Our secret is: "${u.text}."` : `My secret is: "${u.text}."`, toast: ['UNVEILED', '#7c5cff'] },
+      { k: 'beat', t: pickBy(['The room erupts.', 'Somebody covers their mouth with both hands.', 'A long silence, then everybody laughs at once.', 'Nobody had come close. You can see it on every face.'], `${ctx.week}|unv|${u.text}`) });
+    for (const p of u.paid || []) steps.push({ k: 'host', by: host, t: p.doubled
+      ? `${p.n}, you kept it to the end, so your kitty is doubled: ${euros(p.before)} becomes ${euros(p.after)}.`
+      : `${p.n}, you kept it to the end. The Voice adds ${euros(p.after - p.before)} to your kitty, and you now have ${euros(p.after)}.`,
+    toast: [p.doubled ? 'KITTY DOUBLED' : 'KITTY', '#f5c542'], coins: { to: p.n } });
+  }
+  if (!(seg.list || []).length) steps.push({ k: 'host', by: host, t: doubles ? 'Every secret in this house has already been found. No kitty is doubled tonight.' : 'Every secret in this house has already been found. Nobody is paid tonight.' });
   if (seg.place) steps.push({ k: 'host', by: host, t: `${seg.place}, you already have your place in the final.` });
+  if ((seg.validated || []).length) {
+    const before = Object.fromEntries((seg.list || []).flatMap(u => (u.paid || []).map(p => [p.n, p.before])));
+    const top = seg.validated[0];
+    steps.push(ssv('Housemates, one last word about the money.'),
+      ssv('From tonight, your kitties are validated. Whatever happens in the final, the money in them is yours.',
+        { toast: ['KITTIES VALIDATED', '#f5c542'], kittyStamp: 'VALIDATED', kitties: seg.validated.map(v => ({ n: v.n, from: before[v.n] ?? v.amount, to: v.amount })) }));
+    if (top && top.amount > 0) steps.push({ k: 'beat', t: seg.validated.length > 1 && seg.validated[1].amount === top.amount
+      ? `${top.n} and ${seg.validated[1].n} have the biggest kitties in the house: ${euros(top.amount)} each.`
+      : `${top.n} has the biggest kitty in the house: ${euros(top.amount)}.` });
+  }
   return ssLive(ctx, { id: `bb-ss-prime-unveil-w${ctx.week}`, ...LIVING, title: 'The Hunt Is Over', label: 'The Unveiling', sub: `${(seg.list || []).length} secrets`, cast: [], steps });
 }
 
@@ -5764,7 +5787,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-hunt': { flush(); const scr = ssHuntScreen(act, ctx); if (scr) ceremony(scr); beatsOf(act); break; }
       case 'ss-house-secret': flush(); ceremony(ssHouseClueScreen(act, ctx)); beatsOf(act); break;
       case 'ss-house-secret-end': flush(); ceremony(ssHouseSecretEndScreen(act, ctx)); beatsOf(act); break;
-      case 'ss-returns': flush(); ceremony(ssReturnsScreen(act, ctx)); break;
+      // (the last party: every eliminated housemate back for one night, vp-bb-ep/ss-last-party.js; a season saved
+      // before it has the day visits)
+      case 'ss-returns': flush(); ceremony(act.moments ? ssLastPartyScreen(act, ctx, { ssv, listOf, pickBy, hash, CAM }) : ssReturnsScreen(act, ctx)); break;
       // the final as the real ones run: the studio full, each season and the same questions, the awards, the Voice (vp-bb-ep/ss-final.js)
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;

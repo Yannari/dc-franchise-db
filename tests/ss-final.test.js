@@ -34,6 +34,26 @@ describe('the end of a Secret Story season', () => {
     for (const r of after) expect((r.acts || []).some(a => a.type === 'ss-buzz')).toBe(false);
     expect(actualTotal(st)).toBe(expectedTotal(st));
   });
+  it('the semi prime doubles a kept secret\'s kitty and validates every kitty in the house', () => {
+    const semi = rows.flatMap(r => (r.acts || []).filter(a => a.type === 'ss-prime')).flatMap(a => a.segments).find(s => s.kind === 'unveil');
+    expect(st.kittyValidated?.amounts).toBeTruthy();
+    expect(semi.validated.length).toBeGreaterThan(0);
+    for (const u of semi.list) for (const p of u.paid) expect(p.after - p.before).toBe(Math.max(p.before, 10000));
+    // a validated kitty never ends below what was validated
+    for (const [n, v] of Object.entries(st.kittyValidated.amounts)) if (gs.activePlayers.includes(n)) expect(Number(st.kitty[n])).toBeGreaterThanOrEqual(v);
+    const text = bbWeekSteps(rows.find(r => (r.acts || []).some(a => a.type === 'ss-prime' && a.segments.includes(semi))), { host: 'Josh' }).flatMap(s => s.steps).map(x => x.t).join(' ');
+    expect(text).toMatch(/your kitties are validated/);
+  });
+  it('the final week brings every eliminated housemate back for one last party', () => {
+    const party = fin.acts.find(a => a.type === 'ss-returns');
+    expect([...party.guests].sort()).toEqual(gs.eliminated.filter(n => !party.finalists.includes(n)).sort());
+    expect(party.moments.some(m => m.kind === 'support')).toBe(true);
+    const scr = bbWeekSteps(fin, { host: 'Josh' }).find(s => s.id === 'bb-ss-returns-v');
+    expect(scr.title).toBe('The Last Party');
+    const said = scr.steps.map(x => x.t).join(' ');
+    // every moment the engine paid for is on the screen
+    for (const m of party.moments.filter(m => m.kind !== 'support')) expect(said).toContain(m.who);
+  });
   it('the final week brings the eliminated back, tells each journey, and pays the cheque', () => {
     expect(fin.acts.some(a => a.type === 'ss-returns')).toBe(true);
     expect(fin.acts.some(a => a.type === 'ss-journeys')).toBe(true);

@@ -10,13 +10,18 @@
 // wins a place in the final, and the Voice offers to buy that place back.
 //
 // THE SEMI-FINAL: the hunt's last week. At the semi prime the hunt closes, the
-// secrets nobody found are unveiled, and the Voice pays every one of them for
-// being kept that long.
+// secrets nobody found are unveiled, and every one kept that long DOUBLES its
+// holder's kitty (the rule from season 12 on; never less than $10,000 added).
+// Then every kitty in the house is VALIDATED: from that night it is theirs,
+// and nothing in the last week can take it below that (js/ss/kitty.js).
 //
-// THE FINAL WEEK: the eliminated come back for a day, a few at a time; the
-// final prime runs each finalist's journey, then the public's shares from last
-// place to first, and the winner takes the cheque ($100,000, the user's call)
-// on top of their kitty.
+// THE FINAL WEEK: every eliminated housemate comes back for one last party (the
+// user, 2026-10-29): a secret nobody ever heard is told, the showmance is
+// picked up or put to rest, the one who buzzed you is faced, the worst grudge
+// is settled or blows up, and each guest backs a finalist. The final prime runs
+// each finalist's journey, then the public's shares from last place to first,
+// and the winner takes the cheque ($100,000, the user's call) on top of their
+// kitty.
 //
 // Pure: state + ctx `{ stat, bond, rng, week }`.
 
@@ -104,10 +109,26 @@ export function unveilSecrets(state, ctx, { house = [] } = {}) {
     const in_ = (s.holders || []).filter(h => house.includes(h));
     if (!in_.length) continue;
     s.unveiled = ctx.week ?? 0;
-    for (const h of in_) mint(state, h, KEPT_BONUS, 'kept the secret to the semi-final', ctx.week ?? 0);
-    out.push({ holders: in_, text: s.text });
+    // (doubled: what they had is added again; a kitty smaller than $10,000 gets $10,000)
+    const paid = in_.map(h => {
+      const before = balance(state, h);
+      const add = Math.max(before, KEPT_BONUS);
+      mint(state, h, add, 'kept the secret to the semi-final: the kitty doubled', ctx.week ?? 0);
+      return { n: h, before, after: balance(state, h), doubled: add === before };
+    });
+    out.push({ holders: in_, text: s.text, paid });
   }
   return out;
+}
+
+/**
+ * The semi prime's last word on the money: every kitty in the house is validated.
+ * From tonight it is theirs; the last week cannot take it below this (kitty.js).
+ */
+export function validateKitties(state, { house = [], week = 0 } = {}) {
+  const amounts = Object.fromEntries(house.map(n => [n, balance(state, n)]));
+  state.kittyValidated = { week, amounts };
+  return house.map(n => ({ n, amount: amounts[n] })).sort((a, b) => b.amount - a.amount);
 }
 
 /**
@@ -126,6 +147,100 @@ export function finalWeekReturns(state, ctx, { finalists = [], eliminated = [] }
     visits.push({ who: n, kind, with: kind === 'reckoning' ? enemy : friend, foundBy: foundBy || null });
   }
   return visits;
+}
+
+/**
+ * THE LAST PARTY (the user, 2026-10-29: "at the finale week each eliminated houseguest come back one last time to
+ * party, settling the scores, revealed their secrets if not already revealed/found before their elimination,
+ * support their friend for the finale, fight with their enemies, reckon with their showmance"). From season 3 the
+ * eliminated came back in the final week; here they all come back for one night in the garden.
+ *
+ * `couples`: the season's showmances, `{ a, b, broken }`. Returns `{ guests, moments }`; each moment carries its
+ * consequences as `fx` ({ bond: [[a, b, d]], pub: [[n, axis, d, why]] }) for the adapter to apply, and every moment
+ * returned is one the screen plays (no consequence nobody sees).
+ */
+export function finalParty(state, ctx, { finalists = [], eliminated = [], couples = [] } = {}) {
+  const rng = ctx.rng || Math.random;
+  const week = ctx.week ?? 0;
+  const here = [...finalists, ...eliminated];
+  const calm = n => st(ctx, n, 'temperament') / 10;
+  const key = (a, b) => [a, b].sort().join('|');
+  const settled = new Set();
+  // (nobody carries the night: two scores settled per guest at most, three for anybody counting the finalists)
+  const load = {};
+  const busy = (...ns) => ns.some(n => (load[n] || 0) >= (eliminated.includes(n) ? 2 : 3));
+  const took = (...ns) => { for (const n of ns) load[n] = (load[n] || 0) + 1; };
+  const closest = (n, pool) => pool.filter(x => x !== n).sort((a, b) => bondOf(ctx, n, b) - bondOf(ctx, n, a))[0] || null;
+  /** @type {any[]} */ const moments = [];
+
+  // a secret nobody ever heard: found by no hunter, never told on the set (a walk-out, an exclusion)
+  for (const g of eliminated) {
+    const s = secretOf(state, g);
+    if (!s || s.found || s.unveiled != null) continue;
+    s.found = true; s.foundBy = null; s.week = week; s.revealedAtParty = week;
+    moments.push({ kind: 'secret', who: g, with: closest(g, finalists), text: s.text, partners: (s.holders || []).filter(h => h !== g && here.includes(h)),
+      fx: { bond: [], pub: [[g, 'fun', 0.2, 'told the house the secret at the last party'], [g, 'arc', 0.15, 'told the house the secret at the last party']] } });
+  }
+  // the showmance: picked up where it stopped, or put to rest
+  for (const c of couples) {
+    const g = eliminated.includes(c.a) ? c.a : eliminated.includes(c.b) ? c.b : null;
+    const o = g === c.a ? c.b : c.a;
+    if (!g || !here.includes(o) || settled.has(key(g, o)) || busy(g, o)) continue;
+    settled.add(key(g, o)); took(g, o);
+    if (!c.broken) {
+      moments.push({ kind: 'lovers', who: g, with: o, fx: { bond: [[g, o, 1.5]], pub: [[g, 'warmth', 0.12, `was reunited with ${o}`], [o, 'warmth', 0.12, `was reunited with ${g}`]] } });
+    } else if (rng() < clamp(0.25 + (calm(g) + calm(o)) / 2 * 0.55 + bondOf(ctx, g, o) / 20)) {
+      moments.push({ kind: 'closure', who: g, with: o, fx: { bond: [[g, o, 1]], pub: [[g, 'warmth', 0.08, `made peace with ${o}`], [o, 'warmth', 0.08, `made peace with ${g}`]] } });
+    } else {
+      moments.push({ kind: 'cold', who: g, with: o, fx: { bond: [[g, o, -0.5]], pub: [[g, 'fun', 0.1, `ignored ${o} at the last party`]] } });
+    }
+  }
+  // the one who buzzed you (the bitterest three)
+  const buzzed = eliminated.map(g => ({ g, f: secretOf(state, g)?.foundBy }))
+    .filter(x => x.f && here.includes(x.f) && x.f !== x.g && !settled.has(key(x.g, x.f)))
+    .sort((a, b) => bondOf(ctx, a.g, a.f) - bondOf(ctx, b.g, b.f)).slice(0, 3);
+  for (const { g, f } of buzzed) {
+    // (two who found each other's secrets: one scene between them, not two)
+    if (settled.has(key(g, f)) || busy(g, f)) continue;
+    settled.add(key(g, f)); took(g, f);
+    const peace = rng() < clamp(0.3 + calm(g) * 0.45 + bondOf(ctx, g, f) / 20);
+    moments.push({ kind: 'buzzed', who: g, with: f, peace,
+      fx: peace ? { bond: [[g, f, 1.5]], pub: [[g, 'warmth', 0.1, `forgave ${f} for finding the secret`]] }
+        : { bond: [[g, f, -0.5]], pub: [[g, 'fun', 0.1, `faced ${f} again at the last party`]] } });
+  }
+  // the worst grudge in the garden: settled, or it blows up again (three at most)
+  const grudges = [];
+  for (const g of eliminated) {
+    const e = here.filter(x => x !== g && !settled.has(key(g, x))).sort((a, b) => bondOf(ctx, g, a) - bondOf(ctx, g, b))[0];
+    if (e && bondOf(ctx, g, e) <= -3) grudges.push({ g, e, b: bondOf(ctx, g, e) });
+  }
+  for (const { g, e } of grudges.sort((a, b) => a.b - b.b)) {
+    if (settled.has(key(g, e)) || busy(g, e) || moments.filter(m => m.kind === 'makeup' || m.kind === 'fight').length >= 3) continue;
+    settled.add(key(g, e)); took(g, e);
+    const peace = rng() < clamp(0.15 + (calm(g) + calm(e)) / 2 * 0.5);
+    moments.push({ kind: peace ? 'makeup' : 'fight', who: g, with: e,
+      fx: peace ? { bond: [[g, e, 2]], pub: [[g, 'warmth', 0.1, `made up with ${e}`], [e, 'warmth', 0.1, `made up with ${g}`]] }
+        : { bond: [[g, e, -1]], pub: [[g, 'fun', 0.15, `had it out with ${e} at the last party`], [e, 'fun', 0.08, `had it out with ${g} at the last party`]] } });
+  }
+  // a secret told on the set the night they left: the house never got the story (two at most)
+  const MOVING = ['survived', 'family', 'love', 'body'];
+  const told = eliminated.filter(g => { const s = secretOf(state, g); return s && s.revealedOnExit != null && !s.foundBy; })
+    .sort((a, b) => Number(MOVING.includes(secretOf(state, b)?.kind)) - Number(MOVING.includes(secretOf(state, a)?.kind))).slice(0, 2);
+  const asked = new Set();
+  for (const g of told) {
+    // (a different finalist asks each one, when there is one)
+    const a = closest(g, finalists.filter(f => !asked.has(f))) || closest(g, finalists);
+    if (!a) continue;
+    asked.add(a);
+    moments.push({ kind: 'story', who: g, with: a, text: secretOf(state, g)?.text || '', fx: { bond: [[g, a, 0.5]], pub: [[g, 'warmth', 0.12, 'told the story behind the secret']] } });
+  }
+  // every guest backs a finalist: their closest one, if they are on good terms
+  for (const g of eliminated) {
+    const f = closest(g, finalists);
+    if (!f || bondOf(ctx, g, f) < 0) continue;
+    moments.push({ kind: 'support', who: g, with: f, fx: { bond: [[g, f, 1]], pub: [[f, 'warmth', 0.05, `was backed by ${g} at the last party`]] } });
+  }
+  return { guests: eliminated.slice(), moments };
 }
 
 /** Each finalist's season in a few lines: the biggest things the public remembers. */

@@ -60,8 +60,8 @@ function asScene(F) {
 // asks from the stage, the housemate answers him from the confessional (two calls a screen at most; the rest are
 // cut). On launch night before the house (the opening, the arrivals), they are the portraits: recorded clips that
 // play while a pair walks to the airlock, captioned as such. The magnetos are recorded packages of the week and keep
-// theirs; house life after the prime is not live either.
-const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight)/;
+// theirs; house life after the prime is not live either, and nor is the final week's last party (taped in the garden).
+const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight|returns)/;
 const CALL = [n => `${n}, you're in the confessional, and we're live. Talk to me.`, n => `Let's go to the confessional. ${n}, it's Josh. How are you feeling tonight?`,
   n => `${n}, you're live in the confessional. What's going through your head right now?`, n => `${n}, the whole country is listening. What do you want to tell them?`];
 export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {

@@ -59,7 +59,7 @@ import { careerOf, activeSeasons } from '../franchise-meta.js';
 import { drawSeason, RATE, signatureOf } from '../ss/twists.js';
 import { castRole, playRole, accuseRole, ROLE_NAMES } from '../ss/signatures.js';
 import { planLaunch, lastSummer } from '../ss/launch.js';
-import { planHouseSecret, houseSecretClue, solveHouseSecret, finalPlace, unveilSecrets, finalWeekReturns, journeyOf, CHEQUE, KEPT_BONUS } from '../ss/final.js';
+import { planHouseSecret, houseSecretClue, solveHouseSecret, finalPlace, unveilSecrets, validateKitties, finalParty, journeyOf, CHEQUE, KEPT_BONUS } from '../ss/final.js';
 import { styleOf } from './game-style.js';
 
 // The ledger owns the amounts (js/ss/kitty.js); re-exported for v1's callers.
@@ -770,7 +770,9 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
       const sk = (state.secrets || []).find(s => s.text === u.text);
       if (MOVING.includes(sk?.secretKind)) pub(h, 'warmth', 0.25, 'told the story behind the secret');
     }
-    /** @type {any[]} */ (night.segments).unshift({ kind: 'unveil', list: unveiled, bonus: KEPT_BONUS, place: finalPlace(state), effects: { bond: [], pop: [] } });
+    // (then every kitty in the house is validated: theirs from tonight, whatever the last week brings)
+    const validated = validateKitties(state, { house: room, week: ctx.week ?? 0 });
+    /** @type {any[]} */ (night.segments).unshift({ kind: 'unveil', list: unveiled, bonus: KEPT_BONUS, place: finalPlace(state), validated, effects: { bond: [], pop: [] } });
   }
   // THE ACCUSATION (js/ss/signatures.js): somebody sure enough names the season's secret pair.
   {
@@ -1144,14 +1146,15 @@ export function secretStoryFinalWeek({ finalists = [], rng = Math.random } = {})
   if (!state) return [];
   const ctx = huntCtx({ num: (gs.bb?.weeks?.length || 0) + 1 }, rng);
   const eliminated = (gs.eliminated || []).filter(n => !finalists.includes(n));
-  const visits = finalWeekReturns(state, ctx, { finalists, eliminated });
-  for (const v of visits) {
-    if (!v.with) continue;
-    if (v.kind === 'reunion') { try { addBond(v.who, v.with, 1); } catch { /* */ } pub(v.with, 'warmth', 0.08, `was welcomed back by ${v.who}`); }
-    else { try { addBond(v.who, v.with, -1); } catch { /* */ } pub(v.with, 'fun', 0.1, `faced ${v.who} again in the final week`); }
-  }
+  // THE LAST PARTY (js/ss/final.js finalParty): every eliminated housemate back for one night, with the season's
+  // showmances (romance.js: { players, phase, broken })
+  const couples = (gs.showmances || []).filter(sh => (sh.players || []).length === 2)
+    .map(sh => ({ a: sh.players[0], b: sh.players[1], broken: !!sh.broken || sh.phase === 'broken-up' }));
+  const party = finalParty(state, ctx, { finalists, eliminated, couples });
+  for (const m of party.moments) applyFx(m.fx);
   const acts = [];
-  if (visits.length) acts.push({ type: 'ss-returns', visits, beats: [{ text: `The eliminated come back for a day: ${visits.map(v => v.who).join(', ')}.`, players: visits.map(v => v.who).slice(0, 4), badgeText: 'THE RETURNS', badgeClass: 'gold', part: 'final' }] });
+  if (party.guests.length) acts.push({ type: 'ss-returns', guests: party.guests, moments: party.moments.map(({ fx, ...m }) => m), finalists: [...finalists],
+    beats: [{ text: `Every eliminated housemate comes back for one last party: ${party.guests.join(', ')}.`, players: party.guests.slice(0, 4), badgeText: 'THE LAST PARTY', badgeClass: 'gold', part: 'final' }] });
   // THE SEASON, AS THE FINAL TELLS IT (the real finals: docs/research/secret-story-transcripts.md §4):
   // each finalist's record for the Voice's farewell, and the joke awards, all from what really happened
   const nominatedTimes = n => Number(state.nominated?.[n]) || 0;

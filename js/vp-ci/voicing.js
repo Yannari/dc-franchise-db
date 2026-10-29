@@ -196,21 +196,11 @@ export async function ciClearVoices({ season = ciVoiceSeason(), episode, from, k
 
 const ciRows = () => ((typeof window !== 'undefined' ? window.gs : null)?.episodeHistory || []).filter(e => e && e.format === FORMAT);
 
-/** After a re-run from episode `fromEp`: each episode from there keeps the clips of the lines it still has word for
- *  word and loses the rest; episodes past the season's new last one go. */
+/** After a re-run from episode `fromEp`: nothing is deleted. A clip is found by its speaker and words, so a line the
+ *  re-run kept plays its old clip and one it dropped is never asked for; deleting them lost paid voices (the user,
+ *  2026-10-29: "it cost me to generate voice i dont wanna lose it"). The episodes' lists are asked again. */
 export async function ciVoicesAfterRerun(fromEp) {
-  if (!token()) return;
-  let last = +fromEp - 1;
-  try {
-    for (const row of ciRows().filter(e => +e.num >= +fromEp)) {
-      last = Math.max(last, +row.num);
-      let keep = [];
-      try { keep = ciEpisodeLines(row).map(l => l.id); } catch { /* cannot build it: keep nothing */ }
-      await ciClearVoices({ episode: +row.num, keep });
-    }
-  } finally {
-    await ciClearVoices({ from: last + 1 });
-  }
+  for (const row of ciRows().filter(e => +e.num >= +fromEp)) ciVoicedLines(+row.num, true);
 }
 
 /** What an episode needs: its lines, the voices, which lines have one, which are missing, and who has no voice. */
@@ -219,10 +209,9 @@ async function plan(ep) {
   const all = ciEpisodeLines(row);
   let voices = {};
   try { const j = await (await fetch(`${VOICE_API()}/api/voice/voices`, { headers: { Authorization: `Bearer ${token()}` } })).json(); if (j.ok) voices = j.voices || {}; } catch { /* none */ }
-  let have = (await ciVoicedLines(ep, true)) || new Set();
-  // a clip that is none of this episode's lines belongs to a version of it that is gone (a re-run): it goes
+  // a clip that is none of this episode's lines (a re-run's old version) is not counted, and is KEPT: it was paid for
   const ids = new Set(all.map(l => l.id));
-  if (all.length && [...have].some(id => !ids.has(id))) { await ciClearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
+  const have = new Set([...((await ciVoicedLines(ep, true)) || [])].filter(id => ids.has(id)));
   const lines = all.filter(l => voices[l.by]);
   const missing = lines.filter(l => !have.has(l.id));
   const voiceless = [...new Set(all.filter(l => !voices[l.by]).map(l => l.by))];

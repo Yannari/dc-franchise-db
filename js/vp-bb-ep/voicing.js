@@ -14,6 +14,7 @@
 // blips. No delivery directions (the user, 2026-10-14, on Total Drama: "it slowed the voices too much").
 import { audio as engine } from '../audio.js';
 import { bbWeekSteps } from './steps.js';
+import { SHOWS, BB_FORMAT } from '../shows.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -28,13 +29,17 @@ export function lineId(by, text) {
   return 'L' + (h >>> 0).toString(16).padStart(8, '0');
 }
 
-/** The season's folder in the bucket: bb-<number>, or bb-<its name> before it has one. */
+/** The season's folder in the bucket: <show prefix>-<number>, or -<its name> before it has one. Each show on this
+ *  engine has its own: Big Brother bb-2, Secret Story ss-2. They shared bb- once, and resetting a Secret Story test
+ *  season deleted the Big Brother season of the same number's paid voices (the user, 2026-10-29). */
 export function bbVoiceSeason() {
   const w = typeof window !== 'undefined' ? window : globalThis;
   const cfg = w.seasonConfig || {}, gs = w.gs || {};
   const n = gs.seasonNumber || cfg.seasonNumber;
   const base = n ? String(n) : String(cfg.name || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'season';
-  return `bb-${base}`;
+  const show = SHOWS[cfg.format];
+  const prefix = show && (cfg.format === BB_FORMAT || show.engine === BB_FORMAT) ? show.prefix : SHOWS[BB_FORMAT].prefix;
+  return `${prefix}-${base}`;
 }
 
 /** Who a step is said by, as a voice name: a houseguest by name, the host by name, the house as "Big Brother". */
@@ -185,21 +190,11 @@ export async function bbClearVoices({ season = bbVoiceSeason(), episode = undefi
 
 const bbRecs = () => (window.gs?.episodeHistory || []).filter(e => e && e.format === 'big-brother');
 
-/** After a re-run from week `fromEp`: each week from there keeps the clips of the lines it still has word for word
- *  (same speaker, same words: the same clip) and loses the rest; weeks past the season's new last one go. */
+/** After a re-run from week `fromEp`: nothing is deleted. A clip is found by its speaker and words, so a line the
+ *  re-run kept plays its old clip and a line it dropped is simply never asked for; deleting them lost paid voices
+ *  (the user, 2026-10-29: "it cost me to generate voice i dont wanna lose it"). The weeks' lists are asked again. */
 export async function bbVoicesAfterRerun(fromEp) {
-  if (!token()) return;
-  let last = +fromEp - 1;
-  try {
-    for (const rec of bbRecs().filter(e => +e.num >= +fromEp)) {
-      last = Math.max(last, +rec.num);
-      let keep = [];
-      try { keep = (await bbEpisodeLines(rec)).map(l => l.id); } catch { /* cannot build it: a new week, keep nothing */ }
-      await bbClearVoices({ episode: +rec.num, keep });
-    }
-  } finally {
-    await bbClearVoices({ from: last + 1 });
-  }
+  for (const rec of bbRecs().filter(e => +e.num >= +fromEp)) bbVoicedLines(+rec.num, true);
 }
 
 /** What a week needs: its lines, the voices, which lines have one, which are missing, and who has no voice. */
@@ -208,11 +203,10 @@ async function plan(ep) {
   const all = await bbEpisodeLines(rec);
   let voices = {};
   try { const j = await (await fetch(`${VOICE_API()}/api/voice/voices`, { headers: { Authorization: `Bearer ${token()}` } })).json(); if (j.ok) voices = j.voices || {}; } catch { /* none */ }
-  let have = (await bbVoicedLines(ep, true)) || new Set();
-  // a clip that is none of this week's lines belongs to a version of it that is gone (a re-run): it goes, so
-  // "already voiced" never counts a dead week's lines
+  // a clip that is none of this week's lines (a re-run's old version) is not counted as "already voiced", and is
+  // KEPT: every clip was paid for, and the same speaker saying the same words finds it again
   const ids = new Set(all.map(l => l.id));
-  if (all.length && [...have].some(id => !ids.has(id))) { await bbClearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
+  const have = new Set([...((await bbVoicedLines(ep, true)) || [])].filter(id => ids.has(id)));
   // each speaker's voice, matched by name the forgiving way (voiceKey); what is sent to the studio is this map
   voices = resolveVoices([...new Set(all.map(l => l.by))], voices);
   const lines = all.filter(l => voices[l.by]);

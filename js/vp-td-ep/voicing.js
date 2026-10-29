@@ -76,24 +76,11 @@ export async function clearVoices({ season = voiceSeason(), episode, from, keep 
   } catch { return 0; }
 }
 
-/** After a re-run from `fromEp`: each episode from there keeps the clips of the lines it still has (same speaker, same
- *  words: the same clip, "if the lines are legitimately the same, keeping it is not a bad idea", the user) and loses
- *  the rest; anything past the season's new last episode goes. Lines are built in memory (tdEpisodeLines). */
+/** After a re-run from `fromEp`: nothing is deleted. A clip is found by its speaker and words, so a line the re-run
+ *  kept plays its old clip and one it dropped is never asked for; deleting them lost paid voices (the user,
+ *  2026-10-29: "it cost me to generate voice i dont wanna lose it"). The episodes' lists are asked again. */
 export async function voicesAfterRerun(fromEp) {
-  if (!token()) return;
-  const hist = (window.gs?.episodeHistory || []).filter(e => +e.num >= +fromEp);
-  let last = +fromEp - 1;
-  try {
-    const { tdEpisodeLines } = await import('./screens.js');
-    for (const rec of hist) {
-      last = Math.max(last, +rec.num);
-      let keep = [];
-      try { keep = tdEpisodeLines(rec).map(l => l.id); } catch { /* cannot build it: keep nothing, it is a new night */ }
-      await clearVoices({ episode: +rec.num, keep });
-    }
-  } finally {
-    await clearVoices({ from: last + 1 });
-  }
+  for (const rec of (window.gs?.episodeHistory || []).filter(e => +e.num >= +fromEp)) voicedLines(+rec.num, true);
 }
 
 /** What an episode needs: its lines, the voices, what the bucket already holds, and what is missing. */
@@ -106,11 +93,10 @@ async function plan(ep, say = () => {}) {
   let voices = {};
   try { const j = await (await fetch(`${VOICE_API()}/api/voice/voices`, { headers: { Authorization: `Bearer ${token()}` } })).json(); if (j.ok) voices = j.voices; } catch { /* the file */ }
   if (!Object.keys(voices).length) voices = await (await fetch('assets/audio/td/voices/inworld.json', { cache: 'no-store' })).json();
-  let have = (await voicedLines(ep, true)) || new Set();
-  // a clip that is none of this episode's lines belongs to a version of it that is gone (deleted, re-run): it goes,
-  // so "already voiced" never counts a dead episode's lines (the user saw "64 already have a voice" on a new one)
+  // a clip that is none of this episode's lines (a re-run's old version) is not counted as "already voiced" (the user
+  // saw "64 already have a voice" on a new one), and is KEPT: every clip was paid for (the user, 2026-10-29)
   const ids = new Set(all.map(l => l.id));
-  if ([...have].some(id => !ids.has(id))) { await clearVoices({ episode: ep, keep: [...ids] }); have = new Set([...have].filter(id => ids.has(id))); }
+  const have = new Set([...((await voicedLines(ep, true)) || [])].filter(id => ids.has(id)));
   const lines = all.filter(l => voices[l.by] && l.text);
   const missing = lines.filter(l => !have.has(l.id));
   return { all, voices, lines, missing, voicedCount: lines.length - missing.length };

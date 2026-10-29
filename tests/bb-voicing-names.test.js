@@ -23,3 +23,33 @@ describe('finding the voice', () => {
     expect(resolveVoices(['Big Brother'], { 'Big Brother 2': 'x', Brother: 'y' })).toEqual({});
   });
 });
+
+// Resetting a Secret Story test season deleted the Big Brother season of the same number's paid voices: the two
+// shows shared the bb-<number> folder, and a reset emptied the folder (the user, 2026-10-29: "thats dumb there are 2
+// different show", "it cost me to generate voice i dont wanna lose it").
+import { readFileSync } from 'node:fs';
+import { bbVoiceSeason } from '../js/vp-bb-ep/voicing.js';
+
+describe('each show keeps its own voices', () => {
+  const at = (format, seasonNumber) => {
+    const was = { cfg: globalThis.seasonConfig, gs: globalThis.gs };
+    globalThis.seasonConfig = { format, seasonNumber }; globalThis.gs = {};
+    try { return bbVoiceSeason(); } finally { globalThis.seasonConfig = was.cfg; globalThis.gs = was.gs; }
+  };
+  it('gives Secret Story its own folder, and leaves Big Brother\'s where its clips are', () => {
+    expect(at('big-brother', 2)).toBe('bb-2');
+    expect(at('secret-story', 2)).toBe('ss-2');
+    expect(at(undefined, 2)).toBe('bb-2');
+  });
+  it('never deletes a clip on a reset, a re-run or a voicing', () => {
+    const reset = readFileSync('js/savestate.js', 'utf8');
+    const body = reset.slice(reset.indexOf('export function resetSeason'), reset.indexOf('setGs(null)', reset.indexOf('export function resetSeason')));
+    expect(body).not.toMatch(/ClearVoices/);
+    for (const f of ['js/vp-bb-ep/voicing.js', 'js/vp-ci/voicing.js', 'js/vp-td-ep/voicing.js']) {
+      const src = readFileSync(f, 'utf8');
+      // the clear function is still there for a deliberate use; nothing in the file calls it
+      const calls = src.match(/await (bb|ci)?[cC]learVoices\(/g) || [];
+      expect(calls, `${f} deletes clips`).toEqual([]);
+    }
+  });
+});

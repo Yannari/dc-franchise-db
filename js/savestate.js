@@ -2,7 +2,6 @@
 import { gs, gsCheckpoints, players, seasonConfig, relationships, preGameAlliances,
          prepGsForSave, repairGsSets, setGs, setGsCheckpoints, setViewingEpNum, seasonFormat, kinshipPairs} from './core.js';
 import { pStats, pronouns } from './players.js';
-import { engineFormat } from './core.js';
 import { bKey } from './bonds.js';
 import { checkShowmanceBreakup, checkLoveTriangleBreakup } from './romance.js';
 import { generateAftermathShow } from './aftermath.js';
@@ -1179,13 +1178,10 @@ This season has no coaches. Fix it in the Cast Builder, then use Reset Season (i
 
 export function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
-  // every episode is gone, so are their voices (js/vp-td-ep/voicing.js): the season's key is read now, before the
-  // state it comes from is cleared
-  // (each show its own folder: a Big Brother reset never empties the Total Drama season of the same number)
-  const _fmt = seasonFormat(seasonConfig);
-  if (engineFormat(seasonConfig) === 'big-brother') window.bbClearVoices?.({});
-  else if (_fmt === 'the-circle') window.ciClearVoices?.({});
-  else if (_fmt === 'total-drama') window.tdClearVoices?.({});
+  // The season's voice clips are KEPT. Resetting a Secret Story test season deleted the Big Brother season of the
+  // same number's paid voices (the two shared a folder then), and every clip cost money to make (the user,
+  // 2026-10-29: "it cost me to generate voice i dont wanna lose it"). A clip is found by its speaker and words, so a
+  // new season only ever plays one for a line it really says.
   setGs(null);
   _idbDelete('gs');
   // Also clean up any leftover localStorage keys from before the migration

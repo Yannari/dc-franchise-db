@@ -73,7 +73,7 @@ const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '
 const colOf = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
 const EYE = `<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M2 20C12 6 22 2 32 2s20 4 30 18C52 34 42 38 32 38S12 34 2 20z" fill="#fff"/><circle cx="32" cy="20" r="13" fill="#3bb3ff"/><circle cx="32" cy="20" r="13" fill="url(#ssbEyeG)"/><circle cx="32" cy="20" r="6.5" fill="#0b0920"/><circle cx="36.5" cy="15.5" r="3" fill="#fff"/><path d="M2 20C12 6 22 2 32 2s20 4 30 18" fill="none" stroke="#ff3ea5" stroke-width="3" stroke-linecap="round"/><defs><radialGradient id="ssbEyeG" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#7fd4ff"/><stop offset="1" stop-color="#1d4fd1"/></radialGradient></defs></svg>`;
 const BOARD_CSS = `
-@font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700}
+@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900}
 .ssb{--bg:#110e22;--card:#1b1734;--card2:#231e42;--line:rgba(255,255,255,.08);--ink:#f4f1ff;--dim:#a6a1c6;--pink:#ff3ea5;--gold:#f5c542;--teal:#19d3c5;
   color:var(--ink);background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(124,92,255,.28),transparent 70%),var(--bg);border:1px solid var(--line);border-radius:18px;padding:22px 20px 26px;
   font:400 14px/1.45 system-ui,-apple-system,'Segoe UI',sans-serif}
@@ -83,10 +83,10 @@ const BOARD_CSS = `
 .ssb-brand{display:flex;align-items:center;gap:14px}
 .ssb-eye{width:58px;height:36px;flex:none;filter:drop-shadow(0 0 12px rgba(59,179,255,.45))}
 .ssb-eye svg{width:100%;height:100%}
-.ssb-t{font:600 26px/1.1 'SSFredoka',sans-serif;letter-spacing:.01em}
+.ssb-t{font:600 26px/1.1 'SSAachen',sans-serif;letter-spacing:.01em}
 .ssb-sub{color:var(--dim);font-size:13px;margin-top:3px;max-width:60ch}
 .ssb-stats{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.ssb-stat b{display:block;font:600 22px/1 'SSFredoka',sans-serif}
+.ssb-stat b{display:block;font:600 22px/1 'SSAachen',sans-serif}
 .ssb-stat span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
 .ssb-btn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:7px 12px;font-size:12.5px!important;font-weight:600!important;cursor:pointer;transition:background .15s,border-color .15s}
 .ssb-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28)}
@@ -95,7 +95,7 @@ const BOARD_CSS = `
 .ssb-btn:disabled{opacity:.4;cursor:default}
 .ssb-sec{margin:0 0 22px}
 .ssb-sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
-.ssb-sec-h h3{margin:0;font:600 17px 'SSFredoka',sans-serif}
+.ssb-sec-h h3{margin:0;font:600 17px 'SSAachen',sans-serif}
 .ssb-sec-h p{margin:2px 0 0;color:var(--dim);font-size:12.5px}
 /* the Voice's envelopes */
 .ssb-env-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
@@ -114,7 +114,7 @@ const BOARD_CSS = `
 .ssb-x.ssb-ed{right:38px}
 .ssb-new{border-radius:14px;border:1.5px dashed rgba(255,255,255,.2);background:transparent;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--dim)!important;transition:border-color .15s,color .15s}
 .ssb-new:hover{border-color:var(--gold);color:var(--gold)!important}
-.ssb-new b{font:600 15px 'SSFredoka',sans-serif}
+.ssb-new b{font:600 15px 'SSAachen',sans-serif}
 .ssb-new span{font-size:12px}
 /* the composer */
 .ssb-comp{display:none;margin-top:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);padding:16px}
@@ -153,7 +153,7 @@ const BOARD_CSS = `
 .ssb-top{display:flex;align-items:center;gap:12px}
 .ssb-face{width:52px;height:52px;border-radius:50%;overflow:hidden;flex:none;background:var(--c);display:block}
 .ssb-face img{width:100%;height:100%;object-fit:cover;object-position:50% 15%;display:block}
-.ssb-nm{font:600 16px/1.15 'SSFredoka',sans-serif}
+.ssb-nm{font:600 16px/1.15 'SSAachen',sans-serif}
 .ssb-src{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:11px;font-weight:600;color:var(--sc)}
 .ssb-src::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sc)}
 .ssb-q{font:500 15px/1.4 Georgia,'Times New Roman',serif;font-style:italic;color:#fff;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.035)}

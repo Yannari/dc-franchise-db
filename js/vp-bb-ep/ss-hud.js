@@ -279,25 +279,27 @@ if (typeof window !== 'undefined') Object.assign(window, { ssCall, ssPress });
 
 // ── the look ────────────────────────────────────────────────────────────
 export const SS_CSS = `
-@font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700;font-display:swap}
+@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900;font-display:swap}
 @font-face{font-family:'SSNunito';src:url('assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000;font-display:swap}
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
 /* a clean HD picture: no film grain, no scanlines (the user, 2026-10-28: "we're not in 2006 anymore") */
 .bbx .stage.ss .grain{display:none}
+/* the names under the faces, in the show's own lettering (Aachen Bold: the user, 2026-10-28) */
+.bbx .stage.ss .plate b,.bbx .stage.ss .plate span{font-family:'SSAachen',sans-serif!important;font-weight:400!important;letter-spacing:.04em}
 .bbx .stage.ss .ledtv::after{background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 30%)}
 .bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
-.bbx .stage.ss .toast b{font-family:'SSFredoka',sans-serif;font-weight:700;letter-spacing:.02em}
-.bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSFredoka',sans-serif}
+.bbx .stage.ss .toast b{font-family:'SSAachen',sans-serif;font-weight:700;letter-spacing:.02em}
+.bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSAachen',sans-serif}
 .bbx .stage.ss .fboard{font-family:'SSNunito',sans-serif;border-radius:1.4cqw;background:linear-gradient(160deg,rgba(43,13,63,.92),rgba(80,12,70,.9));box-shadow:0 0 0 .25cqw var(--ssp),0 1.5cqw 4cqw rgba(0,0,0,.45)}
-.bbx .stage.ss .fboard .fh{font-family:'SSFredoka',sans-serif;color:var(--ssg)}
+.bbx .stage.ss .fboard .fh{font-family:'SSAachen',sans-serif;color:var(--ssg)}
 /* (the board's amount is .ft, a class Big Brother's camera thumbnails also style as a 16:9 box) */
-.bbx .stage.ss .fboard .ft{width:auto;aspect-ratio:auto;box-shadow:none;opacity:1;overflow:visible;margin-left:auto;padding-left:1.4cqw;font:700 1.6cqw 'SSFredoka',sans-serif;color:#fff}
-.bbx .stage.ss .fboard .fbr b{font:700 1.3cqw 'SSFredoka',sans-serif;color:#fff}
+.bbx .stage.ss .fboard .ft{width:auto;aspect-ratio:auto;box-shadow:none;opacity:1;overflow:visible;margin-left:auto;padding-left:1.4cqw;font:700 1.6cqw 'SSAachen',sans-serif;color:#fff}
+.bbx .stage.ss .fboard .fbr b{font:700 1.3cqw 'SSAachen',sans-serif;color:#fff}
 /* the HUD */
 .ssh{position:absolute;inset:0 0 auto 0;z-index:30;display:flex;justify-content:space-between;align-items:flex-start;padding:1.4cqw 1.6cqw;pointer-events:none}
 .ssh-bug{display:flex;align-items:center;gap:.9cqw}
 .ssh-eye{width:5.6cqw;filter:drop-shadow(0 .3cqw .6cqw rgba(0,0,0,.4));animation:ss-blink 6s infinite;transform-origin:50% 55%}
-.ssh-wm{font-family:'SSFredoka',sans-serif;font-weight:700;font-size:2.5cqw;line-height:.95;color:#fff;letter-spacing:.03em;
+.ssh-wm{font-family:'SSAachen',sans-serif;font-weight:700;font-size:2.5cqw;line-height:.95;color:#fff;letter-spacing:.03em;
   text-shadow:0 0 .1cqw var(--ssm),.15cqw .15cqw 0 var(--ssm),-.1cqw -.1cqw 0 var(--ssm),0 .4cqw 1cqw rgba(200,19,122,.6)}
 .ssh-wm span{display:block;font-family:'SSNunito',sans-serif;font-weight:800;font-size:1cqw;letter-spacing:.18em;color:#fff;text-shadow:0 .1cqw .3cqw rgba(0,0,0,.6);margin-top:.3cqw}
 .ssh-live{font:800 1cqw 'SSNunito',sans-serif;letter-spacing:.14em;color:#fff;background:var(--ssp);padding:.35cqw .8cqw;border-radius:2cqw;box-shadow:0 0 1.2cqw var(--ssp);animation:ss-pulse 1.6s infinite}
@@ -308,13 +310,13 @@ export const SS_CSS = `
   border-radius:1.2cqw;padding:.45cqw 1cqw .45cqw .5cqw;box-shadow:0 .5cqw 1.4cqw rgba(0,0,0,.35)}
 .ssh-bank img{width:3cqw}
 .ssh-bank i{display:block;font:800 .8cqw 'SSNunito',sans-serif;letter-spacing:.18em;color:var(--ssg);font-style:normal}
-.ssh-bank b{display:block;font:700 1.7cqw 'SSFredoka',sans-serif;color:#fff}
+.ssh-bank b{display:block;font:700 1.7cqw 'SSAachen',sans-serif;color:#fff}
 /* the title card */
 .ssrest{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;
   background:radial-gradient(60cqw 40cqw at 50% 45%,rgba(255,62,165,.55),rgba(43,13,63,.92) 70%)}
 .ssrest-eye{width:16cqw;animation:ss-blink 4s infinite,ss-float 5s ease-in-out infinite;filter:drop-shadow(0 1cqw 2cqw rgba(0,0,0,.5))}
 .ssrest .k{font:800 1.2cqw 'SSNunito',sans-serif;letter-spacing:.24em;color:var(--sst);text-transform:uppercase;margin-top:1.4cqw}
-.ssrest .t{font:700 5.2cqw 'SSFredoka',sans-serif;line-height:1;text-shadow:.25cqw .25cqw 0 var(--ssm),0 .8cqw 2cqw rgba(0,0,0,.5);margin:.6cqw 0}
+.ssrest .t{font:700 5.2cqw 'SSAachen',sans-serif;line-height:1;text-shadow:.25cqw .25cqw 0 var(--ssm),0 .8cqw 2cqw rgba(0,0,0,.5);margin:.6cqw 0}
 .ssrest .s{font:700 1.6cqw 'SSNunito',sans-serif;opacity:.9}
 .ssrest .go{margin-top:2cqw;font:800 1.2cqw 'SSNunito',sans-serif;letter-spacing:.2em;background:var(--ssp);padding:.8cqw 2cqw;border-radius:3cqw;box-shadow:0 0 2cqw var(--ssp);animation:ss-pulse 1.6s infinite}
 /* the dialogue box */
@@ -325,17 +327,18 @@ export const SS_CSS = `
 .ssl .tx b,.ssl .tx strong,.ssd .tx b{color:var(--ssm)}
 .ssl-tab{position:absolute;left:2.2cqw;top:-2.1cqw;display:flex;align-items:baseline;gap:.8cqw;background:var(--c);color:#fff;padding:.5cqw 1.6cqw .6cqw;border-radius:1.4cqw 1.4cqw 1.4cqw .3cqw;
   box-shadow:0 .4cqw 1cqw rgba(0,0,0,.3)}
-.ssl-tab b{font:700 2cqw 'SSFredoka',sans-serif;letter-spacing:.01em}
-.ssl-tab i{font:800 .85cqw 'SSNunito',sans-serif;letter-spacing:.18em;font-style:normal;opacity:.92}
+.ssl-tab b{font:700 2cqw 'SSAachen',sans-serif;letter-spacing:.01em}
+.ssl-tab i{font:.85cqw 'SSAachen',sans-serif;letter-spacing:.18em;font-style:normal;opacity:.92}
 .ssl.host{--c:#7c3aed}
 .ssl-next{position:absolute;right:2.2cqw;bottom:1.2cqw;color:var(--c);font-size:1.3cqw;animation:ss-bob 1s ease-in-out infinite}
 .ssl.fresh,.ssd.fresh{animation:ss-boxin .38s cubic-bezier(.2,1.3,.4,1)}
 .ssd{left:30cqw;right:3cqw}
 .ssd-plate{position:absolute;left:-26cqw;bottom:.6cqw;width:24cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.2cqw}
 .ssd-plate img{width:6cqw;animation:ss-blink 5s infinite}
-.ssd-plate b{font:700 3.4cqw/1 'SSFredoka',sans-serif;color:#fff;background:linear-gradient(90deg,var(--ssm),var(--ssp));padding:.6cqw 1.6cqw .8cqw;border-radius:1cqw;
+.ssd-plate b{font:700 3.4cqw/1 'SSAachen',sans-serif;color:#fff;background:linear-gradient(90deg,var(--ssm),var(--ssp));padding:.6cqw 1.6cqw .8cqw;border-radius:1cqw;
   box-shadow:.35cqw .35cqw 0 var(--ssi),0 1cqw 2cqw rgba(0,0,0,.35);transform:rotate(-2deg)}
-.ssd-plate i{font:800 1cqw 'SSNunito',sans-serif;letter-spacing:.3em;font-style:normal;color:#fff;background:var(--ssi);padding:.3cqw .9cqw;border-radius:.6cqw;margin-left:1cqw}
+.ssd-plate b{font:2.4cqw 'SSAachen',sans-serif;letter-spacing:.01em;color:var(--c,#fff);text-shadow:0 .15cqw 0 #fff,0 .3cqw .6cqw rgba(0,0,0,.25)}
+.ssd-plate i{font:1cqw 'SSAachen',sans-serif;letter-spacing:.3em;font-style:normal;color:#fff;background:var(--ssi);padding:.3cqw .9cqw;border-radius:.6cqw;margin-left:1cqw}
 .ssd.fresh .ssd-plate b{animation:ss-plate .55s cubic-bezier(.2,1.5,.4,1)}
 /* the narrator */
 .ssn{position:absolute;left:12cqw;right:12cqw;bottom:2.2cqw;z-index:25;text-align:center}
@@ -349,7 +352,7 @@ export const SS_CSS = `
 .ssv-eye img{width:100%;position:relative;z-index:2;animation:ss-blink 3.2s infinite;transform-origin:50% 55%}
 .ssv-eye i{position:absolute;inset:-.5cqw;border:.2cqw solid var(--ssg);border-radius:50%;opacity:0;animation:ss-ripple 2.4s infinite}
 .ssv-eye i:nth-child(2){animation-delay:.8s}.ssv-eye i:nth-child(3){animation-delay:1.6s}
-.ssv-body b{font:700 1.3cqw 'SSFredoka',sans-serif;letter-spacing:.3em;color:var(--ssg)}
+.ssv-body b{font:700 1.3cqw 'SSAachen',sans-serif;letter-spacing:.3em;color:var(--ssg)}
 .ssv-tx{font:700 2.1cqw/1.4 'SSNunito',sans-serif;color:#fff;margin-top:.3cqw}
 .ssv.fresh{animation:ss-voicein .6s cubic-bezier(.2,1.2,.4,1)}
 .bbx .stage.ss.bbspeaks .cam{filter:brightness(.42) saturate(.75) blur(.15cqw)}
@@ -378,16 +381,16 @@ export const SS_CSS = `
 .ssc-f{position:absolute;inset:0;border-radius:1.8cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.6cqw;text-align:center;
   box-shadow:0 0 0 .35cqw var(--ssg),0 2cqw 4cqw rgba(0,0,0,.5)}
 .ssc-front{background:linear-gradient(135deg,var(--ssm),var(--ssp))}
-.bbx .stage .ssc-front img{width:10cqw}.ssc-front b{font:700 2.4cqw 'SSFredoka',sans-serif;color:#fff;letter-spacing:.3em}
+.bbx .stage .ssc-front img{width:10cqw}.ssc-front b{font:700 2.4cqw 'SSAachen',sans-serif;color:#fff;letter-spacing:.3em}
 .ssc-back{background:linear-gradient(180deg,#fff,var(--ssc))}
 .ssc-back i{font:800 1.1cqw 'SSNunito',sans-serif;letter-spacing:.2em;color:var(--ssm);font-style:normal;text-transform:uppercase}
-.ssc-back b{font:700 2.3cqw/1.25 'SSFredoka',sans-serif;color:var(--ssi);margin-top:.6cqw}
-.ssc-back em{position:absolute;right:1.4cqw;bottom:1.2cqw;font:700 2cqw 'SSFredoka',sans-serif;font-style:normal;letter-spacing:.12em;padding:.3cqw 1cqw;border:.3cqw solid;border-radius:.6cqw;transform:rotate(-12deg)}
+.ssc-back b{font:700 2.3cqw/1.25 'SSAachen',sans-serif;color:var(--ssi);margin-top:.6cqw}
+.ssc-back em{position:absolute;right:1.4cqw;bottom:1.2cqw;font:700 2cqw 'SSAachen',sans-serif;font-style:normal;letter-spacing:.12em;padding:.3cqw 1cqw;border:.3cqw solid;border-radius:.6cqw;transform:rotate(-12deg)}
 .ssc.found .ssc-back em{color:#e11d48}.ssc.wrong .ssc-back em{color:#6b7280}.ssc.kept .ssc-back em{color:#0d9488}
 .ssc.fresh .ssc-back em{animation:ss-stamp .4s 1.5s cubic-bezier(.2,1.6,.4,1) both}
 /* the toast is a ribbon above the action (centred, it sat under the props) */
 .bbx .stage.ss .toast{top:21cqw;height:6.4cqw;transform:translateY(-50%) rotate(-2deg);left:-2cqw;right:-2cqw;box-shadow:0 .6cqw 1.6cqw rgba(0,0,0,.35)}
-.bbx .stage.ss .toast b{font:700 4cqw 'SSFredoka',sans-serif!important;letter-spacing:.3cqw}
+.bbx .stage.ss .toast b{font:700 4cqw 'SSAachen',sans-serif!important;letter-spacing:.3cqw}
 /* Big Brother's chips, in Secret Story's words */
 .bbx .stage.ss .chipx.hoh,.bbx .stage.ss .chipx.veto,.bbx .stage.ss .chipx.spent{display:none}
 .bbx .stage.ss .chipx.out{font-size:0}.bbx .stage.ss .chipx.out::after{content:'Eliminated';font-size:.9cqw}
@@ -396,11 +399,11 @@ export const SS_CSS = `
   border:.22cqw solid var(--ssg);border-radius:1.6cqw;padding:1cqw 1.4cqw 1.2cqw;box-shadow:0 1.4cqw 3.4cqw rgba(0,0,0,.45);cursor:default;animation:ss-askin .5s cubic-bezier(.2,1.3,.4,1)}
 .ssa-h{text-align:center}
 .ssa-h i{display:block;font:800 .9cqw 'SSNunito',sans-serif;letter-spacing:.32em;color:var(--ssg);font-style:normal}
-.ssa-h b{display:block;font:700 1.9cqw 'SSFredoka',sans-serif;color:#fff;margin:.2cqw 0}
+.ssa-h b{display:block;font:700 1.9cqw 'SSAachen',sans-serif;color:#fff;margin:.2cqw 0}
 .ssa-h span{display:block;font:700 .95cqw 'SSNunito',sans-serif;color:rgba(255,255,255,.75)}
 .ssa-os{display:flex;flex-wrap:wrap;justify-content:center;gap:.7cqw;margin-top:.8cqw}
 .ssa-o{display:flex;align-items:center;gap:.5cqw;border:0;cursor:pointer;background:#fff;color:var(--ssi);border-radius:3cqw;padding:.35cqw 1.1cqw .35cqw .35cqw;
-  font:700 1.2cqw 'SSFredoka',sans-serif;box-shadow:0 .3cqw 0 var(--ssm);transition:transform .15s}
+  font:700 1.2cqw 'SSAachen',sans-serif;box-shadow:0 .3cqw 0 var(--ssm);transition:transform .15s}
 .ssa-o:not([disabled]):hover{transform:translateY(-.2cqw) scale(1.05);background:var(--sst)}
 .ssa-o.on{background:var(--ssg);transform:scale(1.08);box-shadow:0 0 1.4cqw var(--ssg)}
 .ssa-o[disabled]:not(.on){opacity:.4;cursor:default}
@@ -413,7 +416,7 @@ export const SS_CSS = `
 .sss.lose{background:linear-gradient(135deg,#4b5563,#1f2937);animation-name:ss-lose}
 .sss i{display:block;font:800 1.2cqw 'SSNunito',sans-serif;letter-spacing:.3em;font-style:normal;color:var(--ssi)}
 .sss.lose i,.sss.lose span{color:#fff}
-.sss b{display:block;font:700 5cqw/1 'SSFredoka',sans-serif;color:var(--ssi)}.sss.lose b{color:#fda4af}
+.sss b{display:block;font:700 5cqw/1 'SSAachen',sans-serif;color:var(--ssi)}.sss.lose b{color:#fda4af}
 .sss span{font:700 1.1cqw 'SSNunito',sans-serif;color:var(--ssi)}
 .sss-coins img{position:absolute;left:50%;top:50%;width:3cqw;animation:ss-coin 1.1s var(--d) cubic-bezier(.1,.8,.3,1) forwards;transform:translate(-50%,-50%)}
 /* the Eye opens on a new screen */
@@ -446,7 +449,7 @@ export const SS_CSS = `
 @keyframes ss-coin{to{transform:translate(calc(-50% + cos(var(--a)) * 22cqw),calc(-50% + sin(var(--a)) * 14cqw)) rotate(360deg);opacity:0}}
 /* the dossier */
 .bbx .ssds{padding:7px 0;border-top:1px solid rgba(255,255,255,.08)}
-.bbx .ssds-w{display:flex;align-items:center;gap:4px}.bbx .ssds-w b{font:700 12.5px 'SSFredoka',sans-serif;margin-left:4px}
+.bbx .ssds-w{display:flex;align-items:center;gap:4px}.bbx .ssds-w b{font:700 12.5px 'SSAachen',sans-serif;margin-left:4px}
 .bbx .ssds q{display:block;font:italic 600 12.5px/1.35 'SSNunito',sans-serif;color:#f6d6ea;margin:4px 0 2px}
 .bbx .ssds span{font:800 10px 'SSNunito',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#19d3c5}
 .bbx .ssds.found span{color:#ff5c8a}.bbx .ssds.told span{color:#9ca3af}.bbx .ssds.found q,.bbx .ssds.told q{opacity:.6;text-decoration:line-through}
@@ -455,14 +458,14 @@ export const SS_CSS = `
 .ssk{position:absolute;z-index:23;left:6cqw;right:6cqw;top:9cqw;bottom:16cqw;display:flex;flex-direction:column;align-items:center;
   background:linear-gradient(180deg,rgba(43,13,63,.88),rgba(90,10,80,.82));border-radius:2cqw;box-shadow:0 0 0 .25cqw var(--ssg),0 2cqw 4cqw rgba(0,0,0,.45);padding:1.2cqw 2cqw}
 .ssk.fresh{animation:ss-boxin .5s cubic-bezier(.2,1.3,.4,1)}
-.ssk-h{font:700 2.2cqw 'SSFredoka',sans-serif;color:var(--ssg);letter-spacing:.2em}
+.ssk-h{font:700 2.2cqw 'SSAachen',sans-serif;color:var(--ssg);letter-spacing:.2em}
 .ssk-r{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:space-around;gap:1cqw;margin-top:.6cqw}
 .ssk-c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;color:#fff}
 .ssk-stack{position:relative;width:62%;flex:1;display:flex;align-items:flex-end}
 .ssk-stack i{display:block;width:100%;height:var(--h);border-radius:.6cqw .6cqw .2cqw .2cqw;
   background:repeating-linear-gradient(0deg,#b8860b 0 .25cqw,#f5c542 .25cqw 1.1cqw);box-shadow:0 0 1.4cqw rgba(245,197,66,.55)}
 .ssk.fresh .ssk-stack i{animation:ss-grow 1.4s calc(var(--i) * .08s) cubic-bezier(.2,1,.3,1) both}
-.ssk-n{font:700 1.5cqw 'SSFredoka',sans-serif;margin-top:.4cqw;--ssn:var(--to);counter-reset:k var(--ssn)}
+.ssk-n{font:700 1.5cqw 'SSAachen',sans-serif;margin-top:.4cqw;--ssn:var(--to);counter-reset:k var(--ssn)}
 /* (a counter cannot print a thousands separator: it rolls, then the amount as the show writes it takes over) */
 .ssk-n{display:inline-grid}.ssk-n::before,.ssk-n::after{grid-area:1/1;justify-self:center}
 .ssk-n::before{content:'$' counter(k);opacity:0}.ssk-n::after{content:attr(data-v)}
@@ -473,7 +476,7 @@ export const SS_CSS = `
 .ssk-c em{font:800 .95cqw 'SSNunito',sans-serif;font-style:normal}.ssk-c em.up{color:#4ade80}.ssk-c em.down{color:#fb7185}
 .ssk-f{width:3.4cqw;height:3.4cqw;border-radius:50%;overflow:hidden;background:var(--c);margin-top:.4cqw;box-shadow:0 0 0 .18cqw #fff}
 .ssk-f img{width:100%;height:100%;object-fit:cover}
-.ssk-c b{font:700 1cqw 'SSFredoka',sans-serif;margin-top:.2cqw;white-space:nowrap}
+.ssk-c b{font:700 1cqw 'SSAachen',sans-serif;margin-top:.2cqw;white-space:nowrap}
 @keyframes ss-grow{from{height:0}}
 @keyframes ss-count{from{--ssn:var(--from)}to{--ssn:var(--to)}}
 /* coins changing hands */
@@ -482,7 +485,7 @@ export const SS_CSS = `
 @keyframes ss-fly{0%{left:var(--a);transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}50%{transform:translateY(calc(-8cqw - var(--y))) scale(1.1)}100%{left:var(--b);transform:translateY(0) scale(.7);opacity:0}}
 /* the Oops signs */
 .sso{position:absolute;z-index:23;bottom:31cqw;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
-.sso b{font:700 2.2cqw 'SSFredoka',sans-serif;color:#fff;background:#e11d48;padding:.5cqw 1.4cqw;border-radius:.6cqw;border:.25cqw solid #fff;box-shadow:0 .5cqw 1cqw rgba(0,0,0,.4)}
+.sso b{font:700 2.2cqw 'SSAachen',sans-serif;color:#fff;background:#e11d48;padding:.5cqw 1.4cqw;border-radius:.6cqw;border:.25cqw solid #fff;box-shadow:0 .5cqw 1cqw rgba(0,0,0,.4)}
 .sso i{width:.4cqw;height:3cqw;background:#f5deb3;border-radius:.2cqw}
 .sso.fresh{animation:ss-signup .55s calc(var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
 @keyframes ss-signup{from{transform:translateX(-50%) translateY(6cqw) rotate(-12deg);opacity:0}}
@@ -493,7 +496,7 @@ export const SS_CSS = `
 .ssmg-rays{position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.1) 0 6deg,transparent 6deg 15deg);animation:sst-spin 30s linear infinite}
 .ssmg-eye{position:absolute;width:44cqw;opacity:.12;filter:blur(.2cqw)}
 .ssmg-tag{position:relative;font:800 1.2cqw 'SSNunito',sans-serif;letter-spacing:.4em;color:#fff;background:rgba(0,0,0,.35);padding:.5cqw 1.4cqw;border-radius:2cqw;box-shadow:0 0 0 .15cqw rgba(255,255,255,.5)}
-.ssmg-t{position:relative;max-width:84%;text-align:center;font:700 6.4cqw/1 'SSFredoka',sans-serif;color:#fff;text-transform:uppercase;letter-spacing:.02em;
+.ssmg-t{position:relative;max-width:84%;text-align:center;font:700 6.4cqw/1 'SSAachen',sans-serif;color:#fff;text-transform:uppercase;letter-spacing:.02em;
   text-shadow:.4cqw .4cqw 0 #c8137a,-.15cqw -.15cqw 0 #19d3c5,0 0 3cqw rgba(255,255,255,.55)}
 .ssmg-s{position:relative;font:800 1.7cqw 'SSNunito',sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#ffe14d}
 .ssmg.fresh .ssmg-t{animation:ssmg-in .9s cubic-bezier(.2,1.3,.4,1) both}
@@ -511,7 +514,7 @@ export const SS_CSS = `
 .ssls-sky::after,.ssvc-sky::after{content:"";position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 50% 0%,rgba(255,255,255,.12) 0 4deg,transparent 4deg 12deg);animation:ss-rays 30s linear infinite}
 @keyframes ss-rays{to{transform:rotate(8deg)}}
 .ssls.fresh,.ssvc.fresh{animation:ss-fade .5s ease}
-.ssls-h{position:relative;margin-top:5.6cqw;display:flex;flex-direction:column;align-items:center;font:700 4.2cqw/0.95 'SSFredoka',sans-serif;letter-spacing:.02em}
+.ssls-h{position:relative;margin-top:5.6cqw;display:flex;flex-direction:column;align-items:center;font:700 4.2cqw/0.95 'SSAachen',sans-serif;letter-spacing:.02em}
 .ssls-h span{background:linear-gradient(90deg,#19d3c5,#3bb3ff 30%,#7c5cff 55%,#ff3ea5 80%,#ff7a59);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(.25cqw .25cqw 0 #fff) drop-shadow(-.12cqw -.12cqw 0 #fff) drop-shadow(0 .6cqw 1cqw rgba(124,92,255,.5))}
 .ssls.fresh .ssls-h{animation:ss-boxin .6s cubic-bezier(.2,1.4,.4,1) both}
@@ -530,14 +533,14 @@ export const SS_CSS = `
 .ssls-who{position:absolute;left:-1.6cqw;top:50%;translate:-100% -50%;display:flex;align-items:center;gap:.5cqw;z-index:2}
 .ssls-f{width:3.8cqw;height:3.8cqw;border-radius:50%;overflow:hidden;background:var(--c);box-shadow:0 0 0 .3cqw #fff,0 1cqw 2cqw rgba(0,0,0,.25)}
 .ssls-f img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
-.ssls-who em{order:-1;font:700 1.2cqw 'SSFredoka',sans-serif;font-style:normal;color:#fff;background:linear-gradient(90deg,#ff3ea5,#7c5cff);padding:.15cqw .8cqw;border-radius:2cqw;box-shadow:0 0 0 .18cqw #fff}
+.ssls-who em{order:-1;font:700 1.2cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;background:linear-gradient(90deg,#ff3ea5,#7c5cff);padding:.15cqw .8cqw;border-radius:2cqw;box-shadow:0 0 0 .18cqw #fff}
 .ssls-eye{position:absolute;right:2.4cqw;bottom:1.6cqw;width:7cqw;filter:drop-shadow(0 .6cqw 1cqw rgba(0,0,0,.25))}
 .ssvc-r{position:relative;margin-top:8cqw;display:flex;gap:1.6cqw;justify-content:center;align-items:flex-end;width:92%}
 .ssvc-c{position:relative;flex:0 1 11cqw;margin-left:3.4cqw;display:flex;flex-direction:column;align-items:center}
-.ssvc-n{position:absolute;top:-3.4cqw;left:-4.6cqw;font:700 11cqw/1 'SSFredoka',sans-serif;color:#ff8fd0;-webkit-text-stroke:.3cqw #fff;text-shadow:0 .6cqw 1.4cqw rgba(124,92,255,.55);z-index:0}
+.ssvc-n{position:absolute;top:-3.4cqw;left:-4.6cqw;font:700 11cqw/1 'SSAachen',sans-serif;color:#ff8fd0;-webkit-text-stroke:.3cqw #fff;text-shadow:0 .6cqw 1.4cqw rgba(124,92,255,.55);z-index:0}
 .ssvc-f{position:relative;z-index:1;width:100%;aspect-ratio:3/4;border-radius:1.4cqw 1.4cqw .6cqw .6cqw;overflow:hidden;background:linear-gradient(180deg,var(--c),#fff0);box-shadow:0 1.2cqw 2.4cqw rgba(124,92,255,.35)}
 .ssvc-f img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
-.ssvc-c em{position:relative;z-index:2;margin-top:-1.4cqw;font:700 1.9cqw 'SSFredoka',sans-serif;font-style:normal;text-transform:uppercase;color:#fff;
+.ssvc-c em{position:relative;z-index:2;margin-top:-1.4cqw;font:700 1.9cqw 'SSAachen',sans-serif;font-style:normal;text-transform:uppercase;color:#fff;
   background:linear-gradient(90deg,#3bb3ff,#7c5cff,#ff3ea5);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(.18cqw .18cqw 0 #fff) drop-shadow(-.1cqw -.1cqw 0 #fff)}
 .ssvc.fresh .ssvc-c{animation:ss-pill .55s calc(.2s + var(--i) * .1s) cubic-bezier(.2,1.4,.4,1) both}
 .ssvc-how{position:relative;margin-top:1.8cqw;width:72%;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:1cqw 2cqw;border-radius:1.4cqw;

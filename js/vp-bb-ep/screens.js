@@ -862,13 +862,13 @@ export function bbxSsPart(num, part) {
 function ssNextCard(num, part) {
   const blurb = { daily: 'The days in the House of Secrets: the hunt, the Voice, the nominations.', prime: 'Live from the studio: the kitties, the dilemmas, and the verdict of the public.' }[part] || '';
   return `<div class="sst-next" style="position:relative;aspect-ratio:16/9;max-width:1200px;margin:0 auto;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-    background:radial-gradient(ellipse at 50% 40%,#c8137a 0%,#5b0d4f 40%,#2b0d3f 70%,#0d0414 100%);color:#fff;font-family:'SSFredoka',system-ui,sans-serif;text-align:center;padding:24px" data-ambient="none">
-    <style>@font-face{font-family:'SSFredoka';src:url('assets/fonts/Fredoka.woff2') format('woff2');font-weight:300 700}</style>
+    background:radial-gradient(ellipse at 50% 40%,#c8137a 0%,#5b0d4f 40%,#2b0d3f 70%,#0d0414 100%);color:#fff;font-family:'SSAachen',system-ui,sans-serif;text-align:center;padding:24px" data-ambient="none">
+    <style>@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900}</style>
     <img src="assets/sets/bb/secret-story/props/eye.webp" alt="" style="width:14%;filter:drop-shadow(0 0 24px rgba(255,62,165,.8))">
     <div style="font-size:clamp(14px,1.6vw,20px);letter-spacing:.35em;opacity:.85">UP NEXT</div>
     <div style="font-size:clamp(30px,5vw,64px);font-weight:700;text-shadow:3px 3px 0 #c8137a">${esc(SS_PART_LABEL[part] || part)}</div>
     <div style="max-width:52ch;font-size:clamp(13px,1.4vw,18px);opacity:.9;font-family:system-ui,sans-serif">${esc(blurb)}</div>
-    <button type="button" onclick="bbxSsPart(${Number(num) || 0}, '${part}')" style="font:700 18px 'SSFredoka',sans-serif;padding:12px 26px;border-radius:999px;border:3px solid #fff;background:#ff3ea5;color:#fff;cursor:pointer;box-shadow:0 0 24px rgba(255,62,165,.7)">Watch ${esc(SS_PART_LABEL[part] || part)} ▶</button>
+    <button type="button" onclick="bbxSsPart(${Number(num) || 0}, '${part}')" style="font:700 18px 'SSAachen',sans-serif;padding:12px 26px;border-radius:999px;border:3px solid #fff;background:#ff3ea5;color:#fff;cursor:pointer;box-shadow:0 0 24px rgba(255,62,165,.7)">Watch ${esc(SS_PART_LABEL[part] || part)} ▶</button>
   </div>`;
 }
 

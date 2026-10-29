@@ -154,13 +154,25 @@ const PROP = {
 export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   if (!st) return '';
   let h = '';
-  // a new screen opens through the Eye
-  if (fresh && idx === 0) h += '<div class="ss-iris"></div>';
+  // A new screen opens through the Eye (the user, 2026-10-29: "the screen switcher with the eye animations"): the Eye
+  // blinks open on the show's pink, then the camera dives through its pupil into the next screen
+  if (fresh && idx === 0) {
+    h += `<div class="ss-sw"><img class="ss-sw-eye" src="${EYE}" alt=""></div>`;
+    setTimeout(() => ssSfx('whoosh', 0.5), 380);
+  }
+  // a party: the lights, the mirror ball, and everybody on the floor dancing (vp-bb-ep/steps.js ssPartyScreen)
+  if (S.party) h += '<div class="ss-party"><i></i><i></i><i></i><b></b></div>';
   // THE BREAK: the Eye and the show's jingle, where the real show cuts to the ads (vp-bb-ep/steps.js ssBreaks)
   if (st.bumper) {
     if (fresh) setTimeout(() => sfx('jingle'), 40);
     h += `<div class="ssbk ${fresh ? 'fresh' : ''}"><div class="ssbk-rays"></div><div class="ssbk-ring"></div><img class="ssbk-eye" src="${EYE}" alt="">
       <div class="ssbk-t">${ssx('SECRET STORY')}</div><div class="ssbk-n"><i>AFTER THE BREAK</i><b>${esc(st.bumper.next || '')}</b></div></div>`;
+  }
+  // THE BUZZ: the alarm, and the whole house in red (the user, 2026-10-29). The siren plays once, from the press or,
+  // when nobody clicked the buzzer, from the first red step after it
+  if (st.alarm) {
+    if (fresh && !st.press && Date.now() - (Number(/** @type {any} */ (globalThis).__ssAlarmAt) || 0) > 8000) { /** @type {any} */ (globalThis).__ssAlarmAt = Date.now(); setTimeout(() => sfx('buzz'), 30); }
+    h += `<div class="ss-red ${fresh ? 'fresh' : ''}"><div class="ss-red-beam"></div><b>BUZZ</b></div>`;
   }
   const P = st.prop && PROP[st.prop];
   if (P) {
@@ -279,6 +291,7 @@ export function ssCall(el, id, op) {
 export function ssPress(el, snd) {
   if (el.classList.contains('pressed')) return;
   el.classList.add('pressed');
+  if (snd === 'buzz') /** @type {any} */ (globalThis).__ssAlarmAt = Date.now();
   sfx(snd);
   const root = el.closest('.bbx');
   const st = el.closest('.stage');
@@ -388,6 +401,26 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .bbx .stage .p-ball img{width:12cqw;animation:ss-float 4s ease-in-out infinite}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
+.ss-party{position:absolute;inset:0;z-index:22;pointer-events:none;overflow:hidden;mix-blend-mode:screen}
+.ss-party i{position:absolute;top:-30%;width:40%;height:160%;transform-origin:50% 0;filter:blur(2.4cqw);opacity:.55;animation:ss-sweep 3.4s ease-in-out infinite alternate}
+.ss-party i:nth-child(1){left:5%;background:linear-gradient(180deg,rgba(255,62,165,.9),transparent 70%)}
+.ss-party i:nth-child(2){left:30%;background:linear-gradient(180deg,rgba(25,211,197,.85),transparent 70%);animation-duration:2.6s;animation-delay:-1s}
+.ss-party i:nth-child(3){left:55%;background:linear-gradient(180deg,rgba(124,92,255,.9),transparent 70%);animation-duration:3s;animation-delay:-2s}
+.ss-party b{position:absolute;left:50%;top:-2cqw;width:7cqw;aspect-ratio:1;translate:-50% 0;border-radius:50%;
+  background:repeating-conic-gradient(#fff 0 10deg,#b9b4d6 10deg 20deg);box-shadow:0 0 3cqw #fff,0 0 8cqw rgba(255,255,255,.6);animation:sst-spin 4s linear infinite}
+@keyframes ss-sweep{from{rotate:-28deg}to{rotate:28deg}}
+.bbx .stage.ss:has(.ss-party) .gt:not(.bgp) .tile{animation:ss-dance .52s ease-in-out infinite alternate;animation-delay:var(--ph,0s)}
+.bbx .stage.ss:has(.ss-party) .gt:nth-child(2n) .tile{animation-duration:.46s}
+.bbx .stage.ss:has(.ss-party) .gt:nth-child(3n) .tile{animation-duration:.6s}
+@keyframes ss-dance{0%{transform:translateY(0) rotate(-4deg)}100%{transform:translateY(-1.4cqw) rotate(4deg)}}
+.ss-red{position:absolute;inset:0;z-index:57;pointer-events:none;overflow:hidden;background:rgba(255,0,40,.18);mix-blend-mode:multiply;animation:ss-red .7s ease-in-out infinite alternate}
+.ss-red::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 35%,rgba(200,0,30,.75) 100%);mix-blend-mode:normal}
+.ss-red-beam{position:absolute;left:50%;top:-40%;width:160%;aspect-ratio:1;translate:-50% 0;background:conic-gradient(from 0deg,rgba(255,40,60,.55) 0 22deg,transparent 22deg 180deg,rgba(255,40,60,.55) 180deg 202deg,transparent 202deg);animation:sst-spin 1.4s linear infinite;mix-blend-mode:screen}
+.ss-red b{position:absolute;left:50%;top:16%;translate:-50% 0;font:8cqw 'SSAachen',sans-serif;color:#fff;letter-spacing:.12em;-webkit-text-stroke:.25cqw #b0001e;text-shadow:0 0 3cqw #ff1a3c;mix-blend-mode:normal;animation:ss-red-t .35s steps(2) infinite}
+.ss-red:not(.fresh) b{display:none}
+@keyframes ss-red{from{background:rgba(255,0,40,.14)}to{background:rgba(255,0,40,.42)}}
+@keyframes ss-red-t{50%{opacity:.35}}
+@keyframes sst-spin{to{rotate:360deg}}
 /* the secret card */
 /* (the card turns by squashing and growing again: a 3D back face does not hide reliably inside the stage) */
 .ssc{position:absolute;z-index:27;left:50%;top:13cqw;width:34cqw;height:19cqw;transform:translateX(-50%)}
@@ -438,8 +471,15 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .sss span{font:700 1.1cqw 'SSNunito',sans-serif;color:var(--ssi)}
 .sss-coins img{position:absolute;left:50%;top:50%;width:3cqw;animation:ss-coin 1.1s var(--d) cubic-bezier(.1,.8,.3,1) forwards;transform:translate(-50%,-50%)}
 /* the Eye opens on a new screen */
-.ss-iris{position:absolute;inset:0;z-index:70;pointer-events:none;background:var(--ssi);animation:ss-iris .75s cubic-bezier(.6,0,.2,1) forwards}
-@keyframes ss-iris{0%{clip-path:ellipse(80% 0% at 50% 50%);background:var(--ssp)}1%{clip-path:ellipse(80% 60% at 50% 50%)}100%{clip-path:ellipse(80% 0% at 50% 50%);opacity:.9}}
+@property --ssr{syntax:'<percentage>';inherits:false;initial-value:0%}
+.ss-sw{position:absolute;inset:0;z-index:70;pointer-events:none;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 50%,#ff8fd0 0%,#ff3ea5 30%,#c8137a 60%,#2b0d3f 100%);
+  -webkit-mask:radial-gradient(circle at 50% 50%,transparent var(--ssr),#000 calc(var(--ssr) + .6%));mask:radial-gradient(circle at 50% 50%,transparent var(--ssr),#000 calc(var(--ssr) + .6%));
+  animation:ss-sw-open 1.2s cubic-bezier(.7,0,.25,1) forwards}
+.ss-sw::before{content:"";position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.16) 0 5deg,transparent 5deg 14deg);animation:ss-rays 6s linear infinite}
+.ss-sw-eye{position:absolute;left:50%;top:50%;width:30cqw;translate:-50% -50%;filter:drop-shadow(0 1cqw 2.4cqw rgba(40,0,40,.5));animation:ss-sw-eye 1.2s cubic-bezier(.6,0,.3,1) forwards}
+@keyframes ss-sw-open{0%,40%{--ssr:0%}100%{--ssr:125%}}
+@keyframes ss-sw-eye{0%{transform:scale(.6,.04);opacity:0}12%{opacity:1;transform:scale(1,.06)}26%{transform:scale(1,1.08)}34%{transform:scale(1,1)}42%{transform:scale(1.05)}100%{transform:scale(10);opacity:.2}}
 @keyframes ss-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
 @keyframes ss-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
 @keyframes ss-slidein{from{transform:translateX(-2cqw);opacity:0}}
@@ -607,7 +647,7 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssvc-how{position:relative;margin-top:1.8cqw;width:72%;display:flex;flex-direction:column;align-items:center;gap:.2cqw;padding:1cqw 2cqw;border-radius:1.4cqw;
   background:linear-gradient(90deg,rgba(124,92,255,.85),rgba(200,19,122,.85));box-shadow:0 0 0 .2cqw rgba(255,255,255,.7);font:800 1.6cqw/1.25 'SSNunito',sans-serif;color:#fff;text-align:center}
 .ssvc-how b{color:#ffe14d}.ssvc-how small{font-size:1cqw;opacity:.85;letter-spacing:.1em;text-transform:uppercase}
-@media (prefers-reduced-motion:reduce){.ss-iris,.sss-coins{display:none}.ssh-eye,.ssv-eye img,.ssrest-eye{animation:none}}
+@media (prefers-reduced-motion:reduce){.ss-sw,.sss-coins{display:none}.ssh-eye,.ssv-eye img,.ssrest-eye{animation:none}}
 `;
 
 // ── the dossier (the side panel) ────────────────────────────────────────

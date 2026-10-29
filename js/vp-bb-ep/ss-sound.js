@@ -105,7 +105,8 @@ const BY_ID = [
   [/^bb-ss-store-/, 'ss-store'],
   [/^bb-ss-evening-/, 'ss-quirky'],
   [/^bb-ss-buzz-.*-room$|^bb-ss-prime-(truths|accusation)/, 'ss-plot'],
-  [/^bb-ss-buzz-.*-reveal$/, 'ss-anthem'],
+  // (the reveal waits in silence-heavy suspense, then its answer sets its own music: ssBuzzScreen's step beds)
+  [/^bb-ss-buzz-.*-reveal$|^bb-ss-prime-reveal-/, 'ss-wait'],
   [/^bb-ss-(black-buzzer|buzz-)|^bb-ss-prime-(airlock|dil|phone|noms)/, 'ss-tension'],
   // (the user, 2026-10-28: "the nomination music is creepy": the plotting tracks, not the fear ones)
   [/^bb-ss-noms/, 'ss-plot'],

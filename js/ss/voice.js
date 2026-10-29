@@ -87,6 +87,24 @@ export function weeklyRuleBreaks(state, ctx, { house = [], party = false } = {})
     if (broke.has(n)) continue;
     const temper = st(ctx, n, 'temperament'), bold = st(ctx, n, 'boldness'), strat = st(ctx, n, 'strategic');
     const s = secretOf(state, n);
+    // ── commandment 8, on purpose: a secret TOLD, to the one they trust most (the user, 2026-10-29: "in rare case a slip
+    // can be intentional that can cause a punishment for a commandment transgression and permanent nomination"). The
+    // worst break there is: the kitty to zero, and nominated d'office every week until they leave. About one season in
+    // three; a bold, disloyal or lovestruck housemate is likelier to do it. ──
+    const loyal = st(ctx, n, 'loyalty');
+    const willP = clamp(0.0008 + bold * 0.00025 + (10 - loyal) * 0.00025 + (ctx.couple?.(n) ? 0.002 : 0) + (party ? 0.001 : 0));
+    const confidant = s && !s.found ? house.filter(x => x !== n && !(s.holders || []).includes(x)).sort((x, y) => (ctx.bond?.(n, y) ?? 0) - (ctx.bond?.(n, x) ?? 0))[0] : null;
+    if (confidant && (ctx.bond?.(n, confidant) ?? 0) >= 3 && rng() < willP) {
+      broke.add(n);
+      const r = revealOwnSecret(state, ctx, n);
+      const rr = rulesOf(state);
+      for (const h of r.holders) if (!(rr.permanent ||= []).some(p => p.who === h)) rr.permanent.push({ who: h, from: week });
+      acts.push({ type: 'ss-rule', week, who: n, to: confidant, commandment: 8, kind: 'told', holders: r.holders, lost: r.lost,
+        secretText: s.text, punishment: 'kitty-and-permanent',
+        effects: { bond: [[n, confidant, 1]] },
+        beats: [{ text: `${n} tells ${confidant} the secret, on purpose. The Voice empties ${r.holders.join(' and ')}'s kitty and nominates ${r.holders.length > 1 ? 'them' : n} d'office every week until the end.`, players: [n, confidant], badgeText: 'NOMINATED FOR GOOD', badgeClass: 'red', part: 'rule' }] });
+      continue;
+    }
     // ── commandment 8: a slip. A loose mouth, a low guard, a party. ──
     const slipP = clamp(0.004 + (10 - strat) * 0.0018 + (10 - temper) * 0.0012 + (party ? 0.012 : 0));
     if (s && !s.found && rng() < slipP) {
@@ -132,5 +150,6 @@ export function weeklyRuleBreaks(state, ctx, { house = [], party = false } = {})
 }
 
 /** Nominated d'office for a week, and extra votes against. */
-export const dOfficeFor = (state, week) => [...(state?.rules?.dOffice?.[week] || [])];
+// (and whoever told their own secret on purpose: nominated d'office every week after it, for good)
+export const dOfficeFor = (state, week) => [...new Set([...(state?.rules?.dOffice?.[week] || []), ...(state?.rules?.permanent || []).filter(p => week > p.from).map(p => p.who)])];
 export const extraVotesFor = (state, week) => ({ ...(state?.rules?.extraVotes?.[week] || {}) });

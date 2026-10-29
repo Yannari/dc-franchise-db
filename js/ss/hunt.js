@@ -73,13 +73,19 @@ export function addEvidence(state, ctx, knower, target, { strength = 0.2, how = 
   const t = (state.theories[knower] ||= {});
   let th = t[target];
   const pointsAtTruth = toward == null || toward === secret.text;
+  // Watching somebody (a tell, a friend's hunch) makes a guess feel surer, but only a CLUE, or a friend who already has
+  // the truth, points a theory AT the truth (the user, 2026-10-29: "how do we get 2 secrets found with no clue revealed
+  // in the first week", "not every buzz is a correct buzz"): a theory built on behaviour alone is a near miss.
+  // ...and so does a MISTAKE somebody saw: a slip, a pair caught together, a role's trace (the user, 2026-10-29: "mistake
+  // can happen someone blurting something it shouldnt giving clue especially from production or shared secret")
+  const canFind = strength >= 0.28 || toward === secret.text || /slip|caught|jealousy|defended|old-joke|^role:/.test(String(how));
   if (!th) {
     // A first theory: the truth if the evidence is clear and the reader sharp,
     // otherwise a near miss of the same kind.
-    const right = pointsAtTruth && rng() < clamp(0.12 + strength * r * 1.3 - diff * 0.25, 0.03, 0.9);
+    const right = pointsAtTruth && canFind && rng() < clamp(0.12 + strength * r * 1.3 - diff * 0.25, 0.03, 0.9);
     const text = right ? secret.text : (pointsAtTruth ? pick(nearMisses(secret), rng) : toward);
     th = t[target] = { text, right: text === secret.text, conf: 0, ev: [] };
-  } else if (!th.right && pointsAtTruth && rng() < clamp(strength * r * 0.9 - diff * 0.15, 0, 0.8)) {
+  } else if (!th.right && pointsAtTruth && canFind && rng() < clamp(strength * r * 0.9 - diff * 0.15, 0, 0.8)) {
     // The penny drops: the theory swings to the truth, keeping most of its weight.
     th.text = secret.text; th.right = true; th.conf *= 0.75;
   } else if (!pointsAtTruth && toward !== th.text && rng() < strength * (1 - r) * 0.8) {
@@ -116,7 +122,8 @@ export function showClue(state, ctx, { holder = undefined, clue = null, how = 'g
   const viewers = to === 'house' ? house.filter(n => !(secret.holders || []).includes(n)) : [].concat(to);
   const ftxt = fake ? (fakeText || pick(nearMisses(secret), rng)) : null;
   // (calibrated by the ss-spec audit, 2026-10-27: 0.24 found 30% of the secrets; the real show finds half or more)
-  const strength = /cassette|song|sound|video/i.test(shown || '') ? 0.38 : 0.3;
+  // (2026-10-29: 0.34 once a tell could no longer find a secret on its own, so half are still found by a buzz)
+  const strength = /cassette|song|sound|video/i.test(shown || '') ? 0.42 : 0.34;
   for (const v of viewers) addEvidence(state, ctx, v, holder, { strength, how: fake ? 'fake-clue' : `clue:${how}`, toward: ftxt });
   const rec = { week: ctx.week ?? 0, secretId: secret.id, holders: [...secret.holders], clue: shown || 'a clue', how, fake, to: to === 'house' ? 'house' : viewers, by };
   state.shownClues.push(rec);
@@ -231,7 +238,8 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
     shift = -(0.08 + read * 0.22) + (rng() - 0.5) * 0.1 + (1 - defence) * 0.08;
   }
   th.conf = clamp(confBefore + shift, 0, 0.98);
-  const confirmed = th.conf >= bar * 0.9 || (free && th.conf >= bar * 0.75);
+  // (to confirm, the buzzer must still be as sure as when they pressed: many presses end in the room, withdrawn)
+  const confirmed = th.conf >= bar || (free && th.conf >= bar * 0.8);
   const rec = { week, by, target, guess: th.text, right: !!th.right, free, confBefore: Math.round(confBefore * 100) / 100,
     confAfter: Math.round(th.conf * 100) / 100, leak, outcome: confirmed ? (th.right ? 'right' : 'wrong') : 'withdrawn', took: 0, lost: 0,
     // the hunter was RIGHT and the holder talked their way out of it: a secret kept under pressure
@@ -256,7 +264,7 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
     : rec.outcome === 'wrong'
       ? [{ text: `${by} buzzes ${target} — "${rec.guess}" — and is wrong.`, players: [by, target], badgeText: 'WRONG BUZZ', badgeClass: 'red', part: 'wrong' }]
       : [{ text: `${by} buzzes ${target}, hears ${target} out, and withdraws.`, players: [by, target], badgeText: 'WITHDRAWN', badgeClass: 'grey', part: 'withdrawn' }];
-  return { type: 'ss-buzz', ...rec, secretText: secret?.text || null, holders: [...(secret?.holders || [])],
+  return { type: 'ss-buzz', ...rec, secretText: secret?.text || null, secretKind: secret?.secretKind || secret?.kind || null, poolId: secret?.poolId || null, holders: [...(secret?.holders || [])],
     kitty: { [by]: balance(state, by), [target]: balance(state, target) }, beats };
 }
 

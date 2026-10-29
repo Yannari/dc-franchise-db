@@ -514,6 +514,7 @@ const KIND_STORY = {
   money: ["Money changes the way people look at you. Overnight. I learned that the hard way.",
     "It sounds like a dream, and in a way it is. But it comes with a lot of strings."],
 };
+export { KIND_STORY, KNOWS };
 const KNOWS = ['My family knows. My two best friends. And now, everybody at home.', 'Nobody. Not even my best friend. Until right now.',
   'My mum, and that\'s it. She\'s going to scream at the TV.', 'A few people back home. They\'ve all been sworn to secrecy.'];
 const WHY_KEEP = ["Because if they find it, they take my kitty. And because it's mine. They have to earn it.",

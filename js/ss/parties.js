@@ -149,6 +149,74 @@ export function throwParty(state, ctx, { house = [], theme = null } = {}) {
     moments.push({ kind: 'slip', who: [loosest, ...heard.slice(0, 1)], heard, text: `${loosest}, a drink in hand, ${said}. ${heard.join(' and ')} ${heard.length > 1 ? 'look' : 'looks'} at each other.` });
     fx.pub.push([loosest, 'fun', 0.1, 'said too much at the party']);
   }
+  // ── the rest of the night (the user, 2026-10-29: "party night is lame too no animation no one dancing no drama no
+  // fight no bonding no talking"): getting ready, the dance floor, a toast, the party's game, heart-to-hearts, gossip,
+  // the pool at the end. Every one moves somebody (bonds, the public). ──
+  const used2 = new Set();
+  const pairBy = (score, cond, n = 1) => {
+    const out = [];
+    const all = [];
+    for (let i = 0; i < house.length; i++) for (let j = i + 1; j < house.length; j++) {
+      const a = house[i], b = house[j];
+      if (cond(a, b)) all.push({ a, b, s: score(a, b) + rng() * 2 });
+    }
+    all.sort((x, y) => y.s - x.s);
+    for (const p of all) { if (out.length >= n) break; if (used2.has(p.a) || used2.has(p.b)) continue; out.push(p); used2.add(p.a); used2.add(p.b); }
+    return out;
+  };
+  // getting ready: the closest friends, in front of the bathroom mirror
+  for (const p of pairBy((a, b) => bondOf(ctx, a, b), (a, b) => bondOf(ctx, a, b) >= 2, 2)) {
+    moments.push({ kind: 'ready', who: [p.a, p.b], text: `${p.a} and ${p.b} get ready together in front of the bathroom mirror.` });
+    fx.bond.push([p.a, p.b, 0.4]);
+  }
+  // the dance floor: who dances with whom, and a dance-off between the two boldest
+  used2.clear();
+  for (const p of pairBy((a, b) => bondOf(ctx, a, b) + (loose[a] + loose[b]) * 3, (a, b) => bondOf(ctx, a, b) >= 0, 3)) {
+    moments.push({ kind: 'dance', who: [p.a, p.b], text: `${p.a} and ${p.b} dance together for three songs in a row.` });
+    fx.bond.push([p.a, p.b, 0.5]);
+  }
+  const bold = house.slice().sort((a, b) => st(ctx, b, 'boldness') - st(ctx, a, 'boldness') + (rng() - 0.5) * 3);
+  if (bold.length >= 2) {
+    const [d1, d2] = bold;
+    const win = st(ctx, d1, 'physical') + st(ctx, d1, 'social') + rng() * 6 >= st(ctx, d2, 'physical') + st(ctx, d2, 'social') + rng() * 6 ? d1 : d2;
+    moments.push({ kind: 'danceoff', who: [d1, d2], winner: win, text: `A dance-off breaks out between ${d1} and ${d2}. The house picks ${win}.` });
+    fx.pub.push([win, 'fun', 0.2, 'won the dance-off at the party']);
+    fx.bond.push([d1, d2, 0.3]);
+  }
+  // the party's own game, by its theme: the winner gets $1,000 from the Voice
+  const GAME = { karaoke: 'a karaoke battle', 'pink-white': 'a limbo contest', samba: 'a samba contest', costumes: 'a best-costume contest', garden: 'a game of musical chairs',
+    halloween: 'a scream contest', 'masked-ball': 'a guess-who-is-behind-the-mask game', eighties: 'an air guitar contest' };
+  const champ = house.slice().sort((a, b) => st(ctx, b, 'boldness') + st(ctx, b, 'social') - st(ctx, a, 'boldness') - st(ctx, a, 'social') + (rng() - 0.5) * 8)[0];
+  if (champ) {
+    mint(state, champ, 1000, 'the party game', week);
+    moments.push({ kind: 'game', who: [champ], game: GAME[th.id] || 'a party game', text: `${champ} wins ${GAME[th.id] || 'the party game'}, and $1,000 from the Voice.` });
+    fx.pub.push([champ, 'fun', 0.15, 'won the party game']);
+  }
+  // the toast: the star raises a glass to the house
+  moments.push({ kind: 'toast', who: [star], text: `${star} climbs on a chair and raises a glass to the whole house.` });
+  for (const n of house) if (n !== star) fx.bond.push([star, n, 0.15]);
+  // heart-to-hearts: two who barely know each other, away from the music
+  used2.clear(); used2.add(star);
+  for (const p of pairBy((a, b) => (st(ctx, a, 'social') + st(ctx, b, 'social')) / 4 - Math.abs(bondOf(ctx, a, b) - 1), (a, b) => bondOf(ctx, a, b) > -2 && bondOf(ctx, a, b) < 5, 2)) {
+    const topic = pick(['home', 'family', 'love', 'the game', 'the secret'], rng);
+    moments.push({ kind: 'talk', who: [p.a, p.b], topic, text: `${p.a} and ${p.b} end up talking for an hour, away from the music, about ${topic === 'the secret' ? 'how hard it is to keep a secret in here' : topic === 'the game' ? 'the game' : topic}.` });
+    fx.bond.push([p.a, p.b, 1]);
+  }
+  // gossip by the drinks: two allies about a third, and sometimes the third hears it
+  used2.clear();
+  const [gp] = pairBy((a, b) => bondOf(ctx, a, b), (a, b) => bondOf(ctx, a, b) >= 4, 1);
+  if (gp) {
+    const about = house.filter(x => x !== gp.a && x !== gp.b).sort((x, y) => (bondOf(ctx, gp.a, x) + bondOf(ctx, gp.b, x)) - (bondOf(ctx, gp.a, y) + bondOf(ctx, gp.b, y)))[0];
+    if (about && bondOf(ctx, gp.a, about) + bondOf(ctx, gp.b, about) < 0) {
+      const heard = rng() < 0.3;
+      moments.push({ kind: 'gossip', who: [gp.a, gp.b, about], heard, text: `By the drinks, ${gp.a} and ${gp.b} talk about ${about}.${heard ? ` ${about} hears every word.` : ''}` });
+      fx.bond.push([gp.a, gp.b, 0.4], [gp.a, about, heard ? -1.5 : -0.3], [gp.b, about, heard ? -1.5 : -0.3]);
+      if (heard) fx.pub.push([about, 'pity', 0.15, 'heard the others talking about them at the party'], [gp.a, 'heat', 0.12, 'was caught gossiping at the party']);
+    }
+  }
+  // late: somebody ends up in the pool, fully dressed
+  const wet = house.slice().sort((a, b) => loose[b] - loose[a])[0];
+  if (wet && loose[wet] > 0.5) { moments.push({ kind: 'pool', who: [wet], text: `At two in the morning, ${wet} jumps in the pool fully dressed.` }); fx.pub.push([wet, 'fun', 0.15, 'jumped in the pool at the party']); }
   // the Voice's party mission, to one housemate
   const holder = house.slice().sort(() => rng() - 0.5)[0];
   const target = house.filter(x => x !== holder)[Math.floor(rng() * (house.length - 1))];

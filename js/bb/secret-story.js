@@ -508,6 +508,8 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     // a slip is human (a little pity); arguing with the Voice or talking
     // nominations is a character, and a bit of a rule-breaker
     if (r.kind === 'reveal') for (const h of r.holders) { pub(h, 'pity', 0.15, 'gave the secret away'); pub(h, 'fun', 0.1, 'gave the secret away'); }
+    // (told on purpose: the friend trusted is closer, the country less forgiving)
+    else if (r.kind === 'told') { applyFx(r.effects); for (const h of r.holders) { pub(h, 'heat', 0.2, 'told the secret on purpose'); pub(h, 'warmth', 0.08, 'told the secret on purpose'); } }
     else if (r.kind === 'contest') { pub(r.who, 'fun', 0.2, 'argued with the Voice'); pub(r.who, 'heat', 0.12, 'argued with the Voice'); }
     else { pub(r.who, 'fun', 0.1, "broke the Voice's rules"); pub(r.who, 'heat', 0.08, "broke the Voice's rules"); }
     acts.push(r);
@@ -838,6 +840,10 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
     // last week's eliminated, on the studio couch all night (S14)
     couch: state.lastEvicted && state.lastEvicted.week === ctx.week - 1 ? state.lastEvicted.name : null,
     kitty: { ...(state.kitty || {}) },
+    // the couples in the house tonight, for the host's live chat (the user, 2026-10-29: "check if the romance is
+    // developed enough for secret story cause its a real important part of the real show")
+    couples: (/** @type {any} */ (globalThis).gs?.showmances || []).filter(sh => (sh.players || []).length === 2 && sh.phase !== 'broken-up' && !sh.broken && sh.players.every(n => room.includes(n)))
+      .map(sh => ({ a: sh.players[0], b: sh.players[1], phase: sh.phase, weeks: Number(sh.episodesActive) || 0 })),
     // (where each kitty stood when the week began: the board rolls from there, vp-bb-ep/ss-hud.js)
     kittyStart: { ...(state.kittyAtWeekStart || {}) },
     beats: [{ text: `The prime: ${night.name}.`, players: players.slice(0, 4), badgeText: 'THE PRIME', badgeClass: 'gold', part: 'prime' }] }];
@@ -1149,7 +1155,9 @@ export function secretStoryFinalWeek({ finalists = [], rng = Math.random } = {})
   // THE LAST PARTY (js/ss/final.js finalParty): every eliminated housemate back for one night, with the season's
   // showmances (romance.js: { players, phase, broken })
   const couples = (gs.showmances || []).filter(sh => (sh.players || []).length === 2)
-    .map(sh => ({ a: sh.players[0], b: sh.players[1], broken: !!sh.broken || sh.phase === 'broken-up' }));
+    // (an elimination SEPARATES a couple, it does not end it: romance.js marks it 'broken-up' with breakupType 'separated',
+    // and half the "broken" couples were still together; they reunite at the last party, they do not walk past each other)
+    .map(sh => ({ a: sh.players[0], b: sh.players[1], broken: (!!sh.broken || sh.phase === 'broken-up') && !['separated', 'betrayed-survived'].includes(sh.breakupType) }));
   const party = finalParty(state, ctx, { finalists, eliminated, couples });
   for (const m of party.moments) applyFx(m.fx);
   const acts = [];

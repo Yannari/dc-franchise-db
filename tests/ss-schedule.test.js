@@ -9,6 +9,8 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, bbTwistsForWeek } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
+import { ssRandomDraw, SS_CARD_IDS } from '../js/ss/schedule.js';
+import { readSchedule } from '../js/bb/secret-story.js';
 
 describe('the timeline for a Secret Story season', () => {
   it("offers Secret Story's twists, every one on a shelf with a button, and none of Big Brother's", () => {
@@ -42,5 +44,47 @@ describe('a twist placed on a week', () => {
     expect(st.weekTwists[2]?.kind).toBe('red-room');
     expect((st.primes || []).find(p => p.week === 2)?.theme).toBe('bridge');
     expect(gs.episodeHistory.find(r => r.num === 3).acts.find(a => a.type === 'eviction')?.ssPublic?.mode).toBe('house-decides');
+  });
+});
+
+// the user, 2026-10-28: "the randomizer is not using at all the twists of Secret Story"
+describe("the timeline's Randomize", () => {
+  const weeks = Array.from({ length: 12 }, (_, i) => ({ ep: i + 1, active: 14 - Math.max(0, i - 1), finale: i === 11 }));
+  const seeds = n => { let x = n; return () => ((x = (x * 9301 + 49297) % 233280) / 233280); };
+  it('books only Secret Story cards, never on week one or the final, every card a real twist', () => {
+    const ids = new Set(twistsForFormat({ format: 'secret-story' }).map(t => t.id));
+    let total = 0;
+    for (let s = 1; s <= 40; s++) {
+      const book = ssRandomDraw(seeds(s), weeks);
+      total += book.length;
+      for (const [ep, id] of book) {
+        expect(ids.has(id), id).toBe(true);
+        expect(SS_CARD_IDS.has(id)).toBe(true);
+        expect(ep).toBeGreaterThanOrEqual(2);
+        expect(ep).toBeLessThan(12);
+      }
+      // a once-a-season card once
+      for (const id of ['ss-for-life', 'ss-everybody', 'ss-ticket', 'ss-house-decides', 'ss-vote-to-evict']) expect(book.filter(b => b[1] === id).length).toBeLessThanOrEqual(1);
+      expect(book.filter(b => /^ss-(second-house|clans|bears)$/.test(b[1])).length).toBeLessThanOrEqual(1);
+    }
+    // (a season gets a real handful, not none and not one a week of everything)
+    expect(total / 40).toBeGreaterThan(4);
+    expect(total / 40).toBeLessThan(14);
+  });
+  it('a drawn season plays exactly its cards; a hand-placed card only pins its week', () => {
+    const was = seasonConfig.twistSchedule;
+    seasonConfig.twistSchedule = [{ episode: 3, type: 'ss-red-room', random: true }];
+    const st = {};
+    readSchedule(st, 3); readSchedule(st, 4);
+    expect(st.forceWeekTwist).toEqual({ 3: 'red-room', 4: 'none' });
+    expect(st.forcePrimeTheme[3]).toBe('none');
+    expect(st.forceVoteMode[4]).toBe('save');
+    expect(st.forceTicket[4]).toBe('none');
+    seasonConfig.twistSchedule = [{ episode: 3, type: 'ss-red-room' }];
+    const hand = {};
+    readSchedule(hand, 3); readSchedule(hand, 4);
+    expect(hand.forceWeekTwist).toEqual({ 3: 'red-room' });
+    expect(hand.forcePrimeTheme).toBeUndefined();
+    seasonConfig.twistSchedule = was;
   });
 });

@@ -131,9 +131,19 @@ const SS_SCHEDULE = {
   'ss-house-decides': ['forceVoteMode', 'house-decides'], 'ss-vote-to-evict': ['forceVoteMode', 'evict'], 'ss-ticket': ['forceTicket', true],
 };
 export function readSchedule(state, wk) {
-  for (const t of (seasonConfig?.twistSchedule || []).filter(x => x && Number(x.episode) === Number(wk))) {
+  const all = (seasonConfig?.twistSchedule || []).filter(Boolean);
+  for (const t of all.filter(x => Number(x.episode) === Number(wk))) {
     const m = SS_SCHEDULE[t.type];
     if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
+  }
+  // A season the timeline's Randomize drew (js/ss/schedule.js) plays exactly its cards: a week the draw left empty
+  // has no twist of its own on top. Cards placed by hand pin their week and leave the rest to the engine.
+  if (all.some(x => x.random && SS_SCHEDULE[x.type])) {
+    for (const [key, none] of [['forceWeekTwist', 'none'], ['forcePrimeTheme', 'none'], ['forceSplit', 'none'], ['forceDeception', 'none'], ['forceVoteMode', 'save'], ['forceTicket', 'none']]) {
+      // (an Arena house is split from week two whatever the cards say: js/ss/split.js)
+      if (key === 'forceSplit' && state.houseTheme === 'arena') continue;
+      if ((state[key] ||= {})[wk] == null) state[key][wk] = none;
+    }
   }
 }
 

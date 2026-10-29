@@ -56,7 +56,9 @@ export function houseDecides(ctx, { bottom = [], house = [], publicLowest = null
 /** The ticket: once, late in the season (eight or fewer in the house), the house votes one of its own through. */
 export function ticketDue(state, ctx, { house = [] } = {}) {
   const wk = ctx.week ?? 0;
-  if (state.forceTicket?.[wk]) return true;
+  const forced = state.forceTicket?.[wk];
+  if (forced === 'none') return false;
+  if (forced) return true;
   if (state.ticket || house.length > 8 || house.length < 5) return false;
   return (ctx.rng || Math.random)() < 0.2;
 }

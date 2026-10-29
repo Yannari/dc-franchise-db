@@ -27,6 +27,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
+import { ssRandomDraw, SS_CARD_IDS } from './ss/schedule.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   rewriteCircleEpisode, circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
 import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
@@ -2450,6 +2451,20 @@ function _randomizeCircle() {
   renderTimeline();
 }
 
+/** Secret Story's Randomize: a whole season of its own twists, booked as cards (js/ss/schedule.js). Cards the author
+ *  booked by hand stay; an earlier draw is replaced. A drawn season plays exactly its cards (readSchedule). */
+function _randomizeSecretStory() {
+  const had = (seasonConfig.twistSchedule || []).filter(b => b && b.random && SS_CARD_IDS.has(b.type)).length;
+  if (had && !confirm(`Replace the ${had} drawn Secret Story twist${had === 1 ? '' : 's'} on the timeline with a new random season? Twists you placed yourself stay.`)) return;
+  const weeks = buildEpisodeMap().map(e => ({ ep: e.ep, active: e.active, finale: e.phase === 'finale' }));
+  const mine = new Set((seasonConfig.twistSchedule || []).filter(b => b && !b.random && SS_CARD_IDS.has(b.type)).map(b => `${b.episode}|${b.type}`));
+  const book = ssRandomDraw(Math.random, weeks).filter(([ep, type]) => !mine.has(`${ep}|${type}`));
+  const keep = (seasonConfig.twistSchedule || []).filter(b => !(b && b.random && SS_CARD_IDS.has(b.type)));
+  seasonConfig.twistSchedule = [...keep, ...book.map(([ep, type], i) => ({ id: `tw-${Date.now()}-${i}`, episode: ep, type, random: true }))];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTimeline();
+}
+
 function _randomizeVilla() {
   const mine = TWIST_CATALOG.filter(t => t.pmFormat || t.pmApply);
   // The author's own Dumps picks stay: Randomize fills the season around them
@@ -3622,6 +3637,9 @@ export function buildEpisodeMap() {
     // projection reads twist IDs rather than resolved rules — the same reason
     // the double eviction and the Split House are both listed by name.
     if (_allTypes.includes('bb-no-eviction')) elims = 0;
+    // Secret Story's first week is launch night and the days: no prime, nobody leaves (js/bb/secret-story.js
+    // ssNoPrimeWeek), so the season runs a week longer than one-out-a-week
+    if (ep === 1 && (typeof seasonFormat === 'function' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'secret-story') elims = 0;
     if (_allTypes.includes('bb-double-eviction')) elims = Math.max(elims, 2);
     if (_allTypes.includes('bb-triple-eviction')) elims = Math.max(elims, 3);
     // The Camp Director takes TWO on night one, and this projection was
@@ -4506,6 +4524,7 @@ export function renderTimeline() {
   const epMap   = buildEpisodeMap();
   const schedule = (seasonConfig.twistSchedule || []).filter(Boolean);
   const isHouse = (typeof engineFormat !== 'undefined' ? engineFormat(seasonConfig) : seasonConfig.format) === 'big-brother';
+  const _isSS = (typeof seasonFormat !== 'undefined' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'secret-story';
 
   if (!epMap.length) {
     container.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">Add players in Cast Builder to generate timeline.</div>';
@@ -4929,7 +4948,8 @@ export function renderTimeline() {
     // Drama, and left alone it would print a meaningless PRE on every night.
     const _pmEp = _pmEps?.get(ep) || null;
     // …and the night's set piece, so Movie Night and the rest are on the map.
-    const phaseLabel  = _ciD ? _ciD.label.toUpperCase()
+    const phaseLabel  = _isSS ? (isFinale ? '' : ep === 1 ? 'LAUNCH NIGHT · NO PRIME' : 'THE DAYS · THE PRIME')
+      : _ciD ? _ciD.label.toUpperCase()
       : _pmEp ? [(_pmEp.finalRecoupling ? 'Final recoupling' : PM_EPISODE_WORDS[_pmEp.moment]) || '', ...(_pmEp.rituals || []).map(r => PM_RITUAL_NAMES[r] || r)].filter(Boolean).join(' · ').toUpperCase()
       : isChallengeSeason() ? (double ? 'DOUBLE ELIMINATION' : '')
       : isRaceSeason() ? (nonElim ? 'NON-ELIMINATION' : '')
@@ -4954,7 +4974,13 @@ export function renderTimeline() {
             ${_bbFinalCompPicker('one', 'final-1', 'PART 1')}${_bbFinalCompPicker('two', 'final-2', 'PART 2')}
             <span style="font-size:9.5px;letter-spacing:.5px;color:var(--muted,#7d8590);align-self:center" title="Part three is the jury quiz every season">PART 3 · Jury Statements</span>
           </div>`
-        : `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
+        // Secret Story: no Head of Household and no veto; the week's competition is the Voice's game (the user,
+        // 2026-10-28: "the season timeline still uses the one for Big Brother with HOH, veto")
+        : _isSS
+          ? `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,62,165,0.18)">
+            ${_bbCompPicker(ep, 'hoh', "VOICE'S GAME")}
+          </div>`
+          : `<div class="fd-ep-comps" style="display:flex;gap:4px;flex-wrap:wrap;min-width:0;margin-top:5px;padding-top:5px;border-top:1px solid rgba(99,102,241,0.12)">
             ${_bbCompPicker(ep, 'hoh', 'HOH')}${_bbCompPicker(ep, 'veto', 'VETO')}
           </div>`)
       : '';
@@ -5885,6 +5911,8 @@ export function showRandomizerPanel() {
   const existing = document.getElementById('randomizer-panel');
   if (existing) { existing.remove(); return; }
   if (isPerfectMatchSeason()) { _randomizeVilla(); return; }
+  // Secret Story draws its own twists (the user, 2026-10-28: "the randomizer is not using at all the twists of Secret Story")
+  if ((typeof seasonFormat === 'function' ? seasonFormat(seasonConfig) : seasonConfig.format) === 'secret-story') { _randomizeSecretStory(); return; }
   // The Circle draws its own nights; a card booked on the timeline pins one.
   if (isCircleSeason()) { _randomizeCircle(); return; }
   // The Challenge draws its own dailies and Arena games; it has no twist cards yet.

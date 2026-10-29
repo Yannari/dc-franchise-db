@@ -114,7 +114,8 @@ export function houseStructure(config = {}, castSize = 0) {
   const N = Number(castSize) || 0;
   // SECRET STORY: housemates, no jury; the public eliminates and crowns.
   if (seasonFormat(config) === SS_FORMAT) {
-    const weeks = Math.max(0, N - 3);
+    // (one elimination a week to the final three, plus week one: launch night and the days, nobody out)
+    const weeks = Math.max(0, N - 3) + (N > 3 ? 1 : 0);
     const rule = { gendered: 'one sex nominates the other', mixed: 'everybody nominates' }[config.ssNominations] || 'nominations drawn';
     return [
       { label: `${N} housemate${N === 1 ? '' : 's'}`, ok: N >= 6, why: N >= 6 ? undefined : 'The House of Secrets needs at least 6 housemates' },

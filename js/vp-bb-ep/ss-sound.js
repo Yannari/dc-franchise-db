@@ -98,6 +98,8 @@ const BY_ID = [
   [/^bb-ss-split-(start|duel)-/, 'ss-epic'],
   [/^bb-ss-split-end-/, 'ss-love'],
   [/^bb-ss-duo-(stolen|jealous|care)-/, 'ss-love'],
+  [/^bb-ss-love-(fight|doubt|third|plot)-/, 'ss-plot'],
+  [/^bb-ss-love-/, 'ss-love'],
   [/^bb-ss-duo-/, 'ss-plot'],
   [/^bb-ss-event-room-/, 'ss-secretroom'],
   [/^bb-ss-event-mission-/, 'ss-mission'],

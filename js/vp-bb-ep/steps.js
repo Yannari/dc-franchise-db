@@ -41,6 +41,7 @@ import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssProductionScreen } from './ss-production.js';
 import { ssSplitScreens } from './ss-split.js';
 import { ssDuoScreen } from './ss-couples.js';
+import { ssLoveScreen } from './ss-love.js';
 import { ssDeceptionWeekScreen, ssFalseVoiceRevealScreen, ssRobotUnmaskScreen, ssTicketScreen } from './ss-deceptions.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
@@ -3528,6 +3529,7 @@ function ssNomScreen(act, ctx) {
     mission: ["they're playing a strong game", "they're a threat, honestly", "I don't think they're showing us their real game"],
     'talked-into-it': ['some people have opened my eyes about them', "I've heard things about them this week", "a few people told me to watch out for them"],
     annoying: ["they've been impossible all week", "I can't take another week of this", "they get on everybody's nerves, not just mine", "they make every little thing into a drama"],
+    'the-couple': ["they're in a couple, and a couple is two votes", "they and their other half vote together every week. Somebody has to split them up", "if that couple reaches the final together, we're all finished", "nobody wants to say it, but the couple is the biggest threat in here"],
     gut: ["it's a feeling, and I trust my feelings", "something about them doesn't add up", "I can't explain it, but I don't trust them", "my gut says they're hiding more than a secret"],
   };
   // the nominations, in the confessional: one housemate at a time, nobody else in the room (the user, 2026-10-28:
@@ -3707,6 +3709,7 @@ const NOM_Q = {
   'talked-into-it': n => `${n}, it looks like somebody turned people against you this week. Do you know who?`,
   annoying: n => `${n}, the house says you have been hard to live with this week. Fair?`,
   gut: n => `${n}, why do you think the house put you here?`,
+  'the-couple': n => `${n}, the house says the couple is too strong, and it wants to split you up. Is it working?`,
   'd-office': n => `${n}, you are here because the Voice put you here. Was it worth breaking the rules?`,
 };
 const NOM_A = {
@@ -3722,6 +3725,7 @@ const NOM_A = {
   gut: ["I don't know. That's what scares me.", "Probably because I'm not in the big group.", "I think some people are scared of me.",
     "Honestly? I've been asking myself all week.", "Because I'm easy to put up. I'm not close to the people who decide."],
   'd-office': ["No. I knew the rules. I'm sorry.", "It was stupid, and I know it.", "I'd take it back if I could."],
+  'the-couple': ['They can split us in here. Not out there.', "I knew this would happen the day we got together. I'd do it again.", "If loving somebody in here is a crime, then yes, I'm guilty."],
 };
 const PLEA_SS = ["Please keep me in. I've got so much more to give in there.", "I'm in this to the end. Please give me one more week.",
   "My secret is still safe, and I want to keep fighting for it. Please vote for me.", "I've been myself every single day. If you like that, keep me in.",
@@ -3741,11 +3745,23 @@ function ssAirlockScreen(act, ctx, host) {
     for (const b of nomAct.ballots || []) { const r = b.reasons?.[n]; if (r) tally[r] = (tally[r] || 0) + 1; }
     return Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0] || 'gut';
   };
-  const friendOf = n => (ctx.house || []).filter(x => x !== n && !noms.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0] || null;
+  // (a nominee's other half speaks for them first: the couples on the night, js/bb/secret-story.js)
+  const mateOf = n => (act.couples || []).map(c => (c.a === n ? c.b : c.b === n ? c.a : null)).find(Boolean) || null;
+  const friendOf = n => { const m = mateOf(n); if (m && !noms.includes(m) && (ctx.house || []).includes(m)) return m; return (ctx.house || []).filter(x => x !== n && !noms.includes(x)).sort((a, b) => bondNow(ctx, n, b) - bondNow(ctx, n, a))[0] || null; };
   /** @type {BB.Step[]} */ const steps = [
     { k: 'host', by: host, t: `${listOf(noms)}, please make your way to the airlock.` },
     { k: 'beat', t: `${listOf(noms)} get up from the sofas. The house hugs them on the way past. The airlock door slides shut behind them.`, tense: noms },
   ];
+  // both halves of a couple in the airlock: the house went after the couple
+  const pair = noms.map(n => [n, mateOf(n)]).find(([n, m]) => m && noms.includes(m) && n < m);
+  if (pair) {
+    const [x, y] = pair;
+    steps.push({ k: 'beat', t: `${x} and ${y} stand side by side in the airlock, and ${x} takes ${y}'s hand.`, toast: ['THE COUPLE', '#ff8fb1'], tense: [x, y] },
+      { k: 'host', by: host, t: `${x}, ${y}, both of you, in the airlock, in the same week. The house wanted the couple split. How does that feel?` },
+      { k: 'say', by: x, t: pickBy(["Like they're scared of us. Good.", "It hurts. But we knew this would come.", "They can split us in here. They can't split us out there."], `${k}|cp1`) },
+      { k: 'say', by: y, t: pickBy(["Whatever happens tonight, I don't regret one day of it.", "If one of us goes, the other one wins it. That's the deal.", "I'd rather go home than stand here without them."], `${k}|cp2`) },
+      { k: 'host', by: host, t: 'Public, you have two hearts in your hands tonight.' });
+  }
   // the week as the public saw it: the nominee's own moments (the week's house life)
   const moments = n => (ctx.row?.acts || []).filter(a => a?.type === 'house').flatMap(a => a.socialBeats || [])
     .filter(b => b?.text && String(b.text).startsWith(n) && !/\b(HOH|Head of Household|veto|evict\w*|jury|vote\w*|voting|the numbers|keeping you|final two|the block)\b/i.test(b.text) && String(b.text).length <= 260).map(b => b.text);
@@ -3768,7 +3784,11 @@ function ssAirlockScreen(act, ctx, host) {
     steps.push({ k: 'host', by: host, t: (NOM_Q[r] || NOM_Q.gut)(n) });
     steps.push({ k: 'say', by: n, t: fresh(NOM_A[r] || NOM_A.gut, `${k}|a|${n}`) });
     const f = friendOf(n);
-    if (f) {
+    if (f && f === mateOf(n)) {
+      steps.push({ k: 'host', by: host, t: `${f}, ${n} is in the airlock, and you're not. A word for the public?` },
+        { k: 'say', by: f, t: fresh([`Please. I'm asking you, everybody at home. Don't take ${n} away from me.`, `${n} is the best thing that has happened to me in here. Keep us together.`, `I'd swap places with ${n} right now if I could.`], `${k}|m|${n}`) },
+        { k: 'beat', t: `${n} puts a hand on the glass. On the other side, ${f} does the same.` });
+    } else if (f) {
       const P = /** @type {any} */ (pronouns(n) || {});
       steps.push({ k: 'host', by: host, t: `${f}, you're close to ${n}. A word for the public?` });
       steps.push({ k: 'say', by: f, t: fresh([`${n} is the most genuine person in this house. Please keep ${P.obj || 'them'} in.`, `I need ${n} in here with me. Please, vote for ${n}.`,
@@ -6169,6 +6189,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-production': { const scr = ssProductionScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-duo': { const scr = ssDuoScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
+      case 'ss-love': { const scr = ssLoveScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-deception': { const scr = ssDeceptionWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-split': { const scrs = ssSplitScreens(act, ctx, { ssv }); if (scrs.length) { flush(); for (const scr of scrs) ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
@@ -6318,6 +6339,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       const isLove = x => x && (x.plate === 'hoh-suite' || (!x.plate && x.set === 'hoh'));
       const toBed = (x, key) => { const plate = pickBy(BEDS, key); return { ...x, set: 'bedroom', plate, room: 'Bedroom', kicker: String(x.kicker || '').replace(/HOH (Room|Suite)|Love Room/i, 'Bedroom') }; };
       for (const s of out) {
+        if (/^bb-ss-love-loveroom-/.test(String(s.id || ''))) continue;
         const steps = s.steps || [];
         const textFrom = i => { let t = ''; for (let j = i; j < steps.length && (j === i || !steps[j].scene); j++) t += ` ${steps[j].t || ''}`; return t; };
         steps.forEach((st, i) => { if (isLove(st.scene) && !LOVE.test(textFrom(i))) steps[i] = { ...st, scene: toBed(st.scene, `${s.id}|${i}`) }; });

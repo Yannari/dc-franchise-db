@@ -45,6 +45,7 @@ import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../s
 import { weekTwist, twistOf, forLifeNow } from '../ss/nomination-twists.js';
 import { startGroup, weekInGroup, enterFromGroup, groupHidden, GROUPS } from '../ss/hidden-groups.js';
 import { weeklyRuleBreaks, dOfficeFor, extraVotesFor, COMMANDMENTS, COMMANDMENTS_REVIVAL } from '../ss/voice.js';
+import { loveWeek } from '../ss/love.js';
 import { resolveWeekly, settleWeeklyGame } from '../ss/games.js';
 import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js';
 import { castNominations } from '../ss/nominations.js';
@@ -653,6 +654,22 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     void effects; void evidence;
     acts.push({ type: 'ss-duo', week: ctx.week, ...rest,
       beats: [{ text: `${d.a} and ${d.b} keep their secret hidden (${d.kind}).${d.caughtBy ? ` ${d.caughtBy} nearly catches them.` : ''}`, players: [d.a, d.b], badgeText: 'A HIDDEN TIE', badgeClass: 'purple', part: 'duo' }] });
+  }
+  // LOVE IN THE HOUSE (js/ss/love.js): the Love Room, and the couple's week (pillow talk, a confession, a doubt, a row,
+  // the future, a third, the plot to split them)
+  {
+    const G = /** @type {any} */ (globalThis).gs || {};
+    const couples = (G.showmances || []).filter(sh => (sh.players || []).length === 2 && sh.phase !== 'broken-up' && !sh.broken && sh.players.every(n => room.includes(n)))
+      .map(sh => ({ a: sh.players[0], b: sh.players[1], phase: sh.phase, weeks: Number(sh.episodesActive) || 0, strain: Number(sh.strain) || 0 }));
+    const sparks = (G.romanticSparks || []).filter(sp => !sp.fake && (sp.players || []).length === 2 && sp.players.every(n => room.includes(n))).map(sp => sp.players.slice());
+    for (const ev of loveWeek(state, { ...ctx, compat: (a, b) => { try { return romanticCompat(a, b); } catch { return false; } } }, { house: room, couples, sparks })) {
+      applyFx(ev.effects);
+      if (ev.kind === 'loveroom') { const sh = (G.showmances || []).find(s => s.players?.includes(ev.a) && s.players?.includes(ev.b)); if (sh) sh.loveRoom = ctx.week; }
+      const { effects, ...rest } = ev;
+      void effects;
+      acts.push({ type: 'ss-love', week: ctx.week, ...rest,
+        beats: [{ text: ev.kind === 'loveroom' ? `${ev.a} and ${ev.b} spend a night in the Love Room.` : `${ev.a} and ${ev.b}: ${ev.kind}.`, players: [ev.a, ev.b, ev.c].filter(Boolean), badgeText: ev.kind === 'loveroom' ? 'THE LOVE ROOM' : 'LOVE', badgeClass: 'purple', part: 'love' }] });
+    }
   }
   // WHO IS REALLY TALKING (js/ss/deceptions.js): a week of the false Voice, or of Monsieur Robot with an eliminated
   // housemate inside; both are revealed at the prime.

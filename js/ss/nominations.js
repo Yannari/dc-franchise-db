@@ -55,6 +55,11 @@ export function nominationWish(state, ctx, voter, cand) {
     }
     if (e.event === 'self-nominated' && m.holders[0] === cand) parts.push([1.4, 'annoying']);
   }
+  // 6. A couple votes together, and a strategist would rather split it; the ones who plotted it this week mean it
+  //    (js/ss/love.js: "strategy to put the couple in the sas", the user, 2026-10-29).
+  const plot = state.love?.plots?.[week];
+  if (plot && plot.by.includes(voter) && plot.couple.includes(cand)) parts.push([3.2, 'the-couple']);
+  else if ((state.love?.couples || []).some(c => c.includes(cand) && !c.includes(voter)) && st(ctx, voter, 'strategic') >= 6) parts.push([0.6 + st(ctx, voter, 'strategic') * 0.08, 'the-couple']);
   // The public's favourite is a wasted vote, and the house learns that as the
   // weeks go by.
   const pop = Number(ctx.pop?.(cand)) || 0;

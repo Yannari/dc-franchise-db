@@ -15,11 +15,16 @@
 // whichever page is open, and the user, 2026-10-29 ("i still dont see it use the Aachen Bold font"), saw the
 // names fall back to a plain sans. It is also loaded the moment Secret Story's code is, so the first name drawn
 // is already in it rather than swapped in late (or never, on a page that only draws it once).
-export const SS_FONT_URL = (() => { try { return new URL('../../assets/fonts/Aachen-Bold.otf', import.meta.url).href; } catch { return 'assets/fonts/Aachen-Bold.otf'; } })();
-export const SS_FONT_FACE = `@font-face{font-family:'SSAachen';src:url('${SS_FONT_URL}') format('opentype');font-weight:100 900;font-display:swap}`;
+// It is a .woff2 with TrueType outlines (tools: fontTools cu2qu from the .otf), like every other font the user's
+// browser draws: the same day the user's screen still showed the .otf's names in Arial while the Nunito .woff2
+// beside them rendered. The .otf stays as the second source.
+const fontAt = f => { try { return new URL(`../../assets/fonts/${f}`, import.meta.url).href; } catch { return `assets/fonts/${f}`; } };
+export const SS_FONT_URL = fontAt('Aachen-Bold.woff2');
+const SS_FONT_SRC = `url('${SS_FONT_URL}') format('woff2'),url('${fontAt('Aachen-Bold.otf')}') format('opentype')`;
+export const SS_FONT_FACE = `@font-face{font-family:'SSAachen';src:${SS_FONT_SRC};font-weight:100 900;font-display:swap}`;
 if (typeof document !== 'undefined' && document.fonts && typeof FontFace === 'function') {
   try {
-    const f = new FontFace('SSAachen', `url('${SS_FONT_URL}') format('opentype')`, { weight: '100 900', display: 'swap' });
+    const f = new FontFace('SSAachen', SS_FONT_SRC, { weight: '100 900', display: 'swap' });
     document.fonts.add(f);
     f.load().catch(() => { /* the @font-face in the styles tries again */ });
   } catch { /* no FontFace here */ }

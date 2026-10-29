@@ -132,7 +132,7 @@ export function ssLineHtml(S, st, fresh, L, H) {
   const c = H.col(st.by);
   const tx = `<div class="tx" data-full="${esc(st.t)}" data-emph="${esc(H.emph(st.t, H.names))}">${fresh ? '' : H.emph(st.t, H.names)}</div>`;
   if (st.k === 'dr') {
-    return `<div class="ssd ${fresh ? 'fresh' : ''}" style="--c:${c}"><div class="ssd-plate"><img src="${EYE}" alt=""><b>${esc(st.by)}</b><i>${st.live ? 'LIVE · CONFESSIONAL' : st.clip ? 'PORTRAIT' : 'CONFESSIONAL'}</i></div>
+    return `<div class="ssd ${fresh ? 'fresh' : ''}" style="--c:${c}"><div class="ssd-plate"><b><span>${esc(st.by)}</span></b><i>${st.live ? 'LIVE · CONFESSIONAL' : st.clip ? 'PORTRAIT' : 'CONFESSIONAL'}</i></div>
       <div class="ssd-body">${tx}</div></div>`;
   }
   const role = st.k === 'host' ? 'HOST · LIVE' : H.nominated?.(st.by) ? 'NOMINATED' : 'HOUSEMATE';
@@ -204,7 +204,9 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   // public already knows it belongs to on a cloud beside it (the user's reference, S14)
   if (st.secretlist) {
     const L = st.secretlist;
-    h += `<div class="ssls ${fresh ? 'fresh' : ''}"><div class="ssls-sky"></div><b class="ssls-h"><span>THE LIST</span><span>OF SECRETS</span></b><div class="ssls-r">${(L.rows || []).map((r, i) => `
+    // (a secret read out on its own first: its card, numbered, over the board; the user, 2026-10-29)
+    const card = L.show ? `<div class="ssls-card ${fresh ? 'fresh' : ''}"><i>SECRET N°${esc(L.show.no)}</i><b>${esc(L.show.text)}</b>${L.show.pair ? '<em>SHARED BY TWO</em>' : ''}<img src="${EYE}" alt=""></div>` : '';
+    h += `<div class="ssls ${fresh && !L.show ? 'fresh' : ''} ${L.show ? 'carded' : ''}"><div class="ssls-sky"></div><b class="ssls-h"><span>THE LIST</span><span>OF SECRETS</span></b>${card}<div class="ssls-r">${(L.rows || []).map((r, i) => `
       <div class="ssls-row ${r.new ? 'new' : ''} g${i % 4}" style="--i:${i}">${r.who ? `<span class="ssls-who"><span class="ssls-f" style="--c:${H.col(r.who)}">${H.img(r.who)}</span><em>${esc(r.who)}</em></span>` : ''}<span class="ssls-p">${esc(r.text)}</span></div>`).join('')}</div>
       <img class="ssls-eye" src="${EYE}" alt=""></div>`;
   }
@@ -286,16 +288,17 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
 /* a clean HD picture: no film grain, no scanlines (the user, 2026-10-28: "we're not in 2006 anymore") */
 .bbx .stage.ss .grain{display:none}
-/* the names under the faces, in the show's own lettering (Aachen Bold: the user, 2026-10-28), and lettered the
-   way the logo is (2026-10-29, "the font name has no stylization"): the pink fill in front, a copy behind it from
-   data-t carrying the white outline and the purple drop (vp-bb-ep/ss-type.js, .ssx) */
-.bbx .stage.ss .plate b,.bbx .stage.ss .plate span{font-family:'SSAachen',sans-serif!important;font-weight:400!important;letter-spacing:.04em}
-.bbx .stage.ss .gt .plate b{position:relative;font-size:1.6cqw;letter-spacing:.06em;text-shadow:none;padding:0 .08em}
-.bbx .stage.ss .gt .plate b::before{content:attr(data-t);position:absolute;left:.08em;top:0;white-space:nowrap;color:#fff;-webkit-text-stroke:.2em #fff;pointer-events:none;
-  filter:drop-shadow(.04em .06em 0 #9b1a7c) drop-shadow(.03em .05em 0 #5b0d4f) drop-shadow(0 .12em .25em rgba(15,0,25,.7))}
-.bbx .stage.ss .gt .plate b>span{position:relative;color:transparent;-webkit-background-clip:text;background-clip:text;text-shadow:none;
-  background-image:linear-gradient(180deg,#ffe0f3 0%,#ff7fcb 28%,#ff2a9a 55%,#d4157f 78%,#8e0f63 100%)}
-.bbx .stage.ss .gt.host .plate b>span{background-image:linear-gradient(180deg,#e6fffb 0%,#6ff0e2 30%,#19d3c5 60%,#0d8f86 100%)}
+/* a name on screen is the real show's caption (the user, 2026-10-29, with a still of one: "this is the fonts and the
+   stylization we need"): capitals in Aachen Bold, a magenta gradient, on a white sticker with a thin dark rim.
+   Under the faces it is only drawn in a crowd (3+ in shot): "we dont really need a name under their avatar most
+   of the time", and alone or in a pair the line's own plate already says who is talking */
+.bbx .stage.ss .plate b,.bbx .stage.ss .plate span{font-family:'SSAachen',sans-serif!important;font-weight:400!important;letter-spacing:.03em}
+.bbx .stage.ss .gt .plate b{display:none;position:relative;font-size:1.25cqw;line-height:1;text-transform:uppercase;text-shadow:none;
+  background:linear-gradient(180deg,#fff 55%,#f3e7f0);padding:.3cqw .55cqw .2cqw;border-radius:.4cqw;box-shadow:0 0 0 .1cqw rgba(70,10,50,.6),0 .2cqw .5cqw rgba(0,0,0,.35)}
+.bbx .stage.ss:has(.gt:not(.bgp) ~ .gt:not(.bgp) ~ .gt:not(.bgp)) .gt .plate b{display:inline-block}
+.bbx .stage.ss .gt .plate b>span,.ssd-plate b>span{color:transparent;-webkit-background-clip:text;background-clip:text;text-shadow:none;
+  background-image:linear-gradient(180deg,#ff9fd8 0%,#ff4db5 32%,#e5168f 58%,#c30f7f 82%,#990a66 100%)}
+.bbx .stage.ss .gt.host .plate b>span{background-image:linear-gradient(180deg,#8ff5ea 0%,#19d3c5 45%,#0d8f86 100%)}
 .bbx .stage.ss .ledtv::after{background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 30%)}
 .bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
 .bbx .stage.ss .toast b{font-family:'SSAachen',sans-serif;font-weight:700;letter-spacing:.02em}
@@ -343,13 +346,12 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssl-next{position:absolute;right:2.2cqw;bottom:1.2cqw;color:var(--c);font-size:1.3cqw;animation:ss-bob 1s ease-in-out infinite}
 .ssl.fresh,.ssd.fresh{animation:ss-boxin .38s cubic-bezier(.2,1.3,.4,1)}
 .ssd{left:30cqw;right:3cqw}
-.ssd-plate{position:absolute;left:-26cqw;bottom:.6cqw;width:24cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.2cqw}
-.ssd-plate img{width:6cqw;animation:ss-blink 5s infinite}
-.ssd-plate b{font:700 3.4cqw/1 'SSAachen',sans-serif;color:#fff;background:linear-gradient(90deg,var(--ssm),var(--ssp));padding:.6cqw 1.6cqw .8cqw;border-radius:1cqw;
-  box-shadow:.35cqw .35cqw 0 var(--ssi),0 1cqw 2cqw rgba(0,0,0,.35);transform:rotate(-2deg)}
-.ssd-plate b{font:2.4cqw 'SSAachen',sans-serif;letter-spacing:.01em;color:var(--c,#fff);text-shadow:0 .15cqw 0 #fff,0 .3cqw .6cqw rgba(0,0,0,.25)}
-.ssd-plate i{font:1cqw 'SSAachen',sans-serif;letter-spacing:.3em;font-style:normal;color:#fff;background:var(--ssi);padding:.3cqw .9cqw;border-radius:.6cqw;margin-left:1cqw}
-.ssd.fresh .ssd-plate b{animation:ss-plate .55s cubic-bezier(.2,1.5,.4,1)}
+.ssd-plate{position:absolute;left:-26cqw;bottom:.6cqw;width:25cqw;display:flex;flex-direction:column;align-items:flex-start;gap:.55cqw}
+.ssd-plate b{position:relative;max-width:100%;overflow:hidden;white-space:nowrap;font:3cqw/1 'SSAachen',sans-serif;text-transform:uppercase;letter-spacing:.03em;
+  background:linear-gradient(180deg,#fff 55%,#f3e7f0);padding:.5cqw 1.05cqw .35cqw;border-radius:.75cqw;box-shadow:0 0 0 .16cqw rgba(70,10,50,.6),0 .4cqw 1cqw rgba(0,0,0,.35)}
+.ssd-plate i{font:.95cqw 'SSAachen',sans-serif;letter-spacing:.28em;font-style:normal;color:#fff;background:rgba(43,13,63,.85);padding:.3cqw .8cqw;border-radius:.5cqw;margin-left:.4cqw}
+.ssd.fresh .ssd-plate b{animation:ss-cap .45s cubic-bezier(.2,1.3,.4,1)}
+@keyframes ss-cap{from{transform:translateX(-3cqw);opacity:0}}
 /* the narrator */
 .ssn{position:absolute;left:12cqw;right:12cqw;bottom:2.2cqw;z-index:25;text-align:center}
 .ssn span{display:inline-block;font:italic 700 1.75cqw/1.4 'SSNunito',sans-serif;color:#fff;background:rgba(43,13,63,.78);padding:1cqw 2cqw;border-radius:1.2cqw;
@@ -436,7 +438,6 @@ export const SS_CSS = `${SS_TYPE_CSS}
 @keyframes ss-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
 @keyframes ss-slidein{from{transform:translateX(-2cqw);opacity:0}}
 @keyframes ss-boxin{from{transform:translateY(2cqw) scale(.97);opacity:0}}
-@keyframes ss-plate{from{transform:rotate(-14deg) scale(.4);opacity:0}}
 @keyframes ss-fade{from{opacity:0;transform:translateY(.8cqw)}}
 @keyframes ss-voicein{from{opacity:0;transform:scale(.92);filter:blur(.6cqw)}}
 @keyframes ss-ripple{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.5);opacity:0}}
@@ -551,6 +552,17 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssls-f img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
 .ssls-who em{order:-1;font:700 1.2cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;background:linear-gradient(90deg,#ff3ea5,#7c5cff);padding:.15cqw .8cqw;border-radius:2cqw;box-shadow:0 0 0 .18cqw #fff}
 .ssls-eye{position:absolute;right:2.4cqw;bottom:1.6cqw;width:7cqw;filter:drop-shadow(0 .6cqw 1cqw rgba(0,0,0,.25))}
+.ssls.carded .ssls-r{filter:blur(.25cqw);opacity:.35}
+.ssls-card{position:absolute;z-index:3;left:50%;top:53%;translate:-50% -50%;width:46cqw;min-height:22cqw;padding:3cqw 3.4cqw 3.4cqw;border-radius:2.4cqw;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4cqw;text-align:center;
+  background:linear-gradient(160deg,#fff 0%,#ffe6f4 60%,#f3dcff 100%);box-shadow:0 0 0 .45cqw #fff,0 0 0 .8cqw #ff3ea5,0 2cqw 5cqw rgba(60,0,60,.45)}
+.ssls-card i{font:1.5cqw 'SSAachen',sans-serif;font-style:normal;letter-spacing:.3em;color:#fff;background:linear-gradient(90deg,#7c5cff,#ff3ea5);padding:.4cqw 1.6cqw;border-radius:2cqw}
+.ssls-card b{font:800 2.9cqw/1.2 'SSNunito',sans-serif;text-transform:uppercase;color:#c8137a}
+.ssls-card em{font:1.1cqw 'SSAachen',sans-serif;font-style:normal;letter-spacing:.25em;color:#7c5cff}
+.ssls-card img{position:absolute;right:-2.2cqw;top:-2.6cqw;width:7cqw;rotate:12deg;filter:drop-shadow(0 .6cqw 1cqw rgba(0,0,0,.3))}
+.ssls-card.fresh{animation:ss-cardin .8s cubic-bezier(.2,1.3,.4,1) both}
+.ssls-card.fresh b{animation:ss-fade .5s .45s both}
+@keyframes ss-cardin{0%{opacity:0;transform:perspective(60cqw) rotateY(-100deg) scale(.6)}60%{opacity:1}100%{transform:perspective(60cqw) rotateY(0) scale(1)}}
 .ssvc-r{position:relative;margin-top:8cqw;display:flex;gap:1.6cqw;justify-content:center;align-items:flex-end;width:92%}
 .ssvc-c{position:relative;flex:0 1 11cqw;margin-left:3.4cqw;display:flex;flex-direction:column;align-items:center}
 .ssvc-n{position:absolute;top:-3.4cqw;left:-4.6cqw;font:700 11cqw/1 'SSAachen',sans-serif;color:#ff8fd0;-webkit-text-stroke:.3cqw #fff;text-shadow:0 .6cqw 1.4cqw rgba(124,92,255,.55);z-index:0}

@@ -101,9 +101,9 @@ const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '
 const colOf = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
 const EYE = `<svg viewBox="0 0 64 40" aria-hidden="true"><path d="M2 20C12 6 22 2 32 2s20 4 30 18C52 34 42 38 32 38S12 34 2 20z" fill="#fff"/><circle cx="32" cy="20" r="13" fill="#3bb3ff"/><circle cx="32" cy="20" r="13" fill="url(#ssbEyeG)"/><circle cx="32" cy="20" r="6.5" fill="#0b0920"/><circle cx="36.5" cy="15.5" r="3" fill="#fff"/><path d="M2 20C12 6 22 2 32 2s20 4 30 18" fill="none" stroke="#ff3ea5" stroke-width="3" stroke-linecap="round"/><defs><radialGradient id="ssbEyeG" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#7fd4ff"/><stop offset="1" stop-color="#1d4fd1"/></radialGradient></defs></svg>`;
 // (the font's address from this file, not from the page: see SS_FONT_URL in vp-bb-ep/ss-type.js)
-const AACHEN = (() => { try { return new URL('../../assets/fonts/Aachen-Bold.otf', import.meta.url).href; } catch { return 'assets/fonts/Aachen-Bold.otf'; } })();
+const fontAt = f => { try { return new URL(`../../assets/fonts/${f}`, import.meta.url).href; } catch { return `assets/fonts/${f}`; } };
 const BOARD_CSS = `
-@font-face{font-family:'SSAachen';src:url('${AACHEN}') format('opentype');font-weight:100 900;font-display:swap}
+@font-face{font-family:'SSAachen';src:url('${fontAt('Aachen-Bold.woff2')}') format('woff2'),url('${fontAt('Aachen-Bold.otf')}') format('opentype');font-weight:100 900;font-display:swap}
 .ssb{--bg:#110e22;--card:#1b1734;--card2:#231e42;--line:rgba(255,255,255,.08);--ink:#f4f1ff;--dim:#a6a1c6;--pink:#ff3ea5;--gold:#f5c542;--teal:#19d3c5;
   color:var(--ink);background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(124,92,255,.28),transparent 70%),var(--bg);border:1px solid var(--line);border-radius:18px;padding:22px 20px 26px;
   font:400 14px/1.45 system-ui,-apple-system,'Segoe UI',sans-serif}

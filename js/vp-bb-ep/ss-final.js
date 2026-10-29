@@ -53,7 +53,8 @@ export function ssFinalScreens(act, ctx, H) {
       { k: 'host', by: host, t: `${n}, if you win tonight, what are you going to do with the hundred thousand dollars?` },
       { k: 'say', by: n, t: MONEY[(i + (ctx.week || 1)) % MONEY.length] },
       { k: 'host', by: host, t: 'And looking back, any regrets?' },
-      { k: 'say', by: n, t: f.foundBy ? `Maybe one. I let ${f.foundBy} get too close, and ${f.foundBy} found my secret.`
+      { k: 'say', by: n, t: f.foundBy ? [`Maybe one. I let ${f.foundBy} get too close, and ${f.foundBy} found my secret.`, `Losing my secret to ${f.foundBy}. I still think about it.`,
+        `Just the one. I trusted ${f.foundBy} with too much, and it cost me my secret.`][i % 3]
         : f.kept ? "Not one. I kept my secret all the way, and I'm really proud of that."
           : f.nominated >= 3 ? "I wish I hadn't been up so often. But the public saved me every time, and I'll never forget that."
             : "No. I'd do every single thing again." },

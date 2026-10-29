@@ -106,7 +106,7 @@ export function ssGoldenBuzzScreen(act, ctx, host, H) {
   if (!buzzes.length && !wild.length) return null;
   const k = `${ctx.week}|ssgb`;
   /** @type {any[]} */ const steps = [{ k: 'host', by: host, t: "It's time for the Golden Buzz: the best of the week's buzzes and theories.", toast: ['THE GOLDEN BUZZ', '#e0b84a'] }];
-  for (const b of buzzes.slice(0, 3)) steps.push({ k: 'beat', t: `There's ${b.by} in the confessional, completely sure of it: "${b.guess}." ${b.outcome === 'right' ? 'And right, as it turned out.' : b.outcome === 'wrong' ? "It wasn't." : `Then ${b.by} lost their nerve and walked out.`}` });
+  for (const b of buzzes.slice(0, 3)) steps.push({ k: 'beat', t: `There's ${b.by} in the confessional, completely sure of it: "${b.guess}." ${b.outcome === 'right' ? 'And right, as it turned out.' : b.outcome === 'wrong' ? "It wasn't." : `Then ${b.by} backed out at the last second and never pressed it.`}` });
   const w = wild[0];
   if (w) steps.push({ k: 'host', by: host, t: `And the Golden Buzz for the wildest theory of the week goes to ${w.who}, who was convinced that ${w.about}'s secret is "${w.theory}".` },
     { k: 'beat', t: pickBy(['The studio laughs. On the couch, somebody covers their face.', 'The crowd applauds. Somewhere in the house, someone has no idea they just won an award.'], `${k}|w`) });

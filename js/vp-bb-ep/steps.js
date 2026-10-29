@@ -2971,7 +2971,9 @@ function ssHouseSecretEndScreen(act, ctx) {
 function ssUnveilScreen(seg, ctx, host) {
   /** @type {BB.Step[]} */ const steps = [
     { k: 'host', by: host, t: 'Housemates, tonight the hunt is over. Nobody can press the buzzer again.', toast: ['THE HUNT IS OVER', '#e0b84a'] },
-    { k: 'host', by: host, t: `Some of you have kept your secret all the way to the semi-final. The Voice pays every one of you ${euros(seg.bonus)}. But first, the house is going to hear them.` },
+    { k: 'host', by: host, t: (seg.list || []).length === 1
+      ? `One of you has kept a secret all the way to the semi-final. The Voice pays ${(seg.list[0].holders || []).length > 1 ? 'each of you' : 'you'} ${euros(seg.bonus)}. But first, the house is going to hear it.`
+      : `Some of you have kept your secret all the way to the semi-final. The Voice pays every one of you ${euros(seg.bonus)}. But first, the house is going to hear them.` },
   ];
   for (const u of seg.list || []) steps.push({ k: 'say', by: u.holders[0], push: true, t: u.holders.length > 1 ? `Our secret is: "${u.text}."` : `My secret is: "${u.text}."`, toast: ['UNVEILED', '#7c5cff'] },
     { k: 'beat', t: pickBy(['The room erupts.', 'Somebody covers their mouth with both hands.', 'A long silence, then everybody laughs at once.', 'Nobody had come close. You can see it on every face.'], `${ctx.week}|unv|${u.text}`) });
@@ -2984,15 +2986,18 @@ function ssUnveilScreen(seg, ctx, host) {
 function ssReturnsScreen(act, ctx) {
   /** @type {BB.Step[]} */ const steps = [ssv('Finalists, this week some old friends are coming back. For one day only.', { toast: ['THE RETURNS', '#e0b84a'] })];
   // every visit its own words: the pools rotate, so no line is said twice in the week
-  const IN = [w => `The airlock opens. ${w} walks back into the house.`, w => `The doorbell. It's ${w}.`, w => `${w} is back, with a suitcase and a huge grin.`, w => `Mid-afternoon, the airlock hisses open: ${w}.`, w => `${w} walks in like nothing ever happened.`];
+  const IN = [w => `The airlock opens. ${w} walks back into the house.`, w => `The airlock door slides open. It's ${w}.`, w => `${w} is back, with a suitcase and a huge grin.`, w => `Mid-afternoon, the airlock hisses open: ${w}.`, w => `${w} walks in like nothing ever happened.`];
   const HUG = [(w, f) => `${f} gets there first and does not let go.`, (w, f) => `${f} screams and runs across the room.`, (w, f) => `${f} and ${w} hold on to each other for a long time.`, (w, f) => `${f} cries the moment ${w} walks in.`, (w, f) => `${w} picks ${f} up off the floor.`];
   const LOVE = [f => `You made it, ${f}. You actually made it.`, f => `I watched every second, ${f}. Win it.`, f => `Everybody outside loves you, ${f}. I'm serious.`, f => `I voted for you every week, ${f}. Every week.`, f => `You were the best thing about my time in here, ${f}.`, f => `Don't change anything tonight, ${f}. They love you as you are.`];
   const GRUDGE = [f => `I saw what you said about me, ${f}. All of it.`, f => `You put me up, ${f}. I hope it was worth it.`, f => `I've watched it all back, ${f}. Every single word.`, f => `Congratulations on the final, ${f}. I mean that. Mostly.`];
   const FOUND = [f => `You took my secret and my money, ${f}. I just wanted to look at you.`, f => `Hello, ${f}. Remember me? You buzzed me.`, f => `I've had weeks to think about that buzz, ${f}.`];
   const ANSWER = ['It was the game. You know it was the game.', "I'm not apologising for playing.", 'I hope one day you understand.', 'I would do it again. I am sorry it hurt.', 'You would have done the same to me.'];
   let ix = 0, love = 0, grudge = 0, found = 0, ans = 0;
-  for (const v of act.visits || []) {
-    if (!v.with) continue;
+  // (five visits, not the whole cast: eleven on five templates read as a list, and they are all on the
+  // benches at the final anyway. The ones with something to settle first, then the closest friends.)
+  const visits = (act.visits || []).filter(v => v.with);
+  const shown = [...visits.filter(v => v.kind !== 'reunion'), ...visits.filter(v => v.kind === 'reunion')].slice(0, 5);
+  for (const v of visits.filter(x => shown.includes(x))) {
     steps.push({ k: 'beat', t: IN[ix % IN.length](v.who) });
     if (v.kind === 'reunion') steps.push({ k: 'beat', t: HUG[ix % HUG.length](v.who, v.with) }, { k: 'say', by: v.who, t: LOVE[love++ % LOVE.length](v.with) });
     else steps.push({ k: 'beat', t: `${v.who} stops in front of ${v.with}.`, tense: [v.who, v.with] },
@@ -3883,7 +3888,9 @@ function ssWalkScreen(act, ctx, host) {
     { k: 'say', by: ev, t: pickBy([`${ctx.walkFriend || best || 'One of my friends'}. With all my heart.`, `Honestly? ${ctx.walkFriend || best || 'Anybody but the fakes'}.`], `${k}|win`) });
   steps.push(...ssFarewellSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }));
   steps.push({ k: 'host', by: host, t: `${ev}, thank you. Everybody, ${ev}!`, exit: ev },
-    { k: 'host', by: host, t: `${af.hiddenLeft ?? 'Plenty of'} secrets are still hidden in that house. Next week, the hunt goes on. Good night!` });
+    { k: 'host', by: host, t: af.hiddenLeft === 0 ? "Every secret in that house has been told. From now on, it's about the money and about you, at home. Good night!"
+      : af.hiddenLeft === 1 ? 'One secret is still hidden in that house. Next week, the hunt goes on. Good night!'
+        : `${af.hiddenLeft ?? 'Plenty of'} secrets are still hidden in that house. Next week, the hunt goes on. Good night!` });
   return ssLive(ctx, { id: `bb-ss-prime-walk-w${ctx.week}`, ...STUDIO, title: 'The Studio', label: 'The Interview', sub: ev, cast: [[ev, 50]], steps });
 }
 
@@ -3925,7 +3932,7 @@ function ssAfterScreen(act, ctx, host) {
     : `The gamers at home have their own favourite: ${P.player.name}, a real player. Love ${pronouns(P.player.name).obj || 'them'} or not, ${P.player.name} plays this game.` });
   if (P.unseen && P.unseen.name !== P.favourite?.name) steps.push({ k: 'host', by: B, t: `Has anybody seen ${P.unseen.name} this week? Because the public hasn't. ${P.unseen.name}, in this game the ones nobody sees go home.` });
   if (af.nextToFall) steps.push({ k: 'host', by: B, t: `My prediction: the next secret to fall is ${af.nextToFall.holder}'s. And ${af.nextToFall.by} will be the one pressing the buzzer.` });
-  steps.push({ k: 'host', by: host, t: `${af.hiddenLeft ?? 'The'} secrets still hidden. ${ev}, thank you for everything.` },
+  steps.push({ k: 'host', by: host, t: `${af.hiddenLeft === 0 ? 'Every secret is out.' : af.hiddenLeft === 1 ? 'One secret still hidden.' : `${af.hiddenLeft ?? 'The'} secrets still hidden.`} ${ev}, thank you for everything.` },
     { k: 'host', by: B, t: "See you next week. Keep your secrets!" });
   // nobody is on the couch on a fake night: drop the guest's lines and the goodbye
   if (act.fake) for (let i = steps.length - 1; i > 2; i--) if (steps[i].by === ev || String(steps[i].t || '').includes(`${ev}, thank you`)) steps.splice(i, 1);
@@ -5404,6 +5411,8 @@ const THEME_WORDS = {
     // Secret Story is its own show (2026-10-27): its house, its people, its exit.
     // Scenes about a veto or a jury it does not have are part 3's to rewrite;
     // these are the words a swap can honestly fix.
+    [/\byour big HOH move was evicting (\w+)\. You mention it so often I assumed there was a sequel\./g, 'you nominated $1 once and you still talk about it like it was the finale.'],
+    [/\bone heart, two votes, zero privacy\b/g, 'one heart, two kitties, zero privacy'], [/\bsit next to at the end\b/g, 'be in the final with'],
     [/\bIt's Big Brother\b/g, "It's Secret Story"], [/\bBig Brother logic\b/g, 'House of Secrets logic'], [/\bHead of Household win\b/g, "Voice's game win"], [/\bwho took Head of Household\b/g, "who won the Voice's game"],
     [/\bthe premiere of Big Brother\b/g, 'the premiere of Secret Story'], [/\bthe Big Brother house\b/g, 'the House of Secrets'],
     [/\bBig Brother house\b/g, 'House of Secrets'], [/\bthe Big Brother voice\b/g, 'the Voice'], [/\bBig Brother\b/g, 'The Voice'],
@@ -5816,6 +5825,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   // the house's writers, does not air there (the season read, 2026-10-28: "the last veto of the season",
   // "one bad night away from the jury"). Its own screens never say them; the house's beats might.
   if (row.themeId === SS_FORMAT) {
+    // (the crowning happens in the studio, and the final already gives the Voice its last word: Big Brother's
+    // antagonist cutting in over "the speakers in the living room" after the confetti is another show's)
+    for (let i = out.length - 1; i >= 0; i--) if (out[i]?.id === 'bb-theme-crown-v') out.splice(i, 1);
     // (the game's own word, from the French show, said in English on screen: "nominated directly", never "d'office")
     for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string' && /d['’]office/i.test(st.t)) st.t = st.t.replace(/\s+d['’]office\b/gi, ' directly');
     // (the house does not vote anybody out here: last week was a prime)

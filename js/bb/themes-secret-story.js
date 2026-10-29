@@ -137,7 +137,7 @@ export default {
           '{finalists}. The Voice knows what each of you hid, and so, tonight, will everybody.',
           'The last night. {finalists}. Nothing in this house stays secret forever.',
           '{finalists}. The country has already decided. You are about to find out.',
-          'Final night. {finalists}. The Voice will not miss this house, and it will not forget it.',
+          'Final night. {finalists}. The Voice has watched every one of your days, and it will not forget them.',
         ],
       },
       crown: {

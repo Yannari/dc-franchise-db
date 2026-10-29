@@ -304,11 +304,11 @@ const ZING_MATERIAL = [
     f => `${f.name}, your bridges are not burned. They are an active fire challenge. ZING!`),
   zing('social', f => f.pop <= -3,
     f => `${f.name}, America has seen everything and still wants the feeds on another room. ZING!`,
-    f => `${f.name}, your approval rating is ${f.pop}. Even the live-feed fish have muted you. ZING!`,
+    f => `${f.name}, your approval rating is ${Math.round(f.pop)}. Even the live-feed fish have muted you. ZING!`,
     f => `${f.name}, the audience does not hate-watch you. They check the schedule first. ZING!`),
   zing('social', f => f.pop >= 6,
     f => `${f.name}, America loves you! Unfortunately, America does not vote in the house. ZING!`,
-    f => `${f.name} has a popularity score of ${f.pop} and a power score of please clap. ZING!`),
+    f => `${f.name} has a popularity score of ${Math.round(f.pop)} and a power score of please clap. ZING!`),
 
   // ── personal style, grounded in the contestant's strongest/weakest traits ──
   zing('personal', f => f.bestTrait === 'strategic' && f.bestTraitValue >= 8,

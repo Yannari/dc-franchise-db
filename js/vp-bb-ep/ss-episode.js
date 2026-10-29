@@ -197,7 +197,10 @@ function ssPreviouslyScreen(row, o) {
     const fight = party && (party.moments || []).find(m => m.kind === 'fight');
     const game = pa.find(a => a?.type === 'ss-game' && a.winner);
     const k = `${week}|pre`;
-    say(pickBy(['the game picks up where it left off.', 'nobody in the House of Secrets got much sleep.', 'the hunt went on, and so did the lies.'], `${k}|0`), (prev.houseAtStart || []).slice(0, 5));
+    // (the final's recap knows the hunt is over: "So who will crack the next secret?" opened the last night)
+    const fin = !!row.isFinale;
+    say(fin ? pickBy(['the hunt came to an end, and every secret was told.', 'the buzzer went quiet for good.'], `${k}|0`)
+      : pickBy(['the game picks up where it left off.', 'nobody in the House of Secrets got much sleep.', 'the hunt went on, and so did the lies.'], `${k}|0`), (prev.houseAtStart || []).slice(0, 5));
     if (right[0]) say(`${right[0].by} pressed the buzzer on ${right[0].target}, and found the secret: ${money(right[0].took)} changed hands.`, [right[0].by, right[0].target], 'confessional-showdown', 'dr');
     else if (wrong[0]) say(`${wrong[0].by} pressed the buzzer on ${wrong[0].target}... and was wrong.`, [wrong[0].by, wrong[0].target], 'confessional-showdown', 'dr');
     if (game) say(`${game.winner} won the Voice's game.`, [game.winner], 'ss-arena', 'arena');
@@ -205,7 +208,8 @@ function ssPreviouslyScreen(row, o) {
     else if (fight) say(`At ${String(party.name || 'the party').replace(/^The /, 'the ')}, ${fight.who[0]} and ${fight.who[1]} had it out in front of everybody.`, fight.who.slice(0, 2));
     if (out) say(`And at the prime, the public sent ${out} home. ${pickBy([`${out}'s bed is empty now`, `The house is one housemate lighter`, `The house is still getting over it`], `${k}|o`)}.`, [out], 'ss-studio-crowd', 'studio-wide');
     say(pickBy(['Betrayal, lies, alliances changing sides. In short, an almost normal week in the House of Secrets.', 'But here, the walls have ears, and nothing stays buried for long.', 'And in this house, a secret never stays hidden for long.'], `${k}|t`), [], 'living-screens');
-    hook = pickBy(['So who will be the next to walk into the airlock?', 'So who will crack the next secret?', 'So who will be standing in the airlock this week?'], `${k}|h`);
+    hook = fin ? pickBy(['Tonight, the final. Only one of them wins Secret Story.', 'Tonight, the public crowns the winner of Secret Story.'], `${k}|h`)
+      : pickBy(['So who will be the next to walk into the airlock?', 'So who will crack the next secret?', 'So who will be standing in the airlock this week?'], `${k}|h`);
   }
   const xs = n => (n <= 1 ? [50] : Array.from({ length: n }, (_, i) => Math.round(20 + (60 * i) / (n - 1))));
   const sceneOf = e => ({ set: e.set, plate: e.plate, room: 'Previously', cam: 1, kicker: 'Previously in Secret Story', cast: (e.who || []).filter(Boolean).map((n, i, a) => [n, xs(a.length)[i]]) });

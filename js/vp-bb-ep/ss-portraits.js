@@ -40,15 +40,17 @@ const decorUrl = d => {
 
 // what they do, read from the job's words (a category picks the decor and how they talk about it)
 const JOBS = [
-  ['sport', /\b(trainer|coach|athlet\w*|fitness|gym|lifeguard|swim\w*|tennis|soccer|football|basketball|boxer|wrestler|player|instructor|yoga)\b/i],
-  ['night', /\b(bartend\w*|dj|club\w*|promot\w*|server|waiter|waitress|dancer|singer|musician|influencer|model|actor|actress|performer|rapper|comedian|content creator|streamer)\b/i],
-  ['country', /\b(farm\w*|ranch\w*|logg\w*|forest\w*|fisher\w*|construct\w*|mechanic|landscap\w*|cowboy|carpenter|welder|plumber|electrician|roofer)\b/i],
-  ['lounge', /\b(stylist|hair\w*|make-?up|beauty|nail\w*|fashion|designer|entrepreneur|business owner|ceo|founder|realtor|real estate)\b/i],
-  ['office', /\b(law\w*|attorney|account\w*|bank\w*|financ\w*|consult\w*|analyst|office|manager|admin\w*|executive|insurance|recruit\w*|marketing|sales\w*|engineer|developer|programmer)\b/i],
   ['student', /\b(student|school|college|universit\w*|graduate|intern)\b/i],
+  ['media', /\b(influencer|content creator|streamer|youtuber|model|actor|actress|journalist|presenter|blogger|podcast\w*)\b/i],
+  ['creative', /\b(artist|painter|writer|author|poet|photographer|illustrator|tattoo\w*|florist|baker|chef|cook|musician|singer|designer)\b/i],
+  ['sport', /\b(trainer|coach|athlet\w*|fitness|gym|lifeguard|swim\w*|tennis|soccer|football|basketball|boxer|wrestler|player|instructor|yoga)\b/i],
+  ['night', /\b(bartend\w*|dj|club\w*|promot\w*|server|waiter|waitress|dancer|performer|rapper|comedian)\b/i],
+  ['country', /\b(farm\w*|ranch\w*|logg\w*|forest\w*|fisher\w*|construct\w*|mechanic|landscap\w*|cowboy|carpenter|welder|plumber|electrician|roofer)\b/i],
+  ['lounge', /\b(stylist|hair\w*|make-?up|beauty|nail\w*|fashion|pageant\w*|entrepreneur|business owner|ceo|founder|realtor|real estate)\b/i],
+  ['office', /\b(law\w*|attorney|account\w*|bank\w*|financ\w*|consult\w*|analyst|office|manager|admin\w*|executive|insurance|recruit\w*|marketing|sales\w*|engineer|developer|programmer)\b/i],
 ];
 const jobKind = job => (JOBS.find(([, re]) => /** @type {RegExp} */ (re).test(String(job || ''))) || ['other'])[0];
-const DECOR_OF = { sport: 'sport', night: 'night', country: 'country', lounge: 'lounge', office: 'office', student: 'campus', other: 'lobby' };
+const DECOR_OF = { sport: 'sport', night: 'night', country: 'country', lounge: 'lounge', office: 'office', student: 'campus', media: 'city', creative: 'city', other: 'lobby' };
 const JOB_SAYS = {
   sport: ["My body is my job. I'm up before everybody, and I train before I eat.", "I push people until they hate me, and then they thank me."],
   night: ["I work nights. I've seen people at their very best and at their absolute worst.", "When everybody else is going home, I'm just getting started."],
@@ -56,16 +58,21 @@ const JOB_SAYS = {
   lounge: ["People come to me to feel good about themselves. And while they're in the chair, they tell me everything.", "I built it myself, from nothing. Nobody handed me a thing."],
   office: ["Meetings, deadlines, people who think they're smarter than me. I'm good at it.", "Nine to six, a desk and a screen. In there, nobody is going to guess what I'm really like."],
   student: ["Lectures in the morning, a job at night, and somehow a social life in between.", "I'm still working out what I want to be. This was not on the list."],
-  other: ["It pays the bills. It isn't who I am.", "I'm good at what I do, and I don't talk about it much."],
+  media: ["My whole life is online. In there, there's no phone, no followers, nothing. Just me.", "People think they know me from a screen. They're about to find out they don't."],
+  creative: ["I make things for a living. It's the only thing I've ever wanted to do.", "It's not just a job. It's who I am. Most days, anyway."],
+  other: ["I love what I do, and I'm good at it. That's more than most people can say.", "It's not glamorous, but I'm proud of it. Really proud."],
 };
-const TOWN_SAYS = ["Born and raised. Everybody there knows everybody, and everybody's going to be watching.", "If you have never heard of it, that's fine. Nobody has.",
-  "I love it there. I could never live anywhere else. Well, except in there, for a while.", "Small place, big mouths. They're going to have a lot to say about this."];
+// (true of a big city and of a village alike: the user's read had "nobody's heard of it" said of Toronto)
+const TOWN_SAYS = ["Born and raised. My whole family is still there, and they're all going to be watching.", "It's home. Whatever happens in here, that's where I go back to.",
+  "I love it there. I could never live anywhere else. Well, except in there, for a while.", "Everybody I grew up with is going to be glued to the TV. No pressure."];
+// a hometown the roster holds as a nationality ("Swiss") is said as one: "I'm Swiss", never "I'm from Swiss"
+const NATION = /^(swiss|french|british|english|irish|scottish|welsh|dutch|german|italian|spanish|portuguese|brazilian|american|canadian|australian|mexican|japanese|chinese|korean|filipino|indian|nigerian|polish|greek|turkish|swedish|norwegian|danish|belgian|russian|\w+(?:ish|ese|ian))$/i;
 const NO_TOWN = ["Where I'm from? You'll have to guess. That's part of the game.", "A little bit of everywhere. I moved around a lot growing up."];
 const SINGLE = ["Single. Very single.", "Single, and honestly, not looking. Probably.", "Single. My last relationship was a disaster, and that's all I'm saying.",
   "Single. If somebody in that house catches my eye, we'll see."];
 // what they say after their secret, at the end of the portrait (by the secret's kind)
 const REVEAL_AFTER = {
-  survived: ["It changed everything. I don't talk about it, and in there I won't have to.", "I'm still here. That's the whole story, for now."],
+  survived: ["It changed everything. I don't talk about it, and in there I won't have to.", "I don't tell that story very often. In there, I won't tell it at all."],
   talent: ["Nobody who meets me would ever guess. That's exactly why it'll be hard to find.", "In there, I'm going to keep it very, very quiet."],
   record: ["I'm proud of it. I just can't let anybody in there see that I'm proud of it.", "If they find it, they'll never let me forget it."],
   job: ["People hear it and they look at me differently. In there, nobody's going to get the chance.", "It's a normal job to me. In there, it's a secret."],
@@ -113,7 +120,8 @@ export function interviewOf(p) {
   if (Array.isArray(ci)) return Object.fromEntries(ci.filter(x => x && x.key).map(x => [x.key, x.a]));
   return ci && typeof ci === 'object' ? ci : {};
 }
-const lower1 = s => (/^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s);
+// a job said in a sentence: "Law Student" is "law student"; an acronym (DJ, CEO) stays as it is
+const jobWords = s => String(s || '').trim().split(/(\s+)/).map(w => (/^[A-Z][a-z]/.test(w) ? w.toLowerCase() : w)).join('');
 const article = s => (/^[aeiou]/i.test(s) ? 'an' : 'a');
 const topStat = (p, k) => {
   const s = p?.stats || {};
@@ -137,19 +145,23 @@ export function portraitSteps(p, i, o = {}) {
   const rural = kind === 'country';
   // (plate: null, so a portrait never inherits the studio's plate, host or screen: it is not live, and not in the studio)
   const at = (decor, room) => ({ set: 'portrait', plate: null, bgUrl: decorUrl(decor), room, cam: 1, kicker: `Portrait · ${n}`, cast: [[n, 50]], portrait: true, hostOn: false, tvObj: false, time: 'PORTRAIT' });
-  const town = String(p.hometown || '').trim();
+  const town0 = String(p.hometown || '').trim();
+  const nation = NATION.test(town0) ? town0.replace(/^./, c => c.toUpperCase()) : '';
+  const town = nation ? '' : town0;
   const age = Number(p.age) || null;
   /** @type {any[]} */ const steps = [];
   // 1. where they are from
   steps.push({ k: 'beat', scene: at(rural ? 'country' : hash(`${k}|home`) % 3 ? 'town' : 'seaside', town || 'Home'), toast: ['PORTRAIT', '#e0b84a'],
-    t: `${n}${age ? `, ${age}` : ''}${town ? `, from ${town}` : ''}.${job ? ` ${job.replace(/^./, c => c.toUpperCase())}.` : ''}` });
-  steps.push({ k: 'say', by: n, t: town ? `I'm ${n}. I'm from ${town}. ${pickBy(TOWN_SAYS, `${k}|t`)}` : `I'm ${n}. ${pickBy(NO_TOWN, `${k}|t`)}` });
+    t: `${n}${age ? `, ${age}` : ''}${town ? `, from ${town}` : nation ? `, ${nation}` : ''}.${job ? ` ${jobWords(job).replace(/^./, c => c.toUpperCase())}.` : ''}` });
+  steps.push({ k: 'say', by: n, t: town ? `I'm ${n}. I'm from ${town}. ${pickBy(TOWN_SAYS, `${k}|t`)}` : nation ? `I'm ${n}, and I'm ${nation}. ${pickBy(TOWN_SAYS, `${k}|t`)}` : `I'm ${n}. ${pickBy(NO_TOWN, `${k}|t`)}` });
   // 2. the love life
-  const love = o.hiding ? pickBy(HIDING, `${k}|l`) : said(iv.showmance, 200) || pickBy(SINGLE, `${k}|l`);
+  // (an interview answer to "would you be in a showmance?" says it after the question, or it reads as a non-sequitur)
+  const romance = said(iv.showmance, 200);
+  const love = o.hiding ? pickBy(HIDING, `${k}|l`) : romance ? `A romance in there? ${romance}` : pickBy(SINGLE, `${k}|l`);
   steps.push({ k: 'say', by: n, t: love });
   // 3. at work
   if (job) {
-    steps.push({ k: 'say', by: n, scene: at(DECOR_OF[kind], 'At work'), t: `I'm ${article(lower1(job))} ${lower1(job).replace(/\.$/, '')}. ${pickBy(JOB_SAYS[kind], `${k}|j`)}` });
+    steps.push({ k: 'say', by: n, scene: at(DECOR_OF[kind], 'At work'), t: `I'm ${article(jobWords(job))} ${jobWords(job).replace(/\.$/, '')}. ${pickBy(JOB_SAYS[kind], `${k}|j`)}` });
   }
   // 4. a life outside it
   const fun = said(iv.activities) || FUN[topStat(p, k)];

@@ -23,6 +23,7 @@
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
+import { tellAfter } from '../ss/tells.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER, seasonConfig as SEASON_CFG } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
@@ -3030,7 +3031,7 @@ function ssBuzzScreen(act, ctx) {
   ];
   /** @type {BB.Step[]} */ const room = [
     { k: 'beat', t: `On the two white sofas facing each other under the arch: ${a} on one side, ${t} on the other. The red buzzer between them.`, toast: ['THE CONFRONTATION', '#e0b84a'], tense: [a, t] },
-    ssv(`${a}, tell ${t} what you think their secret is.`),
+    ssv(`${a}, tell ${t} what you think ${(() => { try { return pronouns(t)?.posAdj || 'their'; } catch { return 'their'; } })()} secret is.`),
     { k: 'say', by: a, t: `I think your secret is: "${act.guess}."` },
     ssv(`${t}, you may defend yourself. You may not reveal anything.`),
     { k: 'say', by: t, push: true, t: act.right
@@ -3054,7 +3055,7 @@ function ssBuzzScreen(act, ctx) {
       reveal.push(ssv(`${t}, tell the house your secret.`),
         { k: 'say', by: t, push: true, t: `My secret is: "${act.secretText}."`, toast: ['SECRET FOUND', '#f5c542'], card: { text: act.secretText, state: 'found', who: `${t}'s secret` } },
         ssv(`${a}, you were right. ${t}'s kitty, ${euros(act.took)}, is now yours.`, { coins: { from: t, to: a }, board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
-        { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I'm not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
+        { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I'm not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', (ctx.week || 1) < 3 ? "I kept it every single day since I walked in. And it's gone in one afternoon." : "I kept it for weeks. Weeks. And it's gone in one afternoon."], `${k}|f`) });
     } else {
       reveal.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'], card: { text: act.guess, state: 'wrong', who: `${a}'s guess` } }),
         ...(act.lost ? [ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } })] : []),
@@ -3194,14 +3195,17 @@ function ssHuntScreen(act, ctx) {
   const ms = act.moments || [];
   if (!ms.length) return null;
   /** @type {BB.Step[]} */ const steps = [];
-  ms.slice(0, 4).forEach((m, i) => {
+  // (the same tell seen twice is said once)
+  const seenTell = new Set();
+  ms.filter(m => m.kind !== 'tell' || (!seenTell.has(`${m.about}|${m.tell}`) && seenTell.add(`${m.about}|${m.tell}`))).slice(0, 4).forEach((m, i) => {
     const k = `${ctx.week}|ssh|${i}|${m.who}`;
     if (m.kind === 'tell') {
-      steps.push({ k: 'beat', t: `${m.about} ${m.tell}. ${m.who} sees it.` },
+      const pr = (() => { try { return pronouns(m.about); } catch { return null; } })();
+      steps.push({ k: 'beat', t: `${m.about} ${tellAfter(m.tell, pr)}. ${m.who} sees it.` },
         { k: 'dr', by: m.who, t: pickBy([`${m.about} does this thing whenever it comes up. I'm writing that down.`, `Watch ${m.about}. Just watch. There's something there.`, `I think ${m.about}'s secret is "${m.theory}". Not sure yet. Getting there.`], k) });
     } else {
       steps.push({ k: 'beat', t: `${m.who} and ${m.to}, in a corner, comparing notes about ${m.about}.` },
-        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me their theory about ${m.about}. It makes sense. Too much sense.`], k) });
+        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me ${(() => { try { return pronouns(m.who)?.posAdj || 'their'; } catch { return 'their'; } })()} theory about ${m.about}. It makes sense. Too much sense.`], k) });
     }
   });
   return { id: `bb-ss-hunt-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '14:00',
@@ -3256,7 +3260,7 @@ function ssNomScreen(act, ctx) {
         : `${b.voter}, which two housemates do you nominate, and why?`, { scene: DR(b.voter) }));
     const SAVE = ["they've been good to me since day one", 'I trust them, simple as that', "they're the ones I'd want next to me at the end", "they've had my back all week"];
     const t = ss.inverted ? `I save ${listOf((b.picks || []).filter(Boolean))}, because ${pickBy(SAVE, `${ctx.week}|save|${b.voter}`)}.`
-      : ss.exclusive ? `I nominate ${listOf((b.picks || []).filter(Boolean))}. ${x}, because ${why(x)}.${y ? ` ${y}, because ${why(y)}.` : ''}`
+      : ss.exclusive ? `I nominate ${listOf((b.picks || []).filter(Boolean))}. ${(b.picks || []).filter(Boolean).map(p => `${p}, because ${why(p)}.`).join(' ')}`
         : y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.`;
     steps.push({ k: 'dr', by: b.voter, t });
   });
@@ -3265,7 +3269,7 @@ function ssNomScreen(act, ctx) {
   // the result, live, to the whole house in the living room (the user: "announced with everyone in the living room
   // with actual live reaction")
   const LIV = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: house.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(10 + 80 * i / (a.length - 1))]) };
-  steps.push(ssv('Housemates, please gather in the living room.', { scene: LIV }),
+  steps.push(ssv('Housemates, the nominations are over. Please come back to the living room.', { scene: LIV }),
     { k: 'beat', t: pickBy(['Everybody squeezes onto the sofas. Nobody is talking. A few of them are holding hands.', 'They come in fast and sit down in silence. All eyes on the screen.', 'The sofas fill up. Somebody jokes to break the silence. Nobody laughs.'], `${k}|in`) });
   // (immune means could not be named by the house: never somebody the Voice put up directly, and the Immunity House is said on its own)
   const immuneSaid = (ss.immune || []).filter(n => !(ss.dOffice || []).includes(n) && !(ss.twist?.immuneHouse || []).includes(n));
@@ -3286,7 +3290,7 @@ function ssNomScreen(act, ctx) {
   } else steps.push(ssv(`The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
   const LIVE_SAY = ["Okay. Okay. It's fine.", 'Me? Seriously?', 'I knew it. I knew it was going to be me.', 'Fine. Let the public decide.', "Wow. Okay. I didn't see that one coming.", "That's the game. It's fine.", 'Of course. Of course it is.', "Great. Love that for me.", "Whoever did that, I see you.", "It's fine. I'm fine. Everything's fine."];
-  const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `They'll never vote you out, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
+  const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `The public will never let you go, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
   const used = new Set();
   const once = (arr, key, tag) => { let j = hash(key) % arr.length; for (let t = 0; t < arr.length && used.has(`${tag}${j}`); t++) j = (j + 1) % arr.length; used.add(`${tag}${j}`); return arr[j]; };
   const LIVE_BEAT = n => [`${n} closes ${pronouns(n).posAdj || 'their'} eyes for a second, then nods.`, `A gasp goes round the sofas. ${n} laughs, a bit too loud.`, `${n} stares at the screen and doesn't move.`, `Somebody puts an arm round ${n} straight away.`];
@@ -3347,7 +3351,7 @@ function ssWeekRecap(ctx) {
   }
   const breakers = [...new Set(acts.filter(a => a?.type === 'ss-rule' && a.who).map(a => a.who))];
   if (breakers.length) out.unshift(breakers.length === 1 ? `${breakers[0]} broke one of the Voice's commandments, and paid for it.`
-    : `${listOf(breakers)} all broke the Voice's commandments, and paid for it.`);
+    : `${listOf(breakers)} ${breakers.length === 2 ? 'both' : 'all'} broke the Voice's commandments, and paid for it.`);
   const clues = acts.filter(a => a?.type === 'ss-clue').map(a => a.clue).filter(Boolean);
   if (clues.length === 1) out.unshift(`A clue went on the living-room table: ${clues[0]}.`);
   else if (clues.length > 1) out.unshift(`${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.`);
@@ -3436,7 +3440,7 @@ function ssAirlockScreen(act, ctx, host) {
   ];
   // the week as the public saw it: the nominee's own moments (the week's house life)
   const moments = n => (ctx.row?.acts || []).filter(a => a?.type === 'house').flatMap(a => a.socialBeats || [])
-    .filter(b => b?.text && String(b.text).startsWith(n) && !/\b(HOH|Head of Household|veto|evict|jury)\b/i.test(b.text)).map(b => b.text);
+    .filter(b => b?.text && String(b.text).startsWith(n) && !/\b(HOH|Head of Household|veto|evict\w*|jury|vote\w*|voting|the numbers|keeping you|final two|the block)\b/i.test(b.text) && String(b.text).length <= 260).map(b => b.text);
   for (const n of noms) {
     const r = reasonOf(n);
     const mine = moments(n).slice(-2);
@@ -3704,7 +3708,7 @@ function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }) {
       { k: 'beat', t: pickBy([`${n} lets go of the others' hands, hugs each of them, and walks out of the airlock.`, `${n} cries out, hugs everybody still in the airlock, and runs back to the house.`, `${n} stands frozen for a second, then walks back into the living room to a pile of hugs.`], `${k}|out${i}`) },
       { k: 'say', by: n, t: pickBy(['Thank you. Thank you, thank you, thank you.', "I can't believe it. I really can't.", 'I owe you all, out there. Every one of you.', 'Another week. I get another week.'], `${k}|joy${i}`) });
     left.splice(left.indexOf(n), 1);
-    if (left.length > 1 && left.length < noms.length) steps.push({ k: 'beat', t: pickBy([`And then there were ${left.length}.`, `${listOf(left)} are still holding hands.`], `${k}|left${i}`), tense: left.slice() });
+    if (left.length > 1 && left.length < noms.length) steps.push({ k: 'beat', t: pickBy([`And then there were ${WORDS[left.length] || left.length}.`, `${listOf(left)} are still holding hands.`], `${k}|left${i}`), tense: left.slice() });
   });
   if (pairOut) steps.push({ k: 'host', by: host, t: `${ev} and ${pairOut}${show === 'show' ? `, with ${pc[ev]}% and ${pc[pairOut]}%` : ''}... tonight, the public sends you BOTH home.`, push: true, shake: true, out: ev, bed: 'ss-sad', big: [ev, 'Eliminated', 'out'],
     settle: { id: `${k}|out`, answer: ev, n: noms.length }, ...board(noms, true) });
@@ -5458,7 +5462,10 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     if (act.state) ctx.snap = act.state;
     // An act with no day of its own (most twists) happens where the week has got to:
     // the clock never runs backwards within a week.
-    const dayOf = ((ctx.week - 1) * 7) + 1 + (ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
+    // (Secret Story's first week has no nominations to move the clock: its stretches of house life spread over the week)
+    const spreadDay = row.ssNoPrime && act.type === 'house'
+      ? Math.round((ctx._houseAt = (ctx._houseAt ?? -1) + 1) * 6 / Math.max(1, row.acts.filter(a => a?.type === 'house').length - 1)) : null;
+    const dayOf = ((ctx.week - 1) * 7) + 1 + (spreadDay ?? ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
     ctx.day = ACT_DAY[act.type] != null || row.isFinale ? Math.max(ctx.day || 0, dayOf) : Math.max(ctx.day || 0, ((ctx.week - 1) * 7) + 1);
     switch (act.type) {
       case 'house': case 'campaign': beatsOf(act); break;
@@ -5740,6 +5747,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   // the house's writers, does not air there (the season read, 2026-10-28: "the last veto of the season",
   // "one bad night away from the jury"). Its own screens never say them; the house's beats might.
   if (row.themeId === SS_FORMAT) {
+    // (the game's own word, from the French show, said in English on screen: "nominated directly", never "d'office")
+    for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string' && /d['’]office/i.test(st.t)) st.t = st.t.replace(/\s+d['’]office\b/gi, ' directly');
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
     // (the week's competition is the Voice's game; its nav label was still Big Brother's)
@@ -5750,6 +5759,14 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       delete s.legacy;
       if (s.comp) s.comp = { ...s.comp, label: "THE VOICE'S GAME" };
       const HOHW = /\bHead of Household\b|\bHOH\b/i;
+      // (and after the win, no Head of Household's reaction: "I already know who's going up", "watch them come up the
+      // stairs and beg". The winner just won a game; the prize is told on the next screen)
+      const winAt = (s.steps || []).findIndex(st => st.win);
+      if (winAt >= 0) {
+        const w = s.steps[winAt].win;
+        s.steps = [...s.steps.slice(0, winAt + 1).filter(st => st.k === 'beat' || st.win), ...s.steps.slice(winAt + 1).filter(st => st.k === 'beat' && !/stairs|key|room|nominat|going up|block/i.test(String(st.t || ''))),
+          { k: 'say', by: w, t: pickBy(['Yes! Oh my god, yes!', 'I needed that. I really needed that.', "Okay. Okay! Let's see what the Voice gives me.", 'Did that just happen? That just happened.'], `${ctx.week}|ssg|${w}`) }];
+      }
       s.steps = (s.steps || []).map(st => {
         const { hoh, ...r } = st;
         // (the side panel's "won the game this week" reads the winner's flag)
@@ -5763,14 +5780,35 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // have-not room, a final-two pact for a jury, "no comp today") is a scene of another show: it is cut whole, from
     // its room marker to the next, so no exchange is left half answered (bb/story/director.js cuts the director's own)
     {
-      const BB_SCENE = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|final (?:twos?|threes?|2|3)|whoever wins|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end)\b/i;
+      const BB_SCENE = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|final (?:twos?|threes?|2|3)|whoever wins|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end|not my week|your week|my week to|downstairs|upstairs|vote (?:you|him|her|them|me) out|leaning towards keeping|keeping you|change enough minds|swing votes?|the numbers to)\b/i;
       // (and the Reality Resort's island: the House of Secrets has a garden and a pool, no beach, dock or bonfire)
       const ISLAND = /\b(beach|bonfire|dock|pier|lagoon|volcano|pond|island|villa)\b/i;
+      // (the first week has no nominations and nobody leaves: nobody is "going up", "going home" or "has to go")
+      const NOPRIME = row.ssNoPrime ? /\b(going home|go home|goes home|going up|go up|goes up|has to go|needs to go|have to go|nominat\w*|vote\w*|voting|on Saturday|send (?:\w+ )?home|put (?:\w+ )?up|(?:person|somebody|someone|them|him|her) gone|same name|whose name|the notepad)\b/i : null;
+      // A scene is a whole exchange (the user, 2026-10-29: "we need writing fluent... at the same level as a real
+      // transcript"): two lines or fewer, with nothing setting them up, is a fragment of a conversation the episode
+      // never showed ("I just miss home." / "I know. Take as long as you need."), and does not air. The opening beat of
+      // a stretch, and anything the Voice says, always do.
+      const fragment = (b, first) => {
+        if (b.some(st => st.k === 'voice' || st.k === 'host' || st.scene?.folded)) return false;
+        const talk = b.filter(st => st.k === 'say' || st.k === 'dr').length;
+        if (!talk) return !first;
+        // (set up by a beat BEFORE its first line, not a walk-on from the last scene, and not a reaction after it)
+        const firstLine = b.findIndex(st => st.k === 'say' || st.k === 'dr');
+        // (nor a line that only says where and who: "Storage Room. DJ and Gwen.")
+        const LOC_ONLY = /^(?:The )?[A-Z][A-Za-z' ]*\.\s+(?:The whole house|[A-Z][\w-]+(?:(?:, | and )[A-Z][\w-]+)*)\.?$/;
+        const setUp = b.slice(0, firstLine).some(st => st.k === 'beat' && !/^\w+ (heads off|goes through)|^\w+ and \w+ head off|go through to/.test(String(st.t || '')) && !LOC_ONLY.test(String(st.t || '')));
+        return talk < 2 || (talk < 3 && !setUp);
+      };
       for (const s of out) {
         if (!(s.kind === 'houselife' || s.kind === 'scene') || /^bb-ss-/.test(String(s.id || ''))) continue;
         const keep = [];
         let block = [];
-        const flush = () => { if (!block.some(st => (typeof st.t === 'string' && BB_SCENE.test(st.t)) || ISLAND.test(String(st.scene?.room || '')))) keep.push(...block); block = []; };
+        const flush = () => {
+          const first = !keep.length;
+          if (!block.some(st => (typeof st.t === 'string' && (BB_SCENE.test(st.t) || ISLAND.test(st.t) || NOPRIME?.test(st.t))) || ISLAND.test(String(st.scene?.room || ''))) && !fragment(block, first)) keep.push(...block);
+          block = [];
+        };
         for (const st of s.steps || []) { if (st.scene && block.length) flush(); block.push(st); }
         flush();
         // (the screen's own first room goes on the first scene that survived)

@@ -51,7 +51,13 @@ export function ssRoomDilemmaScreen(act, ctx, H) {
     else if (act.kind === 'money-for-nomination') steps.push({ k: 'say', by: a, t: `${act.named}.` }, ssv(`Then ${act.named} is nominated. ${money(act.money)} for your kitty.`, { nom: [act.named] }), { k: 'dr', by: a, t: pickBy([`I just put ${act.named} up for money. If that ever comes out, I'm finished.`, `${act.named} would have done the same to me. I'm sure of it.`], `${k}|r`) });
     else if (act.kind === 'the-tapes') {
       steps.push(ssv('Look at the screen.'));
-      for (const t of act.talkers || []) steps.push({ k: 'beat', t: pickBy([`On the screen: ${t}, on the sofa, laughing. "${a}? Honestly, ${a} is the fakest person in this house."`, `On the screen: ${t} in the kitchen. "If ${a} goes this week, I won't cry. I'll throw a party."`], `${k}|t|${t}`) });
+      // (two people on the tapes never say the same sentence: each gets a line of their own, in turn)
+      const TAPES = [s => `On the screen: ${s}, on the sofa, laughing. "${a}? Honestly, ${a} is the fakest person in this house."`,
+        s => `On the screen: ${s} in the kitchen. "If ${a} goes this week, I won't cry. I'll throw a party."`,
+        s => `On the screen: ${s}, in the bedroom, whispering. "I smile at ${a} every morning, and I don't mean a word of it."`,
+        s => `On the screen: ${s} by the pool. "${a} talks to everybody and trusts nobody. I don't buy any of it."`];
+      const t0 = [...`${k}|tapes`].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % TAPES.length;
+      (act.talkers || []).forEach((t, i) => steps.push({ k: 'beat', t: TAPES[(t0 + i) % TAPES.length](t) }));
       steps.push({ k: 'dr', by: a, t: pickBy([`${listOf(act.talkers || [])}. To my face, all smiles. Okay. Now I know.`, "I paid to have my heart broken. Brilliant investment."], `${k}|r`) });
     } else if (act.kind === 'their-family') steps.push({ k: 'beat', scene: { set: 'door', plate: 'foyer', room: 'The Airlock', cam: 13, kicker: 'Cam 13 · The Airlock', cast: [[act.named, 50]] }, t: `That night the airlock opens, and ${act.named}'s family is standing behind the glass. ${act.named} can't stop crying.` },
       { k: 'say', by: act.named, t: pickBy(['Who did this? Who paid for this?', "I don't know who did this, but thank you. Thank you."], `${k}|f`) },

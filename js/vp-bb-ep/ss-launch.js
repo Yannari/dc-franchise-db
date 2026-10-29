@@ -75,12 +75,12 @@ const SEASON_IDEA = {
   crystal: 'This summer, everything is made of glass. More than ever, beware of appearances.',
   labyrinth: 'This summer, there are rooms in this house that nobody will be told about.',
 };
-// every arrival answers in words of their own: no two on the night alike
-const ARRIVE = ['Nervous. Excited. Mostly nervous.', "I've been waiting for this for months.", 'Ready. I think.', 'My heart is going so fast right now.',
-  'Honestly? I just want to win.', 'I just want to have fun and keep my mouth shut.', "I feel like I might throw up, but in a good way.",
+// every arrival answers in words of their own, no two on the night alike; every one an answer to "how are you feeling?"
+const ARRIVE = ['Nervous. Excited. Mostly nervous.', "Excited. I've been waiting for this for months.", 'Ready. I think.', 'My heart is going so fast right now.',
+  'Honestly? Like I could win this.', "Excited, and scared I'll say something I shouldn't.", "I feel like I might throw up, but in a good way.",
   "I've watched every season. I know what I'm doing. I hope.", 'Terrified. Is that allowed?', 'Like the luckiest person alive.',
-  'Calm on the outside. Not on the inside.', "I can't wait to meet everybody.", "I'm going to find every single secret in there.", 'Shaking. Look at my hands.',
-  "It's like my birthday and my first day of school at the same time.", 'I promised my family I would make them proud.'];
+  'Calm on the outside. Not on the inside.', "Happy. I can't wait to meet everybody.", "Hungry. I want to find every single secret in there.", 'Shaking. Look at my hands.',
+  "It's like my birthday and my first day of school at the same time.", "Emotional. I promised my family I'd make them proud."];
 
 /** The top stat a housemate would name as their biggest asset. */
 const topStat = (p, i) => {
@@ -229,9 +229,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
     steps.push({ k: 'beat', t: g.length === 1
       ? pickBy([`${g[0]} walks down the stairs onto the set, waving at the crowd.`, `${g[0]} comes out to the music, and nearly misses the last step.`, `${g[0]} walks on, both hands over ${pronouns(g[0]).posAdj || 'their'} mouth.`], `${kk}|walk`)
       : pickBy([`${listOf(g)} come down the stairs side by side, waving at the crowd.`, `${g[0]} takes the stairs two at a time. ${g.slice(1).join(' and ')} follow${g.length > 2 ? '' : 's'}, laughing.`, `${listOf(g)} walk on to a wall of noise.`], `${kk}|walk`) });
-    steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing.`], `${kk}|hi`)
+    steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing. How are you feeling?`], `${kk}|hi`)
       : pickBy([`Welcome, ${g.length > 2 ? 'all three of you' : 'both of you'}! How are you feeling?`, 'Welcome to Secret Story! Nervous?', `Look at you ${g.length > 2 ? 'three' : 'two'}. How are the nerves?`], `${kk}|hi`) });
-    g.forEach((n, j) => { const t = ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length]; steps.push({ k: 'say', by: n, t: firstSeason && /every season/.test(t) ? "Nobody's ever done this before. Nobody. And I'm one of the first." : t }); });
+    g.forEach((n, j) => { const t = ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length]; steps.push({ k: 'say', by: n, t: firstSeason && /every season/.test(t) ? "Excited. Nobody's ever done this before, and I'm one of the very first." : t }); });
     if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, ${youAll} didn't arrive together by accident, did you?`, `${youAll.replace(/^./, c => c.toUpperCase())} seem very comfortable together. Interesting...`], `${kk}|pair`) },
       { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
     // the secrets, to the public only: the audience holds up the signs
@@ -311,7 +311,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       const HOUSE = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: 4, kicker: 'Live · The House', cast: [...here.slice(-4), ...who].map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(14 + 72 * i / (a.length - 1))]) };
       steps.push({ k: 'beat', scene: HOUSE, t: who.length === 1 ? pickBy([`The door opens. ${who[0]} steps into the House of Secrets.`, `${who[0]} walks through the airlock and into the house.`, `${who[0]} takes a breath, and goes in.`], `${kk}|in|${who[0]}`)
         : pickBy([`The door opens. ${listOf(who)} step into the House of Secrets together.`, `${listOf(who)} walk through the airlock and into the house, screaming.`], `${kk}|in`) });
-      if (!here.length) { steps.push({ k: 'dr', by: who[0], t: pickBy(["It's beautiful. It's so pink. I don't trust it at all.", "There's nobody here. It's just me and a house full of secrets."], `${kk}|alone`) }); return; }
+      if (!here.length) { steps.push({ k: 'say', by: who[0], t: pickBy(["It's beautiful. It's so pink. I don't trust it at all.", "There's nobody here. It's just me and a house full of secrets."], `${kk}|alone`) }); return; }
       for (const n of who) {
         const met = recog.filter(r => r.whom === n && here.includes(r.who));
         if (met.length) for (const r of met) steps.push({ k: 'say', by: r.who, t: `Wait. Aren't you from ${r.from}?`, tense: [r.who, n] },
@@ -369,7 +369,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
         const kind = sx.secretKind || sx.kind;
         const story = KIND_STORY[kind] || KIND_STORY.past;
         const live = t => ({ k: 'dr', by: n, live: true, t });
-        ls.push({ k: 'host', by: host, t: pickBy([`Before we read on, let's go to the confessional, live. ${n}, can you hear me?`, `Let's go to the confessional. ${n}, it's ${host}, we're live.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([]) } },
+        ls.push({ k: 'host', by: host, t: pickBy([`First, let's go to the confessional, live. ${n}, can you hear me?`, `Let's go to the confessional. ${n}, it's ${host}, we're live.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([]) } },
           live(pickBy(["I can hear you! Hi! Hi, everybody!", "Loud and clear. My heart's going a hundred miles an hour."], `${kk}|hi|${n}`)),
           { k: 'host', by: host, t: `One of the secrets on this list is yours. Tell everybody at home: which one?`, secretlist: { rows: rowsNow([], sx) } },
           { ...live(pickBy([`That one. "${sx.text}."`, `It's that one. "${sx.text}." Wow. Seeing it up there.`], `${kk}|own|${n}`)), owns: true },
@@ -386,7 +386,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       for (const sx of l.secrets) {
         const j = l.secrets.indexOf(sx);
         fresh.push(sx);
-        ls.push({ k: 'host', by: host, t: sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : pickRot([`One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Next on the list: "${sx.text}."`, `And this one: "${sx.text}."`], j + gi), secretlist: { rows: rowsNow(fresh) } });
+        ls.push({ k: 'host', by: host, t: sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : (j === 0 ? pickRot([`First on the list: "${sx.text}."`, `One of our housemates, man or woman, is hiding this: "${sx.text}."`], gi) : pickRot([`One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Next on the list: "${sx.text}."`, `And this one: "${sx.text}."`], j + gi)), secretlist: { rows: rowsNow(fresh) } });
         // (a clue is a noun phrase, singular or not: "somewhere in the house: five rings on a string")
         if ((sx.clues || [])[0]) ls.push({ k: 'host', by: host, t: `A little clue for you at home: hidden somewhere in the house, ${sx.clues[0]}.`, secretlist: { rows: rowsNow(fresh) } });
       }
@@ -523,8 +523,8 @@ function checkin(c, H, host = 'Josh', firstSeason = false) {
     { k: 'beat', t: 'Three hours in, and the house has its first argument. Everybody pretends not to listen.', tense: [a, b] },
     { k: 'say', by: x || b, t: x ? pickBy(['Okay. Okay. Day one, guys.', 'Can we at least wait until everybody is in?'], `${kk}|x`) : "Fine. Let's leave it." }];
   else if (c.kind === 'slip') steps = [
-    { k: 'say', by: a, t: pickBy(["When I was working at the... never mind.", "My family always says I'm the one who... no. Forget it."], kk) },
-    { k: 'say', by: b, t: 'At the what?' },
+    ...pickBy([["When I was working at the... never mind.", 'At the what?'], ["My family always says I'm the one who... no. Forget it.", 'The one who what?']], kk)
+      .map((t, i) => ({ k: 'say', by: i ? b : a, t })),
     { k: 'say', by: a, t: "Nothing. Long day. Where's the wine?" },
     { k: 'beat', t: `${b} doesn't push it. ${b} doesn't forget it either.`, tense: [a, b] }];
   else if (c.kind === 'live') steps = [

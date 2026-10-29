@@ -143,7 +143,9 @@ export function registerOf(name, scene = null) {
     out.reg = out.mix[0][0];
     // a quoted catchphrase in the description ('calls everyone "dude"'; "Look, guys,")
     for (const m of String(p?.voice || '').matchAll(/["“]([^"”]{2,28})["”]/g)) {
-      const c = m[1].trim().replace(/[,.]$/, '');
+      // (a voice quotes a trailing-off phrase as "no but listen—" or "actually…": the dash or dots go, or the line
+      // reads "No but listen—, I'll get you a towel")
+      const c = m[1].trim().replace(/[,.—–…-]+$/, '').trim();
       // only what can open a line: a word or two of address or exclamation, not a sentence
       if (c && !/\./.test(c) && c.split(/\s+/).length <= 3) out.catch.push(c);
     }

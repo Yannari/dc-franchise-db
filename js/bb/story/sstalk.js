@@ -31,11 +31,13 @@
 import { gs } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { stableRng } from '../knowledge.js';
+import { pronouns } from '../../players.js';
+import { tellAfter } from '../../ss/tells.js';
 
 const bond = (a, b) => { try { return getBond(a, b) || 0; } catch { return 0; } };
 
 /** One to three Secret Story talks for this stretch of the week. */
-export function ssTalkFor(week, ctx, { stretch = 0, talked = new Set() } = {}) {
+export function ssTalkFor(week, ctx, { stretch = 0, talked = new Set(), at = Infinity } = {}) {
   const st = gs.bb?.secretStory;
   if (!st) return [];
   const house = (ctx.present || []).filter(Boolean);
@@ -56,7 +58,7 @@ export function ssTalkFor(week, ctx, { stretch = 0, talked = new Set() } = {}) {
   const share = moments.filter(m => m.kind === 'talk' && m.to && inHouse(m.to) && m.theory)[stretch];
   if (share) add({ kind: 'ss.hunt.share', who: { a: share.who, b: share.to, c: share.about }, data: { guess: share.theory } });
   const tell = moments.filter(m => m.kind === 'tell' && m.tell)[stretch];
-  if (tell) { const b = closest(tell.who, [tell.about]); if (b) add({ kind: 'ss.hunt.tell', who: { a: tell.who, b, c: tell.about }, data: { tell: tell.tell } }); }
+  if (tell) { const b = closest(tell.who, [tell.about]); if (b) add({ kind: 'ss.hunt.tell', who: { a: tell.who, b, c: tell.about }, data: { tell: tellAfter(tell.tell, (() => { try { return pronouns(tell.about); } catch { return null; } })()) } }); }
   // fishing: the surest theory anybody holds about somebody still hiding
   let best = null;
   for (const [n, ths] of Object.entries(st.theories || {})) {
@@ -76,7 +78,8 @@ export function ssTalkFor(week, ctx, { stretch = 0, talked = new Set() } = {}) {
   }
 
   // ── the morning after a buzz ──
-  for (const b of acts.filter(a => a?.type === 'ss-buzz' && a.outcome !== 'withdrawn')) {
+  // (only a buzz that has happened by this stretch: the user's read had DJ mourning his secret a day before the buzz)
+  for (const b of acts.filter((a, i) => a?.type === 'ss-buzz' && a.outcome !== 'withdrawn' && i < at)) {
     if (!inHouse(b.target) || !inHouse(b.by)) continue;
     const friend = closest(b.target, [b.by]);
     if (!friend) continue;

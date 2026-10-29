@@ -68,7 +68,7 @@ export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
   for (const s of out) {
     const id = String(s.id || '');
     if (ssPartOf(s) === 'daily' || RECORDED.test(id) || !(s.steps || []).some(st => st.k === 'dr')) continue;
-    const portrait = /^bb-ss-launch-(arr|open)/.test(id);
+    const portrait = /^bb-ss-launch-open/.test(id);
     const asked = new Set();
     /** @type {any[]} */ const steps = [];
     // the room the screen is in when the call ends (a scene sticks until the next one)
@@ -178,7 +178,8 @@ function ssPreviouslyScreen(row, o) {
     const order = (launch.arrivals || []).length ? launch.arrivals : [];
     const pairs = (launch.secrets || []).filter(s => (s.holders || []).length > 1);
     say(`${nw(order.length).replace(/^./, c => c.toUpperCase())} new housemates moved into the House of Secrets, every one of them hiding something.`, order.slice(0, 6), 'ss-studio', 'studio-wide');
-    if (order[0]) say(`${order[0]} was the very first through the door, and paid for the privilege: the public saw ${order[0]}'s secret before anybody else's.`, [order[0]], 'ss-studio', 'studio-wide');
+    // (the privilege is the Public's Signs twist's: js/ss/launch.js)
+    if (order[0] && launch.launch?.signs) say(`${order[0]} was the very first through the door, and paid for the privilege: the public saw ${order[0]}'s secret before anybody else's.`, [order[0]], 'ss-studio', 'studio-wide');
     if (pairs.length) say(pairs.length === 1 ? 'And two of them walked in sharing one secret, pretending they had never met.' : `And ${nw(pairs.length)} pairs walked in sharing a secret, pretending they had never met.`, [], 'foyer', 'door');
     const ms = (launch.launch?.missions || []).filter(m => m.who);
     if (ms.length) say(`Before they had even unpacked, the Voice had given ${listOf(ms.map(m => m.who))} a first mission.`, ms.map(m => m.who), 'confessional-close', 'dr');

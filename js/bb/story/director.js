@@ -132,7 +132,8 @@ export function airStorylines(week) {
   // ...and a Deepfake is never announced: the house believes the deposed HOH ran the whole week (`hohPublic`), so
   // house life keeps them as HOH from start to end, and only the viewer knows otherwise
   const usurp = week.interrogation && !week.interrogation.caught && week.interrogation.deposed && !week.interrogation.creditsDeposed ? week.interrogation : null;
-  let hohNow = usurp ? usurp.deposed : (week.hohPublic || week.hoh);
+  // (Secret Story has no Head of Household: the Voice's game winner holds no room, no stairs, no Saturday block)
+  let hohNow = SS ? null : usurp ? usurp.deposed : (week.hohPublic || week.hoh);
   const ctxOf = () => ({ week, hoh: clock.hoh ? (hohNow || null) : null,
     nominees: blockNow(), stretch,
     firstNight: (week.num || 0) === 1 && stretch === 0, present: present(), phase: season.phase, jurors: season.jurors,
@@ -591,7 +592,7 @@ export function airStorylines(week) {
       talks.push(...hw);
       const game = SS || hw.length >= 3 ? null : gameTalkFor(week, tctx, { ...clock, safety: clock.safety || pending.some(p => p.act.type === 'safety') }, talked, lastGone)[0];
       if (game) talks.push(game);
-      if (SS) talks.push(...ssTalkFor(week, tctx, { stretch, talked }));
+      if (SS) talks.push(...ssTalkFor(week, tctx, { stretch, talked, at: week.acts.indexOf(pending[0].act) }));
       const bond = stretch % 2 === 1 || !game ? bondTalkFor(week, tctx, talkedPairs) : null;
       if (bond && !talked.has(bond.kind)) talks.push(bond);
       // and one houseguest playing their own game (gametalk.js styleTalkFor)

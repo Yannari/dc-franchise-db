@@ -38,7 +38,7 @@ export function ssWeekPackageScreen(act, ctx, H) {
   const clues = acts.filter(a => a?.type === 'ss-clue').map(a => a.clue).filter(Boolean);
   if (clues.length) said.push(clues.length === 1 ? `A clue went on the living-room table: ${clues[0]}.` : `${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.`);
   const breakers = [...new Set(acts.filter(a => a?.type === 'ss-rule' && a.who).map(a => a.who))];
-  if (breakers.length) said.push(breakers.length === 1 ? `${breakers[0]} broke one of the Voice's commandments, and paid for it.` : `${listOf(breakers)} all broke the Voice's commandments, and paid for it.`);
+  if (breakers.length) said.push(breakers.length === 1 ? `${breakers[0]} broke one of the Voice's commandments, and paid for it.` : `${listOf(breakers)} ${breakers.length === 2 ? 'both' : 'all'} broke the Voice's commandments, and paid for it.`);
   const game = acts.find(a => a?.type === 'ss-game' && a.winner);
   if (game) said.push(`${game.winner} won the Voice's game.`);
   for (const a of acts) {

@@ -23,7 +23,6 @@
 // bb/script/ceremony.js); a save from before that falls back to a plain line.
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
-import { tellAfter } from '../ss/tells.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER, seasonConfig as SEASON_CFG } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
@@ -3198,12 +3197,11 @@ function ssHuntScreen(act, ctx) {
   ms.slice(0, 4).forEach((m, i) => {
     const k = `${ctx.week}|ssh|${i}|${m.who}`;
     if (m.kind === 'tell') {
-      const pr = (() => { try { return pronouns(m.about); } catch { return null; } })();
-      steps.push({ k: 'beat', t: `${m.about} ${tellAfter(m.tell, pr)}. ${m.who} sees it.` },
+      steps.push({ k: 'beat', t: `${m.about} ${m.tell}. ${m.who} sees it.` },
         { k: 'dr', by: m.who, t: pickBy([`${m.about} does this thing whenever it comes up. I'm writing that down.`, `Watch ${m.about}. Just watch. There's something there.`, `I think ${m.about}'s secret is "${m.theory}". Not sure yet. Getting there.`], k) });
     } else {
       steps.push({ k: 'beat', t: `${m.who} and ${m.to}, in a corner, comparing notes about ${m.about}.` },
-        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me ${(() => { try { return pronouns(m.who)?.posAdj || 'their'; } catch { return 'their'; } })()} theory about ${m.about}. It makes sense. Too much sense.`], k) });
+        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me their theory about ${m.about}. It makes sense. Too much sense.`], k) });
     }
   });
   return { id: `bb-ss-hunt-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '14:00',
@@ -5460,10 +5458,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     if (act.state) ctx.snap = act.state;
     // An act with no day of its own (most twists) happens where the week has got to:
     // the clock never runs backwards within a week.
-    // (Secret Story's first week has no nominations to move the clock: its stretches of house life spread over the week)
-    const spreadDay = row.ssNoPrime && act.type === 'house'
-      ? Math.round((ctx._houseAt = (ctx._houseAt ?? -1) + 1) * 6 / Math.max(1, row.acts.filter(a => a?.type === 'house').length - 1)) : null;
-    const dayOf = ((ctx.week - 1) * 7) + 1 + (spreadDay ?? ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
+    const dayOf = ((ctx.week - 1) * 7) + 1 + (ACT_DAY[act.type] ?? (row.isFinale ? 6 : 0));
     ctx.day = ACT_DAY[act.type] != null || row.isFinale ? Math.max(ctx.day || 0, dayOf) : Math.max(ctx.day || 0, ((ctx.week - 1) * 7) + 1);
     switch (act.type) {
       case 'house': case 'campaign': beatsOf(act); break;
@@ -5771,30 +5766,11 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       const BB_SCENE = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|final (?:twos?|threes?|2|3)|whoever wins|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end)\b/i;
       // (and the Reality Resort's island: the House of Secrets has a garden and a pool, no beach, dock or bonfire)
       const ISLAND = /\b(beach|bonfire|dock|pier|lagoon|volcano|pond|island|villa)\b/i;
-      // (the first week has no nominations and nobody leaves: nobody is "going up", "going home" or "has to go")
-      const NOPRIME = row.ssNoPrime ? /\b(going home|go home|goes home|going up|go up|goes up|has to go|needs to go|have to go|nominat\w*|vote\w*|voting|on Saturday|send (?:\w+ )?home|put (?:\w+ )?up|(?:person|somebody|someone|them|him|her) gone|same name|whose name|the notepad)\b/i : null;
-      // A scene is a whole exchange (the user, 2026-10-29: "we need writing fluent... at the same level as a real
-      // transcript"): two lines or fewer, with nothing setting them up, is a fragment of a conversation the episode
-      // never showed ("I just miss home." / "I know. Take as long as you need."), and does not air. The opening beat of
-      // a stretch, and anything the Voice says, always do.
-      const fragment = (b, first) => {
-        if (b.some(st => st.k === 'voice' || st.k === 'host' || st.scene?.folded)) return false;
-        const talk = b.filter(st => st.k === 'say' || st.k === 'dr').length;
-        if (!talk) return !first;
-        // (set up by a beat BEFORE its first line, not a walk-on from the last scene, and not a reaction after it)
-        const firstLine = b.findIndex(st => st.k === 'say' || st.k === 'dr');
-        const setUp = b.slice(0, firstLine).some(st => st.k === 'beat' && !/^\w+ (heads off|goes through)|^\w+ and \w+ head off|go through to/.test(String(st.t || '')));
-        return talk < 2 || (talk < 3 && !setUp);
-      };
       for (const s of out) {
         if (!(s.kind === 'houselife' || s.kind === 'scene') || /^bb-ss-/.test(String(s.id || ''))) continue;
         const keep = [];
         let block = [];
-        const flush = () => {
-          const first = !keep.length;
-          if (!block.some(st => (typeof st.t === 'string' && (BB_SCENE.test(st.t) || ISLAND.test(st.t) || NOPRIME?.test(st.t))) || ISLAND.test(String(st.scene?.room || ''))) && !fragment(block, first)) keep.push(...block);
-          block = [];
-        };
+        const flush = () => { if (!block.some(st => (typeof st.t === 'string' && BB_SCENE.test(st.t)) || ISLAND.test(String(st.scene?.room || '')))) keep.push(...block); block = []; };
         for (const st of s.steps || []) { if (st.scene && block.length) flush(); block.push(st); }
         flush();
         // (the screen's own first room goes on the first scene that survived)

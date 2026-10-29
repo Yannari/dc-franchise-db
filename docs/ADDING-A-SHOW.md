@@ -3297,6 +3297,7 @@ follow these steps in this order. Each step names the TD file that does it.
 - Stings for a shock, a drumroll or heartbeat under the reading.
 - Lines are voiced as written (`voicing.js`, Inworld). There is no delivery director: the user
   removed it on 2026-10-14 because it slowed every voice down.
+- The clips are paid for: each show has its own bucket folder, and nothing deletes a clip (§18.5).
 
 **Step 10 — The transcript matches the screen.**
 - `tdStepTranscript` hands the host's calls to the text backlog.
@@ -3321,6 +3322,40 @@ follow these steps in this order. Each step names the TD file that does it.
 | A Save Card played before anyone voted | played after the ballots |
 | Camp words from the wrong setting (outdoor words on the jet) | `placeOk` checks every line against the setting and the time of day (§19) |
 | The finale on classic screens | `finale.js`, one screen for each format |
+
+### 18.5 Voice clips cost money: one folder per show, and nothing deletes them
+
+Every voiced line is paid for. It is voiced once on Inworld and kept in the
+`dc-audio` bucket at `voice/<season>/e<episode>/<line id>.mp3`. A deleted clip
+is gone for good: R2 has no versioning, and the bucket has no expiry rule
+except the default one for unfinished uploads. On 2026-10-29 the bucket held
+only the 15 Drag Race cues, with no voice clip left from any show. The user:
+"it cost me to generate voice i dont wanna lose it".
+
+**The rules for a new show's `voicing.js`:**
+
+1. **The folder is `<show prefix>-<season number>`, with the prefix from the
+   registry.** Never take a literal, and never take the engine's prefix. A
+   show on another show's engine has its own folder (§23.8): Secret Story's
+   is `ss-`, not Big Brother's `bb-`.
+2. **No code path deletes a clip automatically.** That rules out deleting on
+   Reset Season, on a re-run, and on a voicing that finds clips from an older
+   version of the episode. All three used to delete, and the reset is the one
+   that wiped a season: "start the next season" from the Retrospective runs it
+   too. This replaces the 2026-10-12 rule "when an episode gets deleted it
+   should delete the voicing too".
+3. **A leftover clip is harmless, so filter it, don't delete it.** A clip's id
+   is a hash of the speaker and the words (`lineId`), so the viewer only plays
+   it for that exact line. "Already voiced" counts only the ids among this
+   episode's current lines. Storage costs almost nothing, and a re-run that
+   brings a line back word for word finds its clip again for free.
+4. **The worker's `/api/voice/clear` route stays, for a deliberate use only.**
+   `bbClearVoices`, `ciClearVoices` and `clearVoices` still exist, but nothing
+   calls them. `tests/bb-voicing-names.test.js` fails if a voicing file awaits
+   one, or if `resetSeason` calls one.
+5. **A probe or e2e script that sets `studio_api_token` talks to the real
+   bucket.** Keep it away from the clear route. Only the vitest runner is
+   offline (`process.env.VITEST`); a Playwright page is not.
 
 ---
 
@@ -4106,6 +4141,16 @@ Things that bit, in order:
   Studio save, read back out by Publish, written at the season start from a
   browser with the Studio key or by the season publish. The publish-wipe
   trap applies to every field like it.
+- **The voice folder is the SHOW's, not the engine's.** Secret Story's
+  voicing ran through Big Brother's `vp-bb-ep/voicing.js`, which named the
+  folder `bb-<number>`. So a Secret Story season and the Big Brother season
+  of the same number shared one folder in the audio bucket. Resetting a
+  Secret Story test season deleted Big Brother season 2's paid clips, and
+  R2 has no undo (2026-10-29). `bbVoiceSeason()` now takes the prefix from
+  the registry entry of `seasonConfig.format` (`ss-2`, `bb-2`). Check every
+  per-season key a shared engine builds (a bucket folder, a storage key, a
+  cache name) for the same collision. See §18.5 for the rule on deleting
+  clips.
 
 ## 24. Rankings: every show gets a board, a calculator and its own trivia (2026-10-27)
 

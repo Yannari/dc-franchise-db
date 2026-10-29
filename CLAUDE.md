@@ -25,7 +25,8 @@ written, the line picker's repetition rules, and the one-click-per-line viewer i
 `js/vp-ci/`). Building a viewer, or porting a classic one to a stepped one,
 reads §18 first (what five shows' viewers taught: animate every action, the side
 panel for what the house cannot see, music only where it earns it, and the Big
-Brother port recipe; §18.4 is Total Drama's stepped viewer step by step).
+Brother port recipe; §18.4 is Total Drama's stepped viewer step by step; §18.5
+is voice clips: they cost money, so one bucket folder per show and nothing deletes them).
 Writing or fixing any show's DIALOGUE reads §19 first: pick the show's type,
 build in its order, then run the season-read loop and check every scene
 against the bug-class table. The document lists every file

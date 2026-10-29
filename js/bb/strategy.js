@@ -80,7 +80,31 @@ export function nominationScore(hoh, candidate, rng = Math.random) {
   if (deal && score > 0) {
     score = score * (1 - (tierOf(deal) === 'final-two' ? 0.55 : 0.35) * sincerityOf(deal, hoh));
   }
-  return score * allianceLoyaltyDiscount(hoh, candidate, heat, score);
+  return score * allianceLoyaltyDiscount(hoh, candidate, heat, score) * showmanceDiscount(hoh, candidate, heat, score);
+}
+
+/**
+ * The person they share a bed with.
+ *
+ * A showmance had no term here at all: it protected only through the bond, which the noise and a late-season
+ * threat reading outweigh. Measured over twenty seasons, an HOH with a partner nominated them in 20 weeks and
+ * 12 of those had no pawn deal, several at a bond of 9 or 10 (the read of 2026-10-29: Ben put Lacey up "for
+ * seemingly no reason"). On the show it is the rarest nomination there is, and it always has a story: a pawn
+ * the partner agreed to, a relationship that has cooled, somebody who was wronged, or a house with nobody else
+ * left. So a warm one cuts most of the reasons to nominate, in proportion to how warm it still is and how loyal
+ * the HOH is, and none of it survives a betrayal on record.
+ */
+export function showmanceDiscount(hoh, candidate, heat = null, score = 1) {
+  if (score <= 0) return 1;
+  const sh = (gs.showmances || []).find(s => s && s.phase !== 'broken-up' && !s.broken
+    && (s.players || []).includes(hoh) && (s.players || []).includes(candidate));
+  if (!sh) return 1;
+  const c = heat?.components || {};
+  const wronged = clamp(Math.max(0, c.memory || 0) / 2.5 + Math.max(0, c.suspicion || 0) / 2, 0, 1);
+  const warmth = clamp((getBond(hoh, candidate) || 0) / 8, 0, 1);
+  const loyalty = clamp((pStats(hoh).loyalty ?? 5) / 10, 0, 1);
+  const strained = ['tension', 'ultimatum', 'escalation'].includes(sh.phase) ? 0.5 : 1;
+  return 1 - 0.85 * (0.45 + 0.55 * loyalty) * warmth * strained * (1 - wronged);
 }
 
 /**
@@ -238,6 +262,10 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
         * (tierOf(pawnDeal) === 'final-two' ? 6.5 : tierOf(pawnDeal) === 'final-three' ? 4 : 0.5);
     }
     if (plan?.preferredCore?.includes(name)) fit -= 1.2;
+    // The closest person in the house is what a pawn looks like, and the bond term made a showmance partner the
+    // first pawn every time. "Never put your showmance up" is the oldest rule in the house: a partner is a chair
+    // only for a cooled pair or an HOH who cares more about the game.
+    fit -= 10 * (1 - showmanceDiscount(hoh, name));
     return fit;
   };
   const pawnPool = ranked.slice(1).sort((a, b) => pawnFit(b.name) - pawnFit(a.name));
@@ -304,7 +332,11 @@ export function chooseNominationPlan(hoh, house, rng = Math.random) {
   // but pair-split and target-ally pick their second seat by PAIRING, not by
   // heat, and walked straight past the promise: a sincere final two was
   // going up beside the target every single draw.
+  // ...and the person they share a bed with, while it is still warm: pair-split chose the TARGET's closest
+  // person for the second chair, and that was the Head of Household's own showmance (measured: Bowie put
+  // Chase up beside Hicks twice, at bond 9.4 and 5.8)
   const promisedEnd = name => {
+    if (showmanceDiscount(hoh, name) < 0.6) return true;
     const deal = dealBetween(hoh, name);
     return deal ? sincerityOf(deal, hoh) > 0.5 : false;
   };

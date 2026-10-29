@@ -313,6 +313,17 @@ const blocTold = {
   },
 };
 
+// A group whose own member put another of them on the block this week is the one group nobody can accuse of always
+// voting together (the read of 2026-10-29: "We all know Ben and Lacey are working together!" the week Ben nominated
+// Lacey).
+function _splitThisWeek(bloc, ctx) {
+  const hoh = ctx?.hoh || ctx?.week?.hoh || null;
+  if (!hoh || !(bloc?.members || []).includes(hoh)) return false;
+  const noms = new Set([...(ctx?.nominees || []), ...(ctx?.week?.initialNominees || []), ...(ctx?.week?.finalNominees || [])]);
+  return bloc.members.some(m => m !== hoh && noms.has(m));
+}
+const _blowable = (e, ctx) => e.known >= 0.6 && blocExposure(e.bloc) < 0.85 && !_splitThisWeek(e.bloc, ctx);
+
 const blocBlowup = {
   id: 'bloc-blowup',
   category: 'social',
@@ -322,16 +333,16 @@ const blocBlowup = {
     // that is already half-known, and enough of the season gone that people
     // have stopped being careful.
     const angry = house.find(name => pStats(name).temperament <= 5
-      && knownBlocsFor(name).some(e => e.known >= 0.6 && blocExposure(e.bloc) < 0.85));
+      && knownBlocsFor(name).some(e => _blowable(e, ctx)));
     // Rare on purpose: this is the scene that ends a group, and one every
     // other week makes it weather rather than an event.
     return angry ? band(2.2 * _fit(ctx)) : 0;
   },
   fire(house, ctx, api) {
     const angry = _quiet(house).find(name => pStats(name).temperament <= 5
-      && knownBlocsFor(name).some(e => e.known >= 0.6 && blocExposure(e.bloc) < 0.85)) || house[0];
-    const entry = knownBlocsFor(angry).find(e => e.known >= 0.6 && blocExposure(e.bloc) < 0.85)
-      || knownBlocsFor(angry)[0];
+      && knownBlocsFor(name).some(e => _blowable(e, ctx))) || house[0];
+    const entry = knownBlocsFor(angry).find(e => _blowable(e, ctx))
+      || knownBlocsFor(angry).find(e => !_splitThisWeek(e.bloc, ctx));
     if (!entry) return { scene: makeScene('bloc.quiet', { a: angry }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, angry)), players: [angry],
       badgeText: 'HELD IT IN', badgeClass: 'grey' };
     const bloc = entry.bloc;

@@ -32,6 +32,7 @@ import { addBond, getPerceivedBond } from '../bonds.js';
 import { allyStake, rememberBBStrategy, setBBTarget } from './shared-strategy.js';
 import { recordProtection, recordStrategicRespect } from '../relationship-events.js';
 import { scriptBeat } from './script/inject.js';
+import { partnerUpBeat } from '../bb-events/partner-up.js';
 
 const beat = (text, players, badgeText, badgeClass = 'blue') =>
   ({ text, players: [...new Set((players || []).filter(Boolean))], badgeText, badgeClass });
@@ -176,7 +177,14 @@ export function applyVetoFallout({
   }
 
   // ── 3. THE CHAIR NOBODY VOLUNTEERED FOR ──
-  if (replacement && replacement !== holder) {
+  // ...unless the HOH named their own showmance: that is its own scene, its own reason and its own cost
+  // (bb-events/partner-up.js; the read of 2026-10-29, Ben naming Lacey "for seemingly no reason")
+  let partnerBeat = null;
+  if (replacement && replacement !== holder && hoh && !decision?.diamond) {
+    try { partnerBeat = partnerUpBeat({ week, hoh, chairs: [replacement], house, renom: true, act: 'veto-ceremony' }); } catch { partnerBeat = null; }
+  }
+  if (partnerBeat) beats.push(partnerBeat);
+  else if (replacement && replacement !== holder) {
     // Split, because two people put them there: the one who named them and the
     // one whose rescue emptied the chair. The second half only when the
     // replacement had no part in it — a renom who is close to the saved player

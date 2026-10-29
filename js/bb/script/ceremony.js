@@ -39,6 +39,11 @@ function allied(a, b) {
   return (gs.namedAlliances || []).some(al => al.active !== false && (al.members || []).includes(a) && (al.members || []).includes(b));
 }
 const close = (a, b) => getBond(a, b) >= 3 || allied(a, b);
+// the HOH's own showmance: the reason, the Diary Room and the replacement are their own (lines/partner.js)
+const partnerOf = name => {
+  const sh = (gs.showmances || []).find(s => s && s.phase !== 'broken-up' && !s.broken && (s.players || []).includes(name));
+  return sh ? (sh.players || []).find(n => n !== name) || null : null;
+};
 const band = bond => (bond >= 3 ? 'friends' : bond < 0 ? 'cold' : 'neutral');
 
 /** Write one part. Returns its lines, or null if the pools have nothing (never thrown into the engine). */
@@ -121,6 +126,7 @@ export function writeCeremony(act, week, house, extra = {}) {
       let paired = false;
       const whyOf = (n, other) => {
         const wins = (st(n).hohWins || 0) + (st(n).vetoWins || 0) + (st(n).blockBusterWins || 0);
+        if (n === partnerOf(hoh)) return agreed(n) ? 'partnerpawn' : 'partner';
         if (n === act.pawn && agreed(n)) return 'pawn';
         if (!paired && other && (getBond(n, other) >= 4 || allied(n, other))) { paired = true; return 'pair'; }
         if (getBond(hoh, n) <= -2) return 'grudge';
@@ -153,7 +159,8 @@ export function writeCeremony(act, week, house, extra = {}) {
       for (const n of noms.filter(x => !spoke.has(x))) {
         // in a backdoor nobody on the block is the target: a friend sitting there was asked to (the
         // audit, 2026-10-06: a pawn nodded at the HOH, then told the Diary Room she was blindsided)
-        const end = (n === act.pawn && !backdoor) || (backdoor && close(n, hoh)) ? 'pawn' : close(n, hoh) ? 'blindsided' : n === target ? 'target' : 'any';
+        const end = n === partnerOf(hoh) ? (agreed(n) ? 'partnerpawn' : 'partner')
+          : (n === act.pawn && !backdoor) || (backdoor && close(n, hoh)) ? 'pawn' : close(n, hoh) ? 'blindsided' : n === target ? 'target' : 'any';
         const lines = part('noms.dr', { a: n, b: hoh }, end, { ...ctx, nominees: noms }, house, n);
         if (lines) script.nomDr[n] = lines;
       }
@@ -192,7 +199,8 @@ export function writeCeremony(act, week, house, extra = {}) {
       if (act.used && act.replacement && !(act.duoUp || []).length && !act.anonymous) {
         const namer = act.diamond ? holder : (act.chairAuthority || hoh);
         if (namer && namer !== act.replacement) {
-          const end = act.forcedReplacement ? 'forced' : close(act.replacement, namer) ? 'blindsided' : getBond(act.replacement, namer) < 0 ? 'expected' : 'any';
+          const end = act.forcedReplacement ? 'forced' : act.replacement === partnerOf(namer) ? 'partner'
+            : close(act.replacement, namer) ? 'blindsided' : getBond(act.replacement, namer) < 0 ? 'expected' : 'any';
           script.renom = part('veto.renom', { a: act.replacement, b: namer }, end, ctx, house, act.replacement);
         }
       }

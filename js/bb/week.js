@@ -43,6 +43,8 @@ import { playInterrogation, playMysteryCompetitor, playMysteryVeto,
   mysteryCompetitorResult } from './secret-power-plays.js';
 import { activeSeasons } from '../franchise-meta.js';
 import { applyVetoFallout } from './veto-fallout.js';
+import { partnerUpBeat, partnerGoneBeats } from '../bb-events/partner-up.js';
+import { lastCompletedWeek } from './fallout.js';
 import { alumniPool } from '../alumni.js';
 import { hidePower, searchForPower, hiddenPowerState } from './hidden-power.js';
 import {
@@ -2205,6 +2207,17 @@ export function simulateBBWeek(options = {}) {
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
+    // The morning after the HOH's own showmance went home off their block: the guilt, and the houseguest who says
+    // it to their face. Built here, first thing, rather than left to the draw (bb-events/partner-up.js).
+    if (phase === 'pre-hoh' && !ss) {
+      try {
+        const last = lastCompletedWeek();
+        if (last && (last.num || 0) === (week.num || 0) - 1) {
+          const gone = partnerGoneBeats({ week, last, house });
+          if (gone.length) act.socialBeats = [...gone, ...act.socialBeats];
+        }
+      } catch { /* the morning stands whatever the scene does */ }
+    }
     // People decide to work together at any hour of the day, not only in the
     // gap before the week starts. Formation is attempted in every stretch of
     // house life and the lifecycle's own caps decide whether one happens —
@@ -2539,7 +2552,8 @@ export function simulateBBWeek(options = {}) {
   const _treeBarred = gs.bb?.barredFromHoh && Number(gs.bb.barredFromHoh.week) === Number(week.num) && house.includes(gs.bb.barredFromHoh.name)
     ? [gs.bb.barredFromHoh.name] : [];
   let sittingOut = [...rivalsOut, ...keysOut, ..._treeBarred];
-  const yard = out => house.filter(name => name !== gs.bb.outgoingHoh && !out.includes(name));
+  // (Secret Story's game has no outgoing winner sitting out: that is Big Brother's Head of Household rule)
+  const yard = out => house.filter(name => (ss || name !== gs.bb.outgoingHoh) && !out.includes(name));
   if (yard(sittingOut).length < 2) sittingOut = [...rivalsOut];
   if (yard(sittingOut).length < 2) sittingOut = [];
   // ── THE CLIQUES: SORTED ON NIGHT ONE, DISSOLVED WHEN THE HOUSE IS SMALL ──
@@ -4765,6 +4779,15 @@ export function simulateBBWeek(options = {}) {
     deadLastChair: week.deadLastNominee || null,
     americasChair: week.americasNominee?.nominee || null,
     brokenPromises: [...week.brokenPromises], pawnAsk: week.pawnAsk || null }, { nominees: [...nominees] }));
+  // The HOH put their own showmance up: the week is about it, so it is built here rather than left to the draw
+  // (bb-events/partner-up.js; the read of 2026-10-29, Ben and Lacey)
+  if (!chainNoms.length && !hohSecret && !ss) {
+    try {
+      const nomAct = week.acts.at(-1);
+      const pb = partnerUpBeat({ week, hoh, chairs: nomAct?.hohNominees || nominees, house, act: 'nominations' });
+      if (pb && nomAct) nomAct.socialBeats = [pb, ...(nomAct.socialBeats || [])];
+    } catch { /* the ceremony stands whatever the scene does */ }
+  }
   revise('noms', { hoh, nominees: [...nominees] });
 
   // `week.nominees` is NOT the block — it is written only by the cancelled-

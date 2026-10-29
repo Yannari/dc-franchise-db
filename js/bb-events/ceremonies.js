@@ -52,6 +52,12 @@ function _strandedNominee(ctx) {
     .sort((a, b) => bond(b, holder) - bond(a, holder))[0] || null;
 }
 
+// the HOH's own showmance, whose nomination is its own scene (bb-events/partner-up.js)
+const _showmancePartner = name => {
+  const sh = (gs.showmances || []).find(s => s && s.phase !== 'broken-up' && !s.broken && (s.players || []).includes(name));
+  return sh ? (sh.players || []).find(n => n !== name) || null : null;
+};
+
 const _bystanders = (house, ctx, ...exclude) =>
   house.filter(n => n !== ctx?.hoh && !_nominees(ctx).includes(n) && !exclude.includes(n));
 
@@ -178,8 +184,9 @@ const nomPawnReassured = {
 // house could see the alliance that just broke.
 function _blindsideVictim(ctx) {
   const week = ctx?.week?.num || 0;
-  // (somebody the HOH lied to this week has their own scene: nom-lied-to)
-  return _nominees(ctx).filter(n => n !== _liedTo(ctx))
+  // (somebody the HOH lied to this week has their own scene: nom-lied-to; the HOH's own showmance has theirs,
+  // bb-events/partner-up.js)
+  return _nominees(ctx).filter(n => n !== _liedTo(ctx) && n !== _showmancePartner(ctx.hoh))
     .filter(n => trusts(n, ctx.hoh, 2.5) || wasPromised(n, ctx.hoh, week) || sharesAlliance(n, ctx.hoh))
     .sort((a, b) => bond(b, ctx.hoh) - bond(a, ctx.hoh))[0] || null;
 }
@@ -422,6 +429,8 @@ const vetoReplacementShock = {
     if (ctx.week?.vetoForcedReplacement) return 0;
     // The non-backdoor case: an unplanned replacement, which stings differently.
     if (backdoorTarget && backdoorTarget === replacement) return 0;
+    // the HOH's own showmance named as the replacement is its own scene (bb-events/partner-up.js)
+    if (replacement === _showmancePartner(ctx.hoh)) return 0;
     // Whoever actually said the name: the HOH normally, the veto holder
     // under the Diamond Veto. The grievance follows the voice, not the key.
     const namer = ctx.week?.vetoDecision?.diamond

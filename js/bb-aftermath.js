@@ -873,6 +873,10 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     majority: plan?.majority ?? null,
     actual: (week.votes || {})[evictee] ?? null,
     liars,
+    // who they named to the house and who they wrote (the user, 2026-10-29: "one name and vote another, say the
+    // name, say you and vote y, be clear and accurate")
+    lies: ballots.filter(b => b.lied && b.evict === evictee)
+      .map(b => ({ voter: b.voter, said: b.stated && b.stated !== evictee ? b.stated : null })),
     reaction: plan && plan.organizer !== read.blamed
       ? _pick(rng, [
         `"${plan.organizer}? I sat across from ${pronouns(plan.organizer).obj} at breakfast this morning." The sentence just stops there.`,

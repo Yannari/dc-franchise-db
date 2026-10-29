@@ -11,6 +11,8 @@ import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { PRODUCTION_SECRETS, productionSecret } from '../js/ss/casting.js';
 import { arrivalGroups } from '../js/vp-bb-ep/ss-launch.js';
+import { SECRET_STORIES } from '../js/ss/secret-stories.js';
+import { SECRET_POOL } from '../js/ss/secret-pool.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -175,6 +177,27 @@ describe('launch night, on screen', () => {
       for (const r of st.secretlist?.rows || []) if (r.who) { faces++; expect(owned.has(r.who), `${r.who}'s face on "${r.text}"`).toBe(true); }
     }
     expect(faces).toBeGreaterThan(0);
+    // a secret two keep shows both faces ("fake couple and fake siblings is a two people secret so 2 or more avatars")
+    const rows = screens.flatMap(s => s.steps).flatMap(st => st.secretlist?.rows || []);
+    expect(rows.some(r => r.text === 'We are fake siblings' && r.whos?.length === 2)).toBe(true);
+  });
+  // the user, 2026-10-29: "the list of secret keep resetting just make sure the host read all the secret each time the
+  // list appear... the clue is useless replace by an explanation of the secret"
+  it('the list only grows, the host reads all of it each time, and explains every new secret instead of a clue', () => {
+    const screens = play().filter(s => /^bb-ss-launch-list/.test(String(s.id)));
+    expect(screens.length).toBeGreaterThan(1);
+    let before = [];
+    for (const s of screens) {
+      const boards = s.steps.filter(st => st.secretlist).map(st => st.secretlist.rows.map(r => r.text));
+      // (in announcement order, never losing a row)
+      for (const b of boards) { expect(b.slice(0, before.length)).toEqual(before); before = b; }
+      const said = s.steps.filter(st => st.k === 'host').map(st => st.t).join(' ');
+      const at = s.steps.find(st => st.secretlist)?.secretlist.rows || [];
+      for (const r of at) expect(said, r.text).toContain(`"${r.text}"`);
+    }
+    const all = screens.flatMap(s => s.steps);
+    expect(all.filter(st => /clue for you at home/.test(String(st.t || '')))).toEqual([]);
+    all.forEach((st, i) => { if (st.secretlist?.show) expect(String(all[i + 1].t || '').length, st.secretlist.show.text).toBeGreaterThan(60); });
   });
   it('the production secrets are set up on the night, and the words are clean', () => {
     const screens = play();
@@ -208,5 +231,14 @@ describe('week one has no prime', () => {
     expect(steps.some(s => /^bb-ss-prime-/.test(String(s.id)))).toBe(false);
     const close = steps.find(s => s.id === 'bb-ss-tonight-w1');
     expect(close?.steps.some(st => /first nominations/.test(String(st.t)))).toBe(true);
+  });
+});
+
+describe('what a secret means', () => {
+  it('every secret in the pool has its own explanation, and none says whose', () => {
+    for (const e of SECRET_POOL) {
+      expect(SECRET_STORIES[e.id], e.id).toBeTruthy();
+      expect(SECRET_STORIES[e.id], e.id).not.toMatch(/\b(he|she|him|her|his|hers)\b(?! life| sentence)/i);
+    }
   });
 });

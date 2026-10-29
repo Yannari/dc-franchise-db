@@ -216,7 +216,9 @@ function ssPreviouslyScreen(row, o) {
   const steps = [
     { k: 'beat', t: `Previously in Secret Story... ${said[0].t}`, toast: ['PREVIOUSLY', '#ff3ea5'], scene: sceneOf(said[0]) },
     ...said.slice(1).map(e => ({ k: 'beat', t: e.t, scene: sceneOf(e) })),
-    { k: 'beat', t: hook, scene: sceneOf({ t: hook, plate: 'foyer', set: 'door' }) }];
+    { k: 'beat', t: hook, scene: sceneOf({ t: hook, plate: 'foyer', set: 'door' }) },
+    // (the recap ends the way the real one does, on the show's name: the user, 2026-10-29)
+    { k: 'beat', t: row.isFinale ? 'And now, the final of Secret Story.' : 'And now, on Secret Story.', toast: ['SECRET STORY', '#ff3ea5'], scene: sceneOf({ plate: 'living-screens', set: 'ceremony' }) }];
   return { id: `bb-ss-previously-w${week}`, kind: 'twist', anchor: 'start', day: 1, week, time: 'RECAP', ...LIVING, plate: 'living-screens', sceneful: true,
     kicker: 'Secret Story', title: 'Previously', label: 'Previously', sub: 'In Secret Story', cast: [], steps, ss: true };
 }

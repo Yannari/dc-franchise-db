@@ -21,6 +21,7 @@ import { launchToSpaceSteps } from './ss-groups.js';
 import { portraitSteps } from './ss-portraits.js';
 import { duoRel } from '../ss/duos.js';
 import { roleOf } from '../ss/production.js';
+import { secretExplained } from '../ss/secret-stories.js';
 
 const pickRot = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
 const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -202,6 +203,8 @@ export function ssLaunchScreens(act, ctx, host, H) {
   // ...and whoever the Voice briefed on air in the airlock: a production secret, a shared one. The public heard it with
   // their name, so the list says whose it is (the user, 2026-10-29: "we know its anglecia so why try hiding it")
   const known = new Set();
+  // the list of secrets as it stands, in the order each one was announced (the Voice's word or the host's card)
+  /** @type {any[]} */ const onBoard = [];
   // The two who will own theirs live, chosen now: two personal secrets kept alone, from housemates in the house before
   // the last list is read (the user: "at most two reveals of personal secrets"). Their portraits keep the secret back,
   // so the confessional is where everybody at home finds it out.
@@ -364,27 +367,39 @@ export function ssLaunchScreens(act, ctx, host, H) {
     const due = (L.lists || []).filter(x => x.after <= count && !doneLs.has(x));
     due.forEach(x => doneLs.add(x));
     for (const l of due.length ? [{ after: Math.max(...due.map(x => x.after)), secrets: due.flatMap(x => x.secrets || []) }] : []) {
-      // the board, five rows: the secret being owned right now, the ones read tonight (newest first), the faces already
-      // owned, then the rest of the list. A face only beside a secret its housemate has owned on air.
-      const whoOf = sx => (sx.holders || []).find(h => owned.has(h) || known.has(h)) || null;
+      // THE BOARD: every secret announced so far, in the order it was announced, the whole list every time it comes up
+      // (the user, 2026-10-29: "the list of secret keep resetting just make sure the host read all the secret each time
+      // the list appear"). A face beside a secret the public was told the owner of: owned live, or the Voice's word.
+      const whosOf = sx => (sx.holders || []).filter(h => owned.has(h) || known.has(h));
+      const whoOf = sx => whosOf(sx)[0] || null;
       const full = sx => secretOf((sx.holders || [])[0]) || (act.secrets || []).find(x => x.text === sx.text) || sx;
-      // (on the board too: the secrets the Voice gave out on air, with their faces)
-      const briefed = [...known].map(secretOf).filter(Boolean);
-      const rowsNow = (fresh, now = null) => {
-        const pool = [...(now ? [now] : []), ...fresh.slice().reverse(), ...listed.map(full).filter(sx => whoOf(sx)), ...briefed, ...listed.slice().reverse()].map(full);
-        const seen = new Set();
-        return pool.filter(sx => sx && !seen.has(sx.text) && seen.add(sx.text)).slice(0, 5)
-          .map(sx => ({ text: sx.text, who: whoOf(sx), new: (now && sx.text === now.text) || fresh.some(f => f.text === sx.text) }));
-      };
+      // (the secrets the Voice gave out on air since the last list join the board, with their faces)
+      for (const n of order) { const sx = secretOf(n); if (sx && known.has(n) && !onBoard.includes(sx)) onBoard.push(sx); }
+      const rowsNow = (hl = [], now = null) => onBoard.map(full).map(sx => ({ text: sx.text, who: whoOf(sx), whos: whosOf(sx),
+        new: (now && sx.text === now.text) || hl.some(f => f.text === sx.text) }));
       const lk = `${kk}|ls${l.after}`;
       /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what they're hiding in there.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${lk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
         secretlist: { rows: rowsNow([]) } }];
       // the cards: only the secrets nobody has put a name to. A production secret or a shared one was announced, with the
       // names, when its holders arrived; it is already on the board with their faces
       const anon = l.secrets.filter(sx => { const f = full(sx); return (f.holders || []).length <= 1 && !isProd(f) && !whoOf(f); });
-      if (!listed.length && anon.length) ls.push({ k: 'host', by: host, t: briefed.length
-        ? "Here's how it works. The roles and the shared secrets, you already heard from the Voice. Every other secret in that house goes up on this list tonight, one at a time, and we won't tell you whose it is. That part is your job."
+      // ...what is on it already, called again quickly: the ones with a name, then the ones still waiting for one
+      const said = onBoard.filter(sx => whoOf(sx)), waiting = onBoard.filter(sx => !whoOf(sx));
+      // (the first time, how the list works comes before anything is read)
+      if (!listed.length && anon.length) ls.push({ k: 'host', by: host, t: said.length
+        ? "Here's how it works. The roles and the shared secrets, you've already heard from the Voice. Every other secret in that house goes up on this list tonight, one at a time, and we won't tell you whose it is. That part is your job."
         : "Here's how it works. Every secret in that house goes up on this list tonight, one at a time. What we won't tell you is whose it is. That part is your job." });
+      for (let i = 0; i < said.length; i += 4) {
+        const part = said.slice(i, i + 4);
+        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(part) },
+          t: `${i ? 'And' : said.length === 1 ? pickBy(['Already on the list, and you know whose it is:', 'You know this one, and you know whose it is:'], `${lk}|said`) : pickBy(['Already on the list, and you know whose they are:', 'You know these ones, and you know whose they are:'], `${lk}|said`)} ${part.map(sx => `"${sx.text}", ${listOf(whosOf(sx))}`).join('; ')}.` });
+      }
+      for (let i = 0; i < waiting.length; i += 4) {
+        const part = waiting.slice(i, i + 4);
+        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(part) },
+          t: `${i ? 'And' : waiting.length === 1 ? pickBy(['Still on the list, and still nobody knows whose it is:', "And the one nobody's put a name to yet:"], `${lk}|open`) : pickBy(['Still on the list, and still nobody knows whose:', "And the ones nobody's put a name to yet:"], `${lk}|open`)} ${part.map(sx => `"${sx.text}"`).join('; ')}.` });
+      }
+      if (listed.length && anon.length) ls.push({ k: 'host', by: host, t: pickBy(['And now, the new ones.', 'Now, the secrets you have not heard yet.'], `${lk}|new`) });
       const fresh = [];
       anon.forEach((sx, j) => {
         const no = listed.length + j + 1;
@@ -393,10 +408,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
           t: sx.pair ? pickRot([`Secret number ${no}, and this one is shared. Two of our housemates are hiding it together: "${sx.text}."`, `Secret number ${no}. Two people in that house are keeping this one between them: "${sx.text}."`], no)
             : pickRot([`Secret number ${no}. One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Here's secret number ${no}: "${sx.text}."`, `Secret number ${no}. Somebody in that house is keeping this: "${sx.text}."`, `Number ${no}: "${sx.text}."`], no + gi) });
         fresh.push(sx);
-        // ...and onto the board, with a clue for the viewers when the Voice has hidden one
-        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(fresh) },
-          t: (sx.clues || [])[0] ? `A little clue for you at home: hidden somewhere in the house, ${sx.clues[0]}.`
-            : pickRot(['Somebody in there is sitting on that one right now.', 'Have a think about who that could be.', 'Remember that one. It matters later.', "That one's going to be hard to keep."], no) });
+        onBoard.push(full(sx));
+        // ...then what it means: the story behind it, never whose (js/ss/secret-stories.js)
+        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(fresh) }, t: secretExplained(full(sx), no) });
       });
       listed.push(...fresh);
       // one or two of the ones already inside own theirs, live from the confessional (a personal secret kept alone, already

@@ -212,8 +212,8 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const L = st.secretlist;
     // (a secret read out on its own first: its card, numbered, over the board; the user, 2026-10-29)
     const card = L.show ? `<div class="ssls-card ${fresh ? 'fresh' : ''}"><i>SECRET N°${esc(L.show.no)}</i><b>${esc(L.show.text)}</b>${L.show.pair ? '<em>SHARED BY TWO</em>' : ''}<img src="${EYE}" alt=""></div>` : '';
-    h += `<div class="ssls ${fresh && !L.show ? 'fresh' : ''} ${L.show ? 'carded' : ''}"><div class="ssls-sky"></div><b class="ssls-h"><span>THE LIST</span><span>OF SECRETS</span></b>${card}<div class="ssls-r">${(L.rows || []).map((r, i) => `
-      <div class="ssls-row ${r.new ? 'new' : ''} g${i % 4}" style="--i:${i}">${r.who ? `<span class="ssls-who"><span class="ssls-f" style="--c:${H.col(r.who)}">${H.img(r.who)}</span><em>${esc(r.who)}</em></span>` : ''}<span class="ssls-p">${esc(r.text)}</span></div>`).join('')}</div>
+    h += `<div class="ssls ${fresh && !L.show ? 'fresh' : ''} ${L.show ? 'carded' : ''}"><div class="ssls-sky"></div><b class="ssls-h"><span>THE LIST</span><span>OF SECRETS</span></b>${card}<div class="ssls-r ${(L.rows || []).length > 6 ? 'many' : ''}">${(L.rows || []).map((r, i) => `
+      <div class="ssls-row ${r.new ? 'new' : ''} g${i % 4}" style="--i:${i}">${r.who ? ((ws) => `<span class="ssls-who"><em>${esc(ws.join(' & '))}</em>${ws.map((w, j) => `<span class="ssls-f" style="--c:${H.col(w)};--j:${j}">${H.img(w)}</span>`).join('')}</span>`)(r.whos?.length ? r.whos : [r.who]) : ''}<span class="ssls-p">${esc(r.text)}</span></div>`).join('')}</div>
       <img class="ssls-eye" src="${EYE}" alt=""></div>`;
   }
   // the nominees in the airlock, holding hands: one ribbon of hands across the line of them
@@ -573,6 +573,16 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssls-who{position:absolute;left:-1.6cqw;top:50%;translate:-100% -50%;display:flex;align-items:center;gap:.5cqw;z-index:2}
 .ssls-f{width:3.8cqw;height:3.8cqw;border-radius:50%;overflow:hidden;background:var(--c);box-shadow:0 0 0 .3cqw #fff,0 1cqw 2cqw rgba(0,0,0,.25)}
 .ssls-f img{width:100%;height:100%;object-fit:cover;object-position:50% 15%}
+.ssls-f+.ssls-f{margin-left:-1.5cqw}
+/* the whole list, every time (the user, 2026-10-29): past six rows, two columns, the faces inside the row */
+.ssls:has(.ssls-r.many) .ssls-h{margin-top:3.6cqw;font-size:2.8cqw}
+.ssls-r.many{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw 1.6cqw;width:88cqw;margin-top:.8cqw}
+.ssls-r.many .ssls-row,.ssls-r.many .ssls-p{min-height:2.7cqw}
+.ssls-r.many .ssls-p{font-size:1cqw;padding:.25cqw 1.4cqw}
+.ssls-r.many .ssls-who{position:static;translate:none;margin-right:.5cqw;gap:.3cqw}
+.ssls-r.many .ssls-who em{display:none}
+.ssls-r.many .ssls-f{width:2.7cqw;height:2.7cqw;box-shadow:0 0 0 .2cqw #fff}
+.ssls-r.many .ssls-f+.ssls-f{margin-left:-1cqw}
 .ssls-who em{order:-1;font:700 1.2cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;background:linear-gradient(90deg,#ff3ea5,#7c5cff);padding:.15cqw .8cqw;border-radius:2cqw;box-shadow:0 0 0 .18cqw #fff}
 .ssls-eye{position:absolute;right:2.4cqw;bottom:1.6cqw;width:7cqw;filter:drop-shadow(0 .6cqw 1cqw rgba(0,0,0,.25))}
 .ssls.carded .ssls-r{filter:blur(.25cqw);opacity:.35}

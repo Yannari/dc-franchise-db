@@ -3197,7 +3197,9 @@ function ssHuntScreen(act, ctx) {
   /** @type {BB.Step[]} */ const steps = [];
   // (the same tell seen twice is said once)
   const seenTell = new Set();
-  ms.filter(m => m.kind !== 'tell' || (!seenTell.has(`${m.about}|${m.tell}`) && seenTell.add(`${m.about}|${m.tell}`))).slice(0, 4).forEach((m, i) => {
+  // (...and two people comparing notes about the same one, once, whichever of them started it)
+  const keyOf = m => (m.kind === 'tell' ? `t|${m.about}|${m.tell}` : `n|${[m.who, m.to].sort().join('+')}|${m.about}`);
+  ms.filter(m => !seenTell.has(keyOf(m)) && seenTell.add(keyOf(m))).slice(0, 4).forEach((m, i) => {
     const k = `${ctx.week}|ssh|${i}|${m.who}`;
     if (m.kind === 'tell') {
       const pr = (() => { try { return pronouns(m.about); } catch { return null; } })();
@@ -3460,6 +3462,14 @@ function ssAirlockScreen(act, ctx, host) {
   // the week as the public saw it: the nominee's own moments (the week's house life)
   const moments = n => (ctx.row?.acts || []).filter(a => a?.type === 'house').flatMap(a => a.socialBeats || [])
     .filter(b => b?.text && String(b.text).startsWith(n) && !/\b(HOH|Head of Household|veto|evict\w*|jury|vote\w*|voting|the numbers|keeping you|final two|the block)\b/i.test(b.text) && String(b.text).length <= 260).map(b => b.text);
+  // (no line twice in one airlock: "the most genuine person in this house" for three nominees read as a template)
+  const usedA = new Set();
+  const fresh = (pool, key) => {
+    let j = hash(key) % pool.length;
+    for (let t = 0; t < pool.length && usedA.has(pool[j]); t++) j = (j + 1) % pool.length;
+    usedA.add(pool[j]);
+    return pool[j];
+  };
   for (const n of noms) {
     const r = reasonOf(n);
     const mine = moments(n).slice(-2);
@@ -3469,14 +3479,17 @@ function ssAirlockScreen(act, ctx, host) {
       for (const m of mine) steps.push({ k: 'beat', t: m.replace(/Diary Room/g, 'confessional') });
     }
     steps.push({ k: 'host', by: host, t: (NOM_Q[r] || NOM_Q.gut)(n) });
-    steps.push({ k: 'say', by: n, t: pickBy(NOM_A[r] || NOM_A.gut, `${k}|a|${n}`) });
+    steps.push({ k: 'say', by: n, t: fresh(NOM_A[r] || NOM_A.gut, `${k}|a|${n}`) });
     const f = friendOf(n);
     if (f) {
+      const P = /** @type {any} */ (pronouns(n) || {});
       steps.push({ k: 'host', by: host, t: `${f}, you're close to ${n}. A word for the public?` });
-      steps.push({ k: 'say', by: f, t: pickBy([`${n} is the most genuine person in this house. Please keep ${pronouns(n).obj || 'them'} in.`, `I need ${n} in here with me. Please, vote for ${n}.`, `${n} has been there for me every day. ${pronouns(n).Sub || 'They'} deserves another week.`], `${k}|f|${n}`) });
+      steps.push({ k: 'say', by: f, t: fresh([`${n} is the most genuine person in this house. Please keep ${P.obj || 'them'} in.`, `I need ${n} in here with me. Please, vote for ${n}.`,
+        `${n} has been there for me every day. ${P.sub && P.sub !== 'they' ? `${P.Sub} deserves` : 'They deserve'} another week.`, `If you're watching at home, you know ${n}. Keep ${P.obj || 'them'} with us.`,
+        `There's nobody I trust more in here than ${n}. Please, pick up the phone.`], `${k}|f|${n}`) });
     }
     steps.push({ k: 'host', by: host, t: `${n}, ten seconds, straight to the camera.` });
-    steps.push({ k: 'say', by: n, push: true, t: pickBy(PLEA_SS, `${k}|p|${n}`) });
+    steps.push({ k: 'say', by: n, push: true, t: fresh(PLEA_SS, `${k}|p|${n}`) });
   }
   steps.push({ k: 'host', by: host, t: 'The lines stay open until the end of the night. Nominees, you can go back to the house for now.' },
     { k: 'beat', t: `The airlock opens again. ${listOf(noms)} walk back in to the sofas.` });
@@ -3865,7 +3878,8 @@ function ssAfterScreen(act, ctx, host) {
   ];
   if (act.fake) steps.splice(2, 1, { k: 'host', by: B, t: `No guest on my couch tonight, darling. ${ev} isn't eliminated. ${ev}'s upstairs in the secret room, and the house has no idea.`, toast: ['THE SECRET ROOM', '#c86bff'] });
   for (const c of af.close || []) steps.push({ k: 'host', by: B, t: `${c.by} is ${pct(c.conf)} sure about ${c.target}'s secret. And ${c.by} is right.`, toast: ['THE THEORIES', '#ff8fb1'] });
-  for (const w of af.wrong || []) steps.push({ k: 'host', by: B, t: `${w.by} is sure ${w.target}'s secret is "${w.guess}". It is not.` });
+  // (one wrong guess said once, however many hold it)
+  for (const w of (af.wrong || []).filter((x, i, a) => a.findIndex(y => y.guess === x.guess) === i)) steps.push({ k: 'host', by: B, t: `${w.by} is sure ${w.target}'s secret is "${w.guess}". It is not.` });
   if ((af.close || []).length || (af.wrong || []).length) steps.push({ k: 'say', by: ev, t: ["I had no idea anybody was that close. Wow.", "That's mad. They talk about it every night and they still don't know.", "I would never have guessed that.",
     "Seeing it from out here is so strange. In there, you think you know everything.", "Wait, really? I sat next to them every day.", "So all that time, they were watching me. Great."][((ctx.week || 0) + hash(`${k}|th`)) % 6] });
   if ((af.kitties || []).length) steps.push({ k: 'host', by: host, t: 'The money, after tonight.', board: { title: 'THE KITTIES', rows: af.kitties.map(([n, v]) => ({ n, text: euros(v) })) } },
@@ -5782,6 +5796,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       const HOHW = /\bHead of Household\b|\bHOH\b/i;
       // (and after the win, no Head of Household's reaction: "I already know who's going up", "watch them come up the
       // stairs and beg". The winner just won a game; the prize is told on the next screen)
+      // (nobody sits the game out for having won the last one: week.js plays them in)
+      s.steps = (s.steps || []).filter(st => !/sits this one out/.test(String(st.t || '')));
       const winAt = (s.steps || []).findIndex(st => st.win);
       if (winAt >= 0) {
         const w = s.steps[winAt].win;

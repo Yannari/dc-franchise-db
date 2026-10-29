@@ -126,7 +126,7 @@ const PHONE = [
 ];
 
 /** The red phone rings. */
-export function ringPhone(state, ctx, { house = [] } = {}) {
+export function ringPhone(state, ctx, { house = [], avoid = new Set() } = {}) {
   const rng = ctx.rng || Math.random;
   const n = whoAnswers(ctx, house);
   if (!n) {
@@ -134,7 +134,8 @@ export function ringPhone(state, ctx, { house = [] } = {}) {
     state.rules ||= { log: [], dOffice: {}, extraVotes: {}, house: {} };
     return { kind: 'phone', answered: null, rings: 5, text: 'Nobody answers before the fifth ring. The Voice is not pleased.', effects: { bond: [], pop: [] } };
   }
-  const pool = PHONE.slice();
+  // (a red-phone prime rings again and again: never the same message twice in one night)
+  const pool = PHONE.filter(m => !avoid.has(m.id));
   for (let i = 0; i < 6 && pool.length; i++) {
     const total = pool.reduce((s, m) => s + m.w, 0);
     let r = rng() * total, k = 0;
@@ -222,7 +223,7 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   // the red phone: a signature tool, rings on some primes (more in the seasons that use it)
   // the season's draw sets how often each tool comes out (js/ss/twists.js)
   const phoneP = tools.phone === false ? 0 : RATE.phone[tools.phone] ?? 0.32;
-  if (theme === 'red-phone') { const n = 2 + (rng() < 0.4 ? 1 : 0); for (let i = 0; i < n; i++) { const p = ringPhone(state, ctx, { house }); if (p) segs.push({ ...p, ring: i + 1 }); } }
+  if (theme === 'red-phone') { const n = 2 + (rng() < 0.4 ? 1 : 0); const said = new Set(); for (let i = 0; i < n; i++) { const p = ringPhone(state, ctx, { house, avoid: said }); if (p) { if (p.message) said.add(p.message); segs.push({ ...p, ring: i + 1 }); } } }
   else if (week >= 2 && rng() < phoneP) { const p = ringPhone(state, ctx, { house }); if (p) segs.push(p); }
   if (theme === 'truths') { const seen = new Set(); for (let i = 0; i < 2; i++) { const t = roomOfTruths(state, ctx, { house: house.filter(n => !seen.has(n)) }); if (t) { seen.add(t.subject); segs.push(t); } } }
   else if (week >= 3 && rng() < (RATE.truths[tools.truths] ?? 0.28)) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }

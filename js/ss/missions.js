@@ -81,7 +81,7 @@ export const MISSIONS = [
     say: { give: 'Hi. I guess I have a sibling now.', won: 'Family is who you fool together.', lost: 'Turns out we look nothing alike.' } },
   { id: 'fake-engagement', tier: 1, judged: 'belief', roles: 'pair', weeks: 2, reward: [10000, 20000], fail: 'clue', belief: 'We are getting married', fit: ['social', 'boldness'], from: 'S4 (the wedding), S6, S11 (the proposal)',
     text: (a, b) => `${a} and ${b}: announce your engagement and plan the wedding. The house must believe every word.`,
-    say: { give: 'Engaged. To them. In a week. Sure.', won: 'They cried at the proposal. Real tears.', lost: 'The ring was too much. I knew the ring was too much.' } },
+    say: { give: 'Engaged. To {t}. In a week. Sure.', won: '{t} cried at the proposal. Real tears.', lost: 'The ring was too much. I knew the ring was too much.' } },
   // ── tier 2: weekly missions that change the game ──
   { id: 'fake-couple', tier: 2, judged: 'belief', roles: 'pair', weeks: 1, reward: [5000, 10000], fail: 'clue', belief: 'We are a couple', fit: ['social', 'boldness'], from: 'S5, S6, S11',
     text: (a, b) => `${a} and ${b}: make the whole house believe you are falling for each other this week.`,
@@ -97,22 +97,22 @@ export const MISSIONS = [
     say: { give: 'A fake secret. Dropped just carefully enough.', won: 'Five thousand dollars, and theirs on top. Thank you very much.', lost: 'I dropped hints all week and nobody picked them up. Rude.' } },
   { id: 'get-nominated', tier: 2, judged: 'event', event: 'target-nominated', roles: 'one+target', weeks: 1, reward: [3000, 6000], fail: 'clue', sabotage: true, fit: ['strategic', 'social'], from: 'classic seasons',
     text: (a, _b, t) => `${a}, get ${t} nominated this week. Nobody may know you were asked.`,
-    say: { give: 'Nothing personal. It is just a job.', won: 'Done. And nobody knows it was me.', lost: 'They survived the nominations. My fault.' } },
+    say: { give: 'Nothing personal. It is just a job.', won: 'Done. And nobody knows it was me.', lost: '{t} survived the nominations. My fault.' } },
   { id: 'get-yourself-nominated', tier: 2, judged: 'event', event: 'self-nominated', roles: 'one', weeks: 1, reward: [4000, 8000], fail: 'none', fit: ['boldness'], from: 'S10 (Sarah and Thomas)',
     text: a => `${a}, make the house nominate you this week. If they do, you will be safe, and you will choose who takes your place.`,
     say: { give: 'I have to make them want me gone. Easy. I am very annoying.', won: 'They nominated me. Now watch what I do with it.', lost: 'Turns out they like me. Who knew.' } },
   { id: 'seduction', tier: 2, judged: 'bond', bond: 1, roles: 'one+target', weeks: 1, reward: [3000, 8000], fail: 'none', fit: ['social', 'boldness'], from: 'S5, S10, S11',
     text: (a, _b, t) => `${a}, make ${t} fall for you this week, without ${t} knowing why.`,
-    say: { give: 'Seduce them. In a week. No pressure.', won: 'Did they fall for me? A little. Maybe a lot.', lost: 'They are immune to me. Which is fair.' } },
+    say: { give: 'Make {t} fall for me in a week. No pressure.', won: 'Did {t} fall for me? A little. Maybe a lot.', lost: '{t} is immune to me. Which is fair.' } },
   { id: 'jealousy-test', tier: 2, judged: 'bond', bond: 1, roles: 'one+target', weeks: 1, reward: [5000, 10000], fail: 'none', fit: ['social', 'boldness'], from: 'S5 (Daniel and Morgane), S10 (Julien, Marvin, Darko)',
     text: (a, _b, t) => `${a}, get close to ${t} this week and see who in this house gets jealous.`,
     say: { give: 'I get to flirt and somebody gets hurt. Great.', won: 'It worked. Somebody is very, very upset.', lost: 'I stopped. I could see it was hurting somebody I care about.' } },
   { id: 'new-best-friend', tier: 2, judged: 'bond', bond: 1, roles: 'one+target', weeks: 1, reward: [5000, 10000], fail: 'none', fit: ['social', 'loyalty'], from: 'S10 (Julien and Sarah, $10,000)',
     text: (a, _b, t) => `${a}, become ${t}'s best friend in this house by the prime.`,
-    say: { give: 'Make a new best friend in five days. I can do that.', won: 'They trust me with everything now. Everything.', lost: 'They are polite to me. That is not the same.' } },
+    say: { give: 'Make a new best friend in five days. I can do that.', won: '{t} trusts me with everything now. Everything.', lost: '{t} is polite to me. That is not the same.' } },
   { id: 'nightmare-week', tier: 2, judged: 'bond', bond: -1, roles: 'one+target', weeks: 1, reward: [4000, 8000], fail: 'none', sabotage: true, fit: ['boldness', 'strategic'], from: 'S10 (the "diablotin" mission)',
     text: (a, _b, t) => `${a}, make ${t}'s week a nightmare, without ${t} ever suspecting it was you.`,
-    say: { give: 'Little pranks. All week. They will never know.', won: 'They have no idea it was me. None.', lost: 'They caught me with the salt in the sugar bowl.' } },
+    say: { give: 'Little pranks. All week. {t} will never know.', won: '{t} has no idea it was me. None.', lost: '{t} caught me with the salt in the sugar bowl.' } },
   { id: 'sow-chaos', tier: 2, judged: 'event', event: 'feud', roles: 'pair', weeks: 1, reward: [4000, 8000], fail: 'none', sabotage: true, fit: ['strategic', 'boldness'], from: 'S11 (Noré and Kamila: "semer la zizanie")',
     text: (a, b) => `${a} and ${b}: sow chaos in the house this week. A real fight between two others counts.`,
     say: { give: 'Just a few words in the right ears.', won: 'Look at them go. We did that.', lost: 'This house is too nice. Unbelievable.' } },
@@ -121,7 +121,7 @@ export const MISSIONS = [
     say: { give: 'Find a secret or lose a clue. Fantastic.', won: 'Found one. My secret stays mine.', lost: 'Nothing. And now everybody gets a clue about me.' } },
   { id: 'fake-immunity-card', tier: 2, judged: 'event', event: 'card-given', roles: 'one', weeks: 1, reward: [3000, 6000], fail: 'none', sabotage: true, fit: ['strategic', 'social'], from: 'S8, S10, S11',
     text: a => `${a}, give one housemate this card and tell them it is an immunity. It is a nomination.`,
-    say: { give: 'A gift. A poisoned gift.', won: 'They thanked me. They actually thanked me.', lost: 'I could not do it to them.' } },
+    say: { give: 'A gift. A poisoned gift.', won: '{t} thanked me. Actually thanked me.', lost: 'I could not do it to {t}.' } },
   { id: 'outside-contact', tier: 2, judged: 'belief', roles: 'one', weeks: 1, reward: [3000, 7000], fail: 'clue', belief: 'I have a contact on the outside', fit: ['strategic', 'boldness'], from: 'S4 (Bastien and the black phone)',
     text: a => `${a}, make the house believe you have a secret contact on the outside who tells you things.`,
     say: { give: 'I am going to be so mysterious.', won: 'Half the house asked me for news from home.', lost: 'Nobody believed I knew anything. Insulting.' } },
@@ -137,7 +137,7 @@ export const MISSIONS = [
     say: { give: 'Nobody asks, I do not tell. I look incredible.', won: 'A week in that thing. I deserve every cent.', lost: 'It itched. I am only human.' } },
   { id: 'hug-a-nominee', tier: 3, judged: 'endurance', roles: 'one', weeks: 1, reward: [1000, 1000], fail: 'none', fit: ['social'], from: 'S10 (the viewers\' mission, $1,000)',
     text: a => `${a}, the viewers want you to hug one of this week's nominees for a full minute.`,
-    say: { give: 'A long hug. I can do long hugs.', won: 'A full minute. They held on even longer.', lost: 'Forty seconds and they wriggled away.' } },
+    say: { give: 'A long hug. I can do long hugs.', won: 'A full minute. {t} held on even longer.', lost: 'Forty seconds and {t} wriggled away.' } },
   { id: 'secret-kiss', tier: 3, judged: 'endurance', roles: 'pair', weeks: 1, reward: [1000, 3000], fail: 'clue', fit: ['boldness', 'social'], from: 'S11 (Charlène and Benoît, the kiss on the cross)',
     text: (a, b) => `${a} and ${b}: once a day, kiss on the spot the Voice marks, without anybody seeing. Get caught, and a clue goes out.`,
     say: { give: 'A secret kiss a day. In this house. With cameras everywhere. Sure.', won: 'Five days, five kisses, zero witnesses.', lost: 'Somebody walked in. Of course somebody walked in.' } },
@@ -200,7 +200,7 @@ export function handOutMissions(state, ctx, { house = [], count = null } = {}) {
     list.push(m);
     state.missionsUsed.push(e.id);
     for (const h of holders) { const k = free.indexOf(h); if (k >= 0) free.splice(k, 1); }
-    acts.push({ type: 'ss-mission', week, mission: { ...m, say: e.say.give, from: e.from },
+    acts.push({ type: 'ss-mission', week, mission: { ...m, say: sayFor(e.say.give, m), from: e.from },
       beats: [{ text: `The Voice gives ${holders.join(' and ')} a secret mission.`, players: holders, badgeText: e.tier === 1 ? 'BIG MISSION' : 'MISSION', badgeClass: 'gold', part: 'mission' }] });
   }
   return acts;
@@ -255,6 +255,9 @@ function happened(state, ctx, m, e, { nominees = [], feuds = 0, week }) {
  * A failure may cost a clue on the holder's own secret, or (an exposed
  * infiltrator) a nomination d'office the next week.
  */
+// a mission line about its one target says their name ({t}); with nobody named, "them"
+const sayFor = (txt, m) => String(txt || '').replace(/\{t\}/g, m?.target || 'them').replace(/^them\b/, 'Them');
+
 export function settleMissions(state, ctx, { house = [], nominees = [], feuds = 0 } = {}) {
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
@@ -285,7 +288,7 @@ export function settleMissions(state, ctx, { house = [], nominees = [], feuds = 
       state.rules ||= { log: [], dOffice: {}, extraVotes: {}, house: {} };
       (state.rules.dOffice[week + 1] ||= []).push(m.holders[0]);
     }
-    acts.push({ type: 'ss-mission-result', week, mission: { ...m, from: e.from }, won, clue: clue?.clue || null, say: won ? e.say.won : e.say.lost,
+    acts.push({ type: 'ss-mission-result', week, mission: { ...m, from: e.from }, won, clue: clue?.clue || null, say: sayFor(won ? e.say.won : e.say.lost, m),
       beats: [{ text: won ? `${m.holders.join(' and ')} pulled off the Voice's mission and win $${m.reward.toLocaleString('en-US')}${m.holders.length > 1 ? ' each' : ''}.`
         : `${m.holders.join(' and ')} failed the Voice's mission.${clue ? ' A clue about their secret goes on the table.' : ''}`,
       players: m.holders, badgeText: won ? 'MISSION ACCOMPLISHED' : 'MISSION FAILED', badgeClass: won ? 'gold' : 'red', part: 'mission' }] });

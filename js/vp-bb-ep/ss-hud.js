@@ -23,6 +23,7 @@
 // Secret Story's. Nothing here decides anything in the season.
 
 import { ssSfx } from './ss-sound.js';
+import { ssx, SS_TYPE_CSS } from './ss-type.js';
 
 const PROPS = 'assets/sets/bb/secret-story/props';
 const EYE = `${PROPS}/eye.webp`;
@@ -103,7 +104,7 @@ export function ssHudHtml(S, st, fresh, o) {
   const room = isDr ? 'Confessional' : roomOf(S);
   const b = bankOf(o?.ssKey);
   return `<div class="ssh">
-    <div class="ssh-bug"><img class="ssh-eye" src="${EYE}" alt=""><div class="ssh-wm">SECRET STORY<span>WEEK ${esc(S.week)} · DAY ${esc(S.day)}</span></div>
+    <div class="ssh-bug"><img class="ssh-eye" src="${EYE}" alt=""><div class="ssh-wm">${ssx('SECRET STORY')}<span class="sub">WEEK ${esc(S.week)} · DAY ${esc(S.day)}</span></div>
       ${/LIVE/i.test(String(S.time || '')) ? '<span class="ssh-live">LIVE</span>' : `<span class="ssh-time">${esc(S.time || '')}</span>`}
       <span class="ssh-room ${fresh ? 'fresh' : ''}">${esc(String(room))}</span></div>
     <div class="ssh-bank" title="Your bank, as a viewer: call what happens next to grow it. Each housemate's own kitty is in Intel."><img src="${PROPS}/kitty-stand.webp" alt=""><div><i>VIEWER BANK</i><b>${money(b.kitty)}</b></div></div>
@@ -112,7 +113,7 @@ export function ssHudHtml(S, st, fresh, o) {
 
 /** The title card before a screen's first line. */
 export function ssRestHtml(S) {
-  return `<div class="ssrest"><img class="ssrest-eye" src="${EYE}" alt=""><div class="k">${esc(S.kicker)}</div><div class="t">${esc(S.title)}</div><div class="s">${esc(S.sub)}</div><div class="go">▶ PLAY</div></div>`;
+  return `<div class="ssrest"><img class="ssrest-eye" src="${EYE}" alt=""><div class="k">${esc(S.kicker)}</div><div class="t">${ssx(S.title)}</div><div class="s">${esc(S.sub)}</div><div class="go">▶ PLAY</div></div>`;
 }
 
 // ── the dialogue box ────────────────────────────────────────────────────
@@ -180,7 +181,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   // the kitties: every housemate's money rolls up (or down) from where the week began, coins stacked by size
   if (st.kitties) {
     const top = Math.max(1, ...st.kitties.map(r => r.to));
-    h += `<div class="ssk ${fresh ? 'fresh' : ''}"><b class="ssk-h">THE KITTIES</b><div class="ssk-r">${st.kitties.map((r, i) => {
+    h += `<div class="ssk ${fresh ? 'fresh' : ''}"><b class="ssk-h">${ssx('THE KITTIES', 't')}</b><div class="ssk-r">${st.kitties.map((r, i) => {
       const up = r.to - r.from;
       return `<div class="ssk-c" style="--i:${i};--h:${Math.max(4, Math.round(r.to / top * 100))}%"><div class="ssk-stack"><i></i></div>
         <span class="ssk-n" style="--from:${Math.round(r.from)};--to:${Math.round(r.to)}" data-v="${money(r.to)}"></span>${up ? `<em class="${up > 0 ? 'up' : 'down'}">${up > 0 ? '+' : '−'}${money(Math.abs(up)).slice(1)}</em>` : ''}
@@ -216,7 +217,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   if (st.magneto) {
     const M = st.magneto;
     h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div><img class="ssmg-eye" src="${EYE}" alt="">
-      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}<b class="ssmg-t">${esc(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
+      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}<b class="ssmg-t">${ssx(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
   }
   // the call to vote: every nominee under a big number, and how to vote
   if (st.votecall) {
@@ -230,7 +231,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const r = settleCall(o?.ssKey, st.settle.id, st.settle.answer, st.settle.n || 2);
     if (r.picked != null) {
       setTimeout(() => sfx(r.right ? 'coin' : 'lose'), 120);
-      h += `<div class="sss ${r.right ? 'win' : 'lose'}"><i>${r.right ? 'YOU CALLED IT' : 'WRONG CALL'}</i><b>${money(r.delta)}</b><span>Your bank: ${money(r.kitty)}</span>
+      h += `<div class="sss ${r.right ? 'win' : 'lose'}"><i>${r.right ? 'YOU CALLED IT' : 'WRONG CALL'}</i><b>${ssx(money(r.delta), r.right ? 'g' : 'w')}</b><span>Your bank: ${money(r.kitty)}</span>
         ${r.right ? `<div class="sss-coins">${Array.from({ length: 16 }, (_, i) => `<img src="${PROPS}/kitty-stand.webp" style="--a:${(i * 22.5).toFixed(1)}deg;--d:${(i % 5) * 0.04}s" alt="">`).join('')}</div>` : ''}</div>`;
     }
   }
@@ -280,7 +281,7 @@ export function ssPress(el, snd) {
 if (typeof window !== 'undefined') Object.assign(window, { ssCall, ssPress });
 
 // ── the look ────────────────────────────────────────────────────────────
-export const SS_CSS = `
+export const SS_CSS = `${SS_TYPE_CSS}
 @font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900;font-display:swap}
 @font-face{font-family:'SSNunito';src:url('assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000;font-display:swap}
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
@@ -303,7 +304,7 @@ export const SS_CSS = `
 .ssh-eye{width:5.6cqw;filter:drop-shadow(0 .3cqw .6cqw rgba(0,0,0,.4));animation:ss-blink 6s infinite;transform-origin:50% 55%}
 .ssh-wm{font-family:'SSAachen',sans-serif;font-weight:700;font-size:2.5cqw;line-height:.95;color:#fff;letter-spacing:.03em;
   text-shadow:0 0 .1cqw var(--ssm),.15cqw .15cqw 0 var(--ssm),-.1cqw -.1cqw 0 var(--ssm),0 .4cqw 1cqw rgba(200,19,122,.6)}
-.ssh-wm span{display:block;font-family:'SSNunito',sans-serif;font-weight:800;font-size:1cqw;letter-spacing:.18em;color:#fff;text-shadow:0 .1cqw .3cqw rgba(0,0,0,.6);margin-top:.3cqw}
+.ssh-wm .sub{display:block;font-family:'SSNunito',sans-serif;font-weight:800;font-size:1cqw;letter-spacing:.18em;color:#fff;text-shadow:0 .1cqw .3cqw rgba(0,0,0,.6);margin-top:.3cqw}
 .ssh-live{font:800 1cqw 'SSNunito',sans-serif;letter-spacing:.14em;color:#fff;background:var(--ssp);padding:.35cqw .8cqw;border-radius:2cqw;box-shadow:0 0 1.2cqw var(--ssp);animation:ss-pulse 1.6s infinite}
 .ssh-time{font:800 1.1cqw 'SSNunito',sans-serif;color:#fff;background:rgba(43,13,63,.7);padding:.35cqw .8cqw;border-radius:2cqw}
 .ssh-room{font:800 1cqw 'SSNunito',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--ssi);background:var(--sst);padding:.35cqw .9cqw;border-radius:2cqw}

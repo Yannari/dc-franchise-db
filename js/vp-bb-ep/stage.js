@@ -15,6 +15,7 @@ import { playerAvatarUrl } from '../players.js';
 import { ANCH } from './anchors.js';
 import { plateHtml, plateAnchors, plateTv, plateFor, setPlateTheme } from './plates.js';
 import { ssHudHtml, ssLineHtml, ssPiecesHtml, ssRestHtml } from './ss-hud.js';
+import { ssx } from './ss-type.js';
 import { compFieldHtml, KEY, MEDAL_SVG } from './comp-field.js';
 import { HUNT_SPOTS } from './steps.js';
 
@@ -988,8 +989,10 @@ export function stageHtml(screens, si, idx, fresh, o) {
   }
   if (st && st.big) {
     const [a, b, tone] = st.big;
-    h += tone ? `<div class="bigrev name ${tone} ${fresh ? 'fresh' : ''}"><b>${esc(a)}</b><i>${esc(b)}</i></div>`
-      : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${esc(b)}</b></div>`;
+    // (Secret Story letters its own words: vp-bb-ep/ss-type.js)
+    const big = t => (SSN ? ssx(t) : esc(t));
+    h += tone ? `<div class="bigrev name ${tone} ${fresh ? 'fresh' : ''}"><b>${big(a)}</b><i>${esc(b)}</i></div>`
+      : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${big(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
   // the Head of Household's key turning in the door of the room (the night the room opens)
@@ -1025,7 +1028,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   if (st && st.board) {
     const B = st.board;
     const rows = (B.rows || []).map(r => `<div class="fbr ${r.out ? 'out' : ''}"><span class="ff" style="--c:${col(r.n)}">${img(r.n)}</span><b>${esc(r.n)}</b>${r.v != null ? `<span class="fbar"><i style="width:${Math.round(r.v * 100)}%"></i></span>` : ''}${r.text != null ? `<span class="ft">${esc(r.text)}</span>` : ''}</div>`).join('');
-    h += `<div class="fboard"><span class="fh">${esc(B.title || '')}</span>${rows}</div>`;
+    h += `<div class="fboard"><span class="fh">${SSN ? ssx(B.title || '', 'g') : esc(B.title || '')}</span>${rows}</div>`;
   }
   if (st && st.suspense) h += `<div class="suspense ${fresh ? 'fresh' : ''}"></div>`;
   if (fresh && st && st.confetti) h += '<div class="goldflash"></div>';
@@ -1051,7 +1054,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   else h += SSN ? ssLineHtml(S, st, fresh, L, { emph, names: [...namesOf(S), st?.by], col, nominated: n => L.nom.includes(n) && !L.out.includes(n) })
     : lineHtml(S, st, fresh, L);
   if (fresh && st) {
-    if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b style="font-size:${Math.min(6, 64 / Math.max(1, st.toast[0].length)).toFixed(2)}cqw;white-space:nowrap">${esc(st.toast[0])}</b></div>`;
+    if (st.toast) h += `<div class="toast" style="--tc:${st.toast[1]}"><b style="font-size:${Math.min(6, 64 / Math.max(1, st.toast[0].length)).toFixed(2)}cqw;white-space:nowrap">${SSN ? ssx(st.toast[0]) : esc(st.toast[0])}</b></div>`;
     // the chip comes up out of the bag face down, and turns over
     if (st.chip) h += `<div class="vbag">${BAG_SVG}</div><div class="vchip3"><div class="vcin"><div class="vcf rear"><b>VETO</b></div>`
       + `<div class="vcf face">${st.chip.chip === 'choice' ? `<b>Houseguest's<br>choice</b>` : img(st.chip.chip) || `<b>${esc(st.chip.chip)}</b>`}</div></div>`

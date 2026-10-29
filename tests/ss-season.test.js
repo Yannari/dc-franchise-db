@@ -8,6 +8,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode, runBBFinale, isBigBrotherSeason } from '../js/bb-run.js';
 import { currentTheme } from '../js/bb/themes.js';
 import { buildBigBrotherSeasonDocument } from '../js/stats-export.js';
+import { ssPartOf } from '../js/vp-bb-ep/ss-episode.js';
 import { themeWords, bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
@@ -122,7 +123,17 @@ describe('missions air', () => {
     expect(judged.length).toBeGreaterThan(3);
     for (const ep of eps) {
       const ids = bbWeekSteps(ep).flatMap(s => [s.id, ...(s.merged || [])]);
-      for (const a of (ep.acts || []).filter(x => x.type === 'ss-prime')) for (const s of a.segments) if (s.kind === 'mission') for (const r of s.results) expect(ids).toContain(`bb-ss-missionres-${r.mission.id}`);
+      // (the user, 2026-10-29: "big important mission are revealed during the prime": a big one on the prime, set up by the
+      // host; a small one, a dare, judged by the Voice in the confessional during the days)
+      const screens = bbWeekSteps(ep);
+      for (const a of (ep.acts || []).filter(x => x.type === 'ss-prime')) for (const s of a.segments) if (s.kind === 'mission') for (const r of s.results) {
+        const small = (r.mission.tier ?? 1) >= 3;
+        const id = `bb-ss-${small ? 'missionjudge' : 'missionres'}-${r.mission.id}`;
+        expect(ids).toContain(id);
+        const scr = screens.find(x => x.id === id || (x.merged || []).includes(id));
+        expect(ssPartOf(id)).toBe(small ? 'daily' : 'prime');
+        if (!small) expect(scr.steps.some(st => st.k === 'host')).toBe(true);
+      }
     }
   });
 });

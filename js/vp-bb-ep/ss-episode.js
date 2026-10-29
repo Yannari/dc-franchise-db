@@ -62,7 +62,7 @@ function asScene(F) {
 // play while a pair walks to the airlock, captioned as such. The magnetos are recorded packages of the week and keep
 // theirs; house life after the prime is not live either, and nor is the final week's last party (taped in the garden).
 const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight|returns)/;
-const CALL = [n => `${n}, you're in the confessional, and we're live. Talk to me.`, n => `Let's go to the confessional. ${n}, it's Josh. How are you feeling tonight?`,
+const CALL = [n => `${n}, you're in the confessional, and we're live. Talk to me.`, (n, h) => `Let's go to the confessional. ${n}, it's ${h}. How are you feeling tonight?`,
   n => `${n}, you're live in the confessional. What's going through your head right now?`, n => `${n}, the whole country is listening. What do you want to tell them?`];
 export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
   for (const s of out) {
@@ -86,7 +86,7 @@ export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
       if (!asked.has(st.by)) {
         if (asked.size >= 2) continue;
         asked.add(st.by);
-        steps.push({ k: 'host', by: host, t: pickBy(CALL, `${id}|${st.by}`)(st.by), ...(room ? { scene: room } : {}) });
+        steps.push({ k: 'host', by: host, t: pickBy(CALL, `${id}|${st.by}`)(st.by, host), ...(room ? { scene: room } : {}) });
       }
       steps.push({ ...st, live: true });
       back = true;

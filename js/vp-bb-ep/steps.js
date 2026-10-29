@@ -24,6 +24,7 @@
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { tellAfter } from '../ss/tells.js';
+import { missionById } from '../ss/missions.js';
 import { voiceLine } from '../bb/story/register.js';
 import { players as ROSTER, seasonConfig as SEASON_CFG } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
@@ -3151,23 +3152,51 @@ function ssMissionScreen(act, ctx) {
     kicker: 'Cam 01 · Confessional', title: 'A Secret Mission', label: 'Secret Mission', sub: listOf(m.holders || []), cast: (m.holders || []).map((n, i) => [n, 40 + i * 22]), steps };
 }
 
-function ssMissionResultScreen(act, ctx) {
+// The big missions are revealed on the prime, the host setting it up and the house finding out live; a small one (a
+// dare, a forfeit: tier 3, js/ss/missions.js) is judged by the Voice in the confessional, and the house never hears of it
+// (the user, 2026-10-29: "big important mission are revealed during the prime btw").
+const missionTier = m => Number(m?.tier ?? missionById(m?.missionId)?.tier ?? 1);
+function ssMissionResultScreen(act, ctx, host = 'Josh') {
   const m = act.mission || {};
   const k = `${ctx.week}|ssmr|${m.id}`;
+  const hs = m.holders || [];
+  const who = listOf(hs);
+  if (missionTier(m) >= 3) {
+    /** @type {BB.Step[]} */ const quiet = [
+      ssv(`${who}, please come to the confessional.`),
+      ssv(`This week, the Voice gave you a mission: ${m.text}`, { toast: ['THE MISSION', '#e0b84a'] }),
+      ssv(act.won ? `The Voice has watched you all week. Mission accomplished: ${euros(m.reward)}${hs.length > 1 ? ' each' : ''} for your kitty.` : `The Voice has watched you all week. Mission failed.`,
+        { toast: act.won ? ['ACCOMPLISHED', '#f5c542'] : ['FAILED', '#ff3355'] }),
+    ];
+    if (!act.won && act.clue) quiet.push(ssv(`And it costs you: tonight, a clue about your secret goes on the table. ${act.clue}.`));
+    quiet.push({ k: 'dr', by: hs[0], t: act.say || (act.won ? pickBy(['Easy money. Nobody noticed a thing.', "That's the kind of mission I like."], `${k}|w`) : pickBy(['Well. That could have gone better.', "I tried. I really did."], `${k}|f`)) });
+    return { id: `bb-ss-missionjudge-${m.id}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: ROOM_NAME.dr, cam: CAM.dr, time: '19:00',
+      kicker: 'Cam 01 · Confessional', title: 'The Mission', label: 'Mission Verdict', sub: act.won ? 'Accomplished' : 'Failed', cast: hs.map((n, i) => [n, 40 + i * 22]), steps: quiet };
+  }
+  // ...the big ones on the prime: the host sets it up from the studio, the house finds out in the Mission Room
+  const STU = { ...STUDIO, cast: [] };
+  const ROOM = { set: 'truths', plate: 'ss-switchboard', room: 'The Mission Room', cam: 1, kicker: 'Live · The Mission Room', cast: hs.map((n, i) => [n, 40 + i * 22]) };
+  const had = hs.length > 1 ? 'had' : 'has had';
   /** @type {BB.Step[]} */ const steps = [
-    ssv(`Housemates, the Voice has something to tell you. This week, ${listOf(m.holders || [])} had a secret mission: ${m.text}`, { toast: ['THE MISSION', '#e0b84a'] }),
+    { k: 'host', by: host, scene: STU, toast: ['THE MISSION', '#e0b84a'], t: pickBy([`At home, you've known about it all week. In the house, nobody suspected a thing. Tonight, they find out.`,
+      `All week, ${who} ${had} a secret mission from the Voice, and the house had no idea. It's time they did.`,
+      `There's something the house still doesn't know about this week. ${who}, I hope you're sitting down.`], `${k}|set`) },
+    { k: 'host', by: host, t: pickBy(['Voice, over to you.', 'Voice, the floor is yours.', "Voice, I think they're ready."], `${k}|over`) },
+    { k: 'beat', scene: ROOM, t: pickBy(['In the house, the lights drop and the eye on the screen opens.', 'The house goes quiet. Every head turns to the screen.'], `${k}|cut`) },
+    ssv(`Housemates, the Voice has something to tell you. This week, ${who} had a secret mission: ${m.text}`),
   ];
   if (act.won) {
-    steps.push(ssv(`Mission accomplished. ${euros(m.reward)}${(m.holders || []).length > 1 ? ' each' : ''} for your kitty.`, { toast: ['ACCOMPLISHED', '#f5c542'] }),
+    steps.push(ssv(`Mission accomplished. ${euros(m.reward)}${hs.length > 1 ? ' each' : ''} for your kitty.`, { toast: ['ACCOMPLISHED', '#f5c542'] }),
       { k: 'beat', t: pickBy(['A beat of silence, then the whole room groans at once.', 'Somebody laughs out loud. Somebody else does not.', 'Half the house turns to look at the other half.'], k) });
-    if (act.say) steps.push({ k: 'dr', by: m.holders[0], t: act.say });
+    if (act.say) steps.push({ k: 'dr', by: hs[0], t: act.say });
+    steps.push({ k: 'host', by: host, scene: STU, t: pickBy([`${who}, you had the whole house fooled. That's money well earned.`, `Look at their faces! Well played, ${who}.`, `That is how you play Secret Story. Well done, ${who}.`], `${k}|won`) });
   } else {
     steps.push(ssv('Mission failed.', { toast: ['FAILED', '#ff3355'] }));
-    if (act.clue) steps.push(ssv(`And for failing, a clue about ${m.holders[0]}'s secret: ${act.clue}.`));
-    steps.push({ k: 'dr', by: m.holders[0], t: act.say || pickBy(["I tried. I really did. The house just wasn't buying it.", 'Well. That could have gone better.'], `${k}|f`) });
+    if (act.clue) steps.push(ssv(`And for failing, a clue about ${hs[0]}'s secret: ${act.clue}.`));
+    steps.push({ k: 'dr', by: hs[0], t: act.say || pickBy(["I tried. I really did. The house just wasn't buying it.", 'Well. That could have gone better.'], `${k}|f`) },
+      { k: 'host', by: host, scene: STU, t: pickBy([`Not this time, ${who}. The Voice is not an easy one to please.`, `So close, ${who}. And that one cost you.`], `${k}|lost`) });
   }
-  return { id: `bb-ss-missionres-${m.id}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '21:10',
-    kicker: 'Live · The prime', title: 'The Mission', label: 'Mission Revealed', sub: act.won ? 'Accomplished' : 'Failed', cast: (m.holders || []).map((n, i) => [n, 40 + i * 22]), steps };
+  return ssLive(ctx, { id: `bb-ss-missionres-${m.id}`, sceneful: true, ...ROOM, title: 'The Mission', label: 'Mission Revealed', sub: act.won ? 'Accomplished' : 'Failed', steps });
 }
 
 // THE VOICE'S GAME (§8, §15): what the week's winner wins.
@@ -3717,7 +3746,7 @@ function ssPrimeScreens(act, ctx, host) {
     mag.hunt || mag.love, ssLiveChatScreen(act, ctx, host), mag.noms, ssAirlockScreen(act, ctx, host), ssKittyBoardScreen(act, ctx, host, MORE),
     mag.hunt && mag.love ? mag.love : mag.clash];
   for (const seg of act.segments || []) {
-    if (seg.kind === 'mission') for (const r of seg.results || []) out.push(ssMissionResultScreen(r, ctx));
+    if (seg.kind === 'mission') for (const r of seg.results || []) out.push(ssMissionResultScreen(r, ctx, host));
     else if (seg.kind === 'return') { if (!(seg.partner && out.some(s => s && s.id === `bb-ss-prime-return-${seg.partner}-w${ctx.week}`))) out.push(ssReturnScreen(seg, ctx, host)); }
     else if (seg.kind === 'voluntary') out.push(ssVoluntaryScreen(seg, ctx, host));
     else if (seg.kind === 'entry') out.push(ssGroupEntryScreen(seg, ctx, host, { ssv }));
@@ -5842,7 +5871,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-rule': flush(); ceremony(ssRuleScreen(act, ctx)); beatsOf(act); break;
       case 'ss-game': flush(); ceremony(ssGameScreen(act, ctx)); beatsOf(act); break;
       case 'ss-mission': flush(); ceremony(ssMissionScreen(act, ctx)); beatsOf(act); break;
-      case 'ss-mission-result': flush(); ceremony(ssMissionResultScreen(act, ctx)); beatsOf(act); break;
+      case 'ss-mission-result': flush(); ceremony(ssMissionResultScreen(act, ctx, host)); beatsOf(act); break;
       case 'ss-prime': flush(); for (const scr of ssPrimeScreens(act, ctx, host)) ceremony(scr); beatsOf(act); break;
       case 'ss-after': flush(); if (act.fake) ceremony(ssSecretRoomTwistScreen(act, ctx)); else ceremony(ssWalkScreen(act, ctx, host));
         // (tonight's voluntary departure did not go home either: js/ss/hidden.js)

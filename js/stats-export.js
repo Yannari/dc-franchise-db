@@ -5591,10 +5591,29 @@ export function extractLiveSeasonSnapshot() {
      every queen's row is the whole season to date, which is what a standings
      table wants. */
   const dragRecord = (isDrag && history[history.length - 1]?.dr?.record) || {};
+  // ── A BIG BROTHER RETURNEE IS BACK IN ──
+  //
+  // The walker above marks every eviction and clears only Total Drama's island returns, so a Battle Back or
+  // Camp Comeback winner stayed "evicted" on the site's On Air page while they were playing again (the user,
+  // 2026-10-29: "angelica is still evicted in the on-air page"). Whoever is in the house now is in; a returnee
+  // evicted a second time is not in it, and keeps that later exit.
+  const inHouse = new Set(isBB ? (gs.activePlayers || []) : []);
+  // ── AND AN HOH TAKEN IN SECRET IS THE TAKER'S ──
+  //
+  // The engine moves an announced Interrogation's reign to the one who took it (week.js). The Deepfake's stays
+  // on the deposed HOH's tally, because the house believes they ran the week; the viewer watched it taken, and
+  // the week's ledger and the finished export (_bbStats, from week.hoh) both credit the taker.
+  const hohMoved = {};
+  if (isBB) for (const w of (gs.bb?.weeks || [])) {
+    const t = w?.interrogation;
+    if (!t || t.caught || !t.creditsDeposed || !t.deposed || w.hoh !== t.holder) continue;
+    hohMoved[t.deposed] = (hohMoved[t.deposed] || 0) - 1;
+    hohMoved[t.holder] = (hohMoved[t.holder] || 0) + 1;
+  }
 
   const players = names.map(name => {
     const exitEp = permanentExit[name];
-    const isOut = exitEp !== undefined && exitEp !== null;
+    const isOut = exitEp !== undefined && exitEp !== null && !inHouse.has(name);
     const ch = _extractChallengeData(name);
     const votes = _extractVotingData(name);
     const bb = bbStats[name] || {};
@@ -5657,7 +5676,7 @@ export function extractLiveSeasonSnapshot() {
     // mean two things depending on whether a season had finished. The page adds
     // the three up for its headline instead, which is a display choice and not
     // a change to what the data means.
-    const hoh = bb.hohWins || 0;
+    const hoh = Math.max(0, (bb.hohWins || 0) + (hohMoved[name] || 0));
     const veto = bb.vetoWins || 0;
     const blockBuster = bb.blockBusterWins || 0;
     return {

@@ -430,11 +430,17 @@ export function airingFromExits(exits, seasons = [], covered = []) {
     .map(s => {
       const xs = [...s.exitInterviews].sort((a, b) => (a.week ?? 0) - (b.week ?? 0) || (b.placement ?? 0) - (a.placement ?? 0));
       const last = xs[xs.length - 1];
-      const gone = new Set(xs.map(x => x.guest));
-      const still = (last.stillIn || []).filter(n => !gone.has(n));
+      // The newest interview's house is who is in, a returnee too: one interviewed on the way out and then
+      // back through a Battle Back is in it again, and was drawn evicted (the user, 2026-10-29). Somebody
+      // out twice has two interviews; the later one is their exit.
+      // Only an exit from an EARLIER week can be undone by it: a double eviction's first guest is in the
+      // second's house list, the same night.
+      const lastExit = new Map(xs.map(x => [x.guest, x]));
+      const still = (last.stillIn || []).filter(n => !lastExit.has(n) || (lastExit.get(n).week ?? 0) < (last.week ?? 0));
       const players = [
         ...still.map(name => ({ name, status: 'in' })),
-        ...xs.map(x => ({ name: x.guest, status: x.juror ? 'jury' : 'out', exitEpisode: x.week ?? null })),
+        ...[...lastExit.values()].filter(x => !still.includes(x.guest))
+          .map(x => ({ name: x.guest, status: x.juror ? 'jury' : 'out', exitEpisode: x.week ?? null })),
       ];
       return {
         format: s.format, seasonNumber: s.seasonNumber, title: s.title, airing: true, fromExits: true,

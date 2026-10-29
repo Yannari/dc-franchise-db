@@ -33,13 +33,13 @@ const CAST = NAMES.map((n, i) => ({
   name: n, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ARCH[i],
 }));
 
-function playBB(seed, episodes = 10) {
+function playBB(seed, episodes = 10, schedule = []) {
   seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
   Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns,
     ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
   Object.assign(seasonConfig, { format: 'big-brother', finaleSize: 3, jurySize: 7,
     bbHaveNots: 'twist', bbSafetyMode: 'triple', bbSafetyStopsAt: 5, theme: '' });
-  seasonConfig.twistSchedule = [];
+  seasonConfig.twistSchedule = schedule;
   seasonConfig.themeArcStamped = '';
   setGs({ ...gs, bb: null });
   withSeededRandom(seed, () => {
@@ -110,6 +110,47 @@ describe('a Total Drama season is unchanged', () => {
       expect(p).toHaveProperty('immunityWins');
       expect(p).not.toHaveProperty('comps');
     }
+  });
+});
+
+describe('a week that changed hands, and a houseguest who came back', () => {
+  const weekHohs = () => (gs.bb.weeks || []).reduce((m, w) => (w.hoh && (m[w.hoh] = (m[w.hoh] || 0) + 1), m), {});
+
+  it('credits a stolen HOH to the one who took it', () => {
+    // Nina took Michele's HOH with the Interrogation and the On Air page kept the win on Michele (the user,
+    // 2026-10-29). Seed 1 is an uncaught Interrogation in week 2 (measured: fifteen of thirty seeds steal one).
+    playBB(1, 8, [{ id: 'a', episode: 1, type: 'bb-secret-power-comp' }]);
+    const w = (gs.bb.weeks || []).find(x => x.interrogation && !x.interrogation.caught && !x.interrogation.creditsDeposed);
+    expect(w, 'no HOH was taken this season: pick another seed').toBeTruthy();
+    expect(w.hoh).toBe(w.interrogation.holder);
+    const snap = extractLiveSeasonSnapshot();
+    const by = weekHohs();
+    for (const p of snap.players) expect(p.comps.hoh, `${p.name} HOH`).toBe(by[p.name] || 0);
+  });
+
+  it('credits a Deepfake HOH to the taker on the site, while the house keeps believing the other', () => {
+    playBB(313);
+    const w = (gs.bb.weeks || []).find(x => x.hoh && gs.activePlayers.some(n => n !== x.hoh));
+    const deposed = w.hoh, holder = gs.activePlayers.find(n => n !== deposed);
+    w.interrogation = { type: 'interrogation', holder, deposed, caught: false, creditsDeposed: true };
+    w.hoh = holder;
+    const before = { d: gs.bb.stats[deposed].hohWins, h: gs.bb.stats[holder].hohWins };
+    const snap = extractLiveSeasonSnapshot();
+    const of = n => snap.players.find(p => p.name === n).comps.hoh;
+    expect(of(holder)).toBe(before.h + 1);
+    expect(of(deposed)).toBe(before.d - 1);
+    expect(gs.bb.stats[deposed].hohWins, 'the house\'s tally moved').toBe(before.d);
+  });
+
+  it('shows a Battle Back winner in the house as in', () => {
+    // Angelica came back and the On Air page still had her evicted (the user, 2026-10-29). Seed 6 of this
+    // cast, Battle Back in week 4, has its returnee still in the house at week 8.
+    playBB(6, 8, [{ id: 'a', episode: 4, type: 'bb-battle-back' }]);
+    const back = (gs.bb.returns || []).map(r => r.name).find(n => gs.activePlayers.includes(n));
+    expect(back, 'no returnee is in the house: pick another seed').toBeTruthy();
+    const p = extractLiveSeasonSnapshot().players.find(x => x.name === back);
+    expect(p.status).toBe('in');
+    expect(p.exitEpisode).toBe(null);
   });
 });
 

@@ -152,6 +152,30 @@ describe('a show only the exit feed knows is on', () => {
     const ms = airingModels([], feed, [{ seasonId: 'pm-1', format: 'perfect-match', status: 'Complete' }]);
     expect(ms.map(m => m.format)).toEqual(['big-brother']);
   });
+
+  it('puts a returnee back in, and a guest out twice in once', () => {
+    // Angelica was interviewed on her way out, won the Battle Back, and was drawn evicted while she played
+    // (the user, 2026-10-29). Kai came back and went out again: one card, the later exit.
+    const back = { ok: true, seasons: [{ format: 'big-brother', seasonNumber: 3, title: 'Big Brother 3', updatedAt: 'x', exitInterviews: [
+      { guest: 'Angelica', week: 2, placement: 9, how: 'evicted', stillIn: ['Bo', 'Cy', 'Di', 'Kai', 'Ed'] },
+      { guest: 'Kai', week: 3, placement: 8, how: 'evicted', stillIn: ['Bo', 'Cy', 'Di', 'Ed'] },
+      { guest: 'Kai', week: 5, placement: 6, how: 'evicted', stillIn: ['Angelica', 'Bo', 'Cy', 'Di'] },
+      { guest: 'Ed', week: 6, placement: 5, how: 'evicted', stillIn: ['Angelica', 'Bo', 'Cy', 'Di'] },
+    ] }] };
+    const [m] = airingModels([], back, []);
+    expect(m.stillIn.map(p => p.name).sort()).toEqual(['Angelica', 'Bo', 'Cy', 'Di']);
+    expect(m.out.map(p => p.name).sort()).toEqual(['Ed', 'Kai']);
+    expect(m.out.find(p => p.name === 'Kai').exitEpisode).toBe(5);
+  });
+
+  it('keeps a double eviction\'s first guest out, though the second one\'s house still lists them', () => {
+    const dbl = { ok: true, seasons: [{ format: 'big-brother', seasonNumber: 4, title: 'Big Brother 4', updatedAt: 'x', exitInterviews: [
+      { guest: 'Fay', week: 4, placement: 8, how: 'evicted', stillIn: ['Bo', 'Cy', 'Gus'] },
+      { guest: 'Gus', week: 4, placement: 7, how: 'evicted', stillIn: ['Bo', 'Cy', 'Fay'] },
+    ] }] };
+    const [m] = airingModels([], dbl, []);
+    expect(m.stillIn.map(p => p.name).sort()).toEqual(['Bo', 'Cy']);
+  });
 });
 
 describe('quoting the exit interview', () => {

@@ -78,8 +78,10 @@ describe('the airing season publishes its portraits', () => {
   const schema = fs.readFileSync(path.join(ROOT, 'worker/live_season_schema.sql'), 'utf8');
 
   it('the snapshot carries the portrait each player was cast with', () => {
-    const fn = exporter.slice(exporter.indexOf('export function extractLiveSeasonSnapshot'),
-      exporter.indexOf('export function extractLiveSeasonSnapshot') + 3000);
+    // Bounded by the next function, not a character count: a comment added above the player rows pushed the
+    // line out of a 3000-character window.
+    const from = exporter.indexOf('export function extractLiveSeasonSnapshot');
+    const fn = exporter.slice(from, exporter.indexOf('export async function syncLiveEpisode', from));
     expect(fn).toContain('_portraitOf(name)');
   });
 

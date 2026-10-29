@@ -3223,6 +3223,15 @@ export function simulateBBWeek(options = {}) {
           // believes it watched them choose — and the grievance has to land
           // where the house puts it, not where it belongs.
           if (usurp.creditsDeposed) week.hohPublic = deposed;
+          // ...and whose reign it is in the record. The week's ledger already says the holder (week.hoh, which
+          // the finished export counts), but the running tally stayed with the deposed HOH: the site's standings
+          // had Michele's HOH win on her and none on Nina, who took it (the user, 2026-10-29). Moved like a
+          // dethroned Battle of the Block reign. Not for the Deepfake: the house believes the deposed HOH still
+          // ran the week, and the tally is what the house reads (the standings correct it: stats-export.js).
+          else if (gs.bb.stats?.[deposed] && gs.bb.stats?.[hoh]) {
+            gs.bb.stats[hoh].hohWins++;
+            gs.bb.stats[deposed].hohWins = Math.max(0, gs.bb.stats[deposed].hohWins - 1);
+          }
         }
       }
     } catch { /* the crown stands */ }

@@ -18,12 +18,14 @@ export const SS_CARDS = {
   deception: ['ss-false-voice', 'ss-robot'],
   vote: ['ss-house-decides', 'ss-vote-to-evict'],
   ticket: ['ss-ticket'],
+  launch: ['ss-public-signs'],
 };
 export const SS_CARD_IDS = new Set(Object.values(SS_CARDS).flat());
 
 /**
  * The season's twists. `weeks`: the timeline's weeks, `{ ep, active, finale }` (active: the housemates that week).
- * Week one has no prime (launch night and the days) and the final has its own night: neither gets a card.
+ * Week one has no prime (launch night and the days) and the final has its own night: neither gets a card, but for
+ * launch night's own (the Public's Signs).
  * @param {() => number} rng
  * @param {Array<{ ep: number, active?: number, finale?: boolean }>} weeks
  * @returns {Array<[number, string]>}
@@ -71,5 +73,7 @@ export function ssRandomDraw(rng, weeks = []) {
   // the ticket: once, late (eight or fewer in the house), in half the seasons
   const tkAt = W.filter(w => size(w) <= 8 && size(w) >= 5);
   if (tkAt.length && rng() < 0.5) book.push([pick(tkAt).ep, 'ss-ticket']);
+  // launch night: the Public's Signs, one season in three (a one-off of the real show, not every year's)
+  if (weeks.some(w => w && w.ep === 1) && rng() < 0.34) book.push([1, 'ss-public-signs']);
   return book.sort((a, b) => a[0] - b[0]);
 }

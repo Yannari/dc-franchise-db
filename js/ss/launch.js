@@ -40,7 +40,7 @@ const SLOTS = [2, 3, 4, 6, 7, 9, 10, 12, 13, 15];
  * Plans the night. `house` in the order the Voice calls them; returns
  * `{ order, missions, checkins, lists, effects }`.
  */
-export function planLaunch(state, ctx, { house = [] } = {}) {
+export function planLaunch(state, ctx, { house = [], signs = false } = {}) {
   const rng = ctx.rng || Math.random;
   const order = house.slice();
   const effects = { bond: [] };
@@ -49,8 +49,10 @@ export function planLaunch(state, ctx, { house = [] } = {}) {
   // with their secret are still up somewhere in the house: hide the last one
   // before the next housemate walks in. A careful one manages; a hurried one
   // leaves a scrap where the second arrival finds it.
+  // (only with the Public's Signs, a twist of its own: the user, 2026-10-29, "why is it always there, I don't even see
+  // it as a twist in the season timeline")
   const first = order[0], second = order[1];
-  if (first && second && secretOf(state, first)) {
+  if (signs && first && second && secretOf(state, first)) {
     const ok = rng() < clamp(0.35 + st(ctx, first, 'strategic') * 0.04 + st(ctx, first, 'temperament') * 0.02);
     if (!ok) addEvidence(state, ctx, second, first, { strength: 0.3, how: 'launch-sign' });
     missions.push({ kind: 'hide-sign', who: first, by: 0, ok, found: ok ? null : second });
@@ -140,7 +142,7 @@ export function planLaunch(state, ctx, { house = [] } = {}) {
     later.forEach(s => told.add(s));
     if (later.length) lists.push({ after, secrets: later.map(s => ({ text: s.text, clues: (s.clues || []).slice(0, 2), pair: (s.holders || []).length > 1 })) });
   }
-  return { order, missions, checkins, lists, effects };
+  return { order, missions, checkins, lists, effects, signs: !!signs };
 }
 
 /**

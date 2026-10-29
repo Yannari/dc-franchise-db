@@ -81,17 +81,49 @@ describe('launch night, decided', () => {
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb'];
 const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater'][i % 6] }));
 describe('launch night, on screen', () => {
-  const play = () => {
+  const play = (extra = {}) => {
     const def = id => PRODUCTION_SECRETS.find(d => d.id === id);
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
     Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
     Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off',
-      ssSecrets: { ...productionSecret(def('fake-siblings'), ['Bowie', 'Chase']), ...productionSecret(def('accomplice'), ['Ripper']) } });
+      ssSecrets: { ...productionSecret(def('fake-siblings'), ['Bowie', 'Chase']), ...productionSecret(def('accomplice'), ['Ripper']) }, ...extra });
     withSeededRandom(9, () => { simulateBBEpisode(); });
     delete seasonConfig.ssSecrets;
     return bbWeekSteps(gs.episodeHistory.find(r => r.num === 1), { host: 'Josh' }).filter(s => /^bb-ss-launch|^bb-ss-secrets/.test(String(s.id)));
   };
   // the user, 2026-10-28: "why is the presentation in the confessional? ... and your presentations are too short"
+  // the user, 2026-10-29: "add an explanation of each production or shared secret in the airlock, and if necessary they
+  // don't enter at the same time"; "the public has your secret, why is it always there, I don't see it as a twist";
+  // "a secret revealed at the confessional is a back and forth with the host... at most two reveals of personal secrets"
+  it('without the Public\'s Signs, each tells their own secret in the portrait; the airlock explains the roles; two live reveals at most', () => {
+    const screens = play();
+    const steps = screens.flatMap(s => s.steps);
+    const text = steps.map(st => String(st.t || ''));
+    expect(text.filter(t => /audience lifts its signs|turn around|privilege/i.test(t))).toEqual([]);
+    // every personal secret, told on its card at the end of a portrait
+    const personal = gs.bb.secretStory.secrets.filter(s => (s.holders || []).length === 1 && s.source !== 'production');
+    // (the two who own theirs live keep it out of their portrait, so the confessional is where it comes out)
+    const live = new Set(steps.filter(st => st.owns).map(st => st.by));
+    for (const s of personal) expect(steps.some(st => st.card?.text === s.text && st.by === s.holders[0]), `${s.holders[0]}`).toBe(!live.has(s.holders[0]));
+    // the roles, explained by the Voice in the airlock: the fake siblings walk in together, the accomplice gets orders
+    expect(text.some(t => /Bowie and Chase, the Voice has given you a role/.test(t) || /Chase and Bowie, the Voice has given you a role/.test(t))).toBe(true);
+    expect(text.some(t => /you are family\. Learn each other's lives/.test(t))).toBe(true);
+    expect(text.some(t => /you will walk in together/.test(t))).toBe(true);
+    expect(text.some(t => /Ripper, the Voice has given you a role/.test(t))).toBe(true);
+    expect(text.some(t => /All summer, the Voice will give you orders/.test(t))).toBe(true);
+    // the live reveals: two at most, each a conversation with the host
+    const owns = steps.filter(st => st.owns);
+    expect(owns.length).toBeGreaterThanOrEqual(1);
+    expect(owns.length).toBeLessThanOrEqual(2);
+    for (const o of owns) expect(steps.filter(st => st.k === 'dr' && st.live && st.by === o.by).length, o.by).toBeGreaterThanOrEqual(4);
+  });
+  it("with the Public's Signs on the timeline, the audience shows each secret, and the first one pays the privilege", () => {
+    try {
+      const text = play({ twistSchedule: [{ episode: 1, type: 'ss-public-signs' }] }).flatMap(s => s.steps).map(st => String(st.t || ''));
+      expect(text.filter(t => /audience lifts its signs/.test(t)).length).toBeGreaterThanOrEqual(5);
+      expect(text.some(t => /privilege/.test(t))).toBe(true);
+    } finally { seasonConfig.twistSchedule = []; }
+  });
   // the user, 2026-10-29: "why do they all say you'll have to guess where I'm from, I filled every descriptor in cast
   // setup" (the profile is on the franchise roster, not the cast entry); "I've watched every season" in season one
   it("reads each housemate's life from the franchise roster, and season one has no past seasons", () => {

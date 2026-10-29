@@ -353,16 +353,18 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
   // LAUNCH NIGHT (js/ss/launch.js): who arrives when, the first missions, what the first ones in do
   // while they wait, the list of secrets; its first impressions move the bonds now
   // (a first crush on launch night only between two who could: romanticCompat)
-  const launch = planLaunch(gs.bb.secretStory, { ...huntCtx(undefined, rng), compat: (a, b) => { try { return romanticCompat(a, b); } catch { return false; } } }, { house: room.slice().sort(() => rng() - 0.5) });
+  // the Public's Signs: a launch-night twist placed on week one of the timeline (or drawn by its Randomize)
+  const signs = (seasonConfig?.twistSchedule || []).some(t => t && t.type === 'ss-public-signs' && Number(t.episode) === 1);
+  const launch = planLaunch(gs.bb.secretStory, { ...huntCtx(undefined, rng), compat: (a, b) => { try { return romanticCompat(a, b); } catch { return false; } } }, { house: room.slice().sort(() => rng() - 0.5), signs });
   for (const [a, b, d] of launch.effects.bond) { try { addBond(a, b, d); } catch { /* no bond */ } }
   let summer = null;
   try { summer = lastSummer(activeSeasons() || {}); } catch { summer = null; }
   return {
     type: 'ss-secrets', week: 1, secret: true,
-    secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind })),
+    secrets: secrets.map(s => ({ holders: [...s.holders], text: s.text, kind: s.kind, ...(s.source ? { source: s.source } : {}), ...(s.secretKind ? { secretKind: s.secretKind } : {}), ...(s.poolId ? { poolId: s.poolId } : {}) })),
     // launch night (part 2 §2): the arrivals in order, who recognises whom, the season's signature
     arrivals: launch.order,
-    launch: { missions: launch.missions, checkins: launch.checkins, lists: launch.lists },
+    launch: { missions: launch.missions, checkins: launch.checkins, lists: launch.lists, signs: launch.signs },
     lastSummer: summer,
     houseTheme: gs.bb.secretStory.houseTheme || null,
     styles: Object.fromEntries(room.map(n => [n, playStyle(n)])),

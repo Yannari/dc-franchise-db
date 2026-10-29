@@ -63,6 +63,19 @@ const TOWN_SAYS = ["Born and raised. Everybody there knows everybody, and everyb
 const NO_TOWN = ["Where I'm from? You'll have to guess. That's part of the game.", "A little bit of everywhere. I moved around a lot growing up."];
 const SINGLE = ["Single. Very single.", "Single, and honestly, not looking. Probably.", "Single. My last relationship was a disaster, and that's all I'm saying.",
   "Single. If somebody in that house catches my eye, we'll see."];
+// what they say after their secret, at the end of the portrait (by the secret's kind)
+const REVEAL_AFTER = {
+  survived: ["It changed everything. I don't talk about it, and in there I won't have to.", "I'm still here. That's the whole story, for now."],
+  talent: ["Nobody who meets me would ever guess. That's exactly why it'll be hard to find.", "In there, I'm going to keep it very, very quiet."],
+  record: ["I'm proud of it. I just can't let anybody in there see that I'm proud of it.", "If they find it, they'll never let me forget it."],
+  job: ["People hear it and they look at me differently. In there, nobody's going to get the chance.", "It's a normal job to me. In there, it's a secret."],
+  body: ["You'd never see it unless I showed you. And I won't.", "It's part of me. It's not their business. Not yet."],
+  family: ["It's my family's story more than mine. I'm keeping it for them.", "When people find out, they ask a hundred questions. In there, nobody gets to ask."],
+  past: ["That was another life. It's staying behind me.", "I'm not that person any more. But they'd only see that person."],
+  belief: ["Laugh if you want. Everybody does, at first.", "I know how it sounds. That's why it stays secret."],
+  love: ["It's the most romantic thing that ever happened to me, and nobody in there will ever hear it.", "Yes. Really. Don't tell them."],
+  money: ["It changes how people treat you. That's why it stays secret.", "If they find it, they'll all want to be my friend. No thanks."],
+};
 const WHY = ["I want to know if I can keep a secret from a whole house, for weeks. I've never kept one for more than a day.", "For the adventure. You get one chance at something like this.",
   "For my family. And for the money. Mostly the money.", "I want to find out what I'm made of when nobody's on my side.", "I've watched it since I was a kid. Now it's my turn."];
 // one whose secret is a hidden couple says it too, for the cameras: the public knows better
@@ -151,5 +164,12 @@ export function portraitSteps(p, i, o = {}) {
   if (motto) steps.push({ k: 'say', by: n, t: motto });
   if (o.how) steps.push({ k: 'say', by: n, t: o.how });
   if (o.promise) steps.push({ k: 'say', by: n, t: o.promise });
+  // ...and their secret, said to the viewers at the very end (the real portraits end on it: "my secret is..."), when no
+  // twist has the audience show it (the Public's Signs)
+  if (o.reveal?.text) {
+    steps.push({ k: 'say', by: n, t: pickBy(['And my secret? I can tell you. Not them.', "One more thing. My secret. Only you get to know it.", "Now, my secret. Promise you won't tell them."], `${k}|sec`) },
+      { k: 'say', by: n, t: `${o.reveal.text}.`, card: { text: o.reveal.text, who: n } },
+      { k: 'say', by: n, t: pickBy(REVEAL_AFTER[o.reveal.kind] || REVEAL_AFTER.past, `${k}|after`) });
+  }
   return steps;
 }

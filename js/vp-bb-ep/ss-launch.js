@@ -20,6 +20,7 @@
 import { launchToSpaceSteps } from './ss-groups.js';
 import { portraitSteps } from './ss-portraits.js';
 import { duoRel } from '../ss/duos.js';
+import { roleOf } from '../ss/production.js';
 
 const pickRot = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
 const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -184,6 +185,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const lifeUsed = new Set();
   const code = mission('code');
   const hide = mission('hide-sign');
+  // the Public's Signs (a launch-night twist, js/ss/launch.js): the audience shows each secret as they walk on; without it,
+  // each housemate tells their own at the end of their portrait. (A season played before the twist was a twist: signs.)
+  const signs = L.signs !== false;
 
   // ── the arrivals, two by two (the real S14 launch: the first alone, for the privilege; then in twos, now and
   // then a three; a pair who share a secret sometimes walk on together, wait in the airlock side by side, and are
@@ -195,12 +199,23 @@ export function ssLaunchScreens(act, ctx, host, H) {
   // (a face goes on the list only once its housemate has owned it, live, to the host: the user, 2026-10-28: "why are
   // some personal secrets revealed without the scene where they revealed it to Josh from the confessional")
   const owned = new Set();
+  // The two who will own theirs live, chosen now: two personal secrets kept alone, from housemates in the house before
+  // the last list is read (the user: "at most two reveals of personal secrets"). Their portraits keep the secret back,
+  // so the confessional is where everybody at home finds it out.
+  const lastList = Math.max(0, ...(L.lists || []).map(l => l.after));
+  // (in the house when the last list is read: the arrivals up to the group whose count first reaches it)
+  const inByLast = new Set();
+  { let c = 0; for (const g of groups) { if (c >= lastList) break; c += g.length; g.forEach(n => inByLast.add(n)); } }
+  const liveOwners = new Set(order.filter(n => lastList > 0 && inByLast.has(n) && secretOf(n) && (secretOf(n).holders || []).length === 1 && !isProd(secretOf(n)))
+    .sort((x, y) => hash(`${k}|own|${x}`) - hash(`${k}|own|${y}`)).slice(0, 2));
   let count = 0;
   const xs = n => (n <= 1 ? [50] : n === 2 ? [36, 64] : [28, 50, 72]);
   groups.forEach((g, gi) => {
     const kk = `${k}|g${gi}`;
     const shared = g.length >= 2 && !!secretOf(g[0]) && g.every(n => secretOf(n) === secretOf(g[0])) && (secretOf(g[0]).holders || []).length > 1;
     const youAll = g.length > 2 ? 'you three' : 'you two';
+    // (a fake couple or fake family walks in together: being seen together IS their secret's cover)
+    const together = shared && TOGETHER.has(String(roleOf(secretOf(g[0])) || ''));
     const they = g.length > 1 ? 'they' : (pronouns(g[0]).sub || 'they');
     const them = g.length > 1 ? 'them' : (pronouns(g[0]).obj || 'them');
     const STU = { set: 'studio-wide', plate: 'ss-studio', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio', cast: g.map((n, i) => [n, xs(g.length)[i]]) };
@@ -220,7 +235,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
     if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, ${youAll} didn't arrive together by accident, did you?`, `${youAll.replace(/^./, c => c.toUpperCase())} seem very comfortable together. Interesting...`], `${kk}|pair`) },
       { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
     // the secrets, to the public only: the audience holds up the signs
-    g.forEach((n, j) => {
+    if (signs) g.forEach((n, j) => {
       const s = secretOf(n);
       if (!s || (shared && j > 0)) return;
       const i = count + j;
@@ -246,7 +261,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
       steps.push(...portraitSteps({ ...p, name: n }, i, { firstSeason, life: firstSeason && /every single season/.test(LIFE[li]) ? "I've never been on TV in my life. Not even in the background." : LIFE[li],
         hiding: !!s && s.kind === 'real-pair' && duoRel(s) === 'romance',
         people: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i),
-        how: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social, promise: pickRot(PROMISE, i) }));
+        how: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social, promise: pickRot(PROMISE, i),
+        // (their own secret, told to the viewers at the end of the portrait; a shared or production one the Voice explains in the airlock)
+        reveal: !signs && s && (s.holders || []).length === 1 && !isProd(s) && !liveOwners.has(n) ? { text: s.text, kind: s.secretKind || s.kind } : null }));
     });
     // the airlock: the host on the earpiece, the Voice's word, the door
     steps.push({ k: 'beat', scene: SAS, t: g.length === 1 ? `In the airlock, ${g[0]} puts in an earpiece and checks ${pronouns(g[0]).posAdj || 'their'} hair in the mirror.` : `In the airlock, ${listOf(g)} put in their earpieces, side by side, and check their hair in the mirror.` },
@@ -254,6 +271,24 @@ export function ssLaunchScreens(act, ctx, host, H) {
     g.forEach((n, j) => steps.push({ k: 'say', by: n, t: `${j ? '' : 'Honestly? '}${pickRot(ASSET[topStat(P(n), count + j)] || ASSET.social, count + j).replace(/^./, c => c.toUpperCase())}.` }));
     steps.push({ k: 'host', by: host, t: pickRot(["Well, we'll see if that's enough. I think the Voice has something to tell you.", "I like it. Now listen carefully, because the Voice wants a word.",
       "We'll find out soon enough. Hold on, the Voice is about to speak to you.", "Good answers. Stay right there. The Voice has something for you.", "I hope you're right. Now, quiet. The Voice is speaking."], gi) });
+    // what the Voice tells the ones whose secret is a role or a tie: once per secret, to everyone in the airlock who keeps it
+    const told = new Set();
+    for (const n of g) {
+      const s = secretOf(n);
+      if (!s || told.has(s)) continue;
+      const hs = (s.holders || []).filter(h => g.includes(h));
+      const role = isProd(s) ? String(roleOf(s) || 'accomplice') : '';
+      const tie = !role && s.kind === 'real-pair' && hs.length > 1 ? duoRel(s) : null;
+      if (!role && !tie) continue;
+      told.add(s);
+      const you = hs.length > 1 ? listOf(hs) : n;
+      if (role) steps.push(ssv(`${you}, the Voice has given you a role this summer. Your secret: "${s.text}."`, { toast: ['A PRODUCTION SECRET', '#ff3ea5'] }),
+        ssv(JOB_TELL[role] || 'Play it every day, and nobody may ever know the Voice is behind it.'),
+        ssv(`Nobody in that house may ever know the Voice is behind ${hs.length > 1 ? 'the two of you' : 'you'}.`));
+      else steps.push(ssv(`${you}, the Voice knows your secret: "${s.text}."`, { toast: ['A SHARED SECRET', '#7c5cff'] }), ssv(TIE_TELL[tie] || TIE_TELL.friends));
+      steps.push({ k: 'say', by: hs[0], t: pickBy(hs.length > 1 ? ["Understood, Voice.", "We won't let you down.", "Got it. Not a word."] : ["Understood, Voice.", "I won't let you down.", "Got it. Not a word."], `${kk}|tell|${n}`) });
+      if (hs.length > 1) steps.push({ k: 'beat', t: pickBy([`${hs[1]} looks at ${hs[0]}, and nods.`, `${hs[0]} and ${hs[1]} share one look, and that's the last one for a while.`], `${kk}|look|${n}`) });
+    }
     // the first missions (js/ss/launch.js)
     for (const n of g) {
       if (hide && hide.who === n) steps.push(ssv(`${n}, the Voice has played a little trick on you. The signs are gone, all except one. Somewhere in the house, there's still a sign with your secret written on it.`),
@@ -261,9 +296,10 @@ export function ssLaunchScreens(act, ctx, host, H) {
       if (code && code.who === n) steps.push(ssv(`${n}, here is your first mission. A key is waiting for you in locker number four in the laundry. The code is four numbers: ${code.from[0]}'s shoe size, then the number of eggs in the pantry.`),
         ssv(`Only ${listOf(code.from)} can help you, and they mustn't find out why.`, { toast: ['FIRST MISSION', '#e0b84a'] }));
     }
-    if (shared) steps.push(ssv(`${listOf(g)}, the Voice welcomes you to Secret Story. To keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${listOf(g.slice(1))}, you wait here.`),
+    if (shared && !together) steps.push(ssv(`${listOf(g)}, to keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${listOf(g.slice(1))}, you wait here.`),
       { k: 'beat', t: `${g[1]} squeezes ${g[0]}'s hand once, and lets go.`, tense: [g[0], g[1]] });
-    const goers = shared ? [g[0]] : g;
+    else if (together) steps.push(ssv(`${listOf(g)}, you will walk in together. From the very first second, the house has to believe it.`));
+    const goers = shared && !together ? [g[0]] : g;
     // a hidden group (js/ss/hidden-groups.js): its members go to their space, not into the house
     const away = new Set(act.group?.members || []);
     const inHouse = goers.filter(n => !away.has(n));
@@ -290,7 +326,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
     if (toSpace.length) { steps.push(...launchToSpaceSteps(act.group, toSpace, H, kk, spaceSent)); spaceSent.push(...toSpace); }
     if (hide && inHouse.includes(hide.who)) steps.push({ k: 'beat', t: `${hide.who} runs off and starts opening every door.` },
       { k: 'beat', t: hide.ok ? `${hide.who} finds it in the pantry, tears it into pieces, and pushes the pieces under a mattress just in time.` : `${hide.who} finds it, rips it in half, and stuffs it behind a cushion. Half the words are still showing.` });
-    if (shared) for (const n of g.slice(1)) {
+    if (shared && !together) for (const n of g.slice(1)) {
       steps.push({ k: 'beat', scene: SAS && { ...SAS, cast: [[n, 50]] }, t: `Back in the airlock, ${n} waits alone, counting to a hundred.` },
         ssv(`${n}, you may now enter the House of Secrets. That is all for now.`));
       enter([n], false);
@@ -325,14 +361,26 @@ export function ssLaunchScreens(act, ctx, host, H) {
       /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what some of them are hiding.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${kk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
         secretlist: { rows: rowsNow([]) } }];
       // one or two of the ones already inside own theirs, live from the confessional (a personal secret, kept alone)
-      const owners = inside.filter(n => !owned.has(n) && secretOf(n) && (secretOf(n).holders || []).length === 1 && !/^(production)$/.test(String(secretOf(n).source || '')))
-        .sort((x, y) => (hash(`${kk}|own|${x}`) - hash(`${kk}|own|${y}`))).slice(0, 2);
+      // (one a list: the first of the night's two who is in the house by now; the last list takes whoever is left)
+      const isLast = l.after === lastList;
+      const owners = inside.filter(n => liveOwners.has(n) && !owned.has(n)).slice(0, isLast ? 2 : 1);
       for (const n of owners) {
         const sx = secretOf(n);
-        ls.push({ k: 'host', by: host, t: pickBy([`Before we read on, let's go to the confessional, live. ${n}, one of these is yours. Which one?`, `${n}, you're live in the confessional. Show everybody at home which one is yours.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([], sx) } },
-          { k: 'dr', by: n, live: true, owns: true, t: pickBy([`That one. "${sx.text}." Nobody in there can ever see this list.`, `"${sx.text}." That's mine. It feels so strange seeing it up there.`, `It's that one: "${sx.text}." Please don't let them find out.`], `${kk}|own|${n}`) });
+        const kind = sx.secretKind || sx.kind;
+        const story = KIND_STORY[kind] || KIND_STORY.past;
+        const live = t => ({ k: 'dr', by: n, live: true, t });
+        ls.push({ k: 'host', by: host, t: pickBy([`Before we read on, let's go to the confessional, live. ${n}, can you hear me?`, `Let's go to the confessional. ${n}, it's ${host}, we're live.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([]) } },
+          live(pickBy(["I can hear you! Hi! Hi, everybody!", "Loud and clear. My heart's going a hundred miles an hour."], `${kk}|hi|${n}`)),
+          { k: 'host', by: host, t: `One of the secrets on this list is yours. Tell everybody at home: which one?`, secretlist: { rows: rowsNow([], sx) } },
+          { ...live(pickBy([`That one. "${sx.text}."`, `It's that one. "${sx.text}." Wow. Seeing it up there.`], `${kk}|own|${n}`)), owns: true },
+          { k: 'host', by: host, t: pickBy(['Okay, you have to tell us. How does that happen to somebody?', 'Wow. Tell us the story. How did that happen?'], `${kk}|how|${n}`), secretlist: { rows: rowsNow([], sx) } },
+          live(pickBy(story, `${kk}|story|${n}`)),
+          { k: 'host', by: host, t: 'And who knows about it, back home?' },
+          live(pickBy(KNOWS, `${kk}|knows|${n}`)),
+          { k: 'host', by: host, t: `And in there? Why keep it at any price?` },
+          live(pickBy(WHY_KEEP, `${kk}|why|${n}`)),
+          { k: 'host', by: host, t: pickBy([`Thank you, ${n}. Good luck keeping that one all summer.`, `There it is, everybody: ${n}'s secret, on the list. Good luck, ${n}.`], `${kk}|got|${n}`), secretlist: { rows: rowsNow([], sx) } });
         owned.add(n);
-        ls.push({ k: 'host', by: host, t: pickBy([`There it is. ${n}'s secret, on the list.`, `Thank you, ${n}. Good luck keeping that one.`], `${kk}|got|${n}`), secretlist: { rows: rowsNow([], sx) } });
       }
       const fresh = [];
       for (const sx of l.secrets) {
@@ -349,6 +397,67 @@ export function ssLaunchScreens(act, ctx, host, H) {
   });
   return out;
 }
+
+// THE AIRLOCK: what the Voice tells the ones whose secret is not their own life (the user, 2026-10-29: "you should add
+// an explanation of each of their production or shared secret in the airlock, and if necessary they don't enter at the
+// same time, not to raise suspicion"). What the role asks of them, every week, in plain words.
+const JOB_TELL = {
+  accomplice: 'All summer, the Voice will give you orders. You carry them out in secret, and every order you complete pays your kitty.',
+  'fake-couple': 'From the moment you walk in, you are a couple. Sit together, sleep side by side, argue and make up. The whole house has to believe it.',
+  'public-couple': 'The public chose the two of you. In there, you are a couple, and the whole house has to believe it.',
+  'fake-siblings': 'From the moment you walk in, you are family. Learn each other\'s lives by heart: the house will test you.',
+  'public-family': 'The public chose the two of you. In there, you are family, and the whole house has to believe it.',
+  enemies: 'In there, you cannot stand each other. Fight in front of everybody. In private, you are allies, and nobody may ever see it.',
+  chosen: 'The Voice will whisper you tips all summer, and once, when you need it most, you will be safe from the nominations.',
+  tunnels: 'The walls of this house are hollow. You will find the way in, and you will listen.',
+  'house-key': 'You carry part of the secret of the house itself. Keep it, and nobody may ever know you have it.',
+  'access-code': 'You carry part of the secret of the house itself. Keep it, and nobody may ever know you have it.',
+  protector: 'There is a real couple in that house. Keep their secret safe as if it were yours, without them ever knowing.',
+  saboteur: 'All summer, you will send the hunters the wrong way. A false clue here, a wrong guess there.',
+  spy: 'You will film the private moments of this house for the public. Never get caught with the camera.',
+  oracle: 'A hidden phone is waiting for you somewhere in the house, and a lock to find. Nobody may see you use it.',
+  guardians: 'All summer, you will tell the Voice, week after week, who the biggest liar in the house is.',
+};
+const TIE_TELL = {
+  romance: 'In there, you have never met. No looks, no touching, no sitting together at dinner. One slip, and the whole house will be hunting the two of you.',
+  family: 'In there, you are strangers. Different towns, different lives. And never, ever defend each other too fast.',
+  friends: 'In there, you have never met. No old jokes, no nicknames, no stories from before.',
+};
+// a production secret, on the launch record (an old save's copy has no source: its kind says it)
+const isProd = s => !!s && (s.source === 'production' || /^voice-/.test(String(s.kind || '')));
+// a pair whose cover IS being seen together walks in together; every other pair walks in apart
+const TOGETHER = new Set(['fake-couple', 'public-couple', 'fake-siblings', 'public-family']);
+// THE CONFESSIONAL, LIVE (the user, 2026-10-29: "a secret revealed at the confessional is more than one line: a back and
+// forth between the host and the candidate, then a good explanation of their personal secret, and at most two
+// reveals of personal secrets"): the story of a secret, by its kind, in their own words
+const KIND_STORY = {
+  survived: ["It happened so fast. One minute it was a normal day, and the next I didn't know if I'd see the end of it. I did. A lot of people didn't believe it.",
+    "I still don't really know how I came out of it. People call it a miracle. I just call it the day everything changed."],
+  talent: ["I've been doing it since I was a kid. Hours a day. Most people who know me have no idea, and that's how I like it.",
+    "It started as a party trick, and then it got serious. Really serious. It's taken me all over the place."],
+  record: ["I trained for years for it. Years. And when it finally happened, I told almost nobody. It felt like mine.",
+    "It sounds ridiculous when I say it out loud. But I worked harder for that than for anything else in my life."],
+  job: ["People hear what I do, and they look at me differently straight away. So I stopped telling people.",
+    "It's not the kind of job you put on a dating profile. But I'm good at it, and I'm proud of it."],
+  body: ["You'd never know it, looking at me. That's the point. It's part of me, but it's not all of me.",
+    "It's taken me a long time to be okay with it. I am now. I just don't want it to be the first thing people know."],
+  family: ["It's my family's story as much as mine. Growing up, it was just normal to us. It's only when you tell people that you realise it isn't.",
+    "I only really understood it when I was older. It explains a lot about me, honestly."],
+  past: ["That was another life. I'm not the same person now, but it made me who I am.",
+    "I don't hide it because I'm ashamed. I hide it because people stop seeing anything else."],
+  belief: ["People laugh at first. Everybody does. Then they hear the whole story, and they stop laughing.",
+    "I know how it sounds. I've heard every joke. It's still true."],
+  love: ["It's the most romantic thing that ever happened to me, and the most ridiculous. Both at once.",
+    "When I tell people, they think I'm making it up. I'm not. That's my love life."],
+  money: ["Money changes the way people look at you. Overnight. I learned that the hard way.",
+    "It sounds like a dream, and in a way it is. But it comes with a lot of strings."],
+};
+const KNOWS = ['My family knows. My two best friends. And now, everybody at home.', 'Nobody. Not even my best friend. Until right now.',
+  'My mum, and that\'s it. She\'s going to scream at the TV.', 'A few people back home. They\'ve all been sworn to secrecy.'];
+const WHY_KEEP = ["Because if they find it, they take my kitty. And because it's mine. They have to earn it.",
+  "Because the second they know it, that's all they'll ever see when they look at me.",
+  "Because it's worth money in there, and I'm not handing anybody money on day one.",
+  "Because I want them to meet me first. Then they can find the rest, if they're good enough."];
 
 // the production pair's story, agreed in the bathroom with the taps running (the user: "that's our plan, that's how
 // we're going to play this, do you know where I'm from if they ask? remember this")

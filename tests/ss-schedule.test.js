@@ -51,7 +51,7 @@ describe('a twist placed on a week', () => {
 describe("the timeline's Randomize", () => {
   const weeks = Array.from({ length: 12 }, (_, i) => ({ ep: i + 1, active: 14 - Math.max(0, i - 1), finale: i === 11 }));
   const seeds = n => { let x = n; return () => ((x = (x * 9301 + 49297) % 233280) / 233280); };
-  it('books only Secret Story cards, never on week one or the final, every card a real twist', () => {
+  it("books only Secret Story cards, never on the final, and on week one only launch night's own", () => {
     const ids = new Set(twistsForFormat({ format: 'secret-story' }).map(t => t.id));
     let total = 0;
     for (let s = 1; s <= 40; s++) {
@@ -60,7 +60,9 @@ describe("the timeline's Randomize", () => {
       for (const [ep, id] of book) {
         expect(ids.has(id), id).toBe(true);
         expect(SS_CARD_IDS.has(id)).toBe(true);
-        expect(ep).toBeGreaterThanOrEqual(2);
+        // (week one has no prime: only launch night's own twist, the Public's Signs, goes there, and only there)
+        expect(ep >= 2 || id === 'ss-public-signs', `${id} on week ${ep}`).toBe(true);
+        if (id === 'ss-public-signs') expect(ep).toBe(1);
         expect(ep).toBeLessThan(12);
       }
       // a once-a-season card once

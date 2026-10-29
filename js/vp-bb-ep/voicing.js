@@ -14,7 +14,7 @@
 // blips. No delivery directions (the user, 2026-10-14, on Total Drama: "it slowed the voices too much").
 import { audio as engine } from '../audio.js';
 import { bbWeekSteps } from './steps.js';
-import { SHOWS, BB_FORMAT } from '../shows.js';
+import { SHOWS, BB_FORMAT, formatPrefix } from '../shows.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -37,9 +37,8 @@ export function bbVoiceSeason() {
   const cfg = w.seasonConfig || {}, gs = w.gs || {};
   const n = gs.seasonNumber || cfg.seasonNumber;
   const base = n ? String(n) : String(cfg.name || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'season';
-  const show = SHOWS[cfg.format];
-  const prefix = show && (cfg.format === BB_FORMAT || show.engine === BB_FORMAT) ? show.prefix : SHOWS[BB_FORMAT].prefix;
-  return `${prefix}-${base}`;
+  // (only a show on this engine reaches this file, so the season's own registered show names the folder)
+  return `${formatPrefix(SHOWS[cfg.format] ? cfg.format : BB_FORMAT)}-${base}`;
 }
 
 /** Who a step is said by, as a voice name: a houseguest by name, the host by name, the house as "Big Brother". */

@@ -374,7 +374,45 @@ export const VOICE_POOLS = {
     ],
   },
 };
-function _quoteFor(name, tone) {
+// ── A HOUSE IS NOT A CAMP ──
+// Every pool above was written for Total Drama, and a Big Brother season (and Secret Story, which plays on its engine)
+// printed "Camp life, challenge, tribal. Rinse, repeat" and "A good day here is soup, no rain" in its Audience Pulse
+// (a season-two read, 2026-10-29): the oldest bug in this project, one show's vocabulary over another's. On any other
+// show a line that names the island goes, and these, written for a house and naming nothing only one house has, fill in.
+const CAMP_WORDS = /\b(camp|campfire|tribal|tribe|torch|immunity|idol|dock|raccoon|island|beach|boat|soup|rain|out here|challenges?|food table)\b/i;
+const HOUSE_QUOTES = {
+  strategic: [
+    `Everybody in this house is counting votes. I'm counting who they're counting with.`,
+    `I don't need everybody to like me. I need the right four people to need me.`,
+    `The vote tonight isn't about who I like. It's about who's standing between me and the end.`,
+  ],
+  villainous: [
+    `They told me their plans in the kitchen like it was nothing. So I used them like it was nothing.`,
+    `Am I proud of it? No. Am I going to do it again next week? Probably.`,
+    `Somebody in this house had to do the ugly thing. It was me, and I slept fine.`,
+  ],
+  heroic: [
+    `I told them I'd have their back. In this house that still means something to me.`,
+    `If I go home for keeping my word, I'll go home with my word.`,
+    `Somebody needed a friend in here today. I just got there first.`,
+  ],
+  emotional: [
+    `You live with these people every hour of every day. Of course it stops being just a game.`,
+    `I keep telling myself not to care this much. It is not working.`,
+    `There's what I planned to feel in this house, and there's what I actually feel. They are not the same.`,
+  ],
+  comic: [
+    `My strategy? Chaos. My backup strategy? Louder chaos.`,
+    `I have no idea what happened today and honestly I think that's my superpower.`,
+    `Still here. Nobody is more surprised than me.`,
+  ],
+  neutral: [
+    `One day at a time. That's the whole plan, and so far the plan is working.`,
+    `Quiet week for me. In this house, a quiet week is a gift.`,
+    `I'm exactly where I want to be right now: not on anybody's radar.`,
+  ],
+};
+function _quoteFor(name, tone, format = 'total-drama') {
   const arch = players.find(p => p.name === name)?.archetype;
   let effectiveTone = tone;
   // Archetype voice guard: nice players never deliver villainous confessionals.
@@ -383,7 +421,8 @@ function _quoteFor(name, tone) {
   const base = QUOTE_POOLS[effectiveTone] || QUOTE_POOLS.neutral;
   const voice = VOICE_POOLS[VOICE_FAMILY[arch]]?.[effectiveTone] || [];
   // Voice lines lead (2x weight) so archetypes sound distinct; tone pool keeps variety up.
-  const pool = [...voice, ...voice, ...base];
+  let pool = [...voice, ...voice, ...base];
+  if (format !== 'total-drama') pool = [...pool.filter(l => !CAMP_WORDS.test(l)), ...(HOUSE_QUOTES[effectiveTone] || HOUSE_QUOTES.neutral)];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -501,7 +540,7 @@ export function updateEditLayer(ep) {
   const quotes = Object.entries(conf).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => {
     const tones = st[name]?.tones || {};
     const tone = TONES.reduce((best, t) => (tones[t] || 0) > (tones[best] || 0) ? t : best, 'neutral');
-    return { name, tone, text: _quoteFor(name, tone) };
+    return { name, tone, text: _quoteFor(name, tone, ep.format || 'total-drama') };
   });
 
   // Fan-perception drift — the ONLY consequence. Audience only; never the

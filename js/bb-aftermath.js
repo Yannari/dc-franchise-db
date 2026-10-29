@@ -472,6 +472,31 @@ function goodbyeMessages(evictee, house, week, rng) {
     if (toJury) unapologetic.push(
       `"You get a vote at the end of this, and I'd rather you cast it hating me for something I actually did than for a version somebody else tells you about."`,
     );
+    // ── what these two did to each other, by the week ──
+    // A pool of sentences anybody can say runs dry by week six however carefully it is rotated (a season-two read,
+    // 2026-10-29: one message in six weeks of goodbyes, the user: "i dont want it to feel repetitive"). Their own
+    // history cannot repeat, because it is theirs.
+    const past = (gs.bb?.weeks || []).filter(w => w && w !== week && Number(w.num) < Number(week?.num || Infinity));
+    const nominatedMeIn = past.find(w => w.hoh === evictee && (w.initialNominees || []).includes(name))?.num;
+    const iNominatedIn = past.find(w => w.hoh === name && (w.initialNominees || []).includes(evictee))?.num;
+    const savedMeIn = past.find(w => w.vetoUsed && w.vetoSaved === name && w.vetoWinner === evictee)?.num;
+    const keptMeIn = past.find(w => w.evicted && w.evicted !== name && (w.finalNominees || []).includes(name)
+      && (w.ballots || []).some(b => b.voter === evictee && b.evict !== name))?.num;
+    const er = gs.bb?.stats?.[evictee] || {};
+    const wins = (er.hohWins || 0) + (er.vetoWins || 0) + (er.blockBusterWins || 0);
+    if (nominatedMeIn) unapologetic.push(
+      `"You put me on the block in week ${nominatedMeIn}. I've been waiting for a vote like this one ever since."`,
+      `"Week ${nominatedMeIn}, you turned the key on me. Tonight I got to write your name."`,
+    );
+    if (iNominatedIn) unapologetic.push(
+      `"I put you up in week ${iNominatedIn} and you got off the block. I wasn't going to give you a second chance to."`,
+    );
+    if (wins >= 3) unapologetic.push(
+      `"${(NUM_WORD[wins] || String(wins)).replace(/^./, c => c.toUpperCase())} competitions. I couldn't let you win another one."`,
+    );
+    if ((er.timesNominated || 0) >= 3) unapologetic.push(
+      `"You walked off that block ${NUM_WORD[er.timesNominated - 1] || er.timesNominated - 1} times. I didn't want to watch you do it again."`,
+    );
 
     const confession = [
       `"I voted to evict you. I couldn't say it to your face this week, which probably tells you everything about how I'm playing this."`,
@@ -498,6 +523,12 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
     if (ranVote) confession.push(
       `"It was mine. Not the house's, mine. I got the votes together, and I let you hug me on the way to the chair."`,
+    );
+    if (savedMeIn) confession.push(
+      `"You used your veto on me in week ${savedMeIn}. I wrote your name down anyway. I don't know what that makes me."`,
+    );
+    if (keptMeIn) confession.push(
+      `"You kept me in this house in week ${keptMeIn}. I couldn't do the same for you tonight, and I'm sorry."`,
     );
 
     const warm = [
@@ -534,6 +565,12 @@ function goodbyeMessages(evictee, house, week, rng) {
     );
     if (toJury) warm.push(
       `"Go and be brilliant on that jury. Ask the questions I won't be there to ask."`,
+    );
+    if (keptMeIn && keptThem(name)) warm.push(
+      `"You kept me in week ${keptMeIn}, and tonight I tried to do the same for you. It wasn't enough. I'm sorry."`,
+    );
+    if (savedMeIn && !votedAgainst.has(name)) warm.push(
+      `"You took me off the block in week ${savedMeIn}. I never got to pay you back, and I wanted to."`,
     );
 
 

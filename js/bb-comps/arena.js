@@ -15,6 +15,7 @@
 // moment when the field's relationships supply one. Nothing here runs
 // phases, maps or sidebars — the pressure IS the identity.
 import { pronouns } from '../players.js';
+import { gs } from '../core.js';
 import { scoreField, toResult, beat, margin, vb } from './_shared.js';
 import { dislikes, bond } from '../bb-events/_read.js';
 
@@ -43,9 +44,23 @@ export function arenaFinish(entries, api, rng, beats) {
     beats.push(beat(say(rng, NEAR_MISS)(winner.name, runnerUp.name),
       [winner.name, runnerUp.name], 'BY NOTHING', 'gold'));
   }
-  beats.push(beat(
-    `${winner.name} hits the buzzer, and the block is one name shorter. Nobody saved ${pronouns(winner.name).obj} — ${pronouns(winner.name).sub} did it.`,
-    [winner.name], 'OFF THE BLOCK', 'gold'));
+  // One sentence for every win, and a houseguest who took three of them heard it three times (a season-two read,
+  // 2026-10-29). The count is the story after the first: the stat is booked after this beat (bb/week.js).
+  const n = winner.name, p = pronouns(n);
+  const before = Number(gs.bb?.stats?.[n]?.blockBusterWins) || 0;
+  const NTH = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  const line = before >= 1
+    ? say(rng, [
+      `${n} wins the Block Buster again. That is the ${NTH[before + 1] || `${before + 1}th`} time ${p.sub} ${vb(p, 'has', 'have')} fought ${p.posAdj} own way off the block, and the house has stopped being surprised by it.`,
+      `${n} hits the buzzer again. It is the ${NTH[before + 1] || 'latest'} time ${p.sub} ${vb(p, 'has', 'have')} walked off the block this way.`,
+      `Off the block, and not for the first time. Whoever wants ${n} out of this house is going to have to stop ${p.obj} getting to the arena.`,
+    ])
+    : say(rng, [
+      `${n} hits the buzzer, and the block is one name shorter. Nobody saved ${p.obj}. ${p.Sub} did it.`,
+      `${n} wins it, and there is one fewer name on the block. ${p.Sub} came off it without anybody's help.`,
+      `The buzzer goes for ${n}. ${p.Sub} ${vb(p, 'walks', 'walk')} out of the arena safe, and the two still sitting there look at each other.`,
+    ]);
+  beats.push(beat(line, [n], 'OFF THE BLOCK', 'gold'));
   api.popDelta(winner.name, 2);
   api.record(winner.name, 'arena-save', { margin: m.word });
 }

@@ -131,6 +131,13 @@ describe('a week that changed hands, and a houseguest who came back', () => {
     const t = w.interrogation;
     gs.bb.stats[t.holder].hohWins--; gs.bb.stats[t.deposed].hohWins++; delete w.hohMoved;
     for (const p of extractLiveSeasonSnapshot().players) expect(p.comps.hoh, `${p.name} HOH, old save`).toBe(by[p.name] || 0);
+    // ...and the next week played repairs the house's own tally, once.
+    const was = { h: gs.bb.stats[t.holder].hohWins, d: gs.bb.stats[t.deposed].hohWins };
+    withSeededRandom(2, () => simulateBBEpisode());
+    expect(w.hohMoved).toBe(true);
+    const crowned = n => (gs.bb.weeks.at(-1).hoh === n ? 1 : 0);
+    expect(gs.bb.stats[t.holder].hohWins - crowned(t.holder)).toBe(was.h + 1);
+    expect(gs.bb.stats[t.deposed].hohWins - crowned(t.deposed)).toBe(Math.max(0, was.d - 1));
   });
 
   it('credits a Deepfake HOH to the taker on the site, while the house keeps believing the other', () => {

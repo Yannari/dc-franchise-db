@@ -201,6 +201,17 @@ function ensureBBState() {
     gs.bb.stats[name].timesOnTheBlock ||= 0;
     gs.bb.stats[name].blockBusterWins ||= 0;
   }
+  // A season saved before an announced Interrogation moved the reign's tally (the week below, `hohMoved`) still
+  // has it on the deposed HOH: moved once, here, so the house's own reads of who has won what are right too.
+  for (const w of gs.bb.weeks) {
+    const t = w?.interrogation;
+    if (!t || t.caught || t.creditsDeposed || w.hohMoved || w.hoh !== t.holder) continue;
+    const [won, lost] = [gs.bb.stats[t.holder], gs.bb.stats[t.deposed]];
+    if (!won || !lost) continue;
+    won.hohWins = (won.hohWins || 0) + 1;
+    lost.hohWins = Math.max(0, (lost.hohWins || 0) - 1);
+    w.hohMoved = true;
+  }
 }
 
 /**

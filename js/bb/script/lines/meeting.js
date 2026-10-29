@@ -15,7 +15,7 @@
 export default {
   'meeting.call.scene': [
     { id: 'mt.c1', turns: [{ by: 'a', say: "House meeting! Everyone in the living room. Now." }, { beat: 'Doors start opening all over the house.' }] },
-    { id: 'mt.c2', turns: [{ by: 'a', say: "Everybody, living room, please." }, { beat: 'Conversations stop halfway through. The house files in.' }] },
+    { id: 'mt.c2', turns: [{ by: 'a', say: "Everybody, living room, please." }, { beat: 'Conversations stop halfway through. One by one, people come and sit down.' }] },
     { id: 'mt.c3', turns: [{ beat: '{a} goes from room to room.' }, { by: 'a', say: "Living room. Everyone. Five minutes." }] },
     { id: 'mt.c4', turns: [{ by: 'a', say: "Can everyone come to the living room? It's important." }, { beat: 'Half the house thinks the meeting is about them.' }] },
     { id: 'mt.c5', turns: [{ by: 'a', say: "Can I get everybody in the living room? All of you." }, { beat: 'People look at each other, then start drifting in.' }] },

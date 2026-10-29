@@ -292,8 +292,9 @@ export function voiceLine(line, salt, before = null, after = null, scene = salt)
     const c = r.catch[k % r.catch.length];
     // the next word keeps its capital unless it is an ordinary one ('Look, guys, we need'; never 'i' or a name)
     const first = text.split(/\s+/)[0];
-    const lower = /^(the|we|you|it|this|that|there|what|so|okay|listen|honestly|look|can|do|is|are|if|when|just|nobody|everybody|everyone)$/i.test(first.replace(/[^A-Za-z]/g, ''));
-    if (!text.toLowerCase().includes(c.toLowerCase())) return { ...line, text: `${c.replace(/^./, ch => ch.toUpperCase())}${/[!?]$/.test(c) ? '' : ','} ${lower ? text.charAt(0).toLowerCase() + text.slice(1) : text}` };
+    const lower = /^(the|we|you|it|this|that|there|what|so|okay|listen|honestly|look|can|do|is|are|if|when|just|nobody|everybody|everyone|dont|cant|wont|didnt|isnt|arent|its|thats|theres|whats|lets|let|stop|wait|come|maybe|no|yes|hey|why|how|who|where|my|your|our|he|she|they|theyre|were|youre|seriously|please|because|but|and|not|all|every|one|two|some|nothing|something|anyway|right|well|oh|actually|tell|give|go|get)$/i.test(first.replace(/[^A-Za-z]/g, ''));
+    const join = /[!?]$/.test(c) || /\b(but|and|so|because|like|if|though|or)$/i.test(c) ? '' : ',';
+    if (!text.toLowerCase().includes(c.toLowerCase())) return { ...line, text: `${c.replace(/^./, ch => ch.toUpperCase())}${join} ${lower ? text.charAt(0).toLowerCase() + text.slice(1) : text}` };
   }
   return line;
 }

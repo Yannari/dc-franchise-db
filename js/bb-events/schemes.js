@@ -369,7 +369,8 @@ function _scriptOf(list, extra, ctx, room, salt) {
   // who the previous part was between: a part between two other people is a second moment, later
   // (read 2026-10-14: Zee warning Owen, then straight on, Owen accusing Millie, as one conversation)
   let prevPair = null;
-  const parts = list.map((r, i) => {
+  // (four moments at most: a chain of six read as a list of people finding each other, the user's 2026-10-29 read)
+  const parts = list.slice(0, 4).map((r, i) => {
     const decided = _sceneOf(r, { ...extra, aware });
     if (!decided) return null;
     const [kind, who, data] = decided;
@@ -386,7 +387,8 @@ function _scriptOf(list, extra, ctx, room, salt) {
       return { ...s, lines: [cut, ...rest] };
     }
     if (s && i > 0 && who.b && (r.type === 'comfortVictim' || r.badgeText === 'WARNED' || moved)) {
-      const cut = { kind: 'beat', by: null, text: `Later, away from the others, ${who.a} finds ${who.b}.` };
+      const LATER = [`Later, away from the others, ${who.a} finds ${who.b}.`, `That evening, ${who.a} catches ${who.b} alone.`, `Before the night is out, ${who.a} pulls ${who.b} aside.`];
+      const cut = { kind: 'beat', by: null, text: LATER[(i - 1) % LATER.length] };
       return { ...s, lines: [cut, ...s.lines] };
     }
     return s;

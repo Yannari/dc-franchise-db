@@ -91,7 +91,7 @@ export const MISSIONS = [
     say: { give: 'We have a history now. A fake one. Let us make it juicy.', won: 'They buzzed it! They actually buzzed it!', lost: 'Nobody bit. Rude.' } },
   { id: 'best-enemies', tier: 2, judged: 'belief', roles: 'pair', weeks: 1, reward: [3000, 6000], fail: 'none', belief: 'We hate each other', fit: ['boldness', 'strategic'], from: 'S10, S11 ("meilleures ennemies")',
     text: (a, b) => `${a} and ${b}: you are best enemies. Make the house believe you cannot stand each other.`,
-    say: { give: 'I have to pretend to hate them. I actually like them. This is hard.', won: 'The house picked sides in a fight that never happened.', lost: 'We kept laughing mid-argument.' } },
+    say: { give: "We have to look like we can't stand each other. The truth is, I like working with the enemy.", won: 'The house picked sides in a fight that never happened.', lost: 'We kept laughing mid-argument.' } },
   { id: 'bait-a-buzz', tier: 2, judged: 'bait', roles: 'one', weeks: 1, reward: [5000, 8000], fail: 'none', belief: 'I was wrongly accused of something', fit: ['strategic', 'boldness'], from: 'S10 (Sarah: "I was wrongly accused")',
     text: a => `${a}, plant a fake secret about yourself and get somebody to buzz it.`,
     say: { give: 'A fake secret. Dropped just carefully enough.', won: 'Five thousand dollars, and theirs on top. Thank you very much.', lost: 'I dropped hints all week and nobody picked them up. Rude.' } },

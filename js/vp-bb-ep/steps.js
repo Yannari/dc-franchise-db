@@ -3175,11 +3175,11 @@ function ssRuleScreen(act, ctx) {
       ssv(`${n}, tell the house your secret.`), { k: 'dr', by: n, t: `"${act.secretText}."` },
       { k: 'dr', by: n, t: pickBy(["I said it. I actually said it. I can't believe I said it.", 'One sentence. Weeks of keeping it, and one sentence.'], k) });
   } else if (act.kind === 'heavy-clue') {
-    steps.push(ssv(`${n}, ${where} today, you said far too much about your own secret. A clue goes on the table, and you will carry an extra vote at the nominations.`, { toast: ['TOO MUCH SAID', '#ff3355'] }),
+    steps.push(ssv(`${n}, ${where} today, you said far too much about your own secret. A clue goes on the table, and at the nominations you will start with one vote against you.`, { toast: ['TOO MUCH SAID', '#ff3355'] }),
       { k: 'dr', by: n, t: pickBy(["I didn't even say it. I just... said around it. Apparently that counts.", 'Now everybody is looking at me. Great.'], k) });
   } else if (act.kind === 'nominations-talk') {
     steps.push(ssv(`${n}, this afternoon ${where}, you talked about the nominations. The Voice heard every word.`),
-      ssv(act.punishment === 'hot-water' ? `Because of ${n}, the whole house loses its hot water.` : `${n}, you will carry an extra vote against you at the nominations.`, { toast: ['SANCTION', '#ff3355'] }),
+      ssv(act.punishment === 'hot-water' ? `Because of ${n}, the whole house loses its hot water.` : `${n}, at the nominations you will start with one vote against you.`, { toast: ['SANCTION', '#ff3355'] }),
       { k: 'beat', t: act.punishment === 'hot-water' ? `Every head in the room turns to ${n}. Cold showers until the Voice says otherwise.` : `${n} sits back down, and does the arithmetic.` });
   } else {
     steps.push(ssv(`${n}, you contested a decision of the Voice. That will cost you ${euros(act.amount)}.`, { toast: ['FINED', '#ff3355'] }),
@@ -3224,16 +3224,26 @@ function ssNomScreen(act, ctx) {
   const DR = n => ({ set: 'dr', plate: 'confessional-close', room: 'Confessional', cam: CAM.dr, kicker: 'Cam 01 · Confessional', cast: [[n, 50]] });
   // Commandment 6: every nomination is justified out loud. A mission's holder
   // gives a cover reason: commandment 5 forbids revealing the mission.
+  // a reason written with "they", said about one he or she ("I see the way she watches me"); a "they" stays as it is
+  const aboutOne = (t, n) => {
+    let p = null; try { p = pronouns(n); } catch { p = null; }
+    if (!p || !p.sub || p.sub === 'they') return t;
+    const S = p.sub, VERB = { go: 'goes', watch: 'watches' };
+    return t.replace(/\bthey're\b/g, `${S}'s`).replace(/\bthey've\b/g, `${S}'s`)
+      .replace(/\bthey (keep|look|watch|get|make|go|play|talk|ask|say|seem|know|want)\b/g, (m, v) => `${S} ${VERB[v] || `${v}s`}`)
+      .replace(/\bthey\b/g, S).replace(/\bthem\b/g, p.obj || 'them').replace(/\btheir\b/g, p.posAdj || 'their');
+  };
   const WHY = {
     'suspects-me': ["I see the way they watch me, and they're getting too close", "they keep asking me questions they shouldn't be asking", "they've had their eye on me all week", "every time my secret comes up, they look at me"],
     'buzzed-me': ["they buzzed me, and I haven't forgotten it", "after that buzz, I can't trust them", "they went after my secret, so now I'm going after them"],
     'took-my-kitty': ['they took my whole kitty', 'they found my secret and took everything', "they've got my money, and I want them out"],
     'cost-me': ['I lost five thousand dollars on them', 'I was wrong about them once, and it cost me', "they're the reason my kitty is empty"],
-    'cannot-stand': ["we just don't get on", "living with them is hard every single day", "we've clashed since day one", "honestly, we're never going to be friends"],
+    'cannot-stand': ["we just don't get on", "living with them is hard every single day", "we've clashed since day one", "honestly, we're never going to be friends",
+      "we can't be in the same room for five minutes", "every conversation with them turns into an argument"],
     threat: ["they're a big threat in this game", "they're playing really, really well", "everybody likes them, and that's dangerous", "if they make the final, nobody beats them", "they've got half the house wrapped round their finger"],
     mission: ["they're playing a strong game", "they're a threat, honestly", "I don't think they're showing us their real game"],
     'talked-into-it': ['some people have opened my eyes about them', "I've heard things about them this week", "a few people told me to watch out for them"],
-    annoying: ["they've been impossible all week", "I can't take another week of this", "they get on everybody's nerves, not just mine"],
+    annoying: ["they've been impossible all week", "I can't take another week of this", "they get on everybody's nerves, not just mine", "they make every little thing into a drama"],
     gut: ["it's a feeling, and I trust my feelings", "something about them doesn't add up", "I can't explain it, but I don't trust them", "my gut says they're hiding more than a secret"],
   };
   // the nominations, in the confessional: one housemate at a time, nobody else in the room (the user, 2026-10-28:
@@ -3254,7 +3264,16 @@ function ssNomScreen(act, ctx) {
     if (!ss.exclusive) steps.push(ssv(`${b.voter}, to the confessional, please.`, { scene: { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: [[b.voter, 50]] } }));
     const [x, y] = b.picks || [];
     // (no reason said twice in one night: each pool is walked from a different start)
-    const why = n => { const pool = WHY[b.reasons?.[n]] || WHY.gut; let j = hash(`${ctx.week}|why|${b.voter}|${n}`) % pool.length; for (let t = 0; t < pool.length && saidWhy.has(pool[j]); t++) j = (j + 1) % pool.length; saidWhy.add(pool[j]); return pool[j]; };
+    // (a reason said about the person it is about: "she watches me", "he's playing"; a pool said out moves on to
+    // another kind of reason before it repeats one)
+    const why = n => {
+      const own = WHY[b.reasons?.[n]] || WHY.gut;
+      const pool = own.some(r => !saidWhy.has(r)) ? own : [...WHY.gut, ...WHY.annoying, ...WHY['cannot-stand']].filter(r => !saidWhy.has(r)).concat(own);
+      let j = hash(`${ctx.week}|why|${b.voter}|${n}`) % pool.length;
+      for (let t = 0; t < pool.length && saidWhy.has(pool[j]); t++) j = (j + 1) % pool.length;
+      saidWhy.add(pool[j]);
+      return aboutOne(pool[j], n);
+    };
     steps.push(ssv(ss.inverted ? `${b.voter}, which two housemates do you want to save?`
       : ss.exclusive ? `${b.voter}, you alone name the nominees. Who are they, and why?`
         : `${b.voter}, which two housemates do you nominate, and why?`, { scene: DR(b.voter) }));
@@ -5749,6 +5768,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   if (row.themeId === SS_FORMAT) {
     // (the game's own word, from the French show, said in English on screen: "nominated directly", never "d'office")
     for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string' && /d['’]office/i.test(st.t)) st.t = st.t.replace(/\s+d['’]office\b/gi, ' directly');
+    // (the house does not vote anybody out here: last week was a prime)
+    for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string' && /last week's vote/i.test(st.t)) st.t = st.t.replace(/last week's vote/gi, "last week's prime");
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
     // (the week's competition is the Voice's game; its nav label was still Big Brother's)
@@ -5798,7 +5819,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         // (nor a line that only says where and who: "Storage Room. DJ and Gwen.")
         const LOC_ONLY = /^(?:The )?[A-Z][A-Za-z' ]*\.\s+(?:The whole house|[A-Z][\w-]+(?:(?:, | and )[A-Z][\w-]+)*)\.?$/;
         const setUp = b.slice(0, firstLine).some(st => st.k === 'beat' && !/^\w+ (heads off|goes through)|^\w+ and \w+ head off|go through to/.test(String(st.t || '')) && !LOC_ONLY.test(String(st.t || '')));
-        return talk < 2 || (talk < 3 && !setUp);
+        return talk < 2 || (talk < 4 && !setUp);
       };
       for (const s of out) {
         if (!(s.kind === 'houselife' || s.kind === 'scene') || /^bb-ss-/.test(String(s.id || ''))) continue;

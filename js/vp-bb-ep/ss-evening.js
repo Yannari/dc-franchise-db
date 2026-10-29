@@ -30,10 +30,15 @@ export function ssEveningScreen(act, ctx, H) {
       for (const x of s.scene || []) {
         cast.add(x.who); if (x.about) cast.add(x.about);
         if (x.kind === 'accuse') {
+          const nth = (s.scene || []).filter(y => y.kind === 'accuse').indexOf(x);
+          const ACC = ["You're one person with me and somebody else with everyone else.", 'Everything you say in here is for the cameras.',
+            'You smile at people, and the second they leave the room you talk about them.', "I don't believe a single thing that comes out of your mouth."];
+          const SNAP = ["Wow. You could've said that to me in private, you know. Not in front of everybody.", 'Twice in one night. Brilliant. Anybody else?', 'Okay. Noted. Thanks for that.'];
+          const CALM = ["That's fine. I know who I am. I don't need you to like me.", "You're entitled to think that. You're wrong, but you're entitled.", 'Okay. I can live with that.'];
           steps.push(ssv(`${x.who}, who do you find fake?`),
-            { k: 'say', by: x.who, t: `Honestly? ${x.about}. You're one person with me and somebody else with everyone else.` },
-            x.answer === 'snaps' ? { k: 'say', by: x.about, t: "Wow. You could've said that to me in private, you know. Not in front of everybody." }
-              : { k: 'say', by: x.about, t: "That's fine. I know who I am. I don't need you to like me." },
+            { k: 'say', by: x.who, t: `Honestly? ${x.about}. ${ACC[nth % ACC.length]}` },
+            x.answer === 'snaps' ? { k: 'say', by: x.about, t: SNAP[nth % SNAP.length] }
+              : { k: 'say', by: x.about, t: CALM[nth % CALM.length] },
             { k: 'dr', by: x.about, t: x.answer === 'snaps' ? `I didn't expect that from ${x.who}. Not like that, not in front of the whole house.` : `${x.who} wanted a reaction. ${x.who} didn't get one.` });
         } else if (x.kind === 'crush') {
           steps.push(ssv(`${x.who}. Who is it?`),

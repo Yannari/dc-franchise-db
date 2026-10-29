@@ -8,6 +8,9 @@
 const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const pickBy = (arr, key) => arr[hash(key) % arr.length];
 const money = n => `$${Math.round(Number(n) || 0).toLocaleString('en-US')}`;
+// a deal paid out of their own kitty for somebody else; a deal paid out of it for themselves (no is just thrift)
+const GIVES = new Set(['their-family']);
+const SELF_COST = new Set(['the-tapes', 'double-vote']);
 const listOf = xs => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 const STAIRS = n => ({ set: 'attic', plate: 'ss-attic-stairs', room: 'The Secret Room', cam: 21, kicker: 'Cam 21 · The hidden stairs', cast: [[n, 50]] });
 const DESK = n => ({ set: 'attic', plate: 'ss-attic-desk', room: 'The Secret Room', cam: 21, kicker: 'Cam 21 · The Secret Room', cast: [[n, 50]] });
@@ -41,8 +44,13 @@ export function ssRoomDilemmaScreen(act, ctx, H) {
     ssv(`Welcome to the secret room, ${a}. The Voice has a proposal for you.`, { scene: DESK(a) }),
     ssv(o1),
     ssv(o2, { ask: { id: `${k}|ask`, q: `Will ${a} take the deal?`, opts: ['Yes', 'No'] } }),
-    { k: 'dr', by: a, t: pickBy(yes ? ["It's a game. If I don't take it, somebody else will.", "Everybody in that house would say yes. They just wouldn't admit it.", "My head says yes. My heart... my head wins."]
-      : ["I could. I really could. But then I'd have to look at myself in the mirror.", "No. That's not who I am, even in here.", "The money is nice. But I have to go back down those stairs and live with them."], `${k}|think`) },
+    { k: 'dr', by: a, t: pickBy(GIVES.has(act.kind)
+      // (a deal that costs them and helps somebody else: yes is the kind answer, no the one they have to explain)
+      ? (yes ? ["It's my money, but it's not my family. They need it more than I need two thousand dollars.", "If it was me, I'd want somebody to do it for me.", "I'll make the money back. A visit from home, you can't buy twice."]
+        : ["That's a lot of my own money, for somebody else.", "I like them. I don't know if I like them that much.", "In this game, money is everything. I can't give it away."])
+      : SELF_COST.has(act.kind) && !yes ? ["Pay to feel worse? No thanks.", "Some things you're better off not knowing.", "I need every dollar I've got in here."]
+      : (yes ? ["It's a game. If I don't take it, somebody else will.", "Everybody in that house would say yes. They just wouldn't admit it.", "My head says yes. My heart... my head wins."]
+        : ["I could. I really could. But then I'd have to look at myself in the mirror.", "No. That's not who I am, even in here.", "The money is nice. But I have to go back down those stairs and live with them."]), `${k}|think`) },
     { k: 'say', by: a, t: yes ? pickBy(["I'll take it.", 'Yes. Deal.', "Okay. Yes."], `${k}|y`) : pickBy(['No. I refuse.', "No, thank you, Voice.", "I'm going to say no."], `${k}|n`),
       settle: { id: `${k}|ask`, answer: yes ? 'Yes' : 'No', n: 2 } },
   ];

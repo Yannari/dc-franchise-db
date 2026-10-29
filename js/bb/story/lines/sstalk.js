@@ -50,7 +50,7 @@ export default {
       { by: 'b', say: "You've been staring at {c} all through lunch." },
       { by: 'a', say: "Because I think I know what {c}'s hiding." },
       { by: 'b', say: 'Go on, then.' },
-      { by: 'a', say: '"{guess}".' },
+      { by: 'a', say: 'I think it\'s "{guess}".' },
       { by: 'b', say: 'No way. Really?' },
       { by: 'a', say: "Watch {c} at dinner tonight. You'll see it too." },
     ] },
@@ -125,7 +125,7 @@ export default {
     { id: 'ss-hfw.2', turns: [
       { by: 'a', say: "I've worked you out, {c}." },
       { by: 'c', say: 'Oh, have you?' },
-      { by: 'a', say: '"{guess}".' },
+      { by: 'a', say: 'Your secret. "{guess}." Am I right?' },
       { by: 'c', say: 'If you say so.' },
       { by: 'a', say: "You're not even denying it." },
       { by: 'c', dr: "It's nowhere near. It makes me laugh, because the further away {a} goes, the safer I am." },

@@ -584,5 +584,21 @@
   "kind": "sting",
   "gain": 5.4,
   "dur": 0.44
+ },
+ "arrivals": {
+  "src": "Música Secret Story Instrumental - I WANNA CHAT.mp3",
+  "kind": "bed",
+  "gain": 7.1,
+  "dur": 142.97,
+  "loop": [
+   0.0251,
+   142.9951
+  ]
+ },
+ "sfx/jingle": {
+  "src": "SECRET STORY 2026 - JINGLES (fictifreprod).mp3",
+  "kind": "sting",
+  "gain": 4.9,
+  "dur": 8.1
  }
 }

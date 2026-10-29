@@ -156,6 +156,12 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   let h = '';
   // a new screen opens through the Eye
   if (fresh && idx === 0) h += '<div class="ss-iris"></div>';
+  // THE BREAK: the Eye and the show's jingle, where the real show cuts to the ads (vp-bb-ep/steps.js ssBreaks)
+  if (st.bumper) {
+    if (fresh) setTimeout(() => sfx('jingle'), 40);
+    h += `<div class="ssbk ${fresh ? 'fresh' : ''}"><div class="ssbk-rays"></div><div class="ssbk-ring"></div><img class="ssbk-eye" src="${EYE}" alt="">
+      <div class="ssbk-t">${ssx('SECRET STORY')}</div><div class="ssbk-n"><i>AFTER THE BREAK</i><b>${esc(st.bumper.next || '')}</b></div></div>`;
+  }
   const P = st.prop && PROP[st.prop];
   if (P) {
     const press = st.press && fresh;
@@ -522,6 +528,23 @@ export const SS_CSS = `${SS_TYPE_CSS}
 @keyframes ssmg-in{0%{opacity:0;transform:scale(2.4);filter:blur(1cqw)}60%{opacity:1;filter:blur(0)}100%{transform:scale(1)}}
 @keyframes ssmg-flash{0%{filter:brightness(3)}100%{filter:brightness(1)}}
 @keyframes sst-spin{to{rotate:360deg}}
+.ssbk{position:absolute;inset:0;z-index:45;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 45%,#ff5fb7 0%,#c8137a 35%,#4a0a52 75%,#1a0626 100%)}
+.ssbk-rays{position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.14) 0 6deg,transparent 6deg 15deg);animation:ss-rays 12s linear infinite}
+.ssbk-ring{position:absolute;left:50%;top:36%;width:27cqw;aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:.5cqw solid rgba(255,255,255,.85);box-shadow:0 0 3cqw #fff,inset 0 0 3cqw #ff9fd8}
+.ssbk-eye{position:relative;width:24cqw;margin-top:-6cqw;filter:drop-shadow(0 1.2cqw 2.4cqw rgba(40,0,40,.5));animation:ss-blink 3s 2.2s infinite;transform-origin:50% 55%}
+.ssbk-t{position:relative;margin-top:1.6cqw;font-size:5cqw}
+.ssbk-n{position:relative;display:flex;flex-direction:column;align-items:center;gap:.5cqw;margin-top:1.2cqw}
+.ssbk-n i{font:800 1.2cqw 'SSNunito',sans-serif;font-style:normal;letter-spacing:.35em;color:#fff;opacity:.9}
+.ssbk-n b{font:2.2cqw 'SSAachen',sans-serif;color:#fff;letter-spacing:.06em;background:rgba(43,13,63,.55);padding:.3cqw 1.4cqw;border-radius:2cqw}
+.ssbk.fresh .ssbk-rays{animation:ss-rays 12s linear infinite,ssbk-in .5s ease both}
+.ssbk.fresh .ssbk-ring{animation:ssbk-ring 1.1s cubic-bezier(.2,1.4,.4,1) both}
+.ssbk.fresh .ssbk-eye{animation:ssbk-eye 1.3s cubic-bezier(.2,1.3,.3,1) both,ss-blink 3s 2.2s infinite}
+.ssbk.fresh .ssbk-t{animation:ss-boxin .6s .9s cubic-bezier(.2,1.4,.4,1) both}
+.ssbk.fresh .ssbk-n{animation:ss-fade .5s 1.4s both}
+@keyframes ssbk-in{from{opacity:0}}
+@keyframes ssbk-ring{0%{transform:scale(.1);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes ssbk-eye{0%{transform:scale(.05) rotate(-200deg);opacity:0}55%{transform:scale(1.18) rotate(8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 .ssls,.ssvc{position:absolute;inset:0;z-index:24;overflow:hidden;display:flex;flex-direction:column;align-items:center}
 .ssls-sky,.ssvc-sky{position:absolute;inset:0;background:
   radial-gradient(ellipse 38% 22% at 12% 92%,#fff 0 40%,transparent 70%),radial-gradient(ellipse 34% 20% at 88% 96%,#ffe9f6 0 40%,transparent 70%),

@@ -5466,6 +5466,39 @@ export function mergeSameLabel(out, partOf = () => '') {
   return out;
 }
 
+/**
+ * THE BREAK (the user, 2026-10-29: the show's jingle "for moment between screens like that moment before the
+ * adbreak"). Where the real show cuts to the ads, the screen before ends on a tease of what comes next (the host on a
+ * live night, the narrator in the days), then the Eye and the jingle: once in the middle of each part long enough to
+ * have one, and on the prime, before the verdict.
+ * @param {any[]} out @param {{ host?: string, partOf?: (s: any) => string }} o
+ */
+export function ssBreaks(out, { host = 'Josh', partOf = () => '' } = {}) {
+  /** @type {Record<string, number[]>} */ const parts = {};
+  out.forEach((s, i) => (parts[partOf(s)] ||= []).push(i));
+  /** @type {Map<number, number>} */ const at = new Map();   // the screen a break follows -> the screen after it
+  for (const [part, idx] of Object.entries(parts)) {
+    const v = part === 'prime' ? idx.findIndex(i => /^bb-ss-prime-verdict/.test(String(out[i].id || ''))) : -1;
+    if (v > 0) at.set(idx[v - 1], idx[v]);
+    const mid = Math.floor(idx.length / 2) - 1;
+    // (not right beside the verdict's own break)
+    if (idx.length >= 5 && mid > 0 && (v < 0 || Math.abs(mid - (v - 1)) > 1)) at.set(idx[mid], idx[mid + 1]);
+  }
+  for (const [i, j] of at) {
+    const s = out[i], next = out[j];
+    const k = `${s.id}|break`;
+    const verdict = /^bb-ss-prime-verdict/.test(String(next.id || ''));
+    const what = verdict ? 'the verdict' : /^Arrival/.test(String(next.label || '')) ? 'more housemates walk in'
+      : next.kind === 'houselife' ? 'back to the house' : String(next.title || next.label || '').replace(/\s·.*$/, '');
+    const tease = verdict
+      ? pickBy(["Don't go anywhere. After the break, the results of the public vote.", 'Stay with us. When we come back, one of the nominees leaves the House of Secrets.'], k)
+      : partOf(s) === 'daily' ? `After the break: ${what}.` : pickBy([`Don't go anywhere. After the break: ${what}.`, `Stay with us. Coming up after the break: ${what}.`], k);
+    (s.steps ||= []).push(partOf(s) === 'daily' ? { k: 'beat', t: tease } : { k: 'host', by: host, t: tease },
+      { k: 'beat', t: 'The break.', quiet: true, bumper: { next: verdict ? 'THE VERDICT' : what.toUpperCase() }, bed: 'none' });
+  }
+  return out;
+}
+
 /** Which way house life airs: one segment per stretch (default) or one scene per screen. */
 export function houseLifeMode() {
   try { return (typeof localStorage !== 'undefined' && localStorage.getItem('bb-houselife')) === 'scenes' ? 'scenes' : 'segments'; } catch { return 'segments'; }
@@ -6064,7 +6097,16 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     }
     // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
     for (const s of out) s.ss = true;
+    // a small mission's verdict is the day's, not the prime's: it airs before the days end on their cliffhanger
+    {
+      const judged = out.filter(x => /^bb-ss-missionjudge-/.test(String(x.id || '')));
+      for (const x of judged) out.splice(out.indexOf(x), 1);
+      const tonight = out.findIndex(x => /^bb-ss-tonight/.test(String(x.id || '')) && ssPartOf(x) === 'daily');
+      const prime = out.findIndex(x => ssPartOf(x) === 'prime');
+      out.splice(tonight >= 0 ? tonight : prime >= 0 ? prime : out.length, 0, ...judged);
+    }
     mergeSameLabel(out, ssPartOf);
+    ssBreaks(out, { host: ctx.host || 'Josh', partOf: ssPartOf });
   }
   // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
   // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two

@@ -1,7 +1,7 @@
 // Two House Life screens in a row air as one (the user, 2026-10-29: "a screen house life after another house life
 // screen doesnt have to be if they follow each other just merge them instead of dividing them").
 import { describe, expect, it } from 'vitest';
-import { mergeHouseLife, mergeSameLabel } from '../js/vp-bb-ep/steps.js';
+import { mergeHouseLife, mergeSameLabel, ssBreaks } from '../js/vp-bb-ep/steps.js';
 
 const hl = (n, day, extra = {}) => ({
   id: `bb-hl-${n}`, kind: 'houselife', day, time: '14:00', set: 'kitchen', room: 'Kitchen', cam: 3, kicker: 'Cam 03 · Kitchen', cast: [['Ana', 50]], mood: 'house',
@@ -48,5 +48,28 @@ describe('two screens with the same name in a row', () => {
     const out = [tw('x1', 'Arrival 3'), tw('x2', 'Arrival 4'), tw('x3', 'House Life'), tw('x4', 'House Life')];
     mergeSameLabel(out, s => (s.id === 'x4' ? 'prime' : 'daily'));
     expect(out.map(s => s.id)).toEqual(['x1', 'x2', 'x3', 'x4']);
+  });
+});
+
+// the user, 2026-10-29: the show's jingle "for moment between screens like that moment before the adbreak"
+describe('the break', () => {
+  const sc = (id, label, extra = {}) => ({ id, kind: 'twist', ss: true, label, title: label, steps: [{ k: 'host', by: 'Josh', t: `${id}.` }], ...extra });
+  it('teases what is next and plays the Eye before the verdict, and once in the middle of a long part', () => {
+    const prime = ['open', 'chat', 'noms', 'kitties', 'dil', 'phone'].map(x => sc(`bb-ss-prime-${x}-w3`, x)).concat(sc('bb-ss-prime-verdict-w3', 'The Verdict'));
+    ssBreaks(prime, { host: 'Josh', partOf: () => 'prime' });
+    const before = prime[5].steps;
+    expect(before.at(-2)).toMatchObject({ k: 'host', by: 'Josh' });
+    expect(before.at(-2).t).toMatch(/public vote|leaves the House of Secrets/);
+    expect(before.at(-1)).toMatchObject({ quiet: true, bed: 'none', bumper: { next: 'THE VERDICT' } });
+    expect(prime.filter(s => s.steps.some(st => st.bumper)).length).toBe(2);
+  });
+  it('in the days, the narrator teases it; a short part has no break', () => {
+    const days = ['a', 'b', 'c', 'd', 'e', 'f'].map(x => sc(`bb-ss-hunt-${x}`, `Hunt ${x}`));
+    ssBreaks(days, { partOf: () => 'daily' });
+    const tease = days.flatMap(s => s.steps).find((st, i, all) => all[i + 1]?.bumper);
+    expect(tease).toMatchObject({ k: 'beat', t: 'After the break: Hunt d.' });
+    const short = ['a', 'b', 'c'].map(x => sc(`x-${x}`, x));
+    ssBreaks(short, { partOf: () => 'daily' });
+    expect(short.some(s => s.steps.some(st => st.bumper))).toBe(false);
   });
 });

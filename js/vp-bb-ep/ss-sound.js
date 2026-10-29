@@ -29,14 +29,16 @@ const DUR = { theme: 59.0, 'previously-1': 84.37, 'previously-2': 76.59, 'previo
   'fun-1': 58.41, 'fun-2': 58.38, 'fun-3': 74.03, 'fun-4': 84.27, 'fun-5': 41.39, after: 58.41, 'quirky-1': 88.64, 'quirky-2': 58.57, store: 26.55,
   'hunt-1': 58.41, 'hunt-2': 95.35, 'hunt-3': 39.51, 'hunt-4': 93.77, 'hunt-5': 93.77, 'hunt-6': 72.25, think: 79.84, plot: 31.05, 'drama-1': 102.76, 'drama-2': 21.09,
   'tension-1': 57.11, 'tension-2': 58.11, cliff: 53.16, wait: 53.95, 'love-1': 28.87, 'love-2': 58.15, 'love-3': 59.99, 'love-4': 89.57,
-  'sad-1': 58.31, 'sad-2': 65.63, 'sad-3': 79.38, 'sad-4': 83.95, 'sad-5': 58.38, epic: 65.0, night: 147.04, secretroom: 58.31 };
+  'sad-1': 58.31, 'sad-2': 65.63, 'sad-3': 79.38, 'sad-4': 83.95, 'sad-5': 58.38, epic: 65.0, night: 147.04, secretroom: 58.31, arrivals: 142.97 };
 
 /** Each kind of moment, its tracks, and what they are. */
 export const SS_BEDS = {
   'ss-previously': { files: ['previously-1', 'previously-2', 'previously-3'], what: '"Précédemment dans Secret Story": under the narrator\'s recap' },
   // (the user, 2026-10-28: "use the truncated theme for the opening, not the full song")
   'ss-prime':      { files: ['theme'], what: 'the generic, the show\'s own cut of the theme, as the prime goes on air' },
-  'ss-launch':     { files: ['launch'], what: 'Secret Boys Secret Girls: the arrivals on launch night' },
+  // (I Wanna Chat without its lyrics, the user's own copy, 2026-10-29: "use this for arrival music"; Secret Boys Secret
+  // Girls, launch.mp3, is the sung one, identical to its "Vocal Candidats" track)
+  'ss-launch':     { files: ['arrivals'], what: 'I Wanna Chat, the instrumental: the arrivals on launch night, the host on stage' },
   'ss-anthem':     { files: ['anthem'], what: 'the Hymn of Secrets: a secret told, the list of secrets' },
   'ss-voice':      { files: ['voice'], what: "the Eye of the Net jingle bed: under the Voice's announcements" },
   'ss-mission':    { files: ['mission-1', 'mission-2'], what: 'Mission secret / Mister Secret: a mission given, a mission judged' },
@@ -183,7 +185,7 @@ export function ssStepBed(screen, st) {
 }
 
 // ── the sound effects (CC0 recordings), with the synth as a fallback when a file is missing ──
-const SFX = { buzz: 'buzz', ring: 'ring', coin: 'coin', open: 'open', whoosh: 'whoosh', applause: 'applause', cheer: 'cheer' };
+const SFX = { buzz: 'buzz', ring: 'ring', coin: 'coin', open: 'open', whoosh: 'whoosh', applause: 'applause', cheer: 'cheer', jingle: 'jingle' };
 const bufs = {};
 /**
  * Plays one of the House of Secrets' sound effects through the site's audio (its volume and mute).

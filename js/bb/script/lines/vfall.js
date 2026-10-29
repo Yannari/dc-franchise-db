@@ -92,7 +92,9 @@ export default {
   ],
   'vfall.overruled.scene': [
     { id: 'vf.o1', when: { intent: 'other' }, turns: [{ by: 'a', say: "Three days I spent on those nominations." }, { by: 'b', say: "I know." }, { by: 'a', say: "And you took {saved} off in front of everyone." }, { by: 'b', say: "I told you I might." }, { by: 'a', say: "You told me you were thinking about it. That's different." }, { by: 'a', dr: "I spent three days building that block. {b} took {saved} off it in front of everyone." }] },
-    { id: 'vf.o2', turns: [
+    // somebody ELSE taken off: a holder who was on the block and came off says o9/o10, not "I couldn't leave {saved}
+    // up there" ({saved} is {b}; the read of 2026-10-29: "Angelica took Angelica off my block")
+    { id: 'vf.o2', when: { intent: 'other' }, turns: [
       { by: 'a', say: "So you used it." },
       { by: 'b', say: "I did. I'm sorry. I had to.", v: { hard: "I did. I'm not going to apologise for it." } },
       { by: 'a', say: "I didn't think you'd actually do it. Not to me." },

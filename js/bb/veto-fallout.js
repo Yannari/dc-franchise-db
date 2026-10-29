@@ -150,7 +150,10 @@ export function applyVetoFallout({
   // kept it, and the left-up scene went to the other nominee)
   const promised = n => (gs.sideDeals || []).some(d => d && d.active !== false && d.type === 'veto' && d.about === 'promised the veto'
     && d.players?.includes(holder) && d.players?.includes(n));
-  for (const n of [...nominees].sort((x, y) => promised(y) - promised(x))) {
+  // A nominee who wins the veto takes themselves off; the other nominee never expected it to be them, because one
+  // veto saves one person (the read of 2026-10-29: Angelica saved herself and told Ivyna "I'm sorry it went that way").
+  const savedSelf = !!saved && saved === holder;
+  for (const n of savedSelf ? [] : [...nominees].sort((x, y) => promised(y) - promised(x))) {
     if (n === saved || n === holder) continue;
     // Only people who were already sitting there before the ceremony. The
     // replacement has their own grievance and it is not this one.

@@ -5748,6 +5748,25 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         return r;
       });
     }
+    // A house-life scene drawn from one of Big Brother's own moments (a Head of Household's promise of safety, the
+    // have-not room, a final-two pact for a jury, "no comp today") is a scene of another show: it is cut whole, from
+    // its room marker to the next, so no exchange is left half answered (bb/story/director.js cuts the director's own)
+    {
+      const BB_SCENE = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|final (?:twos?|threes?|2|3)|whoever wins|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end)\b/i;
+      // (and the Reality Resort's island: the House of Secrets has a garden and a pool, no beach, dock or bonfire)
+      const ISLAND = /\b(beach|bonfire|dock|pier|lagoon|volcano|pond|island|villa)\b/i;
+      for (const s of out) {
+        if (!(s.kind === 'houselife' || s.kind === 'scene') || /^bb-ss-/.test(String(s.id || ''))) continue;
+        const keep = [];
+        let block = [];
+        const flush = () => { if (!block.some(st => (typeof st.t === 'string' && BB_SCENE.test(st.t)) || ISLAND.test(String(st.scene?.room || '')))) keep.push(...block); block = []; };
+        for (const st of s.steps || []) { if (st.scene && block.length) flush(); block.push(st); }
+        flush();
+        // (the screen's own first room goes on the first scene that survived)
+        if (keep.length && !keep[0].scene && (s.steps || [])[0]?.scene && keep[0] !== s.steps[0]) keep[0] = { ...keep[0], scene: s.steps[0].scene };
+        s.steps = keep;
+      }
+    }
     const NOT_HERE = /\b(veto|POV|jury|jurors?|backdoor\w*|pawns?)\b/i;
     // (on its own screens, only the house's words replayed there: the week's package, the airlock)
     for (const s of out) { const own = /^bb-ss-/.test(String(s.id || '')); s.steps = (s.steps || []).filter(st => !(typeof st.t === 'string' && st.k !== 'host' && (!own || st.k === 'beat') && NOT_HERE.test(st.t))); }

@@ -2013,7 +2013,8 @@ export function simulateBBWeek(options = {}) {
       act: act.type, phase: act.phase || act.type,
       // On an invisible week the event pool does not get to know either —
       // a scene about "the HOH's room" would out the winner in narration.
-      hoh: week.hohSecret ? null : week.hoh,
+      // (Secret Story has no Head of Household: the Voice's game winner holds no room, no key, no block to fill)
+      hoh: week.hohSecret || ss ? null : week.hoh,
       vetoWinner: week.vetoWinner || null, week, ...extra,
       nominees: blockNow,
     }, { rng,
@@ -2192,12 +2193,14 @@ export function simulateBBWeek(options = {}) {
     const bondsBefore = { ...(gs.bonds || {}) };
     act.socialBeats = scheduleHouseBeats(eventLibrary, house, {
       act: 'house', phase,
-      hoh: week.hohSecret ? null : (week.hoh || null),
+      // (Secret Story has no Head of Household: the Voice's game winner holds no room, no key, no block to fill;
+      // the user, 2026-10-28, on a house life that read as Big Brother's: "this discussion makes no sense")
+      hoh: week.hohSecret || ss ? null : (week.hoh || null),
       // A Battle of the Block week has TWO of them until the battle resolves,
       // and house life was only ever told about one — so half the power in the
       // room was invisible to every event that reacts to holding it.
-      coHoh: week.hohSecret ? null : (week.coHoh || null),
-      hohs: week.hohSecret ? []
+      coHoh: week.hohSecret || ss ? null : (week.coHoh || null),
+      hohs: week.hohSecret || ss ? []
         : (week.crownedHohs || [week.hoh, week.coHoh]).filter(Boolean),
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,

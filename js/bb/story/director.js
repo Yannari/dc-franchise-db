@@ -752,4 +752,27 @@ export function airStorylines(week) {
   for (const act of week.acts) {
     if (act?.scenes) act.scenes = act.scenes.filter(x => !(x.step === 'campaign-declined' && lobbied.has((x.cast || [])[0])));
   }
+  // A Secret Story house has no Head of Household's week: no block, no key, no veto, no "whoever wins puts X up", no
+  // final-two deal for a jury that does not exist. The engine still hands the Voice's game winner Big Brother's house
+  // moments (breakfast in bed for whoever "holds the key", the pitch "you'd do the house a favour if X went up"), and
+  // their scenes read as another show (the user, 2026-10-28: "this discussion makes no sense... god the writing is
+  // bad"). A scene that says one of them does not air here; the house talks about secrets instead (sstalk.js).
+  if (SS) {
+    for (const act of week.acts) if (act?.scenes) act.scenes = act.scenes.filter(x => !BB_ONLY.test(saidIn(x)));
+  }
+}
+
+// the words a Big Brother week says that a Secret Story week never can
+const BB_ONLY = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|the key this week|run (?:my|your|the|his|her|their) week|final (?:twos?|threes?|2|3)|whoever wins|before the comp|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end)\b/i;
+/** Every line a written scene says (its lines, and the scenes a set piece holds), as one string. */
+function saidIn(sc) {
+  const out = [];
+  const walk = x => {
+    if (!x || typeof x !== 'object') return;
+    if (Array.isArray(x)) { x.forEach(walk); return; }
+    if (typeof x.text === 'string') out.push(x.text);
+    for (const k of ['lines', 'parts', 'inside', 'scenes']) if (x[k]) walk(x[k]);
+  };
+  walk(sc);
+  return out.join(' \n ');
 }

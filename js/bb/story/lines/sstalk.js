@@ -226,6 +226,126 @@ export default {
   ],
 
   // a nominee's morning, and a friend rallying them
+  // before the nominations: two allies find out they will both name c (bb/story/sstalk.js: from the real ballots)
+  'talk.ss.noms.plan': [
+    { id: 'ss-np.1', room: 'bathroom', turns: [
+      { beat: '{a} turns on both taps in the bathroom. {b} slips in a second later and shuts the door.' },
+      { by: 'a', say: "Quick, before anybody comes in. Who are you naming in the confessional?" },
+      { by: 'b', say: "You go first." },
+      { by: 'a', say: "{c}." },
+      { by: 'b', say: "...Same." },
+      { by: 'a', say: "Then that's the two of us on {c}." },
+      { by: 'b', say: "And we never had this conversation." },
+      { by: 'a', dr: "We're not allowed to talk about the nominations. So we don't. We just both happen to say {c}." },
+    ] },
+    { id: 'ss-np.2', room: 'backyard', turns: [
+      { beat: 'By the pool, {a} and {b} lie on two loungers with their eyes shut, talking without moving their lips.' },
+      { by: 'b', say: "So. The confessional." },
+      { by: 'a', say: "Don't say it out loud." },
+      { by: 'b', say: "I'm not saying anything. I'm just saying a name. {c}." },
+      { by: 'a', say: "I was going to say {c} too." },
+      { by: 'b', say: "Good. Then nobody had to talk anybody into anything." },
+      { by: 'b', dr: "If {a} and I both say {c}, that's half the job done before the confessional even opens." },
+    ] },
+    { id: 'ss-np.3', room: 'bedroom', turns: [
+      { beat: 'Lights out. {a} reaches across to {b}’s bed and taps the mattress.' },
+      { by: 'a', say: "Are you awake?" },
+      { by: 'b', say: "No." },
+      { by: 'a', say: "I've made up my mind. {c}." },
+      { by: 'b', say: "Me too. I made it up at dinner." },
+      { by: 'a', say: "Then that's settled." },
+      { by: 'b', say: "Go to sleep, {a}." },
+      { by: 'a', dr: "You can't plan the nominations out loud in here. You just say a name in the dark and see if anybody says it back." },
+    ] },
+  ],
+
+  // before the nominations: a wants b to name c, and b names somebody else
+  'talk.ss.noms.push': [
+    { id: 'ss-npu.1', room: 'kitchen', turns: [
+      { by: 'a', say: "Can I ask you something? Who are you thinking of, for the nominations?" },
+      { by: 'b', say: "You know we can't talk about that." },
+      { by: 'a', say: "I'm not asking for a name. I'm just saying one. {c}. Think about it." },
+      { by: 'b', say: "Why {c}?" },
+      { by: 'a', say: "Because nobody ever watches {c}, and I think somebody should." },
+      { by: 'b', say: "I'll think about it." },
+      { by: 'b', dr: "I've already got my names, and {c} isn't one of them. {a} can push as much as {a} likes." },
+    ] },
+    { id: 'ss-npu.2', room: 'backyard', turns: [
+      { beat: '{a} sits down next to {b} on the edge of the pool.' },
+      { by: 'a', say: "If you wanted somebody gone this week, who would it be?" },
+      { by: 'b', say: "Is this about the nominations? Because I'm not doing this." },
+      { by: 'a', say: "Just say yes or no. {c}?" },
+      { by: 'b', say: "No. Not {c}." },
+      { by: 'a', say: "Why not?" },
+      { by: 'b', say: "Because I've got my own reasons, and they're not about {c}." },
+      { by: 'a', dr: "I thought {b} was with me on {c}. {b} isn't. I need somebody else before the confessional." },
+    ] },
+    { id: 'ss-npu.3', room: 'bathroom', turns: [
+      { beat: 'In the bathroom, {a} turns on the taps so the microphones can’t hear.' },
+      { by: 'a', say: "Put {c} up with me. Just this once." },
+      { by: 'b', say: "Turn the water off, {a}. They hear everything anyway." },
+      { by: 'a', say: "Is that a no?" },
+      { by: 'b', say: "It's a no." },
+      { by: 'b', dr: "Everybody wants you to do their nominations for them. I do my own." },
+    ] },
+  ],
+
+  // before the nominations: the one the house will name most is scared, and b is honest: b is not naming a
+  'talk.ss.noms.fear': [
+    { id: 'ss-nf.1', room: 'bedroom', turns: [
+      { beat: '{a} sits on the end of {b}’s bed and doesn’t say anything for a while.' },
+      { by: 'a', say: "My name's going in this week. I can feel it." },
+      { by: 'b', say: "Not from me, it isn't." },
+      { by: 'a', say: "Promise?" },
+      { by: 'b', say: "I promise. You're not one of my names." },
+      { by: 'a', say: "Then who?" },
+      { by: 'b', say: "I don't know. But not me." },
+      { by: 'a', dr: "{b} looked me in the eye when {b} said it. In here, that's the most anybody can give you." },
+    ] },
+    { id: 'ss-nf.2', room: 'kitchen', turns: [
+      { by: 'a', say: "Be honest with me. Am I in trouble this week?" },
+      { by: 'b', say: "Why would you be in trouble?" },
+      { by: 'a', say: "Because I can feel it. The way people look at me when I come in." },
+      { by: 'b', say: "Well, it won't be me putting you up. I can tell you that much." },
+      { by: 'a', say: "That's something." },
+      { by: 'b', dr: "{a} is right to be scared. But my names are going somewhere else." },
+    ] },
+    { id: 'ss-nf.3', room: 'backyard', turns: [
+      { by: 'a', say: "If I'm nominated, will you be all right?" },
+      { by: 'b', say: "You won't be. And if you are, it won't be because of me." },
+      { by: 'a', say: "You'd tell me if you were going to?" },
+      { by: 'b', say: "I'd tell you. I'm not." },
+      { by: 'a', say: "Okay. Thank you." },
+      { by: 'a', dr: "I believe {b}. I have to believe somebody in this house." },
+    ] },
+  ],
+
+  // before the nominations: the one the house will name most asks b, and b is going to name a: b lies
+  'talk.ss.noms.lie': [
+    { id: 'ss-nl.1', room: 'bedroom', turns: [
+      { by: 'a', say: "You're not going to put me up, are you?" },
+      { by: 'b', say: "Me? Never." },
+      { by: 'a', say: "Okay. Good. I needed to hear that." },
+      { by: 'b', say: "Get some sleep." },
+      { by: 'b', dr: "I'm naming {a}. I'm not proud of it, but it's my game, and {a} is in my way." },
+    ] },
+    { id: 'ss-nl.2', room: 'kitchen', turns: [
+      { by: 'a', say: "Just tell me I'm safe with you." },
+      { by: 'b', say: "You're safe with me. Obviously." },
+      { by: 'a', say: "Thank you. Everybody else is being so weird with me." },
+      { by: 'b', say: "Ignore them." },
+      { by: 'b', dr: "I said 'safe with me', and I'm about to say {a}'s name in the confessional. That's this game." },
+    ] },
+    { id: 'ss-nl.3', room: 'backyard', turns: [
+      { beat: '{a} and {b} walk slow laps of the garden.' },
+      { by: 'a', say: "If my name comes out at the nominations, I'll know it wasn't you, right?" },
+      { by: 'b', say: "Right." },
+      { by: 'a', say: "Sorry. I'm just nervous." },
+      { by: 'b', say: "Don't be." },
+      { by: 'b', dr: "It will be me. One of them, anyway. {a} will never know which, and that's the only reason I can do it." },
+    ] },
+  ],
+
   'talk.ss.noms.morning': [
     { id: 'ss-nm.1', room: 'bedroom', turns: [
       { beat: 'Morning. {a} is sitting on the edge of the bed, not moving.' },

@@ -1033,6 +1033,15 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
     }
     // (still over, when the Voice's own names bring partners: the last partners linked stay safe this time)
     while (nominees.length > 5 && linked.length) { const l = linked.pop(); nominees = nominees.filter(n => n !== l?.to); }
+    // (and still over when the Voice's own names alone are six, as the audit found on a Red Room week: the latest of
+    // them come off, never the red room's two, the one nominated for life or the Master's pick)
+    const firm = [...twistUp, direct].filter(Boolean);
+    for (let i = nominees.length - 1; i >= 0 && nominees.length > 5; i--) {
+      const x = nominees[i];
+      if (firm.includes(x)) continue;
+      nominees.splice(i, 1); before = before.filter(n => n !== x);
+      for (let j = linked.length - 1; j >= 0; j--) if (linked[j].from === x || linked[j].to === x) linked.splice(j, 1);
+    }
   }
   return { nominees, before, cards: [...pre.played, ...post.played], twist: nt ? { kind: nt.kind, who: nt.who || null, dragged: nt.dragged || null, pairs: nt.pairs || null,
     immuneHouse: nt.immuneHouse || null, nominationHouse: nt.nominationHouse || null } : null, lifer, linked, inverted: !!cast.inverted, exclusive, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,

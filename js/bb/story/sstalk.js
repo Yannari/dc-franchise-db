@@ -14,6 +14,10 @@
 //   ss.pair.check       the two who share a secret, alone for a minute
 //   ss.buzz.wrong       the morning after somebody wrongly buzzed a (c buzzed)
 //   ss.buzz.found       the morning after a's secret was found (c found it)
+//   ss.noms.plan        before the nominations: two allies who will both name c
+//   ss.noms.push        before the nominations: a wants b to name c; b names somebody else
+//   ss.noms.fear        before the nominations: the one most named is scared; b is honest (not naming a)
+//   ss.noms.lie         ...and b promises, and is going to name a
 //   ss.noms.morning     a nominee's morning, and a friend rallying them
 //   ss.noms.whisper     two allies whispering about the nominations (forbidden)
 //   ss.public           a nominee wondering what the public thinks
@@ -78,6 +82,39 @@ export function ssTalkFor(week, ctx, { stretch = 0, talked = new Set() } = {}) {
     if (!friend) continue;
     add({ kind: b.outcome === 'right' ? 'ss.buzz.found' : 'ss.buzz.wrong', who: { a: b.target, b: friend, c: b.by }, data: {} });
     break;
+  }
+
+  // ── before the nominations: the strategy (the user, 2026-10-28: "they don't really talk about nominations when
+  // they should, it's a little bit of the strategy of this game"). Written from the ballots the confessional will
+  // really get, so a plan made in the garden is the plan the booth hears, and a promise is a promise kept or a lie.
+  const nomAct = acts.find(a => a?.secretStory)?.secretStory;
+  const ballots0 = (nomAct?.ballots || []).filter(b => inHouse(b.voter));
+  if (!nominees.length && ballots0.length && stretch <= 1) {
+    const picks = v => (ballots0.find(b => b.voter === v)?.picks || []).filter(inHouse);
+    if (stretch === 0) {
+      // two allies who will both name the same housemate
+      let plan = null;
+      for (const x of ballots0) for (const y of ballots0) {
+        if (plan || x.voter >= y.voter || bond(x.voter, y.voter) < 2) continue;
+        const c = picks(x.voter).find(n => picks(y.voter).includes(n) && n !== x.voter && n !== y.voter);
+        if (c) plan = { a: x.voter, b: y.voter, c };
+      }
+      if (plan) add({ kind: 'ss.noms.plan', who: plan, data: {} });
+      // a push that does not work: a wants b to name c, and b names somebody else
+      for (const x of ballots0) {
+        const c = picks(x.voter)[0];
+        const y = c && ballots0.map(z => z.voter).filter(v => v !== x.voter && v !== c && bond(x.voter, v) >= 1 && !picks(v).includes(c))
+          .sort((p, q) => bond(x.voter, q) - bond(x.voter, p))[0];
+        if (y && !(plan && [plan.a, plan.b].includes(x.voter) && [plan.a, plan.b].includes(y))) { add({ kind: 'ss.noms.push', who: { a: x.voter, b: y, c }, data: {} }); break; }
+      }
+    } else {
+      // the one the house will name most: afraid, asking the closest friend, who tells the truth or lies to their face
+      const tally = {};
+      for (const b of ballots0) for (const n of picks(b.voter)) tally[n] = (tally[n] || 0) + 1;
+      const feared = Object.keys(tally).sort((x, y) => tally[y] - tally[x])[0];
+      const friend = feared ? closest(feared) : null;
+      if (friend) add({ kind: picks(friend).includes(feared) ? 'ss.noms.lie' : 'ss.noms.fear', who: { a: feared, b: friend }, data: {} });
+    }
   }
 
   // ── the nominations: the morning after, the whisper, the public ──

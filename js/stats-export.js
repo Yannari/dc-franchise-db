@@ -5600,13 +5600,14 @@ export function extractLiveSeasonSnapshot() {
   const inHouse = new Set(isBB ? (gs.activePlayers || []) : []);
   // ── AND AN HOH TAKEN IN SECRET IS THE TAKER'S ──
   //
-  // The engine moves an announced Interrogation's reign to the one who took it (week.js). The Deepfake's stays
-  // on the deposed HOH's tally, because the house believes they ran the week; the viewer watched it taken, and
-  // the week's ledger and the finished export (_bbStats, from week.hoh) both credit the taker.
+  // The engine moves an announced Interrogation's reign to the one who took it (week.js, which marks the week
+  // `hohMoved`). The Deepfake's stays on the deposed HOH's tally, because the house believes they ran the week,
+  // and so does every week played before the engine moved it (a season already on air); the viewer watched it
+  // taken, and the week's ledger and the finished export (_bbStats, from week.hoh) both credit the taker.
   const hohMoved = {};
   if (isBB) for (const w of (gs.bb?.weeks || [])) {
     const t = w?.interrogation;
-    if (!t || t.caught || !t.creditsDeposed || !t.deposed || w.hoh !== t.holder) continue;
+    if (!t || t.caught || w.hohMoved || !t.deposed || w.hoh !== t.holder) continue;
     hohMoved[t.deposed] = (hohMoved[t.deposed] || 0) - 1;
     hohMoved[t.holder] = (hohMoved[t.holder] || 0) + 1;
   }

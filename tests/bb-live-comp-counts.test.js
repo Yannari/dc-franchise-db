@@ -123,9 +123,14 @@ describe('a week that changed hands, and a houseguest who came back', () => {
     const w = (gs.bb.weeks || []).find(x => x.interrogation && !x.interrogation.caught && !x.interrogation.creditsDeposed);
     expect(w, 'no HOH was taken this season: pick another seed').toBeTruthy();
     expect(w.hoh).toBe(w.interrogation.holder);
+    expect(w.hohMoved).toBe(true);
     const snap = extractLiveSeasonSnapshot();
     const by = weekHohs();
     for (const p of snap.players) expect(p.comps.hoh, `${p.name} HOH`).toBe(by[p.name] || 0);
+    // A season already on air played that week before the engine moved the tally: the standings correct it.
+    const t = w.interrogation;
+    gs.bb.stats[t.holder].hohWins--; gs.bb.stats[t.deposed].hohWins++; delete w.hohMoved;
+    for (const p of extractLiveSeasonSnapshot().players) expect(p.comps.hoh, `${p.name} HOH, old save`).toBe(by[p.name] || 0);
   });
 
   it('credits a Deepfake HOH to the taker on the site, while the house keeps believing the other', () => {

@@ -3231,6 +3231,8 @@ export function simulateBBWeek(options = {}) {
           else if (gs.bb.stats?.[deposed] && gs.bb.stats?.[hoh]) {
             gs.bb.stats[hoh].hohWins++;
             gs.bb.stats[deposed].hohWins = Math.max(0, gs.bb.stats[deposed].hohWins - 1);
+            // Marked, so the standings can tell this week from one played before the move (they correct those).
+            week.hohMoved = true;
           }
         }
       }

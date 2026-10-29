@@ -199,6 +199,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
   // (a face goes on the list only once its housemate has owned it, live, to the host: the user, 2026-10-28: "why are
   // some personal secrets revealed without the scene where they revealed it to Josh from the confessional")
   const owned = new Set();
+  // ...and whoever the Voice briefed on air in the airlock: a production secret, a shared one. The public heard it with
+  // their name, so the list says whose it is (the user, 2026-10-29: "we know its anglecia so why try hiding it")
+  const known = new Set();
   // The two who will own theirs live, chosen now: two personal secrets kept alone, from housemates in the house before
   // the last list is read (the user: "at most two reveals of personal secrets"). Their portraits keep the secret back,
   // so the confessional is where everybody at home finds it out.
@@ -284,9 +287,12 @@ export function ssLaunchScreens(act, ctx, host, H) {
       if (!s || told.has(s)) continue;
       const hs = (s.holders || []).filter(h => g.includes(h));
       const role = isProd(s) ? String(roleOf(s) || 'accomplice') : '';
-      const tie = !role && s.kind === 'real-pair' && hs.length > 1 ? duoRel(s) : null;
+      // (every shared secret is announced as its holders arrive, whatever kind it is: the user, 2026-10-29: "production
+      // secret should always be announced when the person arrived shared secrets too")
+      const tie = !role && hs.length > 1 ? (s.kind === 'real-pair' ? duoRel(s) : 'friends') : null;
       if (!role && !tie) continue;
       told.add(s);
+      hs.forEach(h => known.add(h));
       const you = hs.length > 1 ? listOf(hs) : n;
       if (role) steps.push(ssv(`${you}, the Voice has given you a role this summer. Your secret: "${s.text}."`, { toast: ['A PRODUCTION SECRET', '#ff3ea5'] }),
         ssv(JOB_TELL[role] || 'Play it every day, and nobody may ever know the Voice is behind it.'),
@@ -360,10 +366,12 @@ export function ssLaunchScreens(act, ctx, host, H) {
     for (const l of due.length ? [{ after: Math.max(...due.map(x => x.after)), secrets: due.flatMap(x => x.secrets || []) }] : []) {
       // the board, five rows: the secret being owned right now, the ones read tonight (newest first), the faces already
       // owned, then the rest of the list. A face only beside a secret its housemate has owned on air.
-      const whoOf = sx => (sx.holders || []).find(h => owned.has(h)) || null;
+      const whoOf = sx => (sx.holders || []).find(h => owned.has(h) || known.has(h)) || null;
       const full = sx => secretOf((sx.holders || [])[0]) || (act.secrets || []).find(x => x.text === sx.text) || sx;
+      // (on the board too: the secrets the Voice gave out on air, with their faces)
+      const briefed = [...known].map(secretOf).filter(Boolean);
       const rowsNow = (fresh, now = null) => {
-        const pool = [...(now ? [now] : []), ...fresh.slice().reverse(), ...listed.map(full).filter(sx => whoOf(sx)), ...listed.slice().reverse()].map(full);
+        const pool = [...(now ? [now] : []), ...fresh.slice().reverse(), ...listed.map(full).filter(sx => whoOf(sx)), ...briefed, ...listed.slice().reverse()].map(full);
         const seen = new Set();
         return pool.filter(sx => sx && !seen.has(sx.text) && seen.add(sx.text)).slice(0, 5)
           .map(sx => ({ text: sx.text, who: whoOf(sx), new: (now && sx.text === now.text) || fresh.some(f => f.text === sx.text) }));
@@ -371,9 +379,14 @@ export function ssLaunchScreens(act, ctx, host, H) {
       const lk = `${kk}|ls${l.after}`;
       /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what they're hiding in there.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${lk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
         secretlist: { rows: rowsNow([]) } }];
-      if (!listed.length) ls.push({ k: 'host', by: host, t: "Here's how it works. Every secret in that house goes up on this list tonight, one at a time. What we won't tell you is whose it is. That part is your job." });
+      // the cards: only the secrets nobody has put a name to. A production secret or a shared one was announced, with the
+      // names, when its holders arrived; it is already on the board with their faces
+      const anon = l.secrets.filter(sx => { const f = full(sx); return (f.holders || []).length <= 1 && !isProd(f) && !whoOf(f); });
+      if (!listed.length && anon.length) ls.push({ k: 'host', by: host, t: briefed.length
+        ? "Here's how it works. The roles and the shared secrets, you already heard from the Voice. Every other secret in that house goes up on this list tonight, one at a time, and we won't tell you whose it is. That part is your job."
+        : "Here's how it works. Every secret in that house goes up on this list tonight, one at a time. What we won't tell you is whose it is. That part is your job." });
       const fresh = [];
-      l.secrets.forEach((sx, j) => {
+      anon.forEach((sx, j) => {
         const no = listed.length + j + 1;
         // the card: the secret on its own, read out by the host
         ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(fresh), show: { no, text: sx.text, pair: !!sx.pair } },
@@ -423,9 +436,11 @@ export function ssLaunchScreens(act, ctx, host, H) {
           live(pickBy(WHY_KEEP, `${ok}|why`)),
           { k: 'host', by: host, t: pickBy([`Thank you, ${n}. Good luck keeping that one all summer.`, `There it is, everybody: ${n}'s secret, on the list. Good luck, ${n}.`], `${ok}|got`), secretlist: { rows: rowsNow([], sx) } });
       });
-      ls.push({ k: 'host', by: host, t: listed.length >= (act.secrets || []).length ? `That's every secret in the house, all ${listed.length} of them. Who's hiding what? You've got all summer to work it out.`
-        : `That's ${l.secrets.length} more on the list. Who's hiding what? You've got all summer to work it out.`, secretlist: { rows: rowsNow([]) } });
-      out.push(base(`bb-ss-launch-list-${count}`, { ...STUDIO, title: 'The List of Secrets', label: 'List of Secrets', sub: `${l.secrets.length} secrets`, cast: [], steps: ls }));
+      if (!anon.length && !owners.length) continue;
+      const alone = (act.secrets || []).filter(sx => (sx.holders || []).length <= 1 && !isProd(sx)).length;
+      ls.push({ k: 'host', by: host, t: listed.length >= alone ? `That's every secret in the house on the list now. Who's hiding what? You've got all summer to work it out.`
+        : `That's ${anon.length} more on the list. Who's hiding what? You've got all summer to work it out.`, secretlist: { rows: rowsNow([]) } });
+      out.push(base(`bb-ss-launch-list-${count}`, { ...STUDIO, title: 'The List of Secrets', label: 'List of Secrets', sub: `${anon.length} secrets`, cast: [], steps: ls }));
     }
   });
   return out;

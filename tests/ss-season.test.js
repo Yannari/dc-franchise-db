@@ -102,7 +102,7 @@ describe('the hunt airs', () => {
     for (const ep of eps) {
       for (const a of ep.acts || []) { if (a.type === 'ss-buzz') buzz++; if (a.type === 'ss-clue') clue++; if (a.type === 'ss-hunt') hunt++; }
       for (const scr of bbWeekSteps(ep)) for (const st of scr.steps || []) expect(String(st.t || '')).not.toMatch(/undefined|NaN/);
-      const ids = bbWeekSteps(ep).map(s => s.id);
+      const ids = bbWeekSteps(ep).flatMap(s => [s.id, ...(s.merged || [])]);
       for (const a of ep.acts || []) if (a.type === 'ss-buzz') expect(ids.some(i => i.startsWith(`bb-ss-buzz-${a.by}-${a.target}`))).toBe(true);
     }
     expect(clue).toBeGreaterThan(3);
@@ -121,7 +121,7 @@ describe('missions air', () => {
     expect(given.length).toBeGreaterThan(4);
     expect(judged.length).toBeGreaterThan(3);
     for (const ep of eps) {
-      const ids = bbWeekSteps(ep).map(s => s.id);
+      const ids = bbWeekSteps(ep).flatMap(s => [s.id, ...(s.merged || [])]);
       for (const a of (ep.acts || []).filter(x => x.type === 'ss-prime')) for (const s of a.segments) if (s.kind === 'mission') for (const r of s.results) expect(ids).toContain(`bb-ss-missionres-${r.mission.id}`);
     }
   });

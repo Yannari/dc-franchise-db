@@ -32,7 +32,7 @@ import { ssFinalScreens } from './ss-final.js';
 import { ssLastPartyScreen } from './ss-last-party.js';
 import { ssEveningScreen, ssBlackBuzzerScreen } from './ss-evening.js';
 import { ssPlace } from './ss-stage.js';
-import { ssArrange, ssLiveConfessionals } from './ss-episode.js';
+import { ssArrange, ssLiveConfessionals, ssPartOf } from './ss-episode.js';
 import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
@@ -5401,6 +5401,42 @@ export function mergeHouseLife(out) {
   return out;
 }
 
+// (the stage's own list, vp-bb-ep/stage.js SCENE_KINDS: a screen of these kinds follows its steps' scenes)
+const SCENEFUL_KINDS = new Set(['houselife', 'movein', 'final-cut', 'jury-q', 'closing', 'jury-vote', 'afp', 'reunion', 'final-part']);
+// what a screen says about itself rather than about what is on screen
+const OWN_KEYS = new Set(['id', 'kind', 'anchor', 'steps', 'snap', 'snapStart', 'hidden', 'ss', 'label', 'sub', 'title', 'storyScenes', 'sceneful', 'ssAfterPrime', 'house', 'jury', 'dayTo', 'merged']);
+/**
+ * Two Secret Story screens in a row with the same name in the episode list are one (the user, 2026-10-29: "in the
+ * prime when 2 screens with the same name follow each other just merge them (arrival 3 is not the same as arrival
+ * 4 btw)"). The second one's look (its room, plate, cast, camera, flags) rides on a scene at its first step and on
+ * every scene after it, so it still looks the way it did on its own; the first one's look stops there.
+ * @param {any[]} out @param {(s: any) => string} partOf
+ */
+export function mergeSameLabel(out, partOf = () => '') {
+  const able = s => SCENEFUL_KINDS.has(s.kind) || !!s.sceneful;
+  for (let i = out.length - 1; i > 0; i--) {
+    const a = out[i - 1], b = out[i];
+    if (!a?.ss || !b?.ss || !a.label || a.label !== b.label || partOf(a) !== partOf(b) || !(b.steps || []).length) continue;
+    const look = {};
+    for (const key of Object.keys(a)) if (!OWN_KEYS.has(key)) look[key] = undefined;
+    for (const [key, v] of Object.entries(b)) if (!OWN_KEYS.has(key)) look[key] = v;
+    // (a screen that never followed its steps' scenes ignored them: they stay ignored)
+    if (!able(a)) a.steps = (a.steps || []).map(st => (st.scene ? { ...st, scene: undefined } : st));
+    const bAble = able(b);
+    const steps = b.steps.map((st, j) => {
+      const own = bAble && st.scene ? st.scene : null;
+      return own || j === 0 ? { ...st, scene: { ...look, ...(own || {}) } } : (st.scene ? { ...st, scene: undefined } : st);
+    });
+    a.steps = [...(a.steps || []), ...steps];
+    if (!SCENEFUL_KINDS.has(a.kind)) a.sceneful = true;
+    if ('snap' in b) a.snap = b.snap;
+    // (the screens it took in, by id: what aired is still findable by what it was)
+    a.merged = [...(a.merged || []), b.id, ...(b.merged || [])];
+    out.splice(i, 1);
+  }
+  return out;
+}
+
 /** Which way house life airs: one segment per stretch (default) or one scene per screen. */
 export function houseLifeMode() {
   try { return (typeof localStorage !== 'undefined' && localStorage.getItem('bb-houselife')) === 'scenes' ? 'scenes' : 'segments'; } catch { return 'segments'; }
@@ -5999,6 +6035,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     }
     // (every screen of the week plays the House of Secrets' music: vp-bb-ep/ss-sound.js)
     for (const s of out) s.ss = true;
+    mergeSameLabel(out, ssPartOf);
   }
   // a living room with a third nominee seated is the three-chair room (the user, 2026-10-06:
   // "3 chairs when Block Buster is on, 2 when it's not"), not a third person standing between two

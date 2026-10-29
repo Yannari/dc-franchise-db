@@ -103,10 +103,12 @@ describe('launch night, on screen', () => {
     const steps = screens.flatMap(s => s.steps);
     const text = steps.map(st => String(st.t || ''));
     expect(text.filter(t => /audience lifts its signs|turn around|privilege/i.test(t))).toEqual([]);
-    // no portrait tells its own secret; every secret of the house is shown once, on its own numbered card
+    // no portrait tells its own secret; every personal secret kept alone is shown once, on its own numbered card. A
+    // production or shared one was announced with its names in the airlock ("we know its anglecia so why try hiding it")
     expect(steps.filter(st => st.card?.text)).toEqual([]);
     const cards = steps.map(st => st.secretlist?.show).filter(Boolean);
-    expect(cards.map(c => c.text).sort()).toEqual(gs.bb.secretStory.secrets.map(s => s.text).sort());
+    const alone = gs.bb.secretStory.secrets.filter(s => (s.holders || []).length === 1 && s.source !== 'production');
+    expect(cards.map(c => c.text).sort()).toEqual(alone.map(s => s.text).sort());
     expect(cards.map(c => c.no)).toEqual(cards.map((_, i) => i + 1));
     // a live reveal is set up by the host before the call, and the list shows the face straight after
     for (const i of steps.map((st, j) => (st.owns ? j : -1)).filter(j => j >= 0)) {
@@ -162,12 +164,14 @@ describe('launch night, on screen', () => {
     const text = Object.values(lines).flat().join(' ');
     expect(text).not.toMatch(/\b(HOH|veto|jury|houseguest|undefined|NaN)\b/);
   });
-  it("on the list of secrets, a face only goes up after that housemate owns it, live, to Josh", () => {
+  it("on the list of secrets, a face only goes up once the public was told whose it is: owned live to Josh, or the Voice's word in the airlock", () => {
     const screens = play();
     const owned = new Set();
+    const secrets = gs.bb.secretStory.secrets;
     let faces = 0;
     for (const s of screens) for (const st of s.steps) {
       if (st.k === 'dr' && st.live && st.owns) owned.add(st.by);
+      if (st.k === 'bb' || st.k === 'voice') for (const x of secrets) if (String(st.t || '').includes(`"${x.text}."`)) x.holders.forEach(h => owned.add(h));
       for (const r of st.secretlist?.rows || []) if (r.who) { faces++; expect(owned.has(r.who), `${r.who}'s face on "${r.text}"`).toBe(true); }
     }
     expect(faces).toBeGreaterThan(0);

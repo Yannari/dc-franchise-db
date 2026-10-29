@@ -142,8 +142,9 @@ export function planLaunch(state, ctx, { house = [], signs = false } = {}) {
     // user, 2026-10-29: "they have to reveal each secret 1 by 1 during launch night with a presentation but not always
     // tell us whos the one with the secret except when its after the reveal in confessional"): a batch every few
     // arrivals, the last one once everybody is in.
+    // (a production secret or a shared one is announced, with the names, as its holders arrive: not on the cards)
     const slots = [2, 6, 10, 14, 18].filter(a => a < order.length).concat(order.length);
-    const all = secrets.slice().sort(() => rng() - 0.5);
+    const all = secrets.filter(s => (s.holders || []).length <= 1 && s.source !== 'production' && !/^voice-/.test(String(s.kind || ''))).sort(() => rng() - 0.5);
     slots.forEach((after, i) => {
       const take = all.splice(0, Math.ceil(all.length / (slots.length - i)));
       if (take.length) lists.push({ after, secrets: take.map(entry) });

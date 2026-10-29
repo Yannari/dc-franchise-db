@@ -20,7 +20,7 @@ import { players, seasonConfig, kinshipPairs } from './core.js';
 import { minimumEpisodes } from './pm/schedule.js';
 import { ROLES, INTENTS, PERSONAS, LOOK_TAGS, VIBES, ICKS, INTERESTS } from './pm/profile.js';
 import { DIALECTS } from './pm/lines/dialect.js';
-import { perfectMatchCastProblem, perfectMatchSeasonShape, perfectMatchRoles } from './pm-run.js';
+import { perfectMatchCastProblem, perfectMatchSeasonShape, perfectMatchRoles, setPerfectMatchShape } from './pm-run.js';
 import { playerAvatarUrl } from './players.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -134,13 +134,26 @@ export function renderPerfectMatchShape() {
     len.dataset.wired = '1';
     len.addEventListener('change', () => {
       const v = Math.round(Number(len.value));
-      seasonConfig.pmEpisodes = v > 0 ? v : null;
+      // The bookings still to air follow their nights to the new numbers.
+      setPerfectMatchShape({ pmEpisodes: v > 0 ? v : null });
       try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
       renderPerfectMatchCastSetup();
       // The Season Timeline is this season's episodes: a new length redraws it.
       try { window.renderTimeline?.(); } catch { /* the timeline is on another tab */ }
     });
   }
+}
+
+/**
+ * Villa options → The final: three couples or four. The bookings still to air
+ * follow their nights (a three-couple season has an extra vote), then the
+ * config is saved and the timeline redrawn like any option.
+ */
+export function pmSetFinalCouples(value) {
+  setPerfectMatchShape({ pmFinalCouples: String(value) === '3' ? 3 : 4 });
+  try { window.saveConfig?.(); } catch { /* kept on seasonConfig */ }
+  renderPerfectMatchCastSetup();
+  try { window.renderTimeline?.(); } catch { /* the timeline is on another tab */ }
 }
 
 /** The summary chips, from the same answer the season plays. */

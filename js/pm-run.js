@@ -20,7 +20,7 @@
 // IMPORTING THIS MODULE IS THE WIRING: it sets `window._pmRunnable`, which
 // `formatIsRunnable()` reads. Drop the import from js/main.js and the show
 // silently un-ships with every test still green.
-import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat, relationships } from './core.js';
+import { gs, setGs, players, seasonConfig, seasonFormat, twistsForFormat, relationships, TWIST_CATALOG } from './core.js';
 import { PERFECT_MATCH_FORMAT } from './shows.js';
 import { dealUnseen, noteShown, rerollKey } from './seen-episodes.js';
 import { playPerfectMatchSeason, perfectMatchScheduleFor, PM_ENGINE } from './pm/season.js';
@@ -104,18 +104,51 @@ export function perfectMatchArrivalCounts() {
 export function perfectMatchSeasonShape() {
   const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
   const cast = saved || (players || []).map(p => p.name).filter(Boolean);
-  const setup = perfectMatchSetup();
-  const roles = perfectMatchRoles(cast, setup);
+  // A change parked behind a re-run (_refreshQueue) is not the season on air,
+  // and the timeline draws the one that is (user, season 1 at episode 19: "it
+  // keeps telling me the elimination should happen ep21 but it happens ep23"
+  // — the tiles were the parked 3-couple season, the run the 4-couple one).
+  const was = _parkedOver();
+  const setup = was?.setup || perfectMatchSetup();
+  const roles = perfectMatchRoles(cast, setup, was ? was.roleCounts : (seasonConfig.pmRoleCounts || {}));
   const count = r => roles.filter(x => x === r).length;
-  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: perfectMatchArrivalCounts(), starters: count('starter'),
-    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 };
+  const episodes = was ? was.episodes : Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
+  const shape = { bombshells: count('bombshell'), casa: count('casa'), episodes, counts: was ? was.arrivalCounts : perfectMatchArrivalCounts(), starters: count('starter'),
+    finalCouples: was ? was.finalCouples : seasonConfig.pmFinalCouples === 3 ? 3 : 4 };
   const seed = gs?.pm?.seed;
   const schedule = seed ? perfectMatchScheduleFor(seed, shape) : buildSchedule(shape);
   return { ...shape, starters: count('starter'), auto: buildSchedule({ ...shape, episodes: null }).length,
     // What the nights would be with nobody's counts: the timeline's "as scheduled".
     plain: buildSchedule({ ...shape, counts: null }),
-    schedule: withBookings(withPicks(schedule, perfectMatchPicks(), perfectMatchForcedSlots()), perfectMatchBookings()) };
+    schedule: _asAired(withBookings(withPicks(schedule, was ? was.picks : perfectMatchPicks(), was ? was.forcedSlots : perfectMatchForcedSlots()),
+      was ? was.bookings : perfectMatchBookings())) };
+}
+
+/**
+ * An aired episode is the night that aired. A season continued from an aired
+ * episode (a new engine, or a new final or length: _refreshQueue) plays on a
+ * schedule whose earlier nights can be different ones — at 27 episodes and
+ * three couples, episode 5 is a vote; season 1 aired a villa day there.
+ */
+function _asAired(schedule) {
+  const aired = new Map((gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT).map(r => [r.num, r]));
+  return schedule.map(e => {
+    const r = aired.get(e.ep);
+    if (!r || r.moment === e.moment) return e;
+    return { ep: e.ep, moment: r.moment, days: r.days, calendar: r.calendar || r.days,
+      ...(r.pm?.finalRecoupling ? { finalRecoupling: true } : {}), ...(r.pm?.coupled ? { coupled: true } : {}) };
+  });
+}
+
+/** The cast and options every schedule reader builds from, as the run reads them. */
+function _castShape() {
+  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
+  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
+  const roles = perfectMatchRoles(cast, perfectMatchSetup());
+  const count = r => roles.filter(x => x === r).length;
+  return { bombshells: count('bombshell'), casa: count('casa'), starters: count('starter'),
+    episodes: Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null,
+    counts: perfectMatchArrivalCounts(), finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 };
 }
 
 /**
@@ -238,13 +271,9 @@ export function perfectMatchVillaCounts() {
 export function perfectMatchDrawnChallenges() {
   const seed = gs?.pm?.seed;
   if (!seed) return new Map();
-  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
-  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
-  const roles = perfectMatchRoles(cast, perfectMatchSetup());
-  const count = r => roles.filter(x => x === r).length;
-  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  return new Map(perfectMatchScheduleFor(seed, { bombshells: count('bombshell'), casa: count('casa'), episodes })
-    .filter(e => e.challenge).map(e => [e.ep, e.challenge]));
+  // The whole shape, final and arrival counts included: a three-couple season
+  // read its draws off the four-couple one, two nights out from episode 19 on.
+  return new Map(perfectMatchScheduleFor(seed, _castShape()).filter(e => e.challenge).map(e => [e.ep, e.challenge]));
 }
 
 /**
@@ -256,12 +285,7 @@ export function perfectMatchDrawnChallenges() {
 export function perfectMatchDrawnNights() {
   const seed = gs?.pm?.seed;
   if (!seed) return new Map();
-  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
-  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
-  const roles = perfectMatchRoles(cast, perfectMatchSetup());
-  const count = r => roles.filter(x => x === r).length;
-  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  return new Map(perfectMatchScheduleFor(seed, { bombshells: count('bombshell'), casa: count('casa'), episodes }).map(e => [e.ep, e]));
+  return new Map(perfectMatchScheduleFor(seed, _castShape()).map(e => [e.ep, e]));
 }
 
 export function perfectMatchBookings() {
@@ -284,24 +308,57 @@ export function perfectMatchBookings() {
 
 /** Every episode's kind, for this cast and length (bookings do not move them). */
 export function perfectMatchEpisodes() {
-  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
-  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
-  const roles = perfectMatchRoles(cast, perfectMatchSetup());
-  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length,
-    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 });
+  return buildSchedule(_castShape());
 }
 
 /** Which episode is which vote slot, for this cast and length (picks do not move them). */
 export function perfectMatchSlots() {
-  const saved = Array.isArray(gs?.pm?.castOrder) && gs.pm.castOrder.length ? gs.pm.castOrder : null;
-  const cast = saved || (players || []).map(p => p.name).filter(Boolean);
-  const roles = perfectMatchRoles(cast, perfectMatchSetup());
-  const episodes = Number(seasonConfig.pmEpisodes) > 0 ? Number(seasonConfig.pmEpisodes) : null;
-  return buildSchedule({ bombshells: roles.filter(r => r === 'bombshell').length,
-    casa: roles.filter(r => r === 'casa').length, episodes, counts: perfectMatchArrivalCounts(), starters: roles.filter(r => r === 'starter').length,
-    finalCouples: seasonConfig.pmFinalCouples === 3 ? 3 : 4 }).filter(e => e.slot);
+  return buildSchedule(_castShape()).filter(e => e.slot);
+}
+
+/**
+ * Where every villa booking lands after the season's shape changes (user: "I
+ * want the season timeline to always adapt with every twist and modification
+ * I do"). A booking is on a night, not a number: the same night in the new
+ * schedule is the same kind of week at the same place — counted from the end
+ * through the stretch both schedules end with (the last vote, the final
+ * recoupling, the couples' week, the final), and from the start before it.
+ * A night that no longer exists takes its bookings with it. A booking on an
+ * episode that has aired (`keepThrough`) stays where it aired.
+ */
+export function remapPerfectMatchBookings(before, after, keepThrough = 0) {
+  let tail = 0;
+  while (tail < before.length && tail < after.length
+    && before[before.length - 1 - tail].moment === after[after.length - 1 - tail].moment) tail++;
+  const keys = list => {
+    const seen = {};
+    return list.map((e, i) => {
+      if (i >= list.length - tail) return `end#${list.length - i}`;
+      seen[e.moment] = (seen[e.moment] || 0) + 1;
+      return `${e.moment}#${seen[e.moment]}`;
+    });
+  };
+  const oldKey = new Map(before.map((e, i) => [e.ep, keys(before)[i]]));
+  const newEp = new Map(after.map((e, i) => [keys(after)[i], e.ep]));
+  const mine = new Set(TWIST_CATALOG.filter(t => t.format === PERFECT_MATCH_FORMAT).map(t => t.id));
+  seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).flatMap(b => {
+    if (!b || !mine.has(b.type) || Number(b.episode) <= keepThrough) return [b];
+    const to = newEp.get(oldKey.get(Number(b.episode)));
+    return to ? [{ ...b, episode: to }] : [];
+  });
+}
+
+/**
+ * Change the season's length or its final (Villa options), with every villa
+ * booking still to air following its night. Without the move, a booking made
+ * for the last vote sat on whatever episode now had that number — season 1's
+ * safe pick and public vote were on a villa day and the final.
+ */
+export function setPerfectMatchShape(patch) {
+  const aired = (gs?.episodeHistory || []).filter(r => r && r.format === PERFECT_MATCH_FORMAT);
+  const before = perfectMatchEpisodes();
+  Object.assign(seasonConfig, patch);
+  remapPerfectMatchBookings(before, perfectMatchEpisodes(), aired.length ? aired[aired.length - 1].num : 0);
 }
 
 // ── NOTHING IS DECIDED UNTIL IT AIRS ──────────────────────────────────
@@ -343,6 +400,55 @@ function _inputs() {
 }
 const _sig = inputs => JSON.stringify(inputs);
 
+// THE INPUTS THAT CAN CHANGE FROM HERE ON. How many couples reach the final
+// and how long the season runs set the dumping pace from night one, so a
+// change to either always reads as rewriting an aired episode — and was parked
+// behind a re-run of it, while the timeline drew the parked season (user's
+// season 1: three couples asked for at episode 15, four in the final). The
+// bookings move with them (their slots are other episodes on a new shape),
+// and a booking on a night still to come changes the pace of the ones before
+// it too. None of these is a fact about an aired night, so the season goes on
+// from the last aired episode with them, as a new engine does
+// (resumePerfectMatchSeason). An islander's setup, the counts and the
+// relationships are about night one, and still wait for the re-run.
+const _FROM_HERE = new Set(['finalCouples', 'episodes', 'picks', 'forcedSlots', 'bookings']);
+function _onlyFromHere(was, now) {
+  if (!was || !now) return false;
+  const keys = new Set([...Object.keys(was), ...Object.keys(now)]);
+  return [...keys].every(k => _FROM_HERE.has(k) || JSON.stringify(was[k]) === JSON.stringify(now[k]));
+}
+function _builtInputs() {
+  try { return gs?.pm?.built ? JSON.parse(gs.pm.built) : null; } catch { return null; }
+}
+/** The inputs the season on air was built from, while a change waits behind a re-run; else null. */
+function _parkedOver() {
+  if (!Array.isArray(gs?._pmQueue) || !gs.pm?.deferred || !gs.pm.built) return null;
+  let now;
+  try { now = _inputs(); } catch { return null; }
+  if (gs.pm.deferred !== _sig(now)) return null;
+  const was = _builtInputs();
+  // A change that goes on from here is the season the next press airs.
+  return was && !_onlyFromHere(was, now) ? was : null;
+}
+const _lastAired = aired => (aired.length ? aired[aired.length - 1].num : 0);
+const _deferNotice = ep => `That change affects episode ${ep}, which has already aired. `
+  + `Re-run episode ${ep} to play it with the change.`;
+/**
+ * A dumping booked on a night that already aired, with something else played
+ * there: going on from here cannot reach it, so the author is told to re-run it.
+ */
+function _airedBookingNotice(aired) {
+  const mine = new Map(twistsForFormat({ format: PERFECT_MATCH_FORMAT }).filter(t => t.pmFormat).map(t => [t.id, t]));
+  const rows = new Map(aired.map(r => [r.num, r]));
+  const off = (seasonConfig.twistSchedule || []).filter(b => b && (mine.has(b.type) || mine.has(b.id)))
+    .filter(b => {
+      const r = rows.get(Number(b.episode));
+      return r?.pm?.dumpFormat && r.pm.dumpFormat !== (mine.get(b.type) || mine.get(b.id)).pmFormat;
+    }).map(b => Number(b.episode)).sort((x, y) => x - y);
+  return off.length ? `The dumping booked on episode ${off[0]} is on a night that has already aired. `
+    + `Re-run episode ${off[0]} to play it with the change.` : null;
+}
+
 /**
  * Play the whole season off the stored seed and cast order, WITHOUT touching
  * `gs`. `playPerfectMatchSeason` replaces `gs` (it is a headless harness), so
@@ -356,11 +462,18 @@ function _seasonRows() {
   try { inputs = _inputs(); } catch { return null; }
   const sig = _sig(inputs);
   if (Array.isArray(gs?._pmQueue) && gs.pm?.built === sig) return [...aired, ...gs._pmQueue];
+  // A change parked behind a re-run: the queue is what airs.
+  if (_parkedOver()) return [...aired, ...gs._pmQueue];
   const rerolls = { ...(gs?.pm?.rerolls || {}) };
-  const key = `${sig}|${JSON.stringify(rerolls)}|${gs?.pm?.seed || ''}|${(players || []).map(p => p?.name).join(',')}`;
+  // …and one that goes on from here is previewed the way it will play.
+  const from = aired.length && _onlyFromHere(_builtInputs(), inputs) ? _lastAired(aired) : null;
+  const key = `${sig}|${JSON.stringify(rerolls)}|${gs?.pm?.seed || ''}|${(players || []).map(p => p?.name).join(',')}|${from}|${aired.length}`;
   if (_preview?.key !== key) {
     let built = null;
-    try { built = _build(inputs, rerolls); } catch { built = null; }
+    try {
+      built = _build(inputs, rerolls);
+      if (built && from && _firstChanged(aired, built.rows) != null) built = _build(inputs, rerolls, from);
+    } catch { built = null; }
     _preview = { key, rows: built ? built.rows : null };
   }
   if (!_preview.rows) return null;
@@ -443,17 +556,32 @@ function _refreshQueue() {
   const rerolls = { ...(gs.pm?.rerolls || {}) };
   const fresh = Array.isArray(gs._pmQueue) && gs.pm?.built === _sig(inputs);
   if (fresh) return true;
+  const fromHere = aired.length && _onlyFromHere(_builtInputs(), inputs);
   // A change already found to touch the past, and a queue still in hand:
-  // keep playing the season as dealt rather than rebuild it every press.
-  if (Array.isArray(gs._pmQueue) && gs.pm?.deferred === _sig(inputs)) return true;
+  // keep playing the season as dealt rather than rebuild it every press —
+  // and say so again after a reload, which forgets the notice.
+  if (Array.isArray(gs._pmQueue) && gs.pm?.deferred === _sig(inputs) && !fromHere && gs.pm.deferredEp != null) {
+    _lastNotice = _deferNotice(gs.pm.deferredEp);
+    return true;
+  }
   const built = _build(inputs, rerolls);
   if (!built) return false;
   const changed = _firstChanged(aired, built.rows);
   if (changed == null) { _lastNotice = null; _commit(built, inputs, rerolls, aired.length); return true; }
+  // The final, the length or a booking: every aired episode stays as it aired
+  // and the season goes on from the last of them with the change.
+  if (fromHere) {
+    const at = _lastAired(aired);
+    const on = _build(inputs, rerolls, at);
+    if (on && on.rows.some(r => r.num > at)) {
+      _commit(on, inputs, rerolls, aired.length);
+      _lastNotice = _airedBookingNotice(aired);
+      return true;
+    }
+  }
   // The change would rewrite an aired episode. With the queue in hand, keep
   // it; without it (a reload), rebuild the season as it was dealt.
-  _lastNotice = `That change affects episode ${changed}, which has already aired. `
-    + `Re-run episode ${changed} to play it with the change.`;
+  _lastNotice = _deferNotice(changed);
   if (!Array.isArray(gs._pmQueue)) {
     const asDealt = { ...inputs, setup: gs.pm?.setup || inputs.setup, picks: gs.pm?.picks || {} };
     const again = _build(asDealt, rerolls);
@@ -461,6 +589,7 @@ function _refreshQueue() {
     _commit(again, asDealt, rerolls, aired.length);
   }
   gs.pm.deferred = _sig(inputs);
+  gs.pm.deferredEp = changed;
   return true;
 }
 

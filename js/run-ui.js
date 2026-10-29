@@ -24,7 +24,7 @@ import { isTraitorsSeason, simulateTraitorsEpisode, rerunTraitorsEpisode,
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun,
   lastPerfectMatchRefusal, rerunPerfectMatchEpisode, perfectMatchPendingChange, perfectMatchSeasonShape,
   perfectMatchResumeOffer, resumePerfectMatchSeason,
-  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights } from './pm-run.js';
+  perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights, remapPerfectMatchBookings } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { ssRandomDraw, SS_CARD_IDS } from './ss/schedule.js';
@@ -2348,37 +2348,6 @@ let _rrNoticeShown = null;
  * twist — should we have a preset?").
  */
 /**
- * Where every villa booking lands after the season's shape changes (user: "I
- * want the season timeline to always adapt with every twist and modification
- * I do"). A booking is on a night, not a number: the same night in the new
- * schedule is the same kind of week at the same place — counted from the end
- * through the stretch both schedules end with (the last vote, the final
- * recoupling, the couples' week, the final), and from the start before it.
- * A night that no longer exists takes its bookings with it.
- */
-function _pmRemapBookings(before, after) {
-  let tail = 0;
-  while (tail < before.length && tail < after.length
-    && before[before.length - 1 - tail].moment === after[after.length - 1 - tail].moment) tail++;
-  const keys = list => {
-    const seen = {};
-    return list.map((e, i) => {
-      if (i >= list.length - tail) return `end#${list.length - i}`;
-      seen[e.moment] = (seen[e.moment] || 0) + 1;
-      return `${e.moment}#${seen[e.moment]}`;
-    });
-  };
-  const oldKey = new Map(before.map((e, i) => [e.ep, keys(before)[i]]));
-  const newEp = new Map(after.map((e, i) => [keys(after)[i], e.ep]));
-  const mine = new Set(TWIST_CATALOG.filter(t => t.format === 'perfect-match').map(t => t.id));
-  seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).flatMap(b => {
-    if (!b || !mine.has(b.type)) return [b];
-    const to = newEp.get(oldKey.get(Number(b.episode)));
-    return to ? [{ ...b, episode: to }] : [];
-  });
-}
-
-/**
  * The villa tile's bombshell count (user: "make the double bombshell a
  * schedulable twist too, just the option to choose the number of bombshells
  * entering"): '' is the season's own, 1 to 4 pins it. The season re-flows —
@@ -2392,7 +2361,7 @@ export function pmSetArrivals(ep, value) {
   const counts = { ...(seasonConfig.pmArrivalCounts || {}) };
   if (value) counts[nth] = Number(value); else delete counts[nth];
   seasonConfig.pmArrivalCounts = counts;
-  _pmRemapBookings(before, perfectMatchEpisodes());
+  remapPerfectMatchBookings(before, perfectMatchEpisodes());
   // A count for a night past the last one left is nobody's: dropped.
   const left = perfectMatchEpisodes().filter(e => e.moment === 'bombshell').length;
   for (const k of Object.keys(counts)) if (Number(k) > left) delete counts[k];

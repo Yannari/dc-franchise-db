@@ -6,10 +6,10 @@
 // engine written, tested and unreachable. Every guard here is on the path the
 // run tab takes — the flag, the queue, the rebuild, and what gets saved.
 import { describe, expect, it } from 'vitest';
-import { gs, setGs, setPlayers, seasonConfig, formatIsRunnable } from '../js/core.js';
+import { gs, setGs, setPlayers, seasonConfig, formatIsRunnable, setRelationships, players } from '../js/core.js';
 import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchEpisodesLeft,
   perfectMatchCastProblem, lastPerfectMatchRefusal, perfectMatchCanRerun, rerunPerfectMatchEpisode,
-  perfectMatchPendingChange, perfectMatchResumeOffer, resumePerfectMatchSeason } from '../js/pm-run.js';
+  perfectMatchPendingChange, perfectMatchResumeOffer, resumePerfectMatchSeason, perfectMatchSeasonShape } from '../js/pm-run.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 
 function freshSeason(n = 22, extra = {}) {
@@ -273,5 +273,75 @@ describe('an older season continues on the new engine', () => {
     expect(rerunPerfectMatchEpisode(9)).toBe(true);
     expect(JSON.stringify(gs.episodeHistory.slice(0, 8))).toBe(kept);
     expect(simulatePerfectMatchEpisode().num).toBe(9);
+  });
+});
+
+// THE FINAL AND THE LENGTH CHANGE FROM HERE ON. The user's season 1 asked for
+// three couples at episode 15: the change set the dumping pace from night one,
+// so it read as rewriting an aired episode and was parked behind a re-run —
+// the run aired the four-couple season while the timeline drew the
+// three-couple one ("it keeps telling me the elimination should happen ep21
+// but it happens ep23"). Now the season goes on from the last aired episode.
+describe('a new final mid-season plays from the next episode', () => {
+  const moments = rows => rows.map(r => `${r.num}:${r.moment}`);
+
+  it('three couples asked for at episode 12: what aired stays, and the final has three', async () => {
+    const { setPerfectMatchShape } = await import('../js/pm-run.js');
+    freshSeason();
+    for (let i = 0; i < 12; i++) simulatePerfectMatchEpisode();
+    const aired = JSON.stringify(gs.episodeHistory);
+    setPerfectMatchShape({ pmFinalCouples: 3 });
+    const rest = playAll();
+    expect(JSON.stringify(gs.episodeHistory.slice(0, 12))).toBe(aired);
+    expect(rest[0].num).toBe(13);
+    expect(perfectMatchPendingChange()).toBe(null);
+    expect(gs.pm.deferred).toBeUndefined();
+    expect(gs.pm.resumeFrom).toBe(12);
+    expect(gs.episodeHistory.find(r => r.moment === 'final').pm.couples.length).toBe(3);
+    seasonConfig.pmFinalCouples = 4;
+  });
+
+  it('before the next press, the timeline draws the nights that will air, and the aired ones as they aired', async () => {
+    const { setPerfectMatchShape } = await import('../js/pm-run.js');
+    freshSeason();
+    for (let i = 0; i < 12; i++) simulatePerfectMatchEpisode();
+    setPerfectMatchShape({ pmFinalCouples: 3 });
+    const drawn = moments(perfectMatchSeasonShape().schedule.map(e => ({ num: e.ep, moment: e.moment })));
+    playAll();
+    expect(drawn).toEqual(moments(gs.episodeHistory));
+    seasonConfig.pmFinalCouples = 4;
+  });
+
+  it('a change that is about night one still waits, and the timeline draws the season on air', () => {
+    freshSeason();
+    for (let i = 0; i < 6; i++) simulatePerfectMatchEpisode();
+    // Two starters who were together before the villa: night one changes.
+    const starters = gs.episodeHistory[0].pm.villa;
+    const g = n => players.find(p => p.name === n)?.gender;
+    const a = starters.find(n => g(n) === 'f'), b = starters.find(n => g(n) === 'm');
+    setRelationships([{ a, b, kin: 'exes', bond: 0 }]);
+    seasonConfig.pmFinalCouples = 3;
+    simulatePerfectMatchEpisode();
+    expect(perfectMatchPendingChange()).toMatch(/Re-run episode \d+/);
+    expect(gs.pm.deferredEp).toBeGreaterThan(0);
+    const drawn = moments(perfectMatchSeasonShape().schedule.map(e => ({ num: e.ep, moment: e.moment })));
+    expect(drawn).toEqual(moments([...gs.episodeHistory, ...gs._pmQueue]));
+    seasonConfig.pmFinalCouples = 4;
+    setRelationships([]);
+  });
+
+  it('a booking follows its night when the final changes', async () => {
+    const { setPerfectMatchShape, perfectMatchSlots } = await import('../js/pm-run.js');
+    // A set length: the three-couple season's extra vote moves the nights before it.
+    freshSeason(22, { pmEpisodes: 25 });
+    const was = perfectMatchSlots().find(e => e.slot === 'vote-post').ep;
+    seasonConfig.twistSchedule = [{ id: 's', episode: was, type: 'pm-public-vote' }];
+    setPerfectMatchShape({ pmFinalCouples: 3 });
+    const now = perfectMatchSlots().find(e => e.slot === 'vote-post').ep;
+    expect(now).not.toBe(was);
+    expect(seasonConfig.twistSchedule[0].episode).toBe(now);
+    seasonConfig.twistSchedule = [];
+    seasonConfig.pmFinalCouples = 4;
+    seasonConfig.pmEpisodes = null;
   });
 });

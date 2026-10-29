@@ -55,8 +55,17 @@ export const WEIGHTS = {
   decidingVote: 3,      // broke the tie that sent somebody home
   rivalry: 2,           // an open war with somebody, capped below
   ranTheWeek: 2,        // held the power the week somebody went
+  // ── every other show's deeds (2026-10-29: "do all the simulators save the villains of the season?" — two did) ──
+  sabotage: 4,          // wrecked somebody else's chance on purpose: a sabotaged verse, a thrown daily, a race wrecked
+  stole: 3,             // took what was somebody else's: a partner in the villa, a bit in the werk room
+  deceived: 2,          // lived a lie at somebody: a Traitor banishing a Faithful, a catfish, a two-faced pull
+  cruelty: 2,           // a scene that hurt somebody and turned the room against the one who did it
+  calledOut: 2,         // chose an opponent for the elimination (The Challenge's call-out)
 };
 const RIVALRY_CAP = 4;
+// A show that produces a small deed every episode would decide the board on volume alone: a queen who read somebody
+// badly ten times is not three times the villain of one who sabotaged a verse.
+const CAPS = { cruelty: 6, deceived: 6, villainScene: 5, calledOut: 4, sabotage: 4 };
 
 const slugOf = n => String(n || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
 
@@ -81,13 +90,13 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
     name: n,
     slug: (doc.placements.find(p => p.name === n) || {}).playerSlug || slugOf(n),
     score: 0,
-    deeds: { brokenWord: 0, cutAnAlly: 0, ranTheWeek: 0, decidingVote: 0,
-      vetoAsWeapon: 0, finalCut: 0, villainScene: 0, rivalry: 0 },
+    deeds: Object.fromEntries(Object.keys(WEIGHTS).map(k => [k, 0])),
     evidence: [],
   }]));
   const add = (name, deed, line) => {
     const row = score.get(name);
-    if (!row) return;
+    if (!row || !(deed in WEIGHTS)) return;
+    if (CAPS[deed] && row.deeds[deed] >= CAPS[deed]) return;
     row.deeds[deed] += 1;
     row.score += WEIGHTS[deed] || 0;
     if (line) row.evidence.push(line);
@@ -109,6 +118,14 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
     const [x, y] = r.players || [];
     if (x && y) { rivals.get(x)?.add(y); rivals.get(y)?.add(x); }
   }
+  // Every show after the first two writes these on the player instead (the life layer's fields, ADDING-A-SHOW §5):
+  // names, not pair objects.
+  for (const p of doc.placements || []) {
+    for (const o of p.alliances || []) if (typeof o === 'string' && o !== p.name) { allies.get(p.name)?.add(o); allies.get(o)?.add(p.name); }
+    for (const o of p.rivalries || []) if (typeof o === 'string' && o !== p.name) { rivals.get(p.name)?.add(o); rivals.get(o)?.add(p.name); }
+  }
+  // who cut whom, so a betrayal a vote already counted is not counted again off the player's own list
+  const cut = new Set();
 
   const rounds = (doc.weeks || []).length
     ? doc.weeks.map(w => ({
@@ -164,6 +181,7 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
       const chose = contested || b.changed || (b.stated && b.stated !== b.evict);
       if (chose && b.evict === r.out && allies.get(b.voter)?.has(r.out)) {
         add(b.voter, 'cutAnAlly', `Voted out ${r.out}, who they were aligned with, in ${r.label}.`);
+        cut.add(`${b.voter}>${r.out}`);
       }
     }
 
@@ -192,6 +210,96 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
     }
   }
 
+  // ── 5b. WHAT EVERY OTHER SHOW RECORDS ──────────────────────────────
+  // Read off the document's own fields, never its show's name, so a show added later that writes the same fields is
+  // read the same way.
+
+  // A betrayal the record names outright (The Circle, The Challenge, the race write `betrayed` on the player).
+  for (const p of doc.placements || []) {
+    for (const v of p.betrayed || []) {
+      if (typeof v !== 'string' || cut.has(`${p.name}>${v}`)) continue;
+      cut.add(`${p.name}>${v}`);
+      add(p.name, 'cutAnAlly', `Betrayed ${v}.`);
+    }
+  }
+
+  // The Traitors: who wore the cloak which night. A Traitor is in the turret for every murder while they are in the
+  // castle, and every Faithful they voted out at the round table was voted out by somebody pretending to be one.
+  if (Array.isArray(doc.roleHistory) && doc.roleHistory.length) {
+    const flips = [...doc.roleHistory].sort((a, b) => (a.ep || 0) - (b.ep || 0));
+    const roleAt = (n, ep) => {
+      let r = 'faithful';
+      for (const f of flips) if (f.name === n && (f.ep || 0) <= ep) r = f.to;
+      return r;
+    };
+    const outAt = new Map((doc.placements || []).map(p => [p.name, Number(p.exitEpisode) || Infinity]));
+    for (const row of doc.votingHistory || []) {
+      const ep = Number(row.episode) || 0;
+      if (row.murdered && !row.murderBlocked) {
+        for (const n of cast) {
+          if (n !== row.murdered && roleAt(n, ep) === 'traitor' && (outAt.get(n) ?? Infinity) >= ep) {
+            add(n, 'ranTheWeek', `In the turret the night ${row.murdered} was murdered (episode ${ep}).`);
+          }
+        }
+      }
+      for (const v of row.votes || []) {
+        if (!v?.voter || v.target !== row.eliminated || roleAt(v.voter, ep) !== 'traitor') continue;
+        if (roleAt(v.target, ep) === 'traitor') add(v.voter, 'cutAnAlly', `Voted out ${v.target}, a fellow Traitor, in episode ${ep}.`);
+        else add(v.voter, 'deceived', `Sat at the round table as a Faithful and voted out ${v.target}, who really was one, in episode ${ep}.`);
+      }
+    }
+  }
+
+  // Drag Race: the edit each queen was given, week by week. Its villain arcs are the show's own read of her.
+  for (const e of doc.dr?.episodes || []) {
+    for (const p of e.placements || []) {
+      if (!/^(Villain|Bitter Edit)$/.test(String(p.storyline || ''))) continue;
+      const first = !(score.get(p.name)?.deeds.villainScene);
+      add(p.name, 'villainScene', first ? `Cut as the villain of the season from episode ${e.episode}.` : '');
+    }
+  }
+
+  // A choice of who leaves made by a named few (The Circle's Influencers) is theirs, and an ally blocked is a cut.
+  for (const row of doc.votingHistory || []) {
+    for (const x of row.exits || []) {
+      if (!Array.isArray(x.by)) continue;
+      for (const by of x.by) {
+        if (!by || by === x.name) continue;
+        if (allies.get(by)?.has(x.name) && !cut.has(`${by}>${x.name}`)) {
+          cut.add(`${by}>${x.name}`);
+          add(by, 'cutAnAlly', `Blocked ${x.name}, an ally, in episode ${row.episode}.`);
+        } else add(by, 'ranTheWeek', `Blocked ${x.name} in episode ${row.episode}.`);
+      }
+    }
+    // The Challenge: an opponent called into the elimination
+    for (const c of row.callouts || []) {
+      if (!c?.by || !c.opponent) continue;
+      if (allies.get(c.by)?.has(c.opponent)) add(c.by, 'cutAnAlly', `Called ${c.opponent}, an ally, into the elimination in episode ${row.episode}.`);
+      else add(c.by, 'calledOut', `Called ${c.opponent} into the elimination in episode ${row.episode}.`);
+    }
+    // Perfect Match: a partner taken at a recoupling
+    for (const st of row.steals || []) {
+      if (!st?.by || st.reclaim) continue;
+      add(st.by, 'stole', `Took ${st.took} from ${st.from} in episode ${row.episode}.`);
+    }
+  }
+  // The Circle: a whole season as somebody else
+  for (const c of doc.catfish || []) {
+    if (c?.name) add(c.name, 'deceived', `Played the season as ${c.playedAs || c.profile}, a profile that was not them.`);
+  }
+  for (const p of doc.placements || []) {
+    // the race: a sabotage the leg recorded (no victim on the record)
+    const sab = Number(p.rr?.sabotage) || 0;
+    for (let i = 0; i < sab; i++) add(p.name, 'sabotage', i === 0 ? `Sabotaged another team ${sab === 1 ? 'once' : `${sab} times`}.` : '');
+    // Perfect Match: the public's own word for them at the end
+    if (p.pm?.label === 'villain') {
+      add(p.name, 'villainScene', 'Ended the season as the public\'s villain.');
+      add(p.name, 'villainScene', '');
+    }
+  }
+  // What a show's exporter collected from its episodes (js/villain-deeds.js): one shape for every show.
+  for (const d of doc.villainDeeds || []) if (d?.by && d.kind) add(d.by, d.kind, d.line || '');
+
   // 6. THE FIGHTS. An on-record feud is two people who could not be in a room
   //    together, and it is the most visible villainy a season produces —
   //    capped only so a cast that pairs everybody off cannot decide the board
@@ -209,6 +317,7 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
   // this to decide who is getting a villain edit. Here it decides nothing on
   // its own; it is one more deed with a weight.
   const sources = ['the record'];
+  if ((doc.villainDeeds || []).length) sources.push('the episodes');
   if (Array.isArray(episodes) && episodes.length && typeof classify === 'function') {
     sources.push('the episodes');
     for (const ep of episodes) {
@@ -267,7 +376,7 @@ export function villainBoard(doc, { episodes = null, classify = null, editTotals
       ? `, and ${silver.name} was not far behind` : ''}.`
     : 'Nobody on this season did anything to anybody.';
 
-  return { board, read, sources };
+  return { board, read, sources: [...new Set(sources)] };
 }
 
 /**
@@ -283,4 +392,17 @@ export function villainAward(doc, opts = {}) {
     evidence: row.evidence.slice(0, 6),
   } : null);
   return { gold: entry(board[0]), silver: entry(board[1]), board: board.map(entry) };
+}
+
+/**
+ * The board on the document, the shape every exporter and the site share: `{ read, sources, board }`, or nothing when
+ * nobody on the season did anything to anybody. For a show's exporter; Total Drama and Big Brother attach theirs in
+ * stats-export.js with the edit totals.
+ */
+export function attachVillainBoard(doc, opts = {}) {
+  try {
+    const { board, read, sources } = villainBoard(doc, opts);
+    if (board.length) doc.villainBoard = { read, sources, board };
+  } catch { /* a board is an award, never a blocker */ }
+  return doc;
 }

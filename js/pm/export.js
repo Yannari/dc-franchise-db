@@ -38,6 +38,9 @@ import { CHALLENGE_NAMES } from './schedule.js';
 import { followers } from './ledger.js';
 import { publishedRatings } from '../ratings.js';
 import { feedScenes } from './feed-scenes.js';
+// the season's villains, ranked from what people did to each other (js/villain-score.js)
+import { attachVillainBoard } from '../villain-score.js';
+import { withDeeds, perfectMatchDeeds } from '../villain-deeds.js';
 
 export const PERFECT_MATCH = PERFECT_MATCH_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -325,7 +328,7 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
   // The public's favourite islander at the end: the show's audience award.
   const fav = Object.entries(last.approval || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   const envelope = [...rows].reverse().find(r => r.pm?.envelope)?.pm.envelope || null;
-  return {
+  return attachVillainBoard(withDeeds({
     seasonNumber: Number(seasonNumber),
     format: PERFECT_MATCH,
     seasonId: seasonId(PERFECT_MATCH, seasonNumber),
@@ -347,7 +350,7 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
     twists: pmTwistsPlayed(rows),
     emoji: SHOWS[PERFECT_MATCH].emoji,
     exitVerbs: exitVerbs(PERFECT_MATCH),
-  };
+  }, perfectMatchDeeds(rows)));
 }
 
 /** The numbers the rankings board prices, for one islander in one season. */

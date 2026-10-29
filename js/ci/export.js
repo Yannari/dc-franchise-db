@@ -31,6 +31,8 @@
 import { SHOWS, seasonId, exitVerbs, CIRCLE_FORMAT } from '../shows.js';
 import { TWIST_CATALOG } from '../core.js';
 import { sentencesOf } from '../vp-ci/twist-alert.js';
+// the season's villains, ranked from what people did to each other (js/villain-score.js)
+import { attachVillainBoard } from '../villain-score.js';
 
 export const CIRCLE = CIRCLE_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -251,7 +253,7 @@ export function buildCircleSeasonDocument(rows = [], record = null, { seasonNumb
   const finalRow = rows.find(r => ratingOf(r) === finalRating);
   const fan = record?.fanFavorite || null;
   const recName = record?.seasonName && record.seasonName !== SHOWS[CIRCLE].name ? record.seasonName : null;
-  return {
+  return attachVillainBoard({
     seasonNumber: Number(seasonNumber),
     format: CIRCLE,
     seasonId: seasonId(CIRCLE, seasonNumber),
@@ -273,5 +275,5 @@ export function buildCircleSeasonDocument(rows = [], record = null, { seasonNumb
     twists: ciTwistsPlayed(rows),
     emoji: SHOWS[CIRCLE].emoji,
     exitVerbs: exitVerbs(CIRCLE),
-  };
+  });
 }

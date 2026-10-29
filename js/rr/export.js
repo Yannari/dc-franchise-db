@@ -24,6 +24,7 @@
 //        `fears` and `hurt`; every placement's `rr` has the place on each leg and the season's numbers.
 import { SHOWS, seasonId, exitVerbs, RACE_FORMAT } from '../shows.js';
 import { raceAwardsIndex } from './awards.js';
+import { attachVillainBoard } from '../villain-score.js';
 
 export const RACE = RACE_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -229,6 +230,8 @@ export function buildRaceSeasonDocument(rows = [], record = null, { seasonNumber
     exitVerbs: exitVerbs(RACE),
   };
   // the awards index's card (awards.html); the awards page works the whole list out from the legs (rr/awards.js)
+  // the season's villains first: the awards read the board (rr/awards.js)
+  attachVillainBoard(doc);
   doc.awards = raceAwardsIndex(doc);
   return doc;
 }

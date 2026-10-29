@@ -170,6 +170,13 @@ export function raceAwards(doc) {
   const fan = racerTop((doc?.placements || []).map(p => ({ name: p.name, v: Number(p.popularity) || 0 })));
   racerAward('fan-favourite', '⭐', 'Fan Favourite', fan, fan && `Ended the race as the season's most popular racer, racing with ${
     people.get(fan.name)?.partner || 'a partner'}.`);
+
+  // ── Biggest Villain: the top of the season's villain board (js/villain-score.js), with its first piece of evidence ──
+  const vb = doc?.villainBoard?.board?.[0];
+  if (vb && vb.score > 0 && people.has(vb.name)) {
+    racerAward('villain', '😈', 'Biggest Villain', { name: vb.name, v: vb.score },
+      vb.evidence?.[0] || `Did more to the other teams than anybody else in the race.`);
+  }
   return out;
 }
 

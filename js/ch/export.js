@@ -22,6 +22,9 @@
 //        ('intact' | 'broken'), its `alliances` and `rivalries`, and `showmanceStrength` (0..1).
 import { SHOWS, seasonId, exitVerbs, CHALLENGE_FORMAT } from '../shows.js';
 import { TWIST_CATALOG } from '../core.js';
+// the season's villains, ranked from what people did to each other (js/villain-score.js)
+import { attachVillainBoard } from '../villain-score.js';
+import { withDeeds, challengeDeeds } from '../villain-deeds.js';
 
 export const CHALLENGE = CHALLENGE_FORMAT;
 const slug = n => String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -198,7 +201,7 @@ export function buildChallengeSeasonDocument(rows = [], record = null, { seasonN
   const byDiv = d => placements.filter(p => p.division === d && p.status !== 'Winner').sort((a, b) => (a.placement || 99) - (b.placement || 99))[0];
   const winners = champions.map(c => ({ name: c.name, playerSlug: c.playerSlug, division: c.division,
     runnerUp: byDiv(c.division)?.name || null }));
-  return {
+  return attachVillainBoard(withDeeds({
     seasonNumber: Number(seasonNumber),
     format: CHALLENGE,
     seasonId: seasonId(CHALLENGE, seasonNumber),
@@ -221,5 +224,5 @@ export function buildChallengeSeasonDocument(rows = [], record = null, { seasonN
     ...(options.pairs ? { pairs: pairsOf(placements), moneyChoices: final?.choices || [] } : {}),
     emoji: SHOWS[CHALLENGE].emoji,
     exitVerbs: exitVerbs(CHALLENGE),
-  };
+  }, challengeDeeds(rows)));
 }

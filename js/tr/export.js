@@ -38,6 +38,8 @@ import { SHOWS, seasonId, formatPrefix, exitVerbs } from '../shows.js';
 import { believes, ALIGNMENT_CRED_CEILING } from '../knowledge.js';
 import { suspicion, knowsAlignmentOf } from './deduction.js';
 import { alignmentFactId, alignmentAt } from './roles.js';
+// the season's villains, ranked from what people did to each other (js/villain-score.js)
+import { attachVillainBoard } from '../villain-score.js';
 
 export const TRAITORS_FORMAT = 'traitors';
 
@@ -451,7 +453,7 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     name, playerSlug: _slug(name), share: season.endgame?.share ?? null,
   }));
 
-  return {
+  return attachVillainBoard({
     seasonNumber: Number(seasonNumber),
     format: TRAITORS_FORMAT,
     seasonId: seasonId(TRAITORS_FORMAT, seasonNumber),
@@ -512,7 +514,7 @@ export function buildTraitorsSeasonDocument(season = {}, { seasonNumber = 1, twi
     daggers: (season.daggers || []).map(d => ({
       ep: d.ep, holder: d.holder, outcome: d.outcome || null, playedEp: d.playedEp ?? null,
       target: d.target ?? null })),
-  };
+  });
 }
 
 // ── What the castle believes ──────────────────────────────────────────

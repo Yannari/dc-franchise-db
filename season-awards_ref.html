@@ -724,7 +724,10 @@ function statLbCard(title, rows) {
     <!-- CHARACTER AWARDS -->
     <div class="sa-section-heading">🎭 Character Awards</div>
     <div class="award-grid">
-      ${awardCard('😈','Biggest Villain', awards.biggestVillain || awards.villainOfSeason)}
+      ${awardCard('😈','Biggest Villain', awards.biggestVillain || awards.villainOfSeason
+        // a season with no written villain award shows the top of its villain board (js/villain-score.js)
+        || (season.villainBoard?.board?.[0] ? { name: season.villainBoard.board[0].name, playerSlug: season.villainBoard.board[0].slug,
+          description: season.villainBoard.board[0].evidence?.[0] || season.villainBoard.read || '' } : null))}
       ${awardCard('🌀','Most Chaotic', awards.mostChaotic)}
       ${awardCard('🎲','Most Unlucky', awards.mostUnlucky)}
       ${awardCard('💎','Advantage King', awards.advantageKing)}
@@ -747,6 +750,9 @@ function statLbCard(title, rows) {
         vetoAsWeapon: 'used the veto on somebody else',
         decidingVote: 'cast the deciding vote', rivalry: 'open war',
         ranTheWeek: 'ran the week',
+        // every other show's deeds (js/villain-score.js WEIGHTS)
+        sabotage: 'sabotage', stole: 'took what was theirs', deceived: 'lived a lie',
+        cruelty: 'went after people', calledOut: 'called somebody out',
       };
       const top = vb.board[0].score || 1;
       html += `<div class="sa-section-heading">😈 The Villain Board</div>

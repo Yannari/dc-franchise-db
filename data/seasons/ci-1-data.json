@@ -2050,5 +2050,262 @@
       "title": "Faces Come Out",
       "prose": "On finale day, the remaining Players sent final messages to the Circle before leaving their apartments for the last time. The face-to-face meeting brought the catfish reveals, with Elijah admitting he had played as his cousin Kad and Derek revealing he had been Brooke, while Sasha chose to accept Derek as the person behind the messages. The reunion brought back the blocked Players, who confronted the finalists, laughed about visits and detective work, and watched the final ratings come in together. Barbie finished in fourth place and Brooke, played by Derek, finished in third. Lila won The Circle over runner-up Sasha, and Nadiya, played by Hector, was named Fan Favorite."
     }
-  ]
+  ],
+  "villainBoard": {
+    "read": "Sasha did the most to other people this season, and Domingo was not far behind.",
+    "sources": [
+      "the record",
+      "a backfill of the published record"
+    ],
+    "board": [
+      {
+        "name": "Sasha",
+        "slug": "sasha",
+        "score": 12,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 3,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Blocked Anais in episode 4.",
+          "Blocked Dr.Ines in episode 8.",
+          "Blocked Domingo in episode 11.",
+          "Openly at war with Anais.",
+          "Openly at war with Domingo.",
+          "Openly at war with Dr.Ines."
+        ]
+      },
+      {
+        "name": "Domingo",
+        "slug": "domingo",
+        "score": 11,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 1,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Blocked Anais in episode 4.",
+          "Blocked Dr.Ines, an ally, in episode 8.",
+          "Openly at war with Sasha.",
+          "Openly at war with Hector.",
+          "Openly at war with Anais."
+        ]
+      },
+      {
+        "name": "Derek",
+        "slug": "derek",
+        "score": 8,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 2,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 1,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Betrayed Hector.",
+          "Betrayed Lila.",
+          "Played the season as Brooke, a profile that was not them."
+        ]
+      },
+      {
+        "name": "Elijah",
+        "slug": "elijah",
+        "score": 8,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 2,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 1,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Betrayed Hector.",
+          "Betrayed Lila.",
+          "Played the season as Kad, a profile that was not them."
+        ]
+      },
+      {
+        "name": "Hector",
+        "slug": "hector",
+        "score": 6,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 1,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Played the season as Nadiya, a profile that was not them.",
+          "Openly at war with Domingo.",
+          "Openly at war with Ruth."
+        ]
+      },
+      {
+        "name": "Lila",
+        "slug": "lila",
+        "score": 6,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 3,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Blocked Wyatt in episode 5.",
+          "Blocked Luis in episode 12.",
+          "Blocked Mateo in episode 12."
+        ]
+      },
+      {
+        "name": "Anais",
+        "slug": "anais",
+        "score": 4,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Openly at war with Sasha.",
+          "Openly at war with Domingo."
+        ]
+      },
+      {
+        "name": "Dr.Ines",
+        "slug": "dr-ines",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 1,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Openly at war with Sasha."
+        ]
+      },
+      {
+        "name": "Lorraine",
+        "slug": "lorraine",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 1,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Played the season as Jace, a profile that was not them."
+        ]
+      },
+      {
+        "name": "Ruth",
+        "slug": "ruth",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 1,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Openly at war with Hector."
+        ]
+      }
+    ]
+  }
 }

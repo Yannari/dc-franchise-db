@@ -16,7 +16,10 @@ import { seasonFormat, engineFormat } from './core.js';
 import { buildDragSeasonDocument } from './dr/export.js';
 import { buildChallengeSeasonDocument } from './ch/export.js';
 import { buildCircleSeasonDocument } from './ci/export.js';
-import { SHOWS, parseSeasonRef, careerShowOf, BB_FORMAT, DRAG_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT } from './shows.js';
+import { buildPerfectMatchSeasonDocument } from './pm/export.js';
+import { buildTraitorsSeasonDocument } from './tr/export.js';
+import { traitorsSeasonRecord } from './tr-run.js';
+import { SHOWS, parseSeasonRef, careerShowOf, BB_FORMAT, DRAG_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, RACE_FORMAT } from './shows.js';
 import { boardFile } from './ranking-boards.js';
 
 // The tool was written against current-season.html, whose .btn is white-on-dark.
@@ -370,6 +373,22 @@ export function ruSeasonDocument(game, config) {
     const rows = history.filter(r => r.ci);
     if (!game?.ci?.record?.players) throw new Error(`this ${name} season has no ledger record — play it through the finale first`);
     return buildCircleSeasonDocument(rows, game.ci.record, { seasonNumber: n, title: config?.name || null });
+  }
+  // ── the three shows this fell through for ──
+  // Returning null handed these to extractSeasonTemplate, Total Drama's builder, which read a castle, a villa or a
+  // race as a camp (found 2026-10-29, while giving every show a villain board).
+  if (engine === TRAITORS_FORMAT) {
+    // the castle is replayed from its seed into a record, as the export does it (stats-export.js exportTraitorsSeason)
+    return buildTraitorsSeasonDocument(traitorsSeasonRecord(), { seasonNumber: n,
+      twists: (config?.twistSchedule || []).filter(t => t && t.type) });
+  }
+  if (engine === PERFECT_MATCH_FORMAT) {
+    const rows = history.filter(r => r.pm);
+    if (!rows.length) throw new Error(`this ${name} season has no episodes yet — play it through the finale first`);
+    return buildPerfectMatchSeasonDocument(rows, { seasonNumber: n });
+  }
+  if (engine === RACE_FORMAT) {
+    throw new Error(`${name} has no ranking board: a race is ranked by its legs, on its own awards page`);
   }
   return null;
 }

@@ -24,6 +24,9 @@
 import { SHOWS, showWords, seasonRounds, DRAG_FORMAT, formatPrefix } from '../shows.js';
 import { edgesOf } from './family.js';
 import { ppeFor } from './grid.js';
+// the season's villains, ranked from what people did to each other (js/villain-score.js)
+import { attachVillainBoard } from '../villain-score.js';
+import { withDeeds, dragDeeds } from '../villain-deeds.js';
 
 // Re-exported so this module's own readers need one import, not two.
 export { DRAG_FORMAT };
@@ -376,7 +379,7 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
 
   const winnerName = finale?.winner || placements[0]?.name || null;
 
-  return {
+  return attachVillainBoard(withDeeds({
     seasonNumber,
     // The SHOW, which for All Stars is not the engine that played it.
     format,
@@ -406,7 +409,7 @@ export function buildDragSeasonDocument(rows, { seasonNumber, twists = [], conge
       }
       : null,
     congeniality: congeniality || null,
-  };
+  }, dragDeeds(rows)));
 }
 
 /**

@@ -3104,5 +3104,37 @@
       "title": "Quin Crowned",
       "prose": "The maxi challenge was The Finale, and Quin, Paige Turner, and Autumnatic reached the finale. Quin was crowned."
     }
-  ]
+  ],
+  "villainBoard": {
+    "read": "Sharon Needles did the most to other people this season.",
+    "sources": [
+      "the record",
+      "a backfill of the published record"
+    ],
+    "board": [
+      {
+        "name": "Sharon Needles",
+        "slug": "sharon-needles",
+        "score": 20,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 5,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Cut as the villain of the season from episode 1."
+        ]
+      }
+    ]
+  }
 }

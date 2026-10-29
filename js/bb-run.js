@@ -25,6 +25,7 @@ import { generateBBStructuredText } from './bb-structured.js';
 import { juryOpensAt, juryLines, isSeatedJuror } from './bb/jury.js';
 import { applyGoodbyeMessages } from './bb/jury-sentiment.js';
 import { lastWordsLines } from './bb/last-words.js';
+import { evictionRoomLines } from './bb/eviction-room.js';
 import { juryHouseLines } from './bb/jury-house.js';
 import { HOUSE_EVENTS } from './bb-events/index.js';
 import { scheduleHouseBeats } from './bb/house-events.js';
@@ -2258,6 +2259,8 @@ export function summariseWeek(week) {
         if (week.invisibleReveal?.to === act.evicted) {
           line(`  In the goodbye messages, the Invisible HOH finally signs the week: ${week.invisibleReveal.hoh} tells ${act.evicted} it was them all along. The house still does not know.`);
         }
+        // the room, the second the name is read (bb/eviction-room.js)
+        evictionRoomLines(act.roomReactions, line);
         // Between the verdict and the front door, if they had something to say.
         lastWordsLines(act.lastWords, line);
         juryLines(week, line);

@@ -476,7 +476,119 @@ function _teller(house, week) {
   return null;
 }
 
+
+// ── the one who stayed finds out who kept them ──────────────────────
+//
+// The count is read out on the night, so the nominee who stayed knows how many kept them and not who. On the show
+// the morning after is when somebody tells them, and it moves things: a houseguest who never liked the person who
+// kept them has to rethink that person (the user, 2026-10-29: Ivyna does not like Angelica, and Angelica kept her,
+// "would it improve their relationship if ivyna knew that?"). The teller is telling the truth by construction (only a
+// real keep vote can say it, the way fallout-denial's count works), so whether it lands is trust, not truth.
+const _survivor = (week, house) => (week?.finalNominees || []).find(n => n && n !== week.evicted && house.includes(n)) || null;
+const _keepers = (week, house, survivor) => wroteTheName(week).filter(n => house.includes(n) && n !== survivor);
+
+const somebodyKeptMe = {
+  id: 'fallout-kept-me',
+  category: 'deals',
+  weight(house, ctx) {
+    const week = _fresh(ctx);
+    if (!week || _spent('fallout-kept-me', ctx)) return 0;
+    const survivor = _survivor(week, house);
+    const keepers = survivor ? _keepers(week, house, survivor) : [];
+    if (!keepers.length) return 0;
+    // Not every morning: it is worth a scene when the vote crossed a line between two people, a keeper the survivor
+    // had no time for, or one who means to collect. A friend's vote kept is a promise kept, and mostly goes unsaid.
+    // (Measured: at a flat weight it aired nine weeks of eleven, and the same four scenes came round.)
+    const cold = keepers.some(n => bond(survivor, n) <= -1);
+    const banker = keepers.some(n => pStats(n).strategic >= 7 && !isNice(n));
+    return _morning(ctx, cold ? 6 : banker ? 3 : 1);
+  },
+  fire(house, ctx, api) {
+    const week = _fresh(ctx);
+    _spend(this.id, ctx);
+    const survivor = _survivor(week, house);
+    const gone = week.evicted;
+    const keepers = _keepers(week, house, survivor);
+    // the story worth telling first: somebody they had no time for, then somebody who wants it on the record
+    const cold = keepers.filter(n => bond(survivor, n) <= -1).sort((a, b) => bond(survivor, a) - bond(survivor, b));
+    const teller = cold[0] || _quiet(keepers)[0];
+    const already = bond(survivor, teller);
+    const banker = pStats(teller).strategic >= 7 && !isNice(teller);
+    const trust = perceived(survivor, teller) + (pStats(teller).social - 5) * 0.25
+      - suspicionOf(survivor, teller) * 0.4 + pStats(survivor).intuition * 0.08;
+    // It is true, and the count backs it, so doubt is for a teller the survivor has real reason not to trust.
+    const believed = already >= 5 || trust > -2.5;
+    const ending = !believed ? 'doubt' : banker ? 'debt' : already >= 5 ? 'close' : 'thaw';
+    const scene = makeScene('fallout.keptme', { a: survivor, b: teller }, { ending, gone }, [],
+      _room(['kitchen', 'backyard', 'bedroom', 'living-room'], ctx, survivor, teller));
+    if (!believed) {
+      api.addBond(survivor, teller, 0.2);
+      api.suspicion(survivor, teller, 0.4);
+    } else {
+      // the further apart they were, the more it moves: a stranger's vote is news, a friend's is a promise kept
+      api.addBond(survivor, teller, ending === 'close' ? 0.8 : ending === 'debt' ? 1.2 : 2.2);
+      api.suspicion(survivor, teller, -0.9);
+      api.remember(survivor, teller, 'kept-me', ending === 'thaw' ? 3 : 2, { about: gone });
+      if (ending === 'debt') api.remember(teller, survivor, 'owes-me', 2, { about: gone });
+    }
+    return { scene, players: [survivor, teller],
+      badgeText: !believed ? 'NOT BUYING IT' : ending === 'thaw' ? 'THE VOTE THAT CHANGED IT' : ending === 'debt' ? 'AN IOU' : 'KEPT THEIR WORD',
+      badgeClass: !believed ? 'grey' : 'green' };
+  },
+};
+
+// ── the votes that flipped, said out loud ──────────────────────────
+//
+// A ballot that told the house one name and wrote another was found out only by the evictee at the door. The side it
+// lied to is still in the house the next morning, and they count. Whoever is sharpest among the people who voted the
+// other way confronts the one they believe flipped: right when they know or can work it out, otherwise met with a
+// denial they cannot break. The user, 2026-10-29, after a week of broken promises: "do the votes cause clash?"
+const _flippers = (week, house) => (week?.ballots || [])
+  .filter(b => b && b.stated && b.stated !== b.evict && b.evict === week.evicted && house.includes(b.voter));
+
+const theFlipComesOut = {
+  id: 'fallout-flip-clash',
+  category: 'deals',
+  location: 'kitchen',
+  weight(house, ctx) {
+    const week = _fresh(ctx);
+    if (!week || _spent('fallout-flip-clash', ctx)) return 0;
+    if (!_flippers(week, house).length) return 0;
+    return minorityVoters(week).some(n => house.includes(n)) ? _morning(ctx, 11) : 0;
+  },
+  fire(house, ctx, api, rng = Math.random) {
+    const week = _fresh(ctx);
+    _spend(this.id, ctx);
+    const gone = week.evicted;
+    const losers = minorityVoters(week).filter(n => house.includes(n));
+    const accuser = [...losers].sort((a, b) => (pStats(b).intuition + pStats(b).mental) - (pStats(a).intuition + pStats(a).mental))[0];
+    const flips = _flippers(week, house);
+    // the one they trusted most is the one it hurts to have been lied to by
+    const flip = [...flips].sort((a, b) => bond(accuser, b.voter) - bond(accuser, a.voter))[0];
+    const liar = flip.voter;
+    let knows = false;
+    try { knows = knowsVote(accuser, liar, gone); } catch { knows = false; }
+    const read = (pStats(accuser).intuition * 0.05 + pStats(accuser).mental * 0.03) - (pStats(liar).social - 5) * 0.04;
+    const caught = knows || rng() < Math.max(0.1, Math.min(0.85, 0.2 + read));
+    const scene = makeScene('fallout.flipclash', { a: accuser, b: liar },
+      { ending: caught ? 'caught' : 'denied', gone, stated: flip.stated }, house, 'kitchen');
+    if (caught) {
+      api.addBond(accuser, liar, -2);
+      api.suspicion(accuser, liar, 2);
+      api.remember(accuser, liar, 'lied-to-my-face', 3, { about: gone });
+      api.setTarget(accuser, liar, `told me ${flip.stated} and voted ${gone} out`);
+      losers.filter(n => n !== accuser).forEach(n => api.suspicion(n, liar, 0.8));
+      api.popDelta(liar, -1);
+    } else {
+      api.suspicion(accuser, liar, 0.8);
+      api.addBond(accuser, liar, -0.5);
+    }
+    return { scene, players: [accuser, liar],
+      badgeText: caught ? 'THE FLIP, NAMED' : 'DENIES THE FLIP', badgeClass: caught ? 'red' : 'orange' };
+  },
+};
+
 export const FALLOUT_EVENTS = [
   mourning, cryingOverAName, goodRiddance, findingTheCulprit, itWasNotMe, somebodyStayedLoyal,
-  wordGetsAround, rogueHunt,
+  wordGetsAround, rogueHunt, somebodyKeptMe, theFlipComesOut,
 ];

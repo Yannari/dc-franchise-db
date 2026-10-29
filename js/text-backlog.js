@@ -15,6 +15,7 @@ import { gs, seasonConfig, players, plainText } from './core.js';
 import { juryLines } from './bb/jury.js';
 import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
 import { lastWordsLines } from './bb/last-words.js';
+import { evictionRoomLines } from './bb/eviction-room.js';
 import { finaleHouseLines } from './bb/finale-house.js';
 import { juryHouseLines } from './bb/jury-house.js';
 import { describeIntentionsPlan } from './intentions.js';
@@ -7153,6 +7154,8 @@ export function generateBBSummaryText(ep) {
         } else {
           ln(`  ${act.evicted} is evicted from the Big Brother house.`);
         }
+        // the room, the second the name is read: the same builder as the run transcript (bb/eviction-room.js)
+        evictionRoomLines(act.roomReactions, ln);
         // Between the verdict and the door, if they had something to say. Same
         // shared builder as the run transcript, for the same reason as the jury
         // roster below it.

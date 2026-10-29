@@ -980,6 +980,14 @@ function evictionScreen(act, ctx, host) {
       // A Halting Hex is about to cancel this: no goodbye, no door, no black-and-white portrait.
       steps.push({ k: 'beat', t: `${evicted} stands up to say goodbye.` });
     } else {
+      // the room, the second the name is read (bb/eviction-room.js): a real blindside, counted from what the house
+      // was told, and the people it was a blindside FOR (the user, 2026-10-29: "not just the nominees")
+      const room = act.roomReactions;
+      (room?.lines || []).forEach((l, i) => {
+        const first = i === 0 && room.blindside ? { toast: ['BLINDSIDE', '#ff3355'] } : {};
+        steps.push(l.k === 'beat' ? { k: 'beat', t: l.t, ...first, ...(l.about ? { tense: [l.about] } : {}) }
+          : { k: l.k, by: l.by, t: l.t, ...first });
+      });
       const bye = scriptSteps(act.script?.goodbye);
       if (bye.length) steps.push({ k: 'beat', t: `${evicted} has a few seconds with the house.` }, ...bye, { k: 'beat', t: `${evicted} picks up a bag and walks to the front door.` });
       else steps.push({ k: 'beat', t: `${evicted} hugs the house goodbye, picks up a bag, and walks to the front door.` });

@@ -100,6 +100,7 @@ import { runCliqueReturnees } from './clique-returnees.js';
 import { ssOn, assignSecrets, ssLaunchGroup, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime, ssNoPrimeWeek } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
+import { checkEvictionRoom } from './eviction-room.js';
 import { generateBBJuryHouse } from './jury-house.js';
 // The pawn ask is where the jury bubble is most visible in a decision: an
 // exposed houseguest a week from a seat takes a chair they would have refused.
@@ -1172,6 +1173,9 @@ function runHouseMaintenance(week, rng = Math.random) {
     // the week. Threading `rng` in here also silently reseats every draw made
     // after it, which is not a bug in this feature but is a rewrite of every
     // seeded season anybody has saved.
+    // the room in the second after the name is read: a real blindside is counted from what the house was told
+    // (bb/eviction-room.js)
+    ['eviction room', () => { checkEvictionRoom(week); }],
     ['last words', () => { checkBBLastWords(week); }],
     // And then the room they walk into, which is the only place any of it can
     // be argued with.

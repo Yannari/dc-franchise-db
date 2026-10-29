@@ -112,6 +112,7 @@ export const SLOW_TESTS = [
   'social-finale.test.js',                 // 117s
   'bb-instant-eviction.test.js',           // 115s
   'bb-white-locust.test.js',               // 111s
+  'bb-every-exit-counted.test.js',          // plays ten twists to the end
   'bb-time-capsule.test.js',               // 110s
   'bb-reign.test.js',                      // 102s
   'house-eviction-night.test.js',          //  95s

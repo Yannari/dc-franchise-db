@@ -49,7 +49,9 @@ re-running, six ways a test has passed against the bug it was written for, and
 three ways one has FAILED for reasons that had nothing to do with the code —
 a guard measuring its own sample, a harness measuring the absence of the
 feature it is named after, and a sweep asking the last season about the first.
-Each entry carries the measurement that found it.
+Each entry carries the measurement that found it. §11.5 X is for any new way to
+leave a Big Brother house: who left comes from `bb/jury.js weekExits` /
+`rowExits`, never from a reader's own list of fields.
 
 ## Architecture
 - `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)

@@ -63,8 +63,9 @@ export function recordBBExits(week, { rng = Math.random } = {}) {
   const campGone = ((gs.bb?.camp) || []).filter(c => c.gone && !c.returned && !c.interviewed);
   const how = name => week.departure?.name === name
     ? (week.departure.kind === 'expulsion' ? 'expelled' : 'walked')
-    // out on a clock, not a vote: Kristal's 'lost-challenge' interview, in Big Brother's own words
-    : special.has(name) ? 'lost-challenge' : 'evicted';
+    // out on a clock, not a vote: Kristal's 'lost-challenge' interview, in Big Brother's own words (a premiere's
+    // evictee was voted out, by the house or the BB Swap)
+    : special.has(name) && special.get(name) !== 'premiere' ? 'lost-challenge' : 'evicted';
   const voted = leaving.filter(n => !special.has(n));
   const out = [];
   try {
@@ -113,7 +114,7 @@ function catchUp(week, rng, { andThisWeek = false } = {}) {
     // everybody who left from this exit on is below them, with tonight's still to come
     const below = all.length - i;
     out.push(record(x.name, x.how === 'eviction' ? x.week : { ...x.week, ballots: [] }, rng, {
-      how: x.how === 'eviction' ? 'evicted' : 'lost-challenge',
+      how: x.how === 'eviction' || x.how === 'premiere' ? 'evicted' : 'lost-challenge',
       placement: active().length + below,
       withName: chain,
     }));

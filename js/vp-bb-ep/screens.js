@@ -36,6 +36,7 @@ import { ssTitleScreen } from './ss-titles.js';
 import { ssPartOf, SS_PART_LABEL } from './ss-episode.js';
 import { seasonId } from '../shows.js';
 import { seasonFormat } from '../core.js';
+import { rowExits } from '../bb/jury.js';
 import { liveGL } from '../vp-td-ep/glplate.js';
 import { conversationsOf, nextConv, houseMapHtml, houseFeedHtml, HM_CSS } from './housemap.js';
 
@@ -479,7 +480,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
   // the record names them 'eliminated' (and 'alsoEliminated', 'extraEvictions' on a double); the
   // eviction act carries them too
   const goneNow = [row.eliminated, row.alsoEliminated, row.evicted, row.secondEvicted, ...(row.extraEvictions || []).map(x => x?.evicted),
-    ...(row.acts || []).filter(a => a && /evict/.test(a.type || '')).map(a => a.evicted)];
+    ...(row.acts || []).filter(a => a && /evict/.test(a.type || '')).map(a => a.evicted), ...rowExits(row)];
   // (tonight's evictee too, when the Battle Back that night sent them straight back in)
   const goneAfter = [...new Set([...goneBefore, ...goneNow].filter(x => typeof x === 'string' && !cameBack.has(x)))];
   // (Secret Story opens on its own sequence: vp-bb-ep/ss-titles.js)

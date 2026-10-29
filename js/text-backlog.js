@@ -12,7 +12,7 @@ import { preTwistBlocks, mergeData, _buildPostTwistBlocks } from './vp-screens.j
 import { bbHostName } from './bb-aftermath.js';
 import { transcriptHeaderLines } from './transcript-header.js';
 import { gs, seasonConfig, players, plainText } from './core.js';
-import { juryLines } from './bb/jury.js';
+import { juryLines, rowExits } from './bb/jury.js';
 import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
 import { lastWordsLines } from './bb/last-words.js';
 import { evictionRoomLines } from './bb/eviction-room.js';
@@ -3993,7 +3993,7 @@ export function generateSummaryText(ep) {
     let aired = '';
     try {
       const prior = ((typeof gs !== 'undefined' && gs?.episodeHistory) || [])
-        .filter(r => r && r.format === 'big-brother' && r.num < ep.num).flatMap(r => [r.evicted, r.secondEvicted]).filter(Boolean);
+        .filter(r => r && r.format === 'big-brother' && r.num < ep.num).flatMap(r => rowExits(r));
       aired = bbStepTranscript(ep, { host: bbHostName(), priorEvicted: prior, plea: name => _bbFinalPleaSpeech(ep, name) });
     } catch { aired = ''; }
     return generateBBSummaryText(ep) + (aired ? '\n' + aired : '');

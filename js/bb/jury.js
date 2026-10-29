@@ -40,11 +40,13 @@ const sizeOf = config => Math.max(0, Number((config || seasonConfig)?.jurySize) 
  * (`secondEvicted`). Everything that read only `week.evicted` forgot them: the jury never seated the White Locust's
  * loser, and the placements had no place for them at all (the user, 2026-10-29: "make sure the white locust evicted
  * go to the jury and isnt forgotten that tend to happen in double eviction", "make sure their placement is right").
- * @returns {{ name: string, how: string }[]} how: 'white-locust', 'camp-director' or 'eviction'
+ * @returns {{ name: string, how: string }[]} how: 'premiere', 'white-locust', 'camp-director' or 'eviction'
  */
 export function weekExits(week) {
   const out = [];
   if (!week) return out;
+  // premiere night: the Accomplice unmasked, or the BB Swap's evictee, before anybody plays for the first crown
+  if (week.premiereEvicted && week.premiereEvicted !== week.evicted) out.push({ name: week.premiereEvicted, how: 'premiere' });
   if (week.resortEvicted && !week.resortReversed) {
     const locust = (week.acts || []).some(a => a?.type === 'white-locust');
     out.push({ name: week.resortEvicted, how: locust ? 'white-locust' : 'camp-director' });
@@ -52,6 +54,33 @@ export function weekExits(week) {
   if (week.evicted && !week.evictionReversed) out.push({ name: week.evicted, how: 'eviction' });
   if (week.secondEvicted && week.secondEvicted !== week.evicted) out.push({ name: week.secondEvicted, how: 'eviction' });
   return out;
+}
+
+/**
+ * The acts that take somebody out of the house before the week's own vote, each carrying `evicted`. An episode row
+ * keeps the week's acts, so a reader with only the row (the season tape, the memory wall, the voices, the On Air
+ * standings) asks this instead of its own list of act types: four hand-kept lists were how the White Locust's loser
+ * went missing from the tape and the standings, and how a premiere's evictee went missing from all of them
+ * (tests/bb-every-exit-counted.test.js; docs/ADDING-A-SHOW.md §11.5).
+ */
+export const EARLY_EXIT_ACTS = ['temptation-premiere', 'premiere-mystery', 'white-locust', 'camp-director'];
+/** @param {any[]} acts @returns {string[]} */
+export function earlyExitsOf(acts) {
+  return (acts || []).filter(a => a && EARLY_EXIT_ACTS.includes(a.type) && typeof a.evicted === 'string' && a.evicted)
+    .map(a => a.evicted);
+}
+
+/**
+ * Everybody an episode row says left, in the order they went: the early exits, the vote, a double's second and
+ * a triple's later cycles. For the readers that build a "who is gone by now" list from rows (the memory wall, the
+ * voices, the in-app transcript), so none of them keeps its own copy of the field names.
+ * @param {any} r @returns {string[]}
+ */
+export function rowExits(r) {
+  if (!r) return [];
+  const names = [...earlyExitsOf(r.acts), r.eliminated, r.evicted, r.alsoEliminated, r.secondEvicted,
+    ...(r.extraEvictions || []).flatMap(x => [x?.evicted, x?.secondEvicted])];
+  return [...new Set(names.filter(x => typeof x === 'string' && x))];
 }
 
 /**

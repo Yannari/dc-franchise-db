@@ -28,6 +28,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
 import { ssRandomDraw, SS_CARD_IDS } from './ss/schedule.js';
+import { earlyExitsOf } from './bb/jury.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   rewriteCircleEpisode, circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
 import { challengeDailyList, challengeDrawnDailies } from './ch-run.js';
@@ -330,7 +331,7 @@ export function getEpisodeEliminations(ep) {
     ep.ambassadorData?.ambassadorEliminated,
     // Out before the week's vote, so first: the White Locust's Call Out Chain and the Camp Director's road (the user,
     // 2026-10-29: "the season tape should show double eviction martin and nina not just martin")
-    ...(ep.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted),
+    ...earlyExitsOf(ep.acts),
     ep.eliminated,
     ep.tiedDestinies?.eliminatedPartner,
     ep.emissaryEliminated,

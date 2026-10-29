@@ -15,6 +15,7 @@
 import { audio as engine } from '../audio.js';
 import { bbWeekSteps } from './steps.js';
 import { SHOWS, BB_FORMAT, formatPrefix } from '../shows.js';
+import { rowExits } from '../bb/jury.js';
 
 const PRICE = 25 / 1e6;   // Inworld TTS-2, dollars a character
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -71,8 +72,7 @@ export async function bbEpisodeLines(rec) {
   const g = (typeof window !== 'undefined' ? window.gs : null) || {};
   const priorEvicted = (g.episodeHistory || [])
     .filter(r => r && r.format === 'big-brother' && r.num < rec.num)
-    .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted),
-      ...(r.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted)]).filter(Boolean);
+    .flatMap(r => rowExits(r));
   const screens = bbWeekSteps(rec, { host: bbHostName(), priorEvicted, plea: name => vs._bbFinalPleaSpeech(rec, name) });
   const out = [], seen = new Set();
   for (const S of screens) for (const st of S.steps || []) {

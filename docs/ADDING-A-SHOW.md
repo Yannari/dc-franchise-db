@@ -2113,6 +2113,84 @@ seasons, and fails on the constant. The same holds anywhere a summary number is
 derived from a record whose shape varies by show (a score, a tier, a
 multiplier): print it for several seasons side by side before trusting it.
 
+It happened again on Kristal's exit interviews (2026-10-29). Every one printed
+"credibility mixed · controversy 0/10 · account debated". The aftermath was the
+general podcast's `podcastAftermath`, which scores answers by `behavior` and
+`press`, and only that podcast's own composer writes those fields. An exit
+interview has no such fields, so every reading fell to the defaults. The user:
+"whats the point of this mark being there if theyre always the same". The fix
+is `kristal-exit.js exitAftermath`, which reads the exit's own record: whether
+the tape proved their suspect, who they blamed, their mood and reception, and
+how loud they were. On Big Brother 2's eleven exits it now gives credible ×4,
+mixed ×3 and damaged ×4, with controversy from 2 to 10, and the follower change
+moves with it. A test in `tests/kristal-exit.test.js` asks for two different
+readings from two different records.
+
+### X. An exit through a side door is erased everywhere
+
+Big Brother has more ways out than the week's vote. Each one writes the person
+who left to its own field:
+
+| Way out | Field |
+|---|---|
+| The White Locust's Call Out Chain and the Camp Director's road | `week.resortEvicted` |
+| A double vote's second evictee | `week.secondEvicted`, or `ep.alsoEliminated` on the row |
+| A Split House's second evictee | `ep.alsoEliminated` |
+| A double or triple eviction's later cycles | `ep.extraEvictions` |
+| The Accomplice unmasked, or the BB Swap's evictee, on premiere night | `week.premiereEvicted` |
+
+Every reader was written against `week.evicted` / `ep.eliminated`. Each one
+that didn't know the new field dropped the person without an error: still
+"in" on the On Air standings, no Kristal interview, no seat in the jury house,
+no placement, missing from the season tape, not greyed on the memory wall. The
+user, on the White Locust's loser in Big Brother 2: "its like she was erased".
+After that was fixed one field at a time, a sweep of the other twists found the
+same hole three more times. Double, triple and Split House second evictees were
+"in" on On Air, because the live standings never read `alsoEliminated` or
+`extraEvictions`. The Accomplice was missing from the ledger, the placements
+and Kristal, because nothing read `premiereEvicted` at all.
+
+**The rule: one function says who left, and every reader asks it.**
+
+- **From a week:** `bb/jury.js weekExits(week)` gives everybody that week took
+  out, in order, with how they went (`premiere`, `white-locust`,
+  `camp-director`, `eviction`). It feeds the jury (`seatedJurors`, at the house
+  size each exit happened at), the placements, Kristal (`recordBBExits`) and
+  the jury house's arrivals.
+- **From an episode row:** `rowExits(row)` is for the readers that only have
+  rows, like the memory wall, the voices and the in-app transcript.
+  `earlyExitsOf(acts)` reads the acts that take somebody out before the vote,
+  each carrying `evicted`. These replaced four hand-kept lists of act types.
+
+A new way out writes its name to a field `weekExits` reads. If the act is
+pre-vote, it also goes in `EARLY_EXIT_ACTS` with `evicted` on the act. Nothing
+else changes.
+
+What to check when adding one:
+
+- **Every reader, not just the jury.** The places it went missing were the
+  jury (`seatedJurors`) and the jury house's arrivals. It also went missing
+  from the placements (`_bbPlacements`) and the export's `specialExits` entry
+  with its label. And from Kristal (`recordBBExits`), where a side-door exit
+  gets its own `how`. And from the season tape (`run-ui.js
+  getEpisodeEliminations`), the memory wall (`priorEvicted`, a step's `exit:`),
+  the timeline count, and the On Air standings (`_extractPlayerPlacements`,
+  with the jury from `seatedJurors`, because Big Brother leaves `gs.jury`
+  empty).
+- **A screen written at play time cannot be fixed by fixing the reader.** A
+  season already on air keeps a week that never had the exit in it. The jury
+  house walks a late juror in the week after (`generateBBJuryHouse`, `late`).
+  Publishing records a missing interview under its own week
+  (`catchUpBBExits`, called by the live sync and the season export). Write a
+  catch-up, never a re-run (§O).
+- **The guard:** `tests/bb-every-exit-counted.test.js` plays each twist that
+  removes somebody. Its premiere cases get a returnee through a mocked
+  `careerOf`, because a test cast has no past seasons and the twist would
+  otherwise never fire. Then it asks every reader about every houseguest who
+  left. Whether a twist fired is read from the engine's own field, never from
+  `weekExits`, or a reader that drops the exit fails at "did it fire" instead
+  of naming what it dropped. Add the new twist to its `CASES`.
+
 ---
 
 ## 12. What will still be hardcoded when you are done

@@ -2718,6 +2718,8 @@ export function simulateBBWeek(options = {}) {
           gs.activePlayers = (gs.activePlayers || []).filter(n => n !== gone);
           if (!gs.eliminated.includes(gone)) gs.eliminated.push(gone);
           week.premiereEvicted = gone;
+          // on the act too, so a reader with only the episode row knows who left (bb/jury.js earlyExitsOf)
+          const shown = week.acts.find(x => x?.type === 'premiere-mystery'); if (shown) shown.evicted = gone;
           try { dropFromHousePlans(gone); } catch { /* plans survive it */ }
         }
       }

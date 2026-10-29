@@ -11,7 +11,7 @@ import { buildPerfectMatchSeasonDocument } from './pm/export.js';
 import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT, BB_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf, careerShowOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
-import { weekExits, seatedJurors } from './bb/jury.js';
+import { weekExits, seatedJurors, earlyExitsOf } from './bb/jury.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
@@ -386,10 +386,14 @@ function _extractPlayerPlacements() {
     // A Big Brother week's resort exit (the White Locust, the Camp Director) is on its act, never ep.eliminated, so
     // the live standings kept that houseguest "in" (the user, 2026-10-29: "nina is still in the game in the on-air
     // page"). Out before the week's vote, so just ahead of it.
-    for (const a of (ep.acts || [])) {
-      if ((a?.type === 'white-locust' || a?.type === 'camp-director') && a.evicted && !elimNames.includes(a.evicted)) {
-        permanentExit[a.evicted] = ep.num - (ep.eliminated && ep.eliminated !== a.evicted ? 0.5 : 0);
-      }
+    for (const n of earlyExitsOf(ep.acts)) {
+      if (!elimNames.includes(n)) permanentExit[n] = ep.num - (ep.eliminated && ep.eliminated !== n ? 0.5 : 0);
+    }
+    // And the rest of a Big Brother night with more than one exit: a double vote's or a Split House's second
+    // (ep.alsoEliminated) and a double or triple eviction's later cycles (ep.extraEvictions).
+    // Every one of them stayed "in" on the On Air page (tests/bb-every-exit-counted.test.js).
+    for (const n of [ep.alsoEliminated, ...(ep.extraEvictions || []).flatMap(r => [r?.evicted, r?.secondEvicted])]) {
+      if (typeof n === 'string' && n && !elimNames.includes(n)) permanentExit[n] = ep.num;
     }
 
     for (const name of elimNames) {
@@ -5151,9 +5155,13 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       // The White Locust's Call Out Chain (and the Camp Director's Hit The Road) takes somebody out before the week's
       // vote, with no nomination and no ballot. Its own field, so a wiki and a summary say how they went (the user,
       // 2026-10-29: "make sure that special elimination export its not a normal eviction").
-      ...(w.resortEvicted ? { specialExits: weekExits(w).filter(x => x.how !== 'eviction')
+      // A premiere's evictee too: the Accomplice unmasked, or the BB Swap's vote, before the first HOH.
+      ...(weekExits(w).some(x => x.how !== 'eviction') ? { specialExits: weekExits(w).filter(x => x.how !== 'eviction')
         .map(x => ({ name: x.name, playerSlug: _slug(x.name), how: x.how,
-          label: x.how === 'white-locust' ? 'Failed the White Locust Resort call-out chain' : 'Eliminated on the Camp Director\'s Hit The Road' })) } : {}),
+          label: x.how === 'white-locust' ? 'Failed the White Locust Resort call-out chain'
+            : x.how === 'camp-director' ? 'Eliminated on the Camp Director\'s Hit The Road'
+              : (w.acts || []).some(a => a?.type === 'premiere-mystery' && a.evicted === x.name) ? 'Unmasked as the Accomplice on premiere night'
+                : 'Evicted on premiere night to open a place for a returnee' })) } : {}),
       // ── THE ARENA ────────────────────────────────────────────────
       //
       // Who was on the block when the Block Buster was played, and who won

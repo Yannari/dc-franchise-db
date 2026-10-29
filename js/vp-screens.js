@@ -15,6 +15,7 @@ import { bKey } from './bonds.js';
 // now. Imported explicitly for the same reason bKey is: a bare global works in
 // the browser and nowhere else, and this band has to survive a headless render.
 import { themeById } from './bb/themes.js';
+import { rowExits } from './bb/jury.js';
 import { DEMOS, DEMO_LABELS, tierFor, seasonScore, demoNote } from './ratings.js';
 // The debug screen reports the numbers the house actually decides on, so it
 // reads them from the engine rather than recomputing its own version.
@@ -14114,10 +14115,7 @@ function _buildVPScreensClassic(epRecord) {
           const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
           const priorEvicted = (_g?.episodeHistory || [])
             .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
-            .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted),
-              // out before the week's vote (the White Locust's chain, the Camp Director's road): the user, 2026-10-29,
-              // "i dont see nina greyed on the memory wall"
-              ...(r.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted)]).filter(Boolean);
+            .flatMap(r => rowExits(r));
           vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name),
             // a late arrival's introduction (Rivals): the same words and first read everybody got on move-in day
             intro: _bbIntroQuote, firstRead: _bbFirstRead });

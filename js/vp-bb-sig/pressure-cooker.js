@@ -70,6 +70,10 @@ const _hourFrom = t => {
   // shape explicitly and refuse anything that is not finite.
   const m = /^Hour\s+(\d+(?:\.\d+)?)/.exec(t || '');
   if (m) { const v = Number(m[1]); return Number.isFinite(v) ? v : null; }
+  // the clock as people say it (signature.js clockAt): "1 hour 54 minutes in.", "54 minutes in.",
+  // "5 hours 12 minutes after the door sealed"
+  const c = /^(?:(\d+) hours?)?\s*(?:(\d+) minutes?)?\s+(?:in\.|after the door sealed)/i.exec(t || '');
+  if (c && (c[1] || c[2])) return Math.round((Number(c[1] || 0) + Number(c[2] || 0) / 60) * 100) / 100;
   const f = /^(\d+(?:\.\d+)?)\s+hours after the door sealed/.exec(t || '');
   if (!f) return null;
   const v = Number(f[1]);
@@ -211,7 +215,8 @@ export function rpBuildSigPressureCooker(ep, actType, u) {
     const text = String(b?.text || '');
     const bt = String(b?.badgeText || '').toUpperCase();
     const who = (b?.players || []).filter(Boolean);
-    const h = _hourFrom(text);
+    // (the engine puts the number on the beat; older saves only have it in the words)
+    const h = Number.isFinite(b?.hour) ? b.hour : _hourFrom(text);
     if (h !== null) hour = h;
     const bx = _boxFrom(text);
     if (bx !== null) box = bx;

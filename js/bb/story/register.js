@@ -147,7 +147,10 @@ export function registerOf(name, scene = null) {
       // reads "No but listen—, I'll get you a towel")
       const c = m[1].trim().replace(/[,.—–…-]+$/, '').trim();
       // only what can open a line: a word or two of address or exclamation, not a sentence
-      if (c && !/\./.test(c) && c.split(/\s+/).length <= 3) out.catch.push(c);
+      // ...and an exclamation or a word of address, not a statement or a view: "I'm obsessed, you'd tell me" and
+      // "Better with guys, can I ask something" (a voice describing an opinion) read as two sentences glued together
+      const STATEMENT = /^(i|i'm|im|it's|its|we|we're|you're|that's|better|worse|more|less|with|the|a|an|to|for|in|on|of|at|is|are)\b/i;
+      if (c && !/\./.test(c) && c.split(/\s+/).length <= 3 && !STATEMENT.test(c)) out.catch.push(c);
     }
     _cache.set(key, out);
   }

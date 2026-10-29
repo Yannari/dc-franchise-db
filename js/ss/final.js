@@ -34,11 +34,11 @@ export const HOUSE_RIDDLES = [
   { id: 'letters', riddle: 'Six letters are hidden in this house. Put them in the right order.', answer: 'the word FINALE',
     clues: ['an F under a sofa cushion', 'an I on the back of the confessional mirror', 'an N taped inside the fridge door', 'an A painted on the bottom of the pool', 'an L tucked in a book in the library', 'an E on the oven clock at midnight'] },
   { id: 'portraits', riddle: 'Some of the portraits in this house are watching you. How many?', answer: 'seven portraits',
-    clues: ['a portrait in the hallway whose eyes follow you', 'a second one above the dining table', 'two more in the girls\' bedroom', 'one in the bathroom, behind the mirror', 'one in the store, behind the cereal', 'the last one, in the confessional itself'] },
+    clues: ['a portrait in the hallway whose eyes follow you', 'a second watching portrait, above the dining table', 'two more watching portraits in the girls\' bedroom', 'another watching portrait, in the bathroom behind the mirror', 'a watching portrait in the store room, behind the cereal', 'the last watching portrait, in the confessional itself'] },
   { id: 'numbers', riddle: 'Every room hides a number. Add them up.', answer: 'forty-two',
     clues: ['a six in the pattern of the bathroom tiles', 'a nine on the confessional clock that never moves', 'a four stitched into a cushion', 'a twelve on the bottom of a garden chair', 'a three drawn in the steam of the shower', 'an eight on the back of the clue table'] },
   { id: 'song', riddle: 'A song plays every night at midnight. Its first word is the answer.', answer: 'the word "always"',
-    clues: ['the song only plays in the garden', 'it is the same song every night', 'the first word is sung by a woman', 'it starts with the letter A', 'the word means "forever"', 'it has six letters'] },
+    clues: ['the midnight song only plays in the garden', 'the midnight song is the same song every night', 'the first word of the midnight song is sung by a woman', 'the first word of the midnight song starts with an A', 'the first word of the midnight song means "forever"', 'the first word of the midnight song has six letters'] },
 ];
 
 export function planHouseSecret(state, rng = Math.random) {

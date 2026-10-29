@@ -2937,7 +2937,7 @@ function ssHouseClueScreen(act, ctx) {
   const n = act.finder;
   const k = `${ctx.week}|sshc|${n}`;
   /** @type {BB.Step[]} */ const steps = [
-    { k: 'beat', t: `${n} finds something nobody was looking for: ${act.clue}.`, toast: ['THE SECRET OF THE HOUSE', '#e0b84a'] },
+    { k: 'beat', t: `${n} finds ${act.n === 1 ? 'the first clue' : 'another clue'} to the secret of the house: ${act.clue}.`, toast: ['THE SECRET OF THE HOUSE', '#e0b84a'] },
     { k: 'dr', by: n, t: pickBy(["That's part of the secret of the house. It has to be.", "I'm writing that down, and I'm telling nobody.", `That's the ${act.n === 1 ? 'first' : 'next'} piece. I'm sure of it.`], k) },
   ];
   for (const m of (act.noticed || []).slice(0, 2)) steps.push({ k: 'beat', t: `${m} sees ${n} find it, and says nothing.` });
@@ -3068,7 +3068,7 @@ function ssBuzzScreen(act, ctx) {
       reveal.push(ssv(`${a}, that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'], card: { text: act.guess, state: 'wrong', who: `${a}'s guess` } }),
         ...(act.lost ? [ssv(`${euros(act.lost)} of your kitty goes to ${t}.`, { board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } })] : []),
         { k: 'beat', t: `Now the whole house knows ${a} suspected ${t}, and what ${a} guessed.` },
-        { k: 'dr', by: a, t: pickBy(["I was so sure. Now the whole house knows I suspect them, and they got paid for it.", 'Five thousand dollars to find out I was wrong. Cheap, if it stops me doing it again.', "Wrong. In front of everybody. Brilliant."], `${k}|x`) });
+        { k: 'dr', by: a, t: pickBy([`I was so sure. Now the whole house knows I suspect ${t}, and ${t} got paid for it.`, 'Five thousand dollars to find out I was wrong. Cheap, if it stops me doing it again.', "Wrong. In front of everybody. Brilliant."], `${k}|x`) });
     }
   }
   /** @type {any[]} */ const out = [
@@ -3159,7 +3159,14 @@ function ssGameScreen(act, ctx) {
     ssv(PRIZE[act.prize] || PRIZE.none, { toast: act.prize === 'master' ? ['MASTER OF THE HOUSE', '#f5c542'] : undefined }),
     { k: 'dr', by: w, t: act.prize === 'clue' && act.target ? `I chose ${act.target}. I've had a feeling about ${act.target} for days.`
       : act.prize === 'master' && act.masterPick ? `${act.masterPick}. Nothing personal. Well. A little personal.`
-        : pickBy(["I'll take it. I needed something to go my way.", "Finally! I've been waiting for a good week.", 'That feels good. Really good.'], k) },
+        : pickBy(({
+          immunity: ['Safe. A whole week where nobody can put me up.', "Nobody can touch me this week. I'm going to sleep so well.", "Immunity. Now I can watch everybody else sweat."],
+          money: ["That's real money. That goes straight in the kitty.", 'My kitty needed that. Badly.', "Money in the kitty. Now I just have to keep my secret long enough to spend it."],
+          'free-buzz': ["A free buzz. I already know who I'm going to use it on.", "Free. So if I'm wrong, it costs me nothing. I like those odds."],
+          joker: ["The Joker. Nobody knows I've got it. That's the best part.", "I'm keeping this very, very quiet."],
+          clue: ["A clue. I know exactly where I want to point it."],
+          none: ["Nothing to show for it but the win. I'll take the win.", "No prize. But everybody saw me win it."],
+        })[act.prize] || ["I'll take it. I needed something to go my way.", "Finally! I've been waiting for a good week.", 'That feels good. Really good.'], k) },
   ];
   if (act.prize === 'master' && act.masterPick) steps.push({ k: 'beat', t: `${act.masterPick} hears their name and does not look at ${w}.`, nom: [act.masterPick] });
   return { id: `bb-ss-game-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '17:00',
@@ -3349,6 +3356,7 @@ function ssNomScreen(act, ctx) {
   steps.push({ k: 'beat', t: pickBy(['The screen goes dark. For a second nobody gets up.', 'The Eye closes. The room breaks into little groups, whispering.', 'As soon as the screen goes off, everybody starts talking at once.'], `${k}|out`) });
   // ...and later, alone, in the confessional
   const AFTER = ["The public decides now. All I can do is be myself and hope that's enough.", "Nominated. I didn't see that coming, and now I need the country on my side.",
+    "My name came out, and the room went quiet. Nobody would look at me.", "So now I'm on the screen in every living room in the country. No pressure.",
     'Being nominated hurts. But it also means the public finally gets to say what they think of me.', "I'm up this week. I'm not going to change who I am to stay. That's not why I came.",
     "I'm scared, honestly. But I'd rather be scared and real than safe and fake.", 'Every time I walk past a camera now, I think: are they with me out there?',
     "I've seen people go home who didn't deserve it. I just hope that's not me this week.", 'Nominated. Fine. Now I find out if the country actually likes me.'];
@@ -3438,19 +3446,23 @@ const NOM_A = {
   'suspects-me': ["I'm playing the game. Finding secrets is the game.", "If I'm close, it's because they are bad at hiding.", "I'm watching people, yes. Everybody should be."],
   'buzzed-me': ["I'd do it again. I believed it.", "It cost me, but I don't regret it.", "I was wrong, and I said sorry. I don't know what else they want."],
   'took-my-kitty': ["It's the game. I found it fair and square.", "Yes. I'd do it again tomorrow.", "They'd have done the same to me."],
-  'cannot-stand': ["I say what I think. Some people don't like that.", "I'm not here to be everybody's friend.", "Honestly, I'm not sure. I've been myself."],
-  threat: ["I'll take it. It means I'm playing.", "A threat? I just want to stay.", "Maybe. I'm here to win."],
+  'cannot-stand': ["I say what I think. Some people don't like that.", "I'm not here to be everybody's friend.", "Honestly, I'm not sure. I've been myself.",
+    "Some people in there just don't like me. I've stopped trying to change that.", "I clash with a couple of people. That's not a crime."],
+  threat: ["I'll take it. It means I'm playing.", "A threat? I just want to stay.", "Maybe. I'm here to win.", "They're scared of me. I'd rather that than nothing.", "If I'm a threat, it's because I'm doing well."],
   mission: ["Not at all. I thought I was fine this week.", "No. That one surprised me.", "I had a feeling, but I didn't think it would be me."],
   'talked-into-it': ["I have an idea, yes. And I'll deal with it if I stay.", "Somebody has been busy this week. I'll find out who.", "I've heard my name whispered. I know where from."],
   annoying: ["Fair enough. It's been a long week.", "Maybe a bit. Living with sixteen people is hard.", "I'll own that. I can do better."],
-  gut: ["I don't know. That's what scares me.", "Probably because I'm not in the big group.", "I think some people are scared of me."],
+  gut: ["I don't know. That's what scares me.", "Probably because I'm not in the big group.", "I think some people are scared of me.",
+    "Honestly? I've been asking myself all week.", "Because I'm easy to put up. I'm not close to the people who decide."],
   'd-office': ["No. I knew the rules. I'm sorry.", "It was stupid, and I know it.", "I'd take it back if I could."],
 };
 const PLEA_SS = ["Please keep me in. I've got so much more to give in there.", "I'm in this to the end. Please give me one more week.",
   "My secret is still safe, and I want to keep fighting for it. Please vote for me.", "I've been myself every single day. If you like that, keep me in.",
   "I'm not done. Not even close. Please call for me.", "One more week. That's all I'm asking for.",
   "I know I'm not perfect. But everything you've seen is really me. Please keep me in.", "I came here for the adventure, and it isn't finished. Please, pick up the phone.",
-  "If you've laughed with me even once this week, please vote for me.", "I've got so much left to show you. Don't send me home yet."];
+  "If you've laughed with me even once this week, please vote for me.", "I've got so much left to show you. Don't send me home yet.",
+  "I'm not ready to leave these people. Please let me stay.", "You've seen my good days and my bad ones. Give me one more week of both.",
+  "Mum, Dad, everybody at home: I'm still fighting. Please vote."];
 
 function ssAirlockScreen(act, ctx, host) {
   const noms = act.nominees || [];
@@ -3473,7 +3485,7 @@ function ssAirlockScreen(act, ctx, host) {
   // (no line twice in one airlock: "the most genuine person in this house" for three nominees read as a template)
   const usedA = new Set();
   const fresh = (pool, key) => {
-    let j = hash(key) % pool.length;
+    let j = (hash(key.replace(/^[^|]*\|/, '')) + (ctx.week || 0) * 3) % pool.length;
     for (let t = 0; t < pool.length && usedA.has(pool[j]); t++) j = (j + 1) % pool.length;
     usedA.add(pool[j]);
     return pool[j];
@@ -3746,7 +3758,8 @@ function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }) {
     said.push(n);
     steps.push({ k: 'host', by: host, t: `${n}${show === 'show' ? `, with ${pc[n]}% of the vote` : ''}! You're staying. You can go back into the House of Secrets.`, safe: n, ...board(said) },
       { k: 'beat', t: pickBy([`${n} lets go of the others' hands, hugs each of them, and walks out of the airlock.`, `${n} cries out, hugs everybody still in the airlock, and runs back to the house.`, `${n} stands frozen for a second, then walks back into the living room to a pile of hugs.`], `${k}|out${i}`) },
-      { k: 'say', by: n, t: pickBy(['Thank you. Thank you, thank you, thank you.', "I can't believe it. I really can't.", 'I owe you all, out there. Every one of you.', 'Another week. I get another week.'], `${k}|joy${i}`) });
+      { k: 'say', by: n, t: ['Thank you. Thank you, thank you, thank you.', "I can't believe it. I really can't.", 'I owe you all, out there. Every one of you.', 'Another week. I get another week.',
+        "I thought that was it. I really thought that was me.", 'Thank you for keeping me. I won\'t waste it.', "My legs are shaking. Thank you.", "I'm still here! I'm still here."][(hash(k) + i) % 8] });
     left.splice(left.indexOf(n), 1);
     if (left.length > 1 && left.length < noms.length) steps.push({ k: 'beat', t: pickBy([`And then there were ${WORDS[left.length] || left.length}.`, `${listOf(left)} are still holding hands.`], `${k}|left${i}`), tense: left.slice() });
   });
@@ -3864,7 +3877,7 @@ function ssWalkScreen(act, ctx, host) {
   }
   steps.push({ k: 'host', by: host, t: rv.kitty > 0 ? `You leave with ${euros(rv.kitty)} in your kitty.` : 'Your kitty went with your secret. You leave with nothing but the memories.' });
   const best = (af.kitties || [])[0]?.[0];
-  if (best) steps.push({ k: 'host', by: host, t: 'Who is playing the best game in there?' }, { k: 'say', by: ev, t: pickBy([`${best}. Look at the money. That's not luck.`, `${best}, no question. Watch out for ${best}.`], `${k}|b`) });
+  if (best) steps.push({ k: 'host', by: host, t: ['Who is playing the best game in there?', 'Who should they all be worried about?', 'Be honest. Who is going to win the money?', 'Who has played you the best?'][(ctx.week || 0) % 4] }, { k: 'say', by: ev, t: pickBy([`${best}. Look at the money. That's not luck.`, `${best}, no question. Watch out for ${best}.`], `${k}|b`) });
   steps.push({ k: 'host', by: host, t: 'Who do you want to win?' },
     { k: 'say', by: ev, t: pickBy([`${ctx.walkFriend || best || 'One of my friends'}. With all my heart.`, `Honestly? ${ctx.walkFriend || best || 'Anybody but the fakes'}.`], `${k}|win`) });
   steps.push(...ssFarewellSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }));
@@ -5377,6 +5390,7 @@ const THEME_WORDS = {
     // Secret Story is its own show (2026-10-27): its house, its people, its exit.
     // Scenes about a veto or a jury it does not have are part 3's to rewrite;
     // these are the words a swap can honestly fix.
+    [/\bIt's Big Brother\b/g, "It's Secret Story"], [/\bBig Brother logic\b/g, 'House of Secrets logic'], [/\bHead of Household win\b/g, "Voice's game win"], [/\bwho took Head of Household\b/g, "who won the Voice's game"],
     [/\bthe premiere of Big Brother\b/g, 'the premiere of Secret Story'], [/\bthe Big Brother house\b/g, 'the House of Secrets'],
     [/\bBig Brother house\b/g, 'House of Secrets'], [/\bthe Big Brother voice\b/g, 'the Voice'], [/\bBig Brother\b/g, 'The Voice'],
     [/\bHOUSEGUESTS\b/g, 'HOUSEMATES'], [/\bHouseguests\b/g, 'Housemates'], [/\bhouseguests\b/g, 'housemates'],

@@ -58,6 +58,18 @@ const noiseRoll = (rng, amount = 2.5, acc = null, who = null) => {
 };
 
 const round2 = v => Math.round(v * 100) / 100;
+// a clock as people say it: "Hour 1.9" and "Hour 3.05" read as a spreadsheet ("one hour and fifty-five minutes").
+// The screen's dial reads the number off the beat (`hour`), never off these words.
+const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty'];
+const inWords = n => (n < 20 ? ONES[n] : `${TENS[Math.floor(n / 10)]}${n % 10 ? `-${ONES[n % 10]}` : ''}`);
+const clockAt = h => {
+  // to the nearest five minutes: nobody in a glass box knows it is 3:03
+  const m = Math.max(5, Math.round(h * 12) * 5), H = Math.floor(m / 60), M = m % 60;
+  const hrs = H === 1 ? 'one hour' : `${inWords(H)} hours`, mins = `${inWords(M)} minutes`;
+  return H ? (M ? `${hrs} and ${mins}` : hrs) : mins;
+};
+const atHour = (b, hour) => Object.assign(b, { hour: Math.round(hour * 100) / 100 });
 
 const stat = (name, key) => Number(pStats(name)?.[key]) || 0;
 
@@ -522,7 +534,7 @@ export const theWall = {
         api.record(champ.name, 'owes-safety', { to: second.name });
       } else {
         beats.push(beat(
-          `${champ.name} and ${second.name} refuse each other three separate deals, and then ${second.name} runs out of hands. Hour ${Math.max(2, Math.round(wave * 0.7))}, and no arrangement.`,
+          `${champ.name} and ${second.name} refuse each other three separate deals, and then ${second.name} runs out of hands. ${clockAt(Math.max(2, Math.round(wave * 0.7))).replace(/^./, c => c.toUpperCase())} in, and no arrangement.`,
           [champ.name, second.name], 'NO DEAL', 'red'));
       }
       tiebreaks[second.name] = clamp(9 + second.hold / 100, 0, 9.9);
@@ -661,11 +673,12 @@ export const pressureCooker = {
       if (!dropping.length) dropping = [rolls[0]];
       dropping = dropping.slice(0, Math.max(1, Math.min(dropping.length, inside.length - 1)));
 
-      dropping.forEach(d => {
+      // (the time said once, however many let go at it)
+      dropping.forEach((d, di) => {
         const p = pronouns(d.name);
-        beats.push(beat(
-          `Hour ${hours}. ${d.threw ? say(THROW_LINES)(d.name) : say(COOKER_CRACK)(d.name, p)}`,
-          [d.name], d.threw ? 'THREW IT' : out.length === 0 ? 'FIRST OFF' : 'BUTTON RELEASED', d.threw ? 'grey' : 'challenge'));
+        beats.push(atHour(beat(
+          `${di === 0 ? `${clockAt(hours).replace(/^./, c => c.toUpperCase())} in. ` : ''}${d.threw ? say(THROW_LINES)(d.name) : say(COOKER_CRACK)(d.name, p)}`,
+          [d.name], d.threw ? 'THREW IT' : out.length === 0 ? 'FIRST OFF' : 'BUTTON RELEASED', d.threw ? 'grey' : 'challenge'), hours));
         tiebreaks[d.name] = clamp(box * 0.5 + d.grip / 4, 0, 9.9);
         threwMap[d.name] = d.threw;
         breakdown[d.name] = {
@@ -744,8 +757,8 @@ export const pressureCooker = {
 
       if (inside.length > 1 && box % 3 === 0) {
         const grinder = inside[Math.floor(rng() * inside.length)];
-        beats.push(beat(`Hour ${round2(hours + 0.5)}. ${hold(COOKER_HOLD)(grinder.name, pronouns(grinder.name))}`,
-          [grinder.name], 'STILL HOLDING', 'grey'));
+        beats.push(atHour(beat(`${clockAt(hours + 0.5).replace(/^./, c => c.toUpperCase())} in. ${hold(COOKER_HOLD)(grinder.name, pronouns(grinder.name))}`,
+          [grinder.name], 'STILL HOLDING', 'grey'), hours + 0.5));
       }
     }
 
@@ -759,9 +772,9 @@ export const pressureCooker = {
     };
 
     const cp = pronouns(champ.name);
-    beats.push(beat(
-      `${round2(hours + 1)} hours after the door sealed, ${champ.name} is the only thumb still down. ${cp.Sub} cannot straighten ${cp.posAdj} hand for the rest of the night and does not appear to care.`,
-      [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
+    beats.push(atHour(beat(
+      `${clockAt(hours + 1).replace(/^./, c => c.toUpperCase())} after the door sealed, ${champ.name} is the only thumb still down. ${cp.Sub} cannot straighten ${cp.posAdj} hand for the rest of the night and does not appear to care.`,
+      [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'), hours + 1));
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'endurance-win', { hours, competition: 'pressure-cooker' });
 
@@ -1165,11 +1178,18 @@ export const beforeOrAfter = {
       `${participants.length} houseguests, one board each, and a question format that only works if you were paying attention to a house you were also trying to survive. ${strikesAllowed === 2 ? 'Two strikes and you are out.' : 'One wrong answer and you are out.'}`,
       participants.slice(0, 3), 'BEFORE OR AFTER', 'challenge'));
 
+    // (a pair once a night, either way round: the same question at 7 and 9 read as a loop)
+    const askedPairs = new Set();
     const question = () => {
       if (facts.length >= 2) {
-        const a = choose(rng, facts);
-        const others = facts.filter(f => f.event !== a.event);
-        const b = others.length ? choose(rng, others) : facts[0];
+        let a = null, b = null;
+        for (let t = 0; t < 12; t++) {
+          a = choose(rng, facts);
+          const others = facts.filter(f => f.event !== a.event);
+          b = others.length ? choose(rng, others) : facts[0];
+          if (!askedPairs.has([a.event, b.event].sort().join('|'))) break;
+        }
+        askedPairs.add([a.event, b.event].sort().join('|'));
         return `Did ${a.event} come BEFORE or AFTER ${b.event}?`;
       }
       return askedBefore(BOA_FALLBACK);
@@ -1209,10 +1229,11 @@ export const beforeOrAfter = {
       if (goingOut.length >= field.length) goingOut = goingOut.slice(0, field.length - 1);
 
       if (goingOut.length) {
-        goingOut.forEach(f => {
+        // (the question read once, however many go out on it)
+        goingOut.forEach((f, gi) => {
           const p = pronouns(f.name);
           beats.push(beat(
-            `Question ${q}: ${asked} ${f.threw ? wrongSay(THROW_LINES)(f.name) : wrongSay(BOA_WRONG)(f.name, p)}`,
+            `${gi === 0 ? `Question ${q}: ${asked} ` : 'Same question. '}${f.threw ? wrongSay(THROW_LINES)(f.name) : wrongSay(BOA_WRONG)(f.name, p)}`,
             [f.name], f.threw ? 'THREW IT' : field.length === 2 ? 'RUNNER-UP' : 'ELIMINATED',
             f.threw ? 'grey' : field.length === 2 ? 'red' : 'challenge'));
           tiebreaks[f.name] = clamp(f.correct + q * 0.2, 0, 9.9);
@@ -1243,7 +1264,9 @@ export const beforeOrAfter = {
 
     const cp = pronouns(champ.name);
     beats.push(beat(
-      `${champ.name} is the last board still up, ${champ.correct || 0} correct across ${q} questions, and ${cp.sub} ${vb(cp, 'spends', 'spend')} the walk to the key thinking about which two names ${cp.sub} just became responsible for.`,
+      context.type === 'veto'
+        ? `${champ.name} is the last board still up, ${champ.correct || 0} correct out of ${q}, and ${cp.sub} ${vb(cp, 'reaches', 'reach')} for the necklace before anybody has finished clapping.`
+        : `${champ.name} is the last board still up, ${champ.correct || 0} correct out of ${q}, and ${cp.sub} ${vb(cp, 'spends', 'spend')} the walk to the key thinking about which two names ${cp.sub} just became responsible for.`,
       [champ.name], context.type === 'veto' ? 'VETO' : 'HOH', 'gold'));
     api.popDelta(champ.name, 2);
     api.record(champ.name, 'quiz-win', { correct: champ.correct || 0, questions: q, competition: 'before-or-after' });

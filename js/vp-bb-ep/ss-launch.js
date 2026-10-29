@@ -267,7 +267,12 @@ export function ssLaunchScreens(act, ctx, host, H) {
     });
     // the airlock: the host on the earpiece, the Voice's word, the door
     steps.push({ k: 'beat', scene: SAS, t: g.length === 1 ? `In the airlock, ${g[0]} puts in an earpiece and checks ${pronouns(g[0]).posAdj || 'their'} hair in the mirror.` : `In the airlock, ${listOf(g)} put in their earpieces, side by side, and check their hair in the mirror.` },
-      { k: 'host', by: host, t: g.length === 1 ? `${g[0]}, can you hear me? What's going to be your biggest strength in there?` : `Can you hear me, ${g.length > 2 ? 'all of you' : 'both of you'}? Quickly: what's your biggest strength in there?` });
+      // (a different question at each door: five arrivals asked the same one read as a form)
+      { k: 'host', by: host, t: g.length === 1
+        ? pickRot([`${g[0]}, can you hear me? What's going to be your biggest strength in there?`, `${g[0]}, it's me in your ear. What are you bringing into that house?`,
+          `${g[0]}, can you hear me? Tell me one thing that's going to keep you in there.`, `${g[0]}, last question before the door: why will you win this?`], gi)
+        : pickRot([`Can you hear me, ${g.length > 2 ? 'all of you' : 'both of you'}? Quickly: what's your biggest strength in there?`, `${g.length > 2 ? 'All of you' : 'Both of you'}, it's me in your ears. What are you bringing into that house?`,
+          `Can you hear me? One answer each: why will you last in there?`, `Last question before the door. What's your secret weapon? Not your secret. Your weapon.`], gi) });
     g.forEach((n, j) => steps.push({ k: 'say', by: n, t: `${j ? '' : 'Honestly? '}${pickRot(ASSET[topStat(P(n), count + j)] || ASSET.social, count + j).replace(/^./, c => c.toUpperCase())}.` }));
     steps.push({ k: 'host', by: host, t: pickRot(["Well, we'll see if that's enough. I think the Voice has something to tell you.", "I like it. Now listen carefully, because the Voice wants a word.",
       "We'll find out soon enough. Hold on, the Voice is about to speak to you.", "Good answers. Stay right there. The Voice has something for you.", "I hope you're right. Now, quiet. The Voice is speaking."], gi) });

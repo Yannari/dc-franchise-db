@@ -764,7 +764,7 @@ export function airStorylines(week) {
 }
 
 // the words a Big Brother week says that a Secret Story week never can
-const BB_ONLY = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|the key this week|run (?:my|your|the|his|her|their) week|final (?:twos?|threes?|2|3)|whoever wins|before the comp|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|take (?:me|you|him|her|them|us) to the end)\b/i;
+const BB_ONLY = /\b(HOH|head of household|comps?|veto|POV|jury|jurors?|backdoor\w*|pawns?|the block|on the block|off the block|holds? the key|the key this week|run (?:my|your|the|his|her|their) week|final (?:twos?|threes?|2|3)|whoever wins|before the comp|houseguests?|evict\w*|eviction|have-?nots?|slop|lockdown|promised (?:\w+ )?safety|easy to beat|nomination chairs?|keys? (?:are |is )?back in the box|the key box|take (?:me|you|him|her|them|us) to the end)\b/i;
 /** Every line a written scene says (its lines, and the scenes a set piece holds), as one string. */
 function saidIn(sc) {
   const out = [];

@@ -179,7 +179,8 @@ export function portraitSteps(p, i, o = {}) {
   // ...and their secret, said to the viewers at the very end (the real portraits end on it: "my secret is..."), when no
   // twist has the audience show it (the Public's Signs)
   if (o.reveal?.text) {
-    steps.push({ k: 'say', by: n, t: pickBy(['And my secret? I can tell you. Not them.', "One more thing. My secret. Only you get to know it.", "Now, my secret. Promise you won't tell them."], `${k}|sec`) },
+    steps.push({ k: 'say', by: n, t: ['And my secret? I can tell you. Not them.', "One more thing. My secret. Only you get to know it.", "Now, my secret. Promise you won't tell them.",
+      "Okay. The part nobody in there can find out.", "So here it is. The thing I'm hiding.", "You want my secret? Fine. Just you, though."][i % 6] },
       { k: 'say', by: n, t: `${o.reveal.text}.`, card: { text: o.reveal.text, who: n } },
       { k: 'say', by: n, t: pickBy(REVEAL_AFTER[o.reveal.kind] || REVEAL_AFTER.past, `${k}|after`) });
   }

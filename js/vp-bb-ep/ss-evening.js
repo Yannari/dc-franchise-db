@@ -27,7 +27,7 @@ export function ssEveningScreen(act, ctx, H) {
         : r.length === 1 ? `${r[0].who} raises the sign.` : `${r.slice(0, -1).map(x => x.who).join(', ')} and ${r.at(-1).who} raise their signs at the same time. The room erupts.`,
         signs: r.map(x => x.who) });
       for (const x of r) cast.add(x.who);
-      for (const x of s.scene || []) {
+      (s.scene || []).forEach((x, xi) => {
         cast.add(x.who); if (x.about) cast.add(x.about);
         if (x.kind === 'accuse') {
           const nth = (s.scene || []).filter(y => y.kind === 'accuse').indexOf(x);
@@ -53,9 +53,10 @@ export function ssEveningScreen(act, ctx, H) {
             { k: 'say', by: x.who, t: "I'm not saying that part. Not yet." },
             { k: 'dr', by: x.about, t: `My heart stopped. ${x.who} is right, and now the whole house is looking at me.` });
         } else if (x.kind === 'wrong-buzz') {
-          steps.push({ k: 'say', by: x.who, t: `Yes, okay, it was me. I buzzed ${x.about} and I was completely wrong.` },
-            { k: 'say', by: x.about, t: 'And thank you very much for the money.' },
-            { k: 'beat', t: `Even ${x.who} laughs.` });
+          // (two wrong buzzers on one sentence: the second owns up in other words)
+          steps.push({ k: 'say', by: x.who, t: [`Yes, okay, it was me. I buzzed ${x.about} and I was completely wrong.`, `Me too. ${x.about}. Totally wrong. Don't.`, `And me. I'd rather not talk about it.`][xi % 3] },
+            { k: 'say', by: x.about, t: ['And thank you very much for the money.', 'Best five thousand dollars I never earned.', 'Any time. Really. Do it again.'][xi % 3] },
+            { k: 'beat', t: [`Even ${x.who} laughs.`, `${x.who} throws a cushion at ${x.about}.`, `${x.who} hides behind the sign.`][xi % 3] });
         } else if (x.kind === 'know') {
           steps.push(ssv(`${x.who}, will you tell us whose?`),
             { k: 'say', by: x.who, t: "No. But they know who they are." },
@@ -72,7 +73,7 @@ export function ssEveningScreen(act, ctx, H) {
             { k: 'say', by: x.who, t: "I don't know what you're talking about." },
             { k: 'beat', t: `${x.who}'s sign stays firmly down. The house is not convinced.` });
         }
-      }
+      });
     }
     steps.push(ssv('That is all for tonight. Sleep well... if you can.'));
     return base(`bb-ss-evening-${act.week}`, { set: 'ceremony', room: 'Living Room', cam: 4, kicker: 'Night · Living room', title: 'Oops Night', label: 'Oops Night',
@@ -96,10 +97,10 @@ export function ssEveningScreen(act, ctx, H) {
         r.close ? { k: 'say', by: r.first, t: "I didn't tell anybody. I just buzzed." } : { k: 'say', by: r.first, t: 'I had a feeling. You just look like somebody who would.' });
     } else {
       steps.push(ssv(r.money ? `That is wrong. It costs you ${WORD[r.money] || `$${r.money}`}.` : 'That is wrong. Luckily for you, your kitty is already empty.'),
-        { k: 'say', by: r.guess, t: "Me? I've never done that in my life!" },
+        { k: 'say', by: r.guess, t: ["Me? I've never done that in my life!", "Excuse me? That is not me.", 'Why would you think that was me?', "No! I would never."][(i + (act.week || 0)) % 4] },
         ssv(`It was ${r.subject}.`, { settle: { id: `ss-mini|${act.week}|${i}`, answer: r.subject, n: opts.length } }),
-        { k: 'say', by: r.subject, t: "Yes, it's me. Please don't laugh." },
-        { k: 'beat', t: 'Everybody laughs.' });
+        { k: 'say', by: r.subject, t: ["Yes, it's me. Please don't laugh.", "Okay, yes. That was me. Moving on.", "Guilty. And I'd do it again.", "It's me. I was hoping nobody would ever find out."][(i + (act.week || 0)) % 4] },
+        { k: 'beat', t: ['Everybody laughs.', 'The whole sofa groans.', 'Somebody has to put a cushion over their face to stop laughing.', 'A round of applause, mostly sarcastic.'][(i + (act.week || 0)) % 4] });
       cast.add(r.guess);
     }
   });

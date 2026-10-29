@@ -71,7 +71,8 @@ function storylines(row, noms) {
     out.push({ key: 'noms', title: noms.length === 2 ? `${noms[0]} or ${noms[1]}` : `${noms.length} in danger`, sub: "The nominees' week",
       lines: [
         { t: `When the Voice read out the names, ${listOf(noms)} knew the week would be long.`, scene: at('living-sofas', 'ceremony', 'Living Room', noms) },
-        ...noms.slice(0, 2).map((n, i) => ({ dr: n, t: pickBy([`I'm trying to stay myself. That's all I can do now.`, `Every night I go to bed thinking it could be my last one in here.`, `I've got people out there. I hope they've got me too.`], `${week}|mn${i}|${n}`), scene: at('confessional-close', 'dr', 'Confessional', [n]) })),
+        ...noms.slice(0, 2).map((n, i) => ({ dr: n, t: [`I'm trying to stay myself. That's all I can do now.`, `Every night I go to bed thinking it could be my last one in here.`, `I've got people out there. I hope they've got me too.`,
+          `I keep looking at the camera and wondering who's watching.`, `I didn't sleep. I just lay there going over everything I've said this week.`, `Whatever happens, I don't want to leave on a bad day.`][(Number(week) * 2 + i) % 6], scene: at('confessional-close', 'dr', 'Confessional', [n]) })),
         { t: 'Tonight, the public decides.', scene: at('foyer', 'door', 'The Airlock', noms) },
       ] });
   }
@@ -95,7 +96,10 @@ export function ssMagnetoScreens(act, ctx, host) {
     ];
     for (const l of p.lines) steps.push(l.dr ? { k: 'dr', by: l.dr, t: l.t, scene: l.scene } : { k: 'beat', t: l.t, scene: l.scene });
     steps.push({ k: 'beat', scene: STUDIO, t: pickBy(['Back in the studio, the crowd is on its feet.', 'The lights come back up on the studio. A long "ooooh" from the crowd.', 'Back live. The couch is shaking its head.'], `${k}|out`) },
-      { k: 'host', by: host, t: pickBy(['What a week. And it is not over yet.', "Well. I don't think anybody in that house will forget that one.", "You saw it, at home. And tonight, you'll decide what happens next."], `${k}|h`) });
+      // (the host's word after a tape turns over through the season: one line eight times read as a jingle)
+      { k: 'host', by: host, t: ['What a week. And it is not over yet.', "Well. I don't think anybody in that house will forget that one.", "You saw it, at home. And tonight, you'll decide what happens next.",
+        "I watched that three times this afternoon. It doesn't get easier.", "And they still have to live together after that.", "Nobody saw that coming. Except you, maybe.",
+        "Remember that when the lines open tonight.", "That's the House of Secrets for you."][((ctx.week || 0) * 3 + i) % 8] });
     out[p.key] = { id: `bb-ss-prime-mag-${p.key}-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', ...STUDIO, sceneful: true,
       kicker: 'Live · The Prime Studio', title: p.title, label: `Tape: ${p.sub}`, sub: p.sub, steps };
   });

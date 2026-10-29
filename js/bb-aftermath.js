@@ -86,7 +86,8 @@ export function bbHostName() {
 function hostStyle() {
   const chosen = seasonConfig.bbHostStyle;
   if (BB_HOST_STYLES[chosen]) return chosen;
-  const list = HOSTS_BY_FORMAT['big-brother'] || [];
+  // (the season's own show's hosts first: Secret Story's Josh is not on Big Brother's list)
+  const list = [...(HOSTS_BY_FORMAT[seasonConfig?.format] || []), ...(HOSTS_BY_FORMAT['big-brother'] || [])];
   const mine = list.find(h => h.value === seasonConfig.host)?.style;
   return BB_HOST_STYLES[mine] ? mine : 'balanced';
 }

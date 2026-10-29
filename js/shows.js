@@ -1164,7 +1164,8 @@ export const HOSTS_BY_FORMAT = {
   // family fallback below never hands Secret Story Big Brother's Valeria.
   // Blaineley co-hosts the After show with him (SHOWS['secret-story'].after).
   'secret-story': [
-    { value: 'Josh', label: 'Josh' },
+    // (the Aftermath's gossipy co-host: a playful interviewer, BB_HOST_STYLES in js/bb-aftermath.js)
+    { value: 'Josh', label: 'Josh', style: 'playful' },
   ],
 };
 // A spin-off is presented by its family's hosts: All Stars is RuPaul's too.

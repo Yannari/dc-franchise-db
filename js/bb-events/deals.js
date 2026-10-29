@@ -20,7 +20,7 @@ import { endgameDealsOf, dealBetween, tierOf, sincerityOf, isEndgameDeal, juryPa
 import { juryOpensAt } from '../bb/jury.js';
 import {
   pStats, bond, perceived, hidden, band, bondFactor, closestTo, furthestFrom,
-  trusts, dislikes, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
+  trusts, sharesAlliance, alliancesOf, grudge, remembers, wasPromised,
   suspicionOf, targetOf, targetsOf, isHunting, huntedBy, threat, biggestThreat, willScheme, deFactoAllies,
   isNice, isVillainous, archetype, trustOf, obligationOf, respectOf, dangerOf,
   resentmentOf, beatsInvolving, spotlightOrder, actFacts, memoriesOf, memoryWeek,
@@ -119,10 +119,9 @@ const PROMISE_SAID = [
 // A voter's own word ('my vote, this week', above) is a promise THEY made: it is not one made to them, and a row
 // about it had the voter calling the nominee a liar for a vote the voter promised (the user, 2026-10-27)
 const madeToMe = m => m && m.type === 'promise' && !/^my vote/i.test(String(m.details?.promise || m.detail?.promise || ''));
-function promiseSaid(victim, liar, weekNum) {
-  const m = memoriesOf(victim).filter(x => x && x.subject === liar && madeToMe(x)).at(-1);
-  const d = m?.details || m?.detail || {};
-  const text = String(d.promise || d.about || '');
+const promiseText = m => String((m?.details || m?.detail || {}).promise || (m?.details || m?.detail || {}).about || '');
+function promiseSaid(victim, liar, weekNum, m = memoriesOf(victim).filter(x => x && x.subject === liar && madeToMe(x)).at(-1)) {
+  const text = promiseText(m);
   let told = 'you had my back';
   for (const [re, say] of PROMISE_SAID) { const k = text.match(re); if (k) { told = say(k); break; } }
   const wk = m ? memoryWeek(m) : 0;
@@ -130,12 +129,27 @@ function promiseSaid(victim, liar, weekNum) {
   return { told, pwhen: when };
 }
 
+// A promise for ONE week (safety, a vote, the veto, a pawn, who goes up) was kept or broken that week, and the
+// nomination answers it the same night (ceremonies.js: 'told me I was safe and put me up'). Weeks later nobody is
+// still breaking it: a Battle Back returnee with no power was told "you're going after me, after you told me I
+// was safe" about her HOH week, the third time the pair had the same fight (the user, 2026-10-28).
+const FOR_ONE_WEEK = /my vote|a vote to keep|safety|told me I was safe|coming off|the veto|only a pawn|goes up$/i;
+// ...and a promise is called out ONCE: the confrontation is remembered ('broken-promise'), and the same pair
+// fighting over the same words every week is a stuck record. A new promise made after it can break again. Either
+// way round: a pact both made, called out by one, aired again the same week as the other's ("You're a liar!").
+const calledOut = (victim, liar, since) => [[victim, liar], [liar, victim]].some(([x, y]) => memoriesOf(x)
+  .some(m => m && m.subject === y && m.type === 'broken-promise' && memoryWeek(m) >= since));
+
 function _brokenPromise(house, ctx) {
+  const wk = ctx?.week?.num || 0;
   for (const victim of _leastSeen(house)) {
-    const wk = ctx?.week?.num || 0;
-    const liar = _others(house, victim).find(n =>
-      memoriesOf(victim).some(m => m.subject === n && madeToMe(m) && memoryWeek(m) < wk) && (dislikes(victim, n) || isHunting(n, victim)));
-    if (liar) return { victim, liar };
+    // Broken means the one who promised is coming after them now (every scene says "I'm hearing you want me
+    // out" / "you're going after me"): disliking somebody is not a promise they broke.
+    for (const liar of _others(house, victim).filter(n => isHunting(n, victim))) {
+      const promise = memoriesOf(victim).filter(m => m && m.subject === liar && madeToMe(m) && memoryWeek(m) < wk
+        && !FOR_ONE_WEEK.test(promiseText(m)) && !calledOut(victim, liar, memoryWeek(m))).at(-1);
+      if (promise) return { victim, liar, promise };
+    }
   }
   return null;
 }
@@ -303,7 +317,9 @@ const brokenPromise = {
     return _w(band(6 + grudge(pair.victim, pair.liar) * 2), ctx);
   },
   fire(house, ctx, api) {
-    const { victim, liar } = _brokenPromise(house, ctx);
+    const pair = _brokenPromise(house, ctx);
+    if (!pair) return null;
+    const { victim, liar, promise } = pair;
     api.addBond(victim, liar, -1.8);
     api.remember(victim, liar, 'broken-promise', 3, {});
     api.setTarget(victim, liar, 'gave me their word and did not keep it');
@@ -313,7 +329,7 @@ const brokenPromise = {
     });
     api.popDelta(liar, -1);
     // Called out in front of people: the house is in the room for it.
-    const scene = makeScene('deals.broken', { a: victim, b: liar }, { ending: 'confronted', ...promiseSaid(victim, liar, ctx.week?.num || 0) }, _others(house, victim, liar),
+    const scene = makeScene('deals.broken', { a: victim, b: liar }, { ending: 'confronted', ...promiseSaid(victim, liar, ctx.week?.num || 0, promise) }, _others(house, victim, liar),
       _room(['kitchen', 'living-room', 'backyard'], ctx, victim, liar));
     return { scene, players: [victim, liar], badgeText: 'PROMISE BROKEN', badgeClass: 'red' };
   },

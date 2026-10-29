@@ -10,6 +10,7 @@ import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
 import { simulateBBEpisode } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { PRODUCTION_SECRETS, productionSecret } from '../js/ss/casting.js';
+import { arrivalGroups } from '../js/vp-bb-ep/ss-launch.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -22,6 +23,22 @@ const state = () => ({ secrets: [
   { id: 'q', poolId: 'prod-spy', source: 'production', kind: 'voice-mission', holders: ['Fi'], text: "I am the internet's spy", clues: ['b'] },
   ...H.filter(n => !['Di', 'Hal', 'Fi'].includes(n)).map(n => ({ id: n, kind: 'personal', holders: [n], text: `${n}'s secret`, clues: ['c'] })),
 ] });
+
+describe('the arrivals', () => {
+  // the user, 2026-10-28: "why are their secrets revealed when they don't have the same secret, why is he not with
+  // the person sharing his secret"
+  it('two who share a secret always come down together; nobody else is paired with a sharer', () => {
+    for (const lead of H) {
+      const order = [lead, ...H.filter(n => n !== lead)];
+      const g = arrivalGroups(order, state().secrets, 'k');
+      expect(g.flat().sort()).toEqual(H.slice().sort());
+      expect(g[0]).toHaveLength(1);
+      expect(g.some(x => x.length === 2 && x.includes('Di') && x.includes('Hal'))).toBe(true);
+      for (const x of g) if (x.includes('Di') || x.includes('Hal')) expect(x.sort()).toEqual(['Di', 'Hal']);
+      for (const x of g) expect(x.length).toBeLessThanOrEqual(3);
+    }
+  });
+});
 
 describe('launch night, decided', () => {
   it('the house is shown live between most arrivals, not five times', () => {
@@ -91,5 +108,30 @@ describe('launch night, on screen', () => {
     expect(text.filter(t => /\bundefined\b|\bNaN\b|\[object/.test(t))).toEqual([]);
     // (no plain confessional on a live night: a live call or a portrait)
     for (const s of screens.filter(x => !/^bb-ss-launch-(arr|open)/.test(String(x.id)))) for (const st of s.steps) if (st.k === 'dr' && s.id !== 'bb-ss-launch-role') expect(st.live, `${s.id}: ${st.t}`).toBeTruthy();
+  });
+});
+
+// the user, 2026-10-28: "for launch night just do the launch prime then the days; the first elimination prime is at
+// episode 2, and episode 2 starts normally, days, then the prime"
+describe('week one has no prime', () => {
+  it('nobody is nominated or eliminated in week one; week two nominates and eliminates', () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off' });
+    withSeededRandom(5, () => { simulateBBEpisode(); simulateBBEpisode(); });
+    const [w1, w2] = [1, 2].map(n => gs.episodeHistory.find(r => r.num === n));
+    expect(w1.eliminated).toBeNull();
+    expect(w1.ssNoPrime).toBe(true);
+    expect(w1.acts.some(a => ['nominations', 'ss-prime', 'eviction'].includes(a.type))).toBe(false);
+    // the week still has its game, its hunt and two stretches of days
+    expect(w1.acts.filter(a => a.type === 'house').length).toBeGreaterThanOrEqual(2);
+    expect(w1.acts.some(a => a.type === 'ss-game')).toBe(true);
+    expect(w2.eliminated).toBeTruthy();
+    expect(w2.acts.some(a => a.type === 'ss-prime')).toBe(true);
+    // on screen: launch night, the days closed by the narrator on next week's nominations, and no prime
+    const steps = bbWeekSteps(w1, { host: 'Josh' });
+    expect(steps.some(s => /^bb-ss-prime-/.test(String(s.id)))).toBe(false);
+    const close = steps.find(s => s.id === 'bb-ss-tonight-w1');
+    expect(close?.steps.some(st => /first nominations/.test(String(st.t)))).toBe(true);
   });
 });

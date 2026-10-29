@@ -77,7 +77,7 @@ function boardHtml(S, K) {
       <span class="cf-bar"><i style="width:${w}%"></i></span>${b ? `<em class="cf-bd ${esc(b[1])}">${esc(b[0])}</em>` : ''}</div>`;
   };
   const wait = C.players.filter(n => !K.shown.has(n));
-  return `<div class="cf-board"><div class="cf-bh">${svg(catOf(C.cat).icon, 'cf-ci')}<span>${esc(C.kind === 'hoh' ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO')}</span><b>${esc(C.name)}</b></div>
+  return `<div class="cf-board"><div class="cf-bh">${svg(catOf(C.cat).icon, 'cf-ci')}<span>${esc(C.label || (C.kind === 'hoh' ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'))}</span><b>${esc(C.name)}</b></div>
     ${known.map(row).join('')}${wait.length ? `<div class="cf-wait">${wait.map(n => `<span class="cf-av sm" style="--c:${col(n)}" title="${esc(n)}">${img(n)}</span>`).join('')}<i>${wait.length} still playing</i></div>` : ''}
     ${C.out?.length ? `<div class="cf-sat">Sat out: ${C.out.map(esc).join(', ')}</div>` : ''}</div>`;
 }
@@ -106,7 +106,7 @@ function rulesHtml(S, fresh) {
 
 function heroHtml(S, K, fresh) {
   const C = S.comp;
-  return `<div class="cf-hero ${fresh ? 'fresh' : ''}">${C.kind === 'hoh' ? KEY : MEDAL_SVG}<span class="cf-hl">${C.kind === 'hoh' ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'}</span>
+  return `<div class="cf-hero ${fresh ? 'fresh' : ''}">${C.kind === 'hoh' ? KEY : MEDAL_SVG}<span class="cf-hl">${esc(C.label || (C.kind === 'hoh' ? 'HEAD OF HOUSEHOLD' : 'POWER OF VETO'))}</span>
     <div class="cf-hw" style="--c:${col(K.win)}">${img(K.win)}</div><b>${esc(K.win)}</b></div>`;
 }
 

@@ -212,6 +212,8 @@ export function weekToEpisode(week) {
     format: 'big-brother',
     isBigBrother: true,
     eliminated: evicted,
+    // (Secret Story's first week: launch night and the days, no prime)
+    ...(week.ssNoPrime ? { ssNoPrime: true } : {}),
     // Carried for the visual player: the cold open opens on the whole house,
     // and the nomination screen shows the HOH's private plan.
     houseAtStart: [...(week.houseAtStart || [])],

@@ -5732,7 +5732,22 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // each screen in its room of the House of Secrets (vp-bb-ep/ss-stage.js)
     for (const s of out) if (/^bb-ss-/.test(String(s.id || ''))) ssPlace(s, plateBuilt);
     // (the week's competition is the Voice's game; its nav label was still Big Brother's)
-    for (const s of out) if (s.id === 'bb-hoh-v') s.label = "The Voice's Game";
+    // It plays as itself, never as Big Brother's HOH board (the user, 2026-10-28: "the voice game says HOH won"):
+    // the stepped game, its winner named as the Voice's, then the prize on a screen of its own (ss-episode.js)
+    for (const s of out) if (s.id === 'bb-hoh-v') {
+      s.label = "The Voice's Game"; s.title = "The Voice's Game";
+      delete s.legacy;
+      if (s.comp) s.comp = { ...s.comp, label: "THE VOICE'S GAME" };
+      const HOHW = /\bHead of Household\b|\bHOH\b/i;
+      s.steps = (s.steps || []).map(st => {
+        const { hoh, ...r } = st;
+        // (the side panel's "won the game this week" reads the winner's flag)
+        if (r.win) return { ...r, hoh, t: `${r.win} wins the Voice's game!`, toast: ["THE VOICE'S GAME", '#e0b84a'] };
+        if (typeof r.t === 'string' && HOHW.test(r.t)) return r.k === 'beat' ? { ...r, t: r.t.replace(/\bHeads? of Household\b|\bHOHs?\b/gi, "the Voice's game") }
+          : { ...r, t: pickBy(['Yes! Oh my god, yes!', 'I needed that. I really needed that.', 'Okay. Okay! Breathe.', "Let's see what the Voice gives me."], `${ctx.week}|ssg|${r.by}`) };
+        return r;
+      });
+    }
     const NOT_HERE = /\b(veto|POV|jury|jurors?|backdoor\w*|pawns?)\b/i;
     // (on its own screens, only the house's words replayed there: the week's package, the airlock)
     for (const s of out) { const own = /^bb-ss-/.test(String(s.id || '')); s.steps = (s.steps || []).filter(st => !(typeof st.t === 'string' && st.k !== 'host' && (!own || st.k === 'beat') && NOT_HERE.test(st.t))); }

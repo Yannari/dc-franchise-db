@@ -93,23 +93,39 @@ const topStat = (p, i) => {
 
 /**
  * The arrivals in groups, as the real launch brings them on: the first alone (the privilege), then two by two, a
- * three when the numbers need it. A pair who share a secret come on together about half the time.
+ * three when the numbers need it. The housemates who share a secret ALWAYS come on together (the user, 2026-10-28:
+ * "why is he not with the person sharing his secret"): one reveal for the two of them, then the Voice sends them in
+ * one at a time. Everybody else walks on with somebody who shares nothing with them.
  * @param {string[]} order @param {any[]} secrets @param {string} key
  */
 export function arrivalGroups(order, secrets, key) {
-  const h = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-  const partnerOf = n => { const s = secrets.find(x => (x.holders || []).includes(n) && (x.holders || []).length === 2); return s ? s.holders.find(x => x !== n) : null; };
-  const rest = order.slice(1);
-  /** @type {string[][]} */ const groups = order.length ? [[order[0]]] : [];
-  while (rest.length) {
-    const x = rest.shift();
-    const p = partnerOf(x);
-    if (p && rest.includes(p) && h(`${key}|${x}|${p}`) % 2 === 0) { rest.splice(rest.indexOf(p), 1); groups.push([x, p]); continue; }
-    // (never split a partner off from a pair that is about to come on together)
-    const y = rest.find(z => !(partnerOf(z) && rest.includes(/** @type {string} */ (partnerOf(z))) && partnerOf(z) !== x && h(`${key}|${z}|${partnerOf(z)}`) % 2 === 0));
-    if (y && rest.length !== 2) { rest.splice(rest.indexOf(y), 1); groups.push([x, y]); }
-    else if (rest.length === 2) { groups.push([x, ...rest.splice(0)]); }
-    else groups.push([x]);
+  void key;
+  const at = n => order.indexOf(n);
+  // the units: a shared secret's holders together (in the Voice's order), everybody else alone
+  const seen = new Set();
+  /** @type {string[][]} */ const units = [];
+  for (const n of order) {
+    if (seen.has(n)) continue;
+    const s = secrets.find(x => (x.holders || []).length > 1 && (x.holders || []).includes(n));
+    const unit = s ? s.holders.filter(h => at(h) >= 0 && !seen.has(h)).sort((a, b) => at(a) - at(b)) : [n];
+    for (const h of unit) seen.add(h);
+    units.push(unit.length ? unit : [n]);
+  }
+  // the first through the door is alone: the first single
+  /** @type {string[][]} */ const groups = [];
+  const lead = units.findIndex(u => u.length === 1);
+  if (lead >= 0) groups.push(units.splice(lead, 1)[0]);
+  /** @type {string[]} */ let singles = [];
+  const flush = () => { while (singles.length >= 2) groups.push(singles.splice(0, 2)); };
+  for (const u of units) {
+    if (u.length > 1) { flush(); groups.push(u); continue; }
+    singles.push(u[0]);
+    flush();
+  }
+  // one left over: a three with the last pair of strangers, or alone
+  if (singles.length) {
+    const last = groups.length > 1 && groups.at(-1).length === 2 && !secrets.some(x => (x.holders || []).length > 1 && groups.at(-1).every(h => x.holders.includes(h))) ? groups.at(-1) : null;
+    if (last) last.push(singles[0]); else groups.push([singles[0]]);
   }
   return groups;
 }
@@ -173,7 +189,8 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const xs = n => (n <= 1 ? [50] : n === 2 ? [36, 64] : [28, 50, 72]);
   groups.forEach((g, gi) => {
     const kk = `${k}|g${gi}`;
-    const shared = g.length === 2 && secretOf(g[0]) && secretOf(g[0]) === secretOf(g[1]) && (secretOf(g[0]).holders || []).length > 1;
+    const shared = g.length >= 2 && !!secretOf(g[0]) && g.every(n => secretOf(n) === secretOf(g[0])) && (secretOf(g[0]).holders || []).length > 1;
+    const youAll = g.length > 2 ? 'you three' : 'you two';
     const they = g.length > 1 ? 'they' : (pronouns(g[0]).sub || 'they');
     const them = g.length > 1 ? 'them' : (pronouns(g[0]).obj || 'them');
     const STU = { set: 'studio-wide', plate: 'ss-studio', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio', cast: g.map((n, i) => [n, xs(g.length)[i]]) };
@@ -190,12 +207,12 @@ export function ssLaunchScreens(act, ctx, host, H) {
     steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing.`], `${kk}|hi`)
       : pickBy([`Welcome, ${g.length > 2 ? 'all three of you' : 'both of you'}! How are you feeling?`, 'Welcome to Secret Story! Nervous?', `Look at you ${g.length > 2 ? 'three' : 'two'}. How are the nerves?`], `${kk}|hi`) });
     g.forEach((n, j) => steps.push({ k: 'say', by: n, t: ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length] }));
-    if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, you two didn't arrive together by accident, did you?`, `You two seem very comfortable together. Interesting...`], `${kk}|pair`) },
+    if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, ${youAll} didn't arrive together by accident, did you?`, `${youAll.replace(/^./, c => c.toUpperCase())} seem very comfortable together. Interesting...`], `${kk}|pair`) },
       { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
     // the secrets, to the public only: the audience holds up the signs
     g.forEach((n, j) => {
       const s = secretOf(n);
-      if (!s || (shared && j === 1)) return;
+      if (!s || (shared && j > 0)) return;
       const i = count + j;
       steps.push(i === 0
         ? ssv(`${n}, you're the first to enter the House of Secrets, and that's a privilege. But every privilege comes with a price. Tonight, it's the public who will reveal your secret. Right now.`)
@@ -203,7 +220,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       { k: 'beat', t: `The audience lifts its signs, all at once: "${s.text}."`, toast: ['ONLY THE PUBLIC KNOWS', '#7c5cff'], shake: i === 0 },
       { k: 'say', by: n, t: pickRot(["Yeah... that's my secret.", "Oh no. Yep, that's it.", "That's me. Nobody in there can ever know.", "Seeing it written down like that is so weird.",
         "That's mine. Please don't show that to anybody else.", "Wow. Okay. That's real now.", "Yep. That's the one thing I can't let slip."], i) });
-      if (shared) steps.push({ k: 'host', by: host, t: `One secret, two of you. And nobody in that house can ever know you've met before tonight.` });
+      if (shared) steps.push({ k: 'host', by: host, t: `One secret, ${g.length > 2 ? 'three' : 'two'} of you. And nobody in that house can ever know you've met before tonight.` });
       else if ((s.holders || []).length > 1) steps.push({ k: 'host', by: host, t: `And ${n} isn't the only one keeping it. Somebody else in that house shares this secret.` });
     });
     steps.push({ k: 'host', by: host, t: `${listOf(g)}, the airlock is waiting for you. While ${they} head${g.length > 1 ? '' : 's'} over there, let's get to know ${them} a little better.` });
@@ -234,7 +251,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       if (code && code.who === n) steps.push(ssv(`${n}, here is your first mission. A key is waiting for you in locker number four in the laundry. The code is four numbers: ${code.from[0]}'s shoe size, then the number of eggs in the pantry.`),
         ssv(`Only ${listOf(code.from)} can help you, and they mustn't find out why.`, { toast: ['FIRST MISSION', '#e0b84a'] }));
     }
-    if (shared) steps.push(ssv(`${listOf(g)}, the Voice welcomes you to Secret Story. To keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${g[1]}, you wait here.`),
+    if (shared) steps.push(ssv(`${listOf(g)}, the Voice welcomes you to Secret Story. To keep anybody from suspecting a thing, you will not walk in together. ${g[0]}, you go in first. ${listOf(g.slice(1))}, you wait here.`),
       { k: 'beat', t: `${g[1]} squeezes ${g[0]}'s hand once, and lets go.`, tense: [g[0], g[1]] });
     const goers = shared ? [g[0]] : g;
     // a hidden group (js/ss/hidden-groups.js): its members go to their space, not into the house
@@ -263,11 +280,11 @@ export function ssLaunchScreens(act, ctx, host, H) {
     if (toSpace.length) { steps.push(...launchToSpaceSteps(act.group, toSpace, H, kk, spaceSent)); spaceSent.push(...toSpace); }
     if (hide && inHouse.includes(hide.who)) steps.push({ k: 'beat', t: `${hide.who} runs off and starts opening every door.` },
       { k: 'beat', t: hide.ok ? `${hide.who} finds it in the pantry, tears it into pieces, and pushes the pieces under a mattress just in time.` : `${hide.who} finds it, rips it in half, and stuffs it behind a cushion. Half the words are still showing.` });
-    if (shared) {
-      steps.push({ k: 'beat', scene: SAS && { ...SAS, cast: [[g[1], 50]] }, t: `Back in the airlock, ${g[1]} waits alone, counting to a hundred.` },
-        ssv(`${g[1]}, you may now enter the House of Secrets. That is all for now.`));
-      enter([g[1]], false);
-      inside.push(g[1]);
+    if (shared) for (const n of g.slice(1)) {
+      steps.push({ k: 'beat', scene: SAS && { ...SAS, cast: [[n, 50]] }, t: `Back in the airlock, ${n} waits alone, counting to a hundred.` },
+        ssv(`${n}, you may now enter the House of Secrets. That is all for now.`));
+      enter([n], false);
+      inside.push(n);
     }
     if (code && g.includes(code.who) && inside.includes(code.who) && inside.includes(code.from[0])) steps.push({ k: 'say', by: code.who, t: `${code.from[0]}, random question. What shoe size are you?` },
       { k: 'say', by: code.from[0], t: pickBy(['Why do you want to know that?', "That's the weirdest first question anyone's ever asked me."], `${kk}|shoe`) },

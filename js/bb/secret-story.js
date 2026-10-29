@@ -389,6 +389,14 @@ export function huntCtx(week, rng) {
  * Voice's clue on the table, then the buzzer. Returns the acts, in order.
  * Bonds and the public move with every buzz (§5 consequences).
  */
+/**
+ * Week one is launch night and the days: nobody is nominated and there is no prime until week two (the user,
+ * 2026-10-28: "for launch night just do the launch prime then the days; the first elimination prime is at episode 2,
+ * and episode 2 starts normally, days, then the prime").
+ * @param {number} n the week
+ */
+export function ssNoPrimeWeek(n) { return Number(n) === 1; }
+
 export function runSecretHunt({ week = undefined, house = [], rng = Math.random, gameWinner = null } = {}) {
   const state = ssState();
   if (!state) return [];
@@ -406,7 +414,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   if (ctx.week > 1) weekPasses(state, room);
   // The Voice's game: what the week's winner wins (§8, §15).
   if (week && gameWinner && room.includes(gameWinner)) {
-    const g = settleWeeklyGame(state, ctx, { winner: gameWinner, house: room });
+    const g = settleWeeklyGame(state, ctx, { winner: gameWinner, house: room, noNoms: ssNoPrimeWeek(ctx.week) });
     week._ssImmune = g.immune; week._ssMaster = g.masterPick;
     if (g.act) acts.push(g.act);
     if (g.clueAct) acts.push(g.clueAct);

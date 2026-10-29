@@ -95,7 +95,7 @@ import { runPremiereMystery } from './premiere-mystery.js';
 import { runTemptationPremiere } from './temptation-premiere.js';
 import { runMachinePremiere } from './machine-premiere.js';
 import { runCliqueReturnees } from './clique-returnees.js';
-import { ssOn, assignSecrets, ssLaunchGroup, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime } from './secret-story.js';
+import { ssOn, assignSecrets, ssLaunchGroup, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime, ssNoPrimeWeek } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
 import { generateBBJuryHouse } from './jury-house.js';
@@ -3848,6 +3848,20 @@ export function simulateBBWeek(options = {}) {
   // competition hiding powers inside it still hands them out — which is what
   // makes this pairable with the secret power competition: a whole episode
   // whose only outcome is who is holding what.
+  // SECRET STORY'S FIRST WEEK: launch night and the days, nobody nominated, no prime (js/bb/secret-story.js
+  // ssNoPrimeWeek). The missions given on the night carry on to next week's prime.
+  if (ss && !compressed && ssNoPrimeWeek(week.num)) {
+    // the week's hunt (the game's prize, the missions, the buzzes, the party) airs as it would before the nominations,
+    // and the days go on: a second stretch of house life where the nominations would have been
+    for (const a of week._ssHunt || []) week.acts.push(addBeats(a, { players: a.type === 'ss-buzz' ? [a.by, a.target] : [...(a.holders || [])] }));
+    delete week._ssHunt;
+    houseAct('post-hoh');
+    week.nominees = [];
+    week.evicted = null;
+    week.ssNoPrime = true;
+    gs.bb.weeks.push(week);
+    return week;
+  }
   if (week.twistState?.rules?.cancelEviction) {
     week.nominees = [];
     week.evicted = null;

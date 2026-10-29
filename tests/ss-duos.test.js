@@ -82,7 +82,10 @@ describe('a real couple in a season', () => {
     const s = gs.bb.secretStory;
     expect(s.secrets.find(x => x.holders.includes('Bowie'))).toMatchObject({ kind: 'real-pair', holders: ['Bowie', 'Chase'] });
     const acts = gs.episodeHistory.flatMap(r => r.acts.filter(a => a.type === 'ss-duo'));
-    expect(acts.length).toBeGreaterThanOrEqual(2);
+    // (a moment two weeks in three, for as long as both are in the house)
+    const together = gs.episodeHistory.filter(r => ['Bowie', 'Chase'].every(n => (r.houseAtStart || []).includes(n))).length;
+    expect(together).toBeGreaterThanOrEqual(2);
+    expect(acts.length).toBeGreaterThanOrEqual(Math.ceil(together / 2));
     const all = gs.episodeHistory.flatMap(r => bbWeekSteps(r, { host: 'Josh' }));
     const text = all.flatMap(sc => sc.steps.map(x => String(x.t || '')));
     expect(text.some(t => /never met|not one look/i.test(t))).toBe(true);

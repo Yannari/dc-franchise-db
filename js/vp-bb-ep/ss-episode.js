@@ -146,10 +146,11 @@ export function ssArrange(out, row, o) {
     out.splice(i, 1);
     i--;
   }
-  // the Voice's game's winner goes with the game itself
+  // what the Voice's game won airs right after the game, on its own screen (the user, 2026-10-28: "we need a screen
+  // right after telling us what they won")
   {
     const g = idx(/^bb-ss-game-w/), comp = idx(/^bb-hoh-v$/);
-    if (g >= 0 && comp >= 0 && (out[g].steps || []).length <= 6) { out[comp].steps = [...out[comp].steps, ...out[g].steps]; out.splice(g, 1); }
+    if (g >= 0 && comp >= 0 && g !== comp + 1) { const [G] = out.splice(g, 1); out.splice(idx(/^bb-hoh-v$/) + 1, 0, G); }
   }
 
   // the narrator opens the days, and closes them before the prime
@@ -221,8 +222,17 @@ function ssTonightScreen(row, o) {
   const acts = row.acts || [];
   const prime = acts.find(a => a?.type === 'ss-prime');
   const noms = prime?.nominees || acts.find(a => a?.type === 'nominations')?.nominees || [];
-  if (!noms.length) return null;
   const k = `${week}|tonight`;
+  // the first week has no nominations and no prime (js/bb/secret-story.js ssNoPrimeWeek): the narrator closes the
+  // days on what is coming
+  if (!noms.length && row.ssNoPrime) return { id: `bb-ss-tonight-w${week}`, kind: 'twist', anchor: 'start', day: 1, week, time: '23:30', ...LIVING, plate: 'living-sofas',
+    kicker: 'Secret Story', title: 'Tonight', label: 'Tonight', sub: 'The first week ends', cast: [], ss: true, steps: [
+      { k: 'beat', t: pickBy(['A week ago they were strangers. Tonight, some of them would already trust each other with anything, except their secret.',
+        'One week in the House of Secrets. The friendships are made, the first suspicions too, and not one secret has fallen yet.',
+        'The first week ends. The lights go out, and nobody in the house is asleep.'], `${k}|n`), toast: ['TONIGHT', '#ff3ea5'] },
+      { k: 'beat', t: "And next week, the game gets serious: the Voice will call them to the confessional, one by one, for the first nominations. And at the prime, the public will send the first of them home." },
+      o.ssv('The Voice will see you very soon. That is all for now.', { toast: ['THE VOICE', '#e0b84a'] })] };
+  if (!noms.length) return null;
   const party = acts.find(a => a?.type === 'ss-party');
   const love = party && (party.moments || []).find(m => m.kind === 'kiss');
   const segs = (prime?.segments || []).map(s => s.kind);

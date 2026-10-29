@@ -350,10 +350,16 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
       const a = ANCHOR_OF(L.id);
       if (a) { if (a !== type) { occ[a] = (occ[a] || 0) + 1; type = a; key = `${a}#${occ[a]}`; after[key] ||= []; } continue; }
       if (REPLACED.test(L.id)) continue;
+      // (Big Brother's House Status boards count HOHs, vetoes and nominations: a Secret Story house has none of them)
+      if (o.season === 'secret-story' && /^bb-overview(-after)?$/.test(L.id)) continue;
       // In the House Life view the segment IS the stretch's house life, so the classic House
       // Life screen (the full record, the powers band, the payout, the season's register) goes
       // inside it, under the stage, instead of airing beside it as a second House Life screen.
       if (houseLife && /^bb-house-\d+(-\d+)?$/.test(L.id) && segKeys.has(key)) { (houseOf[key] ||= []).push(L); continue; }
+      // A Secret Story week is rearranged (the prime's house life moves after it), so a stretch can lose its segment:
+      // its record goes inside the last segment instead of airing as a classic screen after the verdict (the user,
+      // 2026-10-28: "why do we have a classic viewer house life after the verdict")
+      if (houseLife && o.season === 'secret-story' && /^bb-house-\d+(-\d+)?$/.test(L.id)) { const last = [...segKeys].at(-1); (houseOf[last] ||= []).push(L); continue; }
       after[key].push(L);
     }
   }

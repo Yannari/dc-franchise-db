@@ -59,11 +59,12 @@ function masterPick(state, ctx, master, house) {
  * The week's game is won; settle the prize. Returns
  * `{ act, immune: [names], masterPick: name|null, clueAct }`.
  */
-export function settleWeeklyGame(state, ctx, { winner = undefined, house = [] } = {}) {
+export function settleWeeklyGame(state, ctx, { winner = undefined, house = [], noNoms = false } = {}) {
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
   if (!winner) return { act: null, immune: [], masterPick: null, clueAct: null };
-  if (state.weekly === 'revival') {
+  // (a week with no nominations, the first: immunity and the Master's direct pick would win nothing)
+  if (state.weekly === 'revival' && !noNoms) {
     const pick = masterPick(state, ctx, winner, house);
     return {
       immune: [winner], masterPick: pick, clueAct: null,
@@ -72,7 +73,7 @@ export function settleWeeklyGame(state, ctx, { winner = undefined, house = [] } 
           players: [winner, pick].filter(Boolean), badgeText: 'MASTER OF THE HOUSE', badgeClass: 'gold', part: 'game' }] },
     };
   }
-  const prize = draw(CLASSIC_PRIZES, rng);
+  const prize = draw(noNoms ? CLASSIC_PRIZES.filter(p => p.id !== 'immunity') : CLASSIC_PRIZES, rng);
   let clueAct = null, amount = 0, target = null;
   if (prize === 'clue') {
     target = clueTarget(state, winner, house, rng);

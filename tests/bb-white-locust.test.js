@@ -329,3 +329,25 @@ describe('a season saved before the resort loser counted', () => {
     expect(door.residents).toContain(gone);
   });
 });
+
+import { catchUpBBExits } from '../js/bb/exit-interview.js';
+import { extractLiveSeasonSnapshot } from '../js/stats-export.js';
+describe('publishing a season saved before the fix, without another week', () => {
+  it('sends the resort loser\'s interview and draws them out of the house on On Air', () => {
+    const week = playToResort(313, 6);
+    const gone = week.resortEvicted;
+    gs.exitInterviews = (gs.exitInterviews || []).filter(r => r.guest !== gone);
+    catchUpBBExits();
+    catchUpBBExits();
+    const recs = gs.exitInterviews.filter(r => r.guest === gone);
+    expect(recs.length, 'interviewed twice, or not at all').toBe(1);
+    expect(recs[0].week).toBe(week.num);
+    expect(recs[0].how).toBe('lost-challenge');
+    const other = gs.exitInterviews.find(r => r.guest === week.evicted && r.week === week.num);
+    if (other) expect(recs[0].placement).toBe(other.placement + 1);
+    const snap = extractLiveSeasonSnapshot();
+    const p = snap.players.find(x => x.name === gone);
+    expect(p.status, 'still drawn in the house').not.toBe('in');
+    if (seatedJurors().includes(gone)) expect(p.status).toBe('jury');
+  });
+});

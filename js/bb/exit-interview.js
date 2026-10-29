@@ -19,6 +19,7 @@ import { gs } from '../core.js';
 import { isSeatedJuror, weekExits } from './jury.js';
 import { campers } from './camp-comeback.js';
 import { deliverInterviews } from '../exit-interview/core.js';
+import { exitRng } from '../exit-interview/aired.js';
 import { exitStore as store, HOUSE_OPS as OPS, houseFacts, recordHouseExit, publishedExits } from '../exit-interview/house.js';
 
 const active = () => gs.activePlayers || [];
@@ -96,7 +97,7 @@ export function recordBBExits(week, { rng = Math.random } = {}) {
  * (the user: "i dont see nina final interview exit"). Only weeks the interviews were running for (one of that week's
  * exits has a record), so a season saved before Kristal-talKs existed does not record a whole season at once.
  */
-function catchUp(week, rng) {
+function catchUp(week, rng, { andThisWeek = false } = {}) {
   const weeks = (gs.bb?.weeks || []).filter(w => w && w !== week && Number(w.num) < Number(week.num));
   const all = [...weeks, week].flatMap(w => weekExits(w).map(x => ({ ...x, week: w })))
     .filter((x, i, a) => a.findIndex(y => y.name === x.name && y.week === x.week) === i);
@@ -104,7 +105,7 @@ function catchUp(week, rng) {
   const known = new Set(store().filter(r => r.show === 'big-brother').map(r => r.guest));
   const out = [];
   all.forEach((x, i) => {
-    if (x.week === week || known.has(x.name) || !goneForGood(x.name)) return;
+    if ((x.week === week && !andThisWeek) || known.has(x.name) || !goneForGood(x.name)) return;
     if (!weekExits(x.week).some(y => live.has(`${x.week.num}|${y.name}`))) return;
     const chain = x.how === 'white-locust'
       ? ((x.week.acts || []).find(a => a?.type === 'white-locust')?.rounds || []).find(r => r && !r.made && r.target === x.name)?.caller || null
@@ -119,6 +120,24 @@ function catchUp(week, rng) {
     known.add(x.name);
   });
   return out;
+}
+
+/**
+ * Publishing (the live sync, the season export): the same catch-up, the last week played included, so a season
+ * saved before 2026-10-29 sends its White Locust loser's interview without playing another week first (the user:
+ * "rn with just ep11 it doesnt add the kristal exit interview"). Recording twice is impossible: a guest with an
+ * interview on file is skipped.
+ */
+export function catchUpBBExits() {
+  const weeks = gs.bb?.weeks || [];
+  const last = weeks[weeks.length - 1];
+  if (!last) return [];
+  try {
+    return catchUp(last, exitRng('bb-catch-up', last.num, (gs.activePlayers || []).join()), { andThisWeek: true });
+  } catch (e) {
+    if (typeof process !== 'undefined' && process.env?.EXIT_DEBUG) throw e;
+    return [];
+  }
 }
 
 /**

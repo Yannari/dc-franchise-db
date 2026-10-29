@@ -11,12 +11,12 @@ import { buildPerfectMatchSeasonDocument } from './pm/export.js';
 import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT, BB_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf, careerShowOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
-import { weekExits } from './bb/jury.js';
+import { weekExits, seatedJurors } from './bb/jury.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
 import { ratingsForSeason, publishedRatings } from './ratings.js';
-import { publishedExitInterviews } from './bb/exit-interview.js';
+import { publishedExitInterviews, catchUpBBExits } from './bb/exit-interview.js';
 import { secretStoryExport } from './bb/secret-story.js';
 import { canonSecretsOf } from './ss/canon.js';
 import { publishedTDExitInterviews } from './td/exit-interview.js';
@@ -383,6 +383,14 @@ function _extractPlayerPlacements() {
          handled rather than being a fourth entry on this list. */
       ...((ep.exits || []).map(x => (x && x.name) || x)),
     ].filter(Boolean);
+    // A Big Brother week's resort exit (the White Locust, the Camp Director) is on its act, never ep.eliminated, so
+    // the live standings kept that houseguest "in" (the user, 2026-10-29: "nina is still in the game in the on-air
+    // page"). Out before the week's vote, so just ahead of it.
+    for (const a of (ep.acts || [])) {
+      if ((a?.type === 'white-locust' || a?.type === 'camp-director') && a.evicted && !elimNames.includes(a.evicted)) {
+        permanentExit[a.evicted] = ep.num - (ep.eliminated && ep.eliminated !== a.evicted ? 0.5 : 0);
+      }
+    }
 
     for (const name of elimNames) {
       // If this player returned from RI, this is their real final exit
@@ -3211,6 +3219,7 @@ export function buildBigBrotherSeasonDocument(seasonNumber, { format = seasonFor
   }
   // Kristal-talKs' in-season exit interviews: the decisions the simulator
   // made, which kristal.html writes into words (js/kristal-exit.js).
+  catchUpBBExits();
   doc.exitInterviews = publishedExitInterviews();
   // ── SECRET STORY: the hunt, the kitty and the public's final vote ──
   // No jury: the public crowned the winner, and the share each finalist got is
@@ -5587,7 +5596,9 @@ export function extractLiveSeasonSnapshot() {
 
   const episode = history.length;
   const names = _allPlayerNames();
-  const jury = new Set(gs.jury || []);
+  // Big Brother seats its jury from the weeks ledger (bb/jury.js) and leaves gs.jury empty, so every juror went up
+  // to the On Air page as plain "out"; the ledger seats the White Locust's loser too
+  const jury = new Set([...(gs.jury || []), ...(gs.bb?.weeks?.length ? seatedJurors() : [])]);
 
   // ── WHICH SHOW'S COMPETITIONS THESE ARE ──
   //
@@ -5785,7 +5796,7 @@ export async function syncLiveEpisode(onStatus) {
   try {
     const fmt = snap.format || DEFAULT_FORMAT;
     const list = fmt === 'total-drama' ? publishedTDExitInterviews()
-      : engineOf(fmt) === BB_FORMAT ? publishedExitInterviews() : publishedExits(fmt);
+      : engineOf(fmt) === BB_FORMAT ? (catchUpBBExits(), publishedExitInterviews()) : publishedExits(fmt);
     let sdb = { seasons: [] };
     try { const r = await fetch('seasons_database.json'); if (r.ok) sdb = await r.json(); } catch {}
     const win = _airWindowFor(sdb, fmt, snap.seasonNumber);

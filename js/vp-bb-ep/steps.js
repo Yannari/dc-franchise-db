@@ -4044,23 +4044,60 @@ function ssVoluntaryScreen(seg, ctx, host) {
 // are a season setting (Season Setup, "The public's percentages"): shown, shown only once the name is out, or never.
 const ssPctMode = () => { const v = SEASON_CFG?.ssPercents; return v === 'show' || v === 'hide' ? v : 'end'; };
 const genderWord = n => { const s = String(pronouns(n)?.sub || '').toLowerCase(); return s === 'she' ? 'woman' : s === 'he' ? 'man' : null; };
-function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }) {
+/**
+ * The order the saved go back into the house (the user, 2026-10-29: "the re-entry order isnt based on the percentage to
+ * increase suspense (put 2 bff/2 showmance/family etc) so they have their moment intense and not spoil"): never the
+ * vote's order, which gave the result away; the last one called stands in the airlock with whoever is closest to the
+ * one going home (the other half of a couple, a secret kept together, the best friend), and the rest go in an order
+ * nothing can be read from.
+ */
+/** @param {string[]} saved @param {string} k @param {(n: string) => number} [tie] */
+function reentryOrder(saved, k, tie = undefined) {
+  const T = tie || (() => 0);
+  const last = saved.slice().sort((a, b) => T(b) - T(a))[0];
+  return [...saved.filter(n => n !== last).sort((a, b) => hash(`${k}|in|${a}`) - hash(`${k}|in|${b}`)), ...(last ? [last] : [])];
+}
+// the tie between the one going home and one of the others: a couple, a secret kept together, a friendship
+function verdictTies(ctx, ev) {
+  const couples = (ctx.row?.acts || []).find(x => x?.type === 'ss-prime')?.couples || [];
+  const mate = couples.map(c => (c.a === ev ? c.b : c.b === ev ? c.a : null)).find(Boolean) || null;
+  const secrets = /** @type {any} */ (globalThis).gs?.bb?.secretStory?.secrets || [];
+  const kin = n => secrets.some(s => (s.holders || []).length > 1 && s.holders.includes(ev) && s.holders.includes(n));
+  return {
+    tie: n => (n === mate ? 100 : kin(n) ? 90 : bondNow(ctx, ev, n)),
+    kind: n => (n === mate ? 'couple' : kin(n) ? 'kin' : bondNow(ctx, ev, n) >= 4 ? 'friends' : ''),
+  };
+}
+function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host, ties = undefined }) {
   const show = ssPctMode();
   const board = (who, all = false) => (show === 'show' || (show === 'end' && all)) ? { board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: all || who.includes(x) ? `${pc[x]}%` : '?' })) } } : {};
   /** @type {any[]} */ const steps = [];
   const left = noms.slice();
-  const order = saved.slice().sort((a, b) => (pc[b] || 0) - (pc[a] || 0));
+  const order = reentryOrder(saved, k, ties?.tie);
   const said = [];
   order.forEach((n, i) => {
     const lastTwo = left.length === 2;
-    steps.push({ k: 'host', by: host, bed: 'ss-bailiff', t: lastTwo ? `${listOf(left)}. Two of you left. One of you goes back into the house tonight. The other leaves the adventure.`
+    // the last two, when they are a couple, a family or best friends: their moment before the name
+    const bond = lastTwo && !pairOut ? ties?.kind(n) : '';
+    if (bond) {
+      const [x, y] = [n, ev];
+      steps.push({ k: 'host', by: host, bed: 'ss-bailiff', toast: ['THE LAST TWO', '#ff3ea5'], t: bond === 'couple' ? `${x} and ${y}. A couple, alone in the airlock. Only one of you goes back into the house tonight.`
+          : bond === 'kin' ? `${x} and ${y}. You walked into this house together, and you kept a secret together. Tonight, only one of you walks back in.`
+            : `${x} and ${y}. Best friends since the first week. And now, only one of you goes back into the house.` },
+        { k: 'beat', t: bond === 'couple' ? `${x} and ${y} hold on to each other. Neither of them looks at the screen.` : `${x} and ${y} hold hands so tight their knuckles go white.`, tense: [x, y] },
+        // (each line with its own answer)
+        ...pickBy(bond === 'couple' ? [['Whatever happens, I love you.', 'I love you too. Always.'], ["If it's me, you win this. Promise me.", 'I promise.'], ['Look at me. Not the screen. Me.', "I'm looking. I'm right here."]]
+          : [["Whatever happens, it's been worth it.", 'Every single day of it.'], ["If it's me, you win it for both of us.", "Don't talk like that. Not yet."], ["I don't want to be in here without you.", "We're both staying. We have to be."]], `${k}|lt1`)
+          .map((t, j) => ({ k: 'say', by: j ? x : y, t })));
+    }
+    steps.push({ k: 'host', by: host, bed: 'ss-bailiff', t: lastTwo ? (bond ? 'The one going back into the house tonight is...' : `${listOf(left)}. Two of you left. One of you goes back into the house tonight. The other leaves the adventure.`)
       : i === 0 ? pickBy(['The first housemate the public has chosen to save tonight is...', 'The first housemate going back into the House of Secrets is...'], `${k}|s0`)
         : pickBy(["We start again. The next housemate the public has saved is...", 'And the next one going back into the house is...', 'Next. The public has also saved...'], `${k}|s${i}`) });
     // the hint, when the airlock is mixed: "the one who stays is a woman"
     const words = left.map(genderWord);
     const g = genderWord(n);
     // (the first name and the last two only: a hint every round is a pattern, not suspense)
-    if ((i === 0 || lastTwo) && g && words.includes('woman') && words.includes('man') && words.filter(w => w === g).length < left.length) {
+    if ((i === 0 || (lastTwo && !bond)) && g && words.includes('woman') && words.includes('man') && words.filter(w => w === g).length < left.length) {
       steps.push({ k: 'host', by: host, t: lastTwo ? `The one who stays with us tonight is a ${g}.` : `...a ${g}.` },
         { k: 'beat', t: pickBy([`In the airlock, the ${g === 'woman' ? 'women' : 'men'} squeeze each other's hands a little harder.`, `A gasp from the airlock. Not everybody can be the one.`], `${k}|h${i}`), tense: left.slice() });
     }
@@ -4122,7 +4159,8 @@ function ssVerdictScreen(act, ctx, host) {
   if (mode === 'evict') {
     // THE VOTE TO ELIMINATE (S13): the public voted against; the fewest votes against go first
     steps.push({ k: 'host', by: host, t: "Tonight is different. The public did not vote to save anybody. The public voted to ELIMINATE.", toast: ['A VOTE TO ELIMINATE', '#ff3355'], shake: true });
-    const safe = noms.filter(n => n !== ev).sort((a, b) => (pc[a] || 0) - (pc[b] || 0));
+    // (the same order as a save: never the percentages', which would spoil it)
+    const safe = reentryOrder(noms.filter(n => n !== ev), k, verdictTies(ctx, ev).tie);
     safe.forEach((n, i) => steps.push({ k: 'host', by: host, t: `${n}, only ${pc[n]}% voted against you. You're staying.`, safe: n,
       board: { title: 'VOTES TO ELIMINATE', rows: noms.map(x => ({ n: x, text: safe.indexOf(x) > -1 && safe.indexOf(x) <= i ? `${pc[x]}%` : '?' })) } }));
     steps.push({ k: 'host', by: host, t: `${ev}, ${pc[ev]}% of the public voted against you. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
@@ -4147,7 +4185,7 @@ function ssVerdictScreen(act, ctx, host) {
       { k: 'say', by: power, push: true, t: `${ev}. I'm sorry, ${ev}.` });
     for (const n of noms.filter(x => x !== ev)) steps.push({ k: 'host', by: host, t: `${n}, you're staying.`, safe: n });
     steps.push({ k: 'host', by: host, t: `${ev}, ${power} has chosen. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'], settle: { id: `${k}|out`, answer: ev, n: noms.length } });
-  } else if (mode === 'save' && !power) steps.push(...ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }));
+  } else if (mode === 'save' && !power) steps.push(...ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host, ties: verdictTies(ctx, ev) }));
   if (mode !== 'save' || power) {
     steps.push({ k: 'beat', bed: 'ss-sad', t: pickBy([`${saved[0] || 'The others'} grabs ${ev} and does not let go.`, `${ev} nods, and smiles, and wipes ${pronouns(ev).posAdj || 'their'} eyes.`, `In the living room, somebody screams. ${ev} laughs through the tears.`], `${k}|r`) });
     if (friend) steps.push({ k: 'say', by: friend, t: pickBy([`${ev}, I love you! I'll see you outside!`, `We'll finish this for you, ${ev}!`, `${ev}! You were the best thing in this house!`], `${k}|f`) });

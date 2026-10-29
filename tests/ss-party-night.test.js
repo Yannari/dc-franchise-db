@@ -59,3 +59,25 @@ describe('romance on screen', () => {
     }
   });
 });
+
+// the user, 2026-10-29: "the re-entry order isnt based on the percentage to increase suspense (put 2 bff/2 showmance/
+// family etc) so they have their moment intense and not spoil"
+describe('the verdict', () => {
+  const eps = gs.episodeHistory.filter(e => e?.format === 'big-brother');
+  it('sends the saved back in an order the votes cannot be read from, and leaves the closest tie for last', () => {
+    let unsorted = 0, checked = 0;
+    for (const e of eps) {
+      const act = (e.acts || []).find(a => a?.ssPublic && (a.ssPublic.mode || 'save') === 'save' && !a.ssPublic.power);
+      if (!act || (act.nominees || []).length < 3) continue;
+      const v = bbWeekSteps(e, { host: 'Josh' }).find(s => /^bb-ss-prime-verdict/.test(s.id));
+      const order = v.steps.filter(st => st.safe).map(st => st.safe);
+      const pc = act.ssPublic.percents || {};
+      checked++;
+      if (order.some((n, i) => i && (pc[order[i - 1]] || 0) < (pc[n] || 0))) unsorted++;
+      const mate = ((e.acts || []).find(a => a?.type === 'ss-prime')?.couples || []).map(c => (c.a === act.evicted ? c.b : c.b === act.evicted ? c.a : null)).find(Boolean);
+      if (mate && order.includes(mate)) expect(order.at(-1), `week ${e.num}`).toBe(mate);
+    }
+    expect(checked).toBeGreaterThan(2);
+    expect(unsorted).toBeGreaterThan(0);
+  });
+});

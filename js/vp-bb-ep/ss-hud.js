@@ -168,7 +168,9 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
       <img src="${PROPS}/${P.src}.webp" alt="">${press && P.cue ? `<span class="ssp-cue">${P.cue}</span>` : ''}</div>`;
     if (fresh && !st.press && P.snd) setTimeout(() => sfx(P.snd), 60);
   }
-  if (st.card) {
+  // (a secret's card has no `kind`: one with a kind is the house's alliance card, drawn by the stage itself; read as a
+  // secret it was an empty white card over the alliance's name: the user, 2026-10-28, "what's happening here")
+  if (st.card && !st.card.kind) {
     const C = st.card;
     h += `<div class="ssc ${fresh ? 'fresh' : 'shown'} ${esc(C.state || '')}"><div class="ssc-in">
       <div class="ssc-f ssc-front"><img src="${EYE}" alt=""><b>SECRET</b></div>

@@ -14,14 +14,30 @@ import { seasonConfig, players, kinshipPairs, seasonFormat } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { careerOf } from '../franchise-meta.js';
 import { castSecrets, rerollSecret, writtenSecret, historySecretOptions, recognitions, SS_HOUSE_THEMES, SECRET_KINDS, SECRET_POOL, PRODUCTION_SECRETS, productionSecret, drawProductionSecret, pickedSecret } from './casting.js';
-import { playerAvatarUrl } from '../players.js';
+import { playerAvatarUrl, romanticCompat } from '../players.js';
 import { ROLE_JOBS } from './production.js';
+import { DUO_POOL, duoSecret, drawDuo, duoRel } from './duos.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const persist = () => { try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* private mode */ } };
 const cast = () => (players || []).filter(p => p?.name);
 const careers = n => { try { return careerOf(n) || []; } catch { return []; } };
 const pairs = () => { try { return kinshipPairs() || []; } catch { return []; } };
+const compat = (a, b) => { try { return !!romanticCompat(a, b); } catch { return true; } };
+
+// THE SECRETS YOU WROTE stay yours (the user, 2026-10-28: "when you create a secret, does it stick in the dropdown or
+// does it go?"): every one is kept in this browser's library and offered again in Choose, in this season and the next.
+const LIB = 'ss-own-secrets';
+/** @returns {Array<{ text: string, kind: string }>} */
+export function ownSecrets() {
+  try { const v = JSON.parse(localStorage.getItem(LIB) || '[]'); return Array.isArray(v) ? v.filter(x => x && x.text) : []; } catch { return []; }
+}
+function keepOwn(text, kind) {
+  const t = String(text || '').trim();
+  if (!t) return;
+  const all = ownSecrets().filter(x => x.text.toLowerCase() !== t.toLowerCase());
+  try { localStorage.setItem(LIB, JSON.stringify([{ text: t, kind: kind || 'other' }, ...all].slice(0, 60))); } catch { /* private mode */ }
+}
 
 /** Pool ids nobody may draw: anybody's canon secret anywhere in the roster. */
 function canonTaken() {
@@ -53,6 +69,18 @@ export function ensureSsCast() {
     const d = drawProductionSecret(c, { avoid: new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'canon').map(([n]) => n)) });
     if (d) seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), ...productionSecret(d.def, d.holders) };
     seasonConfig.ssProductionDrawn = castSig;
+  }
+  // and a real tie between two of them, three casts in four, as most real seasons had (a couple first of all: the
+  // user, 2026-10-28, "couple secrets are one of the most common"); drawn once for the cast, and changeable after
+  if (seasonConfig.ssDuoDrawn !== castSig && c.length >= 10 && !Object.values(seasonConfig.ssSecrets || {}).some(e => e?.pair)) {
+    if (Math.random() < 0.75) {
+      const busy = new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'canon' || e?.source === 'production').map(([n]) => n));
+      const r = Math.random();
+      const d = drawDuo(c, { compat, avoid: busy, rel: r < 0.6 ? 'romance' : r < 0.85 ? 'family' : 'friends' }) || drawDuo(c, { compat, avoid: busy, rel: 'friends' });
+      const e = d && duoSecret(d.def, d.a, d.b);
+      if (e) seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), ...e };
+    }
+    seasonConfig.ssDuoDrawn = castSig;
   }
   if (JSON.stringify(seasonConfig.ssSecrets) !== before) persist();
 }
@@ -201,6 +229,9 @@ export function ssSecretsBoardHTML() {
   const shared = new Set(all.filter(e => e?.pair || (e?.group || []).length > 1).map(e => e.text)).size;
   // (a secret already given to somebody, or anybody's canon secret, is not offered twice)
   const takenIds = new Set([...all.map(e => e?.id).filter(Boolean), ...canonTaken()]);
+  // (your own secrets, offered again; one somebody else already keeps is not offered twice)
+  const usedOwn = new Set(all.filter(e => e?.source === 'own').map(e => e.text));
+  const lib = ownSecrets();
   const cards = c.map(p => {
     const e = seasonConfig.ssSecrets?.[p.name];
     const [label, col] = SOURCE[e?.source] || SOURCE.pool;
@@ -209,6 +240,7 @@ export function ssSecretsBoardHTML() {
     const n = esc(p.name);
     const partner = e?.group ? e.group.filter(m => m !== p.name).join(', ') : e?.pair || Object.entries(seasonConfig.ssSecrets || {}).find(([m, x]) => m !== p.name && x?.text && x.text === e?.text)?.[0];
     const job = e?.source === 'production' ? jobOf(e) : null;
+    const mine = lib.filter(x => !usedOwn.has(x.text) || x.text === e?.text);
     return `<div class="ssb-card" style="--sc:${col}">
       <div class="ssb-top">${faceOf(p)}
         <div><div class="ssb-nm">${n}</div><span class="ssb-src">${locked ? '🔒 ' : ''}${label}${job ? ` · ${esc(job[0])}` : ''}</span></div></div>
@@ -221,7 +253,7 @@ export function ssSecretsBoardHTML() {
         <select onchange="ssChoose('${n}',this.value)" title="Pick one of the secrets yourself"><option value="">Choose a secret…</option>${SECRET_KINDS.map(kd => {
           const opts = SECRET_POOL.filter(x => x.kind === kd.id && (!takenIds.has(x.id) || x.id === e?.id));
           return opts.length ? `<optgroup label="${esc(kd.label)}">${opts.map(x => `<option value="${esc(x.id)}" ${x.id === e?.id ? 'selected' : ''}>${esc(x.text)}</option>`).join('')}</optgroup>` : '';
-        }).join('')}</select>
+        }).join('')}${mine.length ? `<optgroup label="Written by you">${mine.map((x, j) => `<option value="own:${j}" ${e?.source === 'own' && e.text === x.text ? 'selected' : ''}>${esc(x.text)}</option>`).join('')}</optgroup>` : ''}</select>
         ${hist.length ? `<select onchange="ssUseHistory('${n}',this.value)" title="Something true from their history"><option value="">From their life…</option>${hist.map((h, j) => `<option value="${j}">${esc(h.text)}</option>`).join('')}</select>` : ''}</div>
       <div class="ssb-write" id="ss-write-${n}"><input id="ss-write-text-${n}" placeholder="I have…">
         <select id="ss-write-kind-${n}">${SECRET_KINDS.map(k => `<option value="${k.id}">${esc(k.label)}</option>`).join('')}</select>
@@ -235,6 +267,7 @@ export function ssSecretsBoardHTML() {
       <div class="ssb-stats"><div class="ssb-stat"><b>${c.length}</b><span>Housemates</span></div><div class="ssb-stat"><b>${prodN}</b><span>Production</span></div><div class="ssb-stat"><b>${shared}</b><span>Shared</span></div>
         <button type="button" class="ssb-btn" onclick="ssRerollAll()" title="Draw again for every housemate whose secret was drawn">🎲 Redraw all</button></div></div>
     ${prodPanelHTML(c)}
+    ${duoPanelHTML(c)}
     <div class="ssb-sec"><div class="ssb-sec-h"><div><h3>The housemates</h3><p>Reroll a secret, write one, or use something true from their life.</p></div></div>
       <div class="ssb-grid">${cards}</div></div>
     ${recog.length ? `<div class="ssb-rec"><div class="ssb-sec-h"><div><h3>Recognised walking in</h3><p>They know each other before the doors open.</p></div></div><div class="ssb-rec-l">${recog.map(r => {
@@ -281,8 +314,8 @@ function prodPanelHTML(c) {
 // the composer's state lives in the page (picking a face never redraws, so what you typed stays)
 const $ = id => (typeof document !== 'undefined' ? document.getElementById(id) : null);
 function prodCheck() {
-  const tile = document.querySelector('.ssb-tile.on');
-  const who = document.querySelectorAll('.ssb-person.on').length;
+  const tile = document.querySelector('#ss-prod-comp .ssb-tile.on');
+  const who = document.querySelectorAll('#ss-prod-comp .ssb-person.on').length;
   const own = tile?.dataset.def === 'own';
   const playsMin = own ? Number(/** @type {HTMLSelectElement|null} */ ($('ss-prod-own-plays'))?.selectedOptions?.[0]?.dataset.min || 1) : 1;
   const min = Math.max(Number(tile?.dataset.min || 1), playsMin), max = Number(tile?.dataset.max || 4);
@@ -307,14 +340,14 @@ export function ssProdEdit(text) {
   el.classList.add('on');
   editing = text;
   const id = (/^prod-(.+)$/.exec(String(e.id || '')) || [])[1];
-  const tile = /** @type {HTMLElement|null} */ (document.querySelector(`.ssb-tile[data-def="${id && PRODUCTION_SECRETS.some(d => d.id === id && d.text === text) ? id : 'own'}"]`));
+  const tile = /** @type {HTMLElement|null} */ (document.querySelector(`#ss-prod-comp .ssb-tile[data-def="${id && PRODUCTION_SECRETS.some(d => d.id === id && d.text === text) ? id : 'own'}"]`));
   if (tile) ssProdPick(tile);
   if (tile?.dataset.def === 'own') {
     const set = (k, v) => { const x = /** @type {HTMLInputElement|null} */ ($(k)); if (x) x.value = v || ''; };
     set('ss-prod-own-text', e.text); set('ss-prod-own-plays', e.plays || ''); set('ss-prod-own-c1', (e.clues || [])[0]); set('ss-prod-own-c2', (e.clues || [])[1]);
   }
   const keep = new Set(all.map(([n]) => n));
-  document.querySelectorAll('.ssb-person').forEach(b => b.classList.toggle('on', keep.has(/** @type {HTMLElement} */ (b).dataset.name || '')));
+  document.querySelectorAll('#ss-prod-comp .ssb-person').forEach(b => b.classList.toggle('on', keep.has(/** @type {HTMLElement} */ (b).dataset.name || '')));
   const go = $('ss-prod-go');
   if (go) go.textContent = 'Save the changes';
   el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -337,7 +370,7 @@ export function ssProdOpen(open = true) {
 }
 /** Step 1: a secret from the seasons, or "write my own". */
 export function ssProdPick(tile) {
-  document.querySelectorAll('.ssb-tile.on').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('#ss-prod-comp .ssb-tile.on').forEach(t => t.classList.remove('on'));
   tile.classList.add('on');
   $('ss-prod-own')?.classList.toggle('on', tile.dataset.def === 'own');
   prodCheck();
@@ -346,12 +379,12 @@ export function ssProdPick(tile) {
 export function ssProdWho(btn) { btn.classList.toggle('on'); prodCheck(); }
 /** Casts the composed production secret on the chosen housemates. */
 export function ssProdCast() {
-  const tile = /** @type {HTMLElement|null} */ (document.querySelector('.ssb-tile.on'));
+  const tile = /** @type {HTMLElement|null} */ (document.querySelector('#ss-prod-comp .ssb-tile.on'));
   const sel = tile?.dataset.def;
   const val = id => String(/** @type {HTMLInputElement|null} */ ($(id))?.value || '').trim();
   const clues = [val('ss-prod-own-c1'), val('ss-prod-own-c2')].filter(Boolean);
   const def = sel === 'own' ? { text: val('ss-prod-own-text'), plays: val('ss-prod-own-plays') || undefined, ...(clues.length ? { clues } : {}) } : PRODUCTION_SECRETS.find(d => d.id === sel);
-  const who = [...document.querySelectorAll('.ssb-person.on')].map(x => /** @type {HTMLElement} */ (x).dataset.name || '').filter(Boolean);
+  const who = [...document.querySelectorAll('#ss-prod-comp .ssb-person.on')].map(x => /** @type {HTMLElement} */ (x).dataset.name || '').filter(Boolean);
   if (!def?.text || !who.length) return;
   const max = def.max || 6;
   const holders = who.slice(0, max);
@@ -380,6 +413,133 @@ export function ssProdDraw() {
 export function ssProdRemove(text) {
   const next = { ...(seasonConfig.ssSecrets || {}) };
   for (const [n, e] of Object.entries(next)) if (e?.source === 'production' && e.text === text) {
+    const r = rerollSecret(playerNamed(n), next, { taken: canonTaken() });
+    if (r) next[n] = r; else delete next[n];
+  }
+  seasonConfig.ssSecrets = next;
+  persist(); renderSsSecrets();
+}
+
+// THE SHARED SECRETS (the user, 2026-10-28: "where is the secret we are a couple, married... it's not production per
+// se, but a duo secret can be personal"): two housemates keeping one secret, a real tie (js/ss/duos.js). Cast them here
+// like the production ones: choose the tie, then the two who keep it. Each week they have to hide it (js/ss/couples.js).
+const REL_LABEL = { romance: 'A couple', family: 'Family', friends: 'Friends' };
+function duoPanelHTML(c) {
+  const seen = new Set();
+  const cur = [];
+  for (const [n, e] of Object.entries(seasonConfig.ssSecrets || {})) {
+    if (!e?.pair || e.source === 'production' || e.source === 'canon') continue;
+    const k = [n, e.pair].sort().join('|');
+    if (seen.has(k)) continue;
+    seen.add(k);
+    cur.push({ a: n, b: e.pair, e });
+  }
+  const env = ({ a, b, e }) => {
+    const who = [a, b].map(n => c.find(p => p.name === n)).filter(Boolean);
+    const key = esc(a).replace(/'/g, '&#39;');
+    return `<div class="ssb-env" style="--ec:#19d3c5"><button type="button" class="ssb-x" title="Take it away (they draw secrets of their own)" onclick="ssDuoRemove('${key}')">✕</button>
+      <div class="ssb-env-k">${esc(REL_LABEL[duoRel(e)] || 'Two of them')}</div>
+      <div class="ssb-env-q">“${esc(e.text)}”</div>
+      <div class="ssb-env-job">Every week: they hide it. A stolen moment, a slip, a jealous night, or defending each other too fast.</div>
+      <div class="ssb-env-who"><span class="ssb-faces">${who.map(faceOf).join('')}</span><span class="ssb-env-names">${esc(who.map(p => p.name).join(' & '))}</span></div></div>`;
+  };
+  const busy = new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'production' || e?.source === 'canon' || e?.pair).map(([n]) => n));
+  return `<div class="ssb-sec"><div class="ssb-sec-h"><div><h3>Shared secrets</h3><p>Two housemates, one secret: a couple, a family, two friends. They walk in pretending they have never met.</p></div>
+      <button type="button" class="ssb-btn" onclick="ssDuoDraw()" title="Draw a tie between two of them">🎲 Draw one</button></div>
+    <div class="ssb-env-row">${cur.map(env).join('')}
+      <button type="button" class="ssb-new" onclick="ssDuoOpen()"><b>+ New shared secret</b><span>Choose the tie, then the two</span></button></div>
+    <div class="ssb-comp" id="ss-duo-comp"><button type="button" class="ssb-x" style="position:relative;float:right;right:0;top:0" title="Close" onclick="ssDuoOpen(false)">✕</button>
+      <div class="ssb-step"><div class="ssb-step-h"><i>1</i>Choose the tie <small>· or write your own</small></div>
+        <div class="ssb-tiles">${DUO_POOL.map(d => `<button type="button" class="ssb-tile" data-duo="${d.id}" onclick="ssDuoPick(this)"><b>“${esc(d.text)}”</b><span>${esc(REL_LABEL[d.rel])}</span></button>`).join('')}
+          <button type="button" class="ssb-tile own" data-duo="own" onclick="ssDuoPick(this)"><b>✎ Write my own</b><span>Your words</span></button></div></div>
+      <div class="ssb-step"><div class="ssb-own" id="ss-duo-own">
+        <label class="wide">The secret, as they would say it<input id="ss-duo-own-text" placeholder="We are…"></label>
+        <label>What they are to each other<select id="ss-duo-own-rel"><option value="romance">A couple</option><option value="family">Family</option><option value="friends">Friends</option></select></label></div></div>
+      <div class="ssb-step"><div class="ssb-step-h"><i>2</i>The two who keep it <small id="ss-duo-need">· click two faces</small></div>
+        <div class="ssb-people">${c.map(p => `<button type="button" class="ssb-person${busy.has(p.name) ? ' busy' : ''}" data-name="${esc(p.name)}" onclick="ssDuoWho(this)" title="${busy.has(p.name) ? 'Already keeps a shared, production or canon secret: casting replaces it' : ''}">${faceOf(p)}${esc(p.name)}</button>`).join('')}</div></div>
+      <div class="ssb-comp-f"><span class="ssb-comp-msg" id="ss-duo-msg">Choose the tie, then the two who keep it.</span>
+        <span><button type="button" class="ssb-btn" onclick="ssDuoOpen(false)">Cancel</button> <button type="button" class="ssb-btn primary" id="ss-duo-go" onclick="ssDuoCast()" disabled>Cast it</button></span></div>
+    </div></div>`;
+}
+function duoCheck() {
+  const box = $('ss-duo-comp');
+  if (!box) return;
+  const tile = /** @type {HTMLElement|null} */ (box.querySelector('.ssb-tile.on'));
+  const who = [...box.querySelectorAll('.ssb-person.on')].map(x => /** @type {HTMLElement} */ (x).dataset.name || '');
+  const own = tile?.dataset.duo === 'own';
+  const text = own ? String(/** @type {HTMLInputElement|null} */ ($('ss-duo-own-text'))?.value || '').trim() : 'x';
+  const rel = own ? String(/** @type {HTMLSelectElement|null} */ ($('ss-duo-own-rel'))?.value || 'romance') : DUO_POOL.find(d => d.id === tile?.dataset.duo)?.rel;
+  // (a couple only between two who could be one: romanticCompat, as everywhere a romance is written)
+  const odd = rel === 'romance' && who.length === 2 && !(compat(who[0], who[1]) && compat(who[1], who[0]));
+  const need = $('ss-duo-need');
+  if (need) need.textContent = `· two housemates, ${who.length} chosen`;
+  const ok = !!tile && who.length === 2 && !!text && !odd;
+  const go = /** @type {HTMLButtonElement|null} */ ($('ss-duo-go'));
+  if (go) go.disabled = !ok;
+  const msg = $('ss-duo-msg');
+  if (msg) msg.textContent = !tile ? 'Choose the tie, then the two who keep it.' : !text ? 'Write the secret.' : who.length < 2 ? `Choose ${2 - who.length} more.` : who.length > 2 ? 'Two, exactly.' : odd ? `${who[0]} and ${who[1]} could not be a couple: choose a family or friends tie.` : 'Ready.';
+}
+/** Opens (or closes) the composer for a shared secret. */
+export function ssDuoOpen(open = true) {
+  const el = $('ss-duo-comp');
+  if (!el) return;
+  if (open === false) el.classList.remove('on'); else el.classList.toggle('on');
+  if (el.classList.contains('on')) { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); duoCheck(); }
+  const t = $('ss-duo-own-text'), r = $('ss-duo-own-rel');
+  if (t && !t.dataset.bound) { t.dataset.bound = '1'; t.addEventListener('input', duoCheck); r?.addEventListener('change', duoCheck); }
+}
+/** Step 1: a tie, or "write my own". */
+export function ssDuoPick(tile) {
+  document.querySelectorAll('#ss-duo-comp .ssb-tile.on').forEach(t => t.classList.remove('on'));
+  tile.classList.add('on');
+  $('ss-duo-own')?.classList.toggle('on', tile.dataset.duo === 'own');
+  duoCheck();
+}
+/** Step 2: a face clicked in or out. */
+export function ssDuoWho(btn) { btn.classList.toggle('on'); duoCheck(); }
+// Whoever loses a shared or production secret to a new one: their old partners draw secrets of their own
+function freeUp(next, names) {
+  for (const n of names) {
+    const old = next[n];
+    const others = old?.pair ? [old.pair] : old?.group ? old.group.filter(m => m !== n) : [];
+    for (const m of others) {
+      if (names.includes(m) || !next[m]) continue;
+      if (next[m].group && next[m].group.length > 2) { next[m] = { ...next[m], group: next[m].group.filter(x => x !== n) }; continue; }
+      const r = rerollSecret(playerNamed(m), next, { taken: canonTaken() });
+      if (r) next[m] = r; else delete next[m];
+    }
+  }
+}
+/** Casts the composed shared secret on the two chosen. */
+export function ssDuoCast() {
+  const box = $('ss-duo-comp');
+  const tile = /** @type {HTMLElement|null} */ (box?.querySelector('.ssb-tile.on'));
+  const who = [...(box?.querySelectorAll('.ssb-person.on') || [])].map(x => /** @type {HTMLElement} */ (x).dataset.name || '').filter(Boolean);
+  if (!tile || who.length !== 2) return;
+  const val = id => String(/** @type {HTMLInputElement|null} */ ($(id))?.value || '').trim();
+  const def = tile.dataset.duo === 'own' ? { text: val('ss-duo-own-text'), rel: val('ss-duo-own-rel') || 'romance' } : DUO_POOL.find(d => d.id === tile.dataset.duo);
+  const e = def && duoSecret(def, playerNamed(who[0]), playerNamed(who[1]));
+  if (!e) return;
+  const next = { ...(seasonConfig.ssSecrets || {}) };
+  freeUp(next, who);
+  seasonConfig.ssSecrets = { ...next, ...e };
+  persist(); renderSsSecrets();
+}
+/** Draws a tie between two housemates nobody has paired yet. */
+export function ssDuoDraw() {
+  const busy = new Set(Object.entries(seasonConfig.ssSecrets || {}).filter(([, e]) => e?.source === 'canon' || e?.source === 'production' || e?.pair).map(([n]) => n));
+  const r = Math.random();
+  const d = drawDuo(cast(), { compat, avoid: busy, rel: r < 0.6 ? 'romance' : r < 0.85 ? 'family' : 'friends' }) || drawDuo(cast(), { compat, avoid: busy, rel: 'friends' });
+  const e = d && duoSecret(d.def, d.a, d.b);
+  if (!e) return;
+  seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), ...e };
+  persist(); renderSsSecrets();
+}
+/** Takes a shared secret away: both draw secrets of their own. */
+export function ssDuoRemove(name) {
+  const next = { ...(seasonConfig.ssSecrets || {}) };
+  const other = next[name]?.pair;
+  for (const n of [name, other].filter(Boolean)) {
     const r = rerollSecret(playerNamed(n), next, { taken: canonTaken() });
     if (r) next[n] = r; else delete next[n];
   }
@@ -449,6 +609,12 @@ export function ssReroll(name) {
 /** A secret picked by hand from the pool for one housemate. */
 export function ssChoose(name, id) {
   if (!id) return;
+  if (String(id).startsWith('own:')) {
+    const x = ownSecrets()[Number(String(id).slice(4))];
+    const w = x && writtenSecret(x.text, x.kind);
+    if (w) { seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), [name]: w }; persist(); renderSsSecrets(); }
+    return;
+  }
   const e = pickedSecret(id);
   if (!e) return;
   seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), [name]: e };
@@ -467,6 +633,7 @@ export function ssWriteSave(name) {
   const kind = document.getElementById(`ss-write-kind-${name}`)?.value;
   const e = writtenSecret(text, kind);
   if (!e) return;
+  keepOwn(e.text, kind);
   seasonConfig.ssSecrets = { ...(seasonConfig.ssSecrets || {}), [name]: e };
   persist(); renderSsSecrets();
 }

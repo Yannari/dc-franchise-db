@@ -387,3 +387,59 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const hook = (r.named || []).slice().sort((a, b) => b.heat - a.heat)[0]?.who || null;
   return { coldOpen, exchanges, rapid, outro, hook };
 }
+
+/**
+ * What the hour did to the guest, read off the record the simulator decided.
+ *
+ * The general podcast's aftermath (kristal-voice.js podcastAftermath) scores answers by `behavior` and `press`,
+ * which only its own composer writes, so every exit interview came out "mixed", "0/10", "account debated" (the
+ * user, 2026-10-29: "whats the point of this mark being there if theyre always the same"). An exit has its own
+ * facts: whether the tape proved their suspect right, who they blamed and whether that person really flipped,
+ * how they took it, how the audience took them, and how loud they were about people still playing.
+ */
+export function exitAftermath(ep) {
+  const r = ep.record || {};
+  const t = r.truth || null;
+  const flippers = new Set(t?.flippers || []);
+  const named = r.named || [];
+  const taped = !!(t && flippers.size && (r.segments || []).includes('the-tape'));
+  const suspect = t?.suspected?.[0] || null;
+  const blamedSuspect = named.some(n => n.who === suspect && (n.stance === 'blame' || n.stance === 'drag'));
+  const blames = named.filter(n => n.stance === 'blame' || n.stance === 'drag');
+  const kind = named.filter(n => POSITIVE.has(n.stance)).length;
+  const MOOD = { gracious: 2, relieved: 1, elated: 1, gutted: 0, bitter: -1, denial: -2 };
+
+  // ── credibility: does their account of it stand up? ──
+  let cred = (MOOD[r.mood] ?? 0) + (r.reception === 'warm' ? 1 : r.reception === 'cold' ? -1 : 0)
+    + Math.min(2, kind * 0.5);
+  if (taped && suspect) cred += t.right ? 3 : blamedSuspect ? -2 : -1;
+  // a name blamed is checked against the votes once the tape has played them
+  if (taped) for (const n of blames) cred += flippers.has(n.who) ? 0.5 : -0.5;
+  const credibilityScore = Math.round(Math.max(-3, Math.min(6, cred)) * 10) / 10;
+  const credibility = credibilityScore >= 5 ? 'strengthened'
+    : credibilityScore >= 2 ? 'credible' : credibilityScore >= -1 ? 'mixed' : 'damaged';
+
+  // ── controversy: how loud it was, and about whom ──
+  const weigh = { blame: 1.5, drag: 2, warn: 0.5 };
+  let heat = named.reduce((s, n) => s + (weigh[n.stance] || 0) * (n.still ? 1 : 0.5), 0);
+  heat += r.mood === 'denial' || r.mood === 'bitter' ? 2 : 0;
+  heat += taped && suspect && !t.right && blamedSuspect ? 2 : 0;
+  heat += (r.answerBack || []).length;
+  heat += ep.tier === 'viral' ? 2 : ep.tier === 'solid' ? 1 : 0;
+  const controversy = Math.max(0, Math.min(10, Math.round(heat)));
+
+  const loud = blames.filter(n => n.still).sort((a, b) => (b.heat || 0) - (a.heat || 0))[0] || null;
+  const responseRequested = Boolean(loud && (ep.tier === 'viral' || controversy >= 7));
+  const tags = [credibility === 'strengthened' ? 'owned the record' : credibility === 'credible' ? 'story holds up'
+    : credibility === 'damaged' ? (taped ? 'story questioned' : 'came off bitter') : 'account debated'];
+  if (taped && suspect) tags.push(t.right ? 'named the right flipper' : blamedSuspect ? 'blamed the wrong person' : 'suspected the wrong person');
+  if (blames.filter(n => n.still).length >= 2) tags.push('burned bridges');
+  else if (!blames.length && (r.mood === 'gracious' || r.mood === 'relieved')) tags.push('no hard feelings');
+  if ((r.answerBack || []).length) tags.push('answered back');
+  if (responseRequested) tags.push('response requested');
+  const relationship = loud
+    ? { with: loud.who, direction: 'worsen', label: `${loud.who} is still playing and hears every word of it on the way out.` }
+    : null;
+  return { credibility, credibilityScore, controversy, relationship, responseRequested,
+    receiptsTested: taped ? 1 : 0, tags };
+}

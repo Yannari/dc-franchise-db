@@ -40,7 +40,7 @@ import { significanceOf, lineFor } from './life-events.js';
 import { fameOf } from './life-resolver.js';
 import { showWords, engineOf } from './shows.js';
 import { styleOf, voiceOf, composeEpisode, podcastAftermath, parseMoment } from './kristal-voice.js';
-import { composeExit, pronounsFor, exitEpisodeKey } from './kristal-exit.js';
+import { composeExit, pronounsFor, exitEpisodeKey, exitAftermath } from './kristal-exit.js';
 
 export const KRISTAL = { slug: 'kristal', name: 'Kristal' };
 
@@ -65,8 +65,18 @@ export const MENTIONED_HIT = -0.015;
  *  cost: a guest the fans turned on loses followers for it. */
 export const EXIT_FOLLOWERS = { quiet: 500, solid: 1800, viral: 6000 };
 export const EXIT_RECEPTION = { warm: 1, mixed: 0.35, cold: -0.6 };
+// What the hour did to them moves it too (kristal-exit.js exitAftermath; the user, 2026-10-29: "would it rebuild the
+// followers gain or lose too?"): a story that held up keeps more of the audience, one that fell apart loses some, and
+// a loud hour draws people in whichever way it went.
+export const EXIT_CREDIBILITY = { strengthened: 1.3, credible: 1.1, mixed: 1, damaged: 0.7 };
 export function exitFollowerDelta(ep) {
-  return Math.round((EXIT_FOLLOWERS[ep.tier] || 0) * (EXIT_RECEPTION[ep.reception] ?? 0.35));
+  const base = EXIT_FOLLOWERS[ep.tier] || 0;
+  const a = ep.aftermath;
+  const took = base * (EXIT_RECEPTION[ep.reception] ?? 0.35);
+  if (!a) return Math.round(took);
+  // a cold room takes more away when the story was questioned too, and gives back less when it held up
+  const cred = EXIT_CREDIBILITY[a.credibility] ?? 1;
+  return Math.round((took >= 0 ? took * cred : took / cred) + base * 0.04 * (Number(a.controversy) || 0));
 }
 
 const chance = key => {
@@ -424,7 +434,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         .replace('{When}', `${words.round || 'Week'} ${rec.week || ''}`)
         .replace('{when}', `${String(words.round || 'week').toLowerCase()} ${rec.week || ''}`);
       Object.assign(ep, { coldOpen: t.coldOpen, exchanges: t.exchanges, rapid: t.rapid, outro: t.outro });
-      ep.aftermath = podcastAftermath(ep);
+      ep.aftermath = exitAftermath(ep);
       ep.followers = exitFollowerDelta(ep);
       const visit = (visits.get(slug) || 0) + 1;
       visits.set(slug, visit);

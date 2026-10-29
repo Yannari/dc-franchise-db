@@ -130,3 +130,31 @@ describe('answering back, and the debrief remembering', () => {
     expect(debrief.visit).toBe(2);
   });
 });
+
+// The user, 2026-10-29: "why are all the interview giving this credibility mixed controversy 0/10 account debated",
+// "whats the point of this mark being there if theyre always the same", "would it rebuild the followers gain or lose too?"
+import { exitAftermath } from '../js/kristal-exit.js';
+describe('an exit interview\'s aftermath comes from what was said in it', () => {
+  const tape = { flippers: ['Bo'], suspected: ['Bo'], right: true };
+  const calm = { guest: 'Ana', mood: 'gracious', reception: 'warm', segments: ['the-tape'], truth: tape,
+    named: [{ who: 'Bo', stance: 'respect', still: true, heat: 0.2 }, { who: 'Cy', stance: 'praise', still: true, heat: 0.2 }] };
+  const loud = { guest: 'Di', mood: 'denial', reception: 'cold', segments: ['the-tape'],
+    truth: { flippers: ['Bo'], suspected: ['Cy'], right: false }, answerBack: [{ who: 'Ed' }],
+    named: [{ who: 'Cy', stance: 'blame', still: true, heat: 0.6 }, { who: 'Ed', stance: 'drag', still: true, heat: 0.5 }] };
+  it('separates a story the tape proved from one it broke', () => {
+    const a = exitAftermath({ record: calm, tier: 'solid' });
+    const b = exitAftermath({ record: loud, tier: 'solid' });
+    expect(a.credibility).toBe('strengthened');
+    expect(b.credibility).toBe('damaged');
+    expect(b.controversy).toBeGreaterThan(a.controversy + 4);
+    expect(a.tags).toContain('named the right flipper');
+    expect(b.tags).toContain('blamed the wrong person');
+    expect(b.relationship?.with).toBe('Cy');
+  });
+  it('moves the followers with it', () => {
+    const ep = rec => { const e = { record: rec, tier: 'solid', reception: rec.reception }; e.aftermath = exitAftermath(e); return e; };
+    const plain = rec => exitFollowerDelta({ tier: 'solid', reception: rec.reception });
+    expect(exitFollowerDelta(ep(calm))).toBeGreaterThan(plain(calm));
+    expect(exitFollowerDelta(ep({ ...loud, answerBack: [], named: [] }))).toBeLessThan(plain(loud));
+  });
+});

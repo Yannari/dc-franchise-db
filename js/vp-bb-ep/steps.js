@@ -4435,7 +4435,10 @@ function rewindScreens(act, ctx) {
   }
   for (const b of act.beats || []) steps.push(...linesOf(b));
   if (act.hoh) steps.push({ ...say(act.hoh === act.safe ? `${act.hoh}, nobody survived a call-out, so the crown is yours. You are the new Head of Household.`
-    : `${act.hoh}, of everybody who survived a call-out, you were the fastest. You are the new Head of Household.`), toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'] });
+    : `${act.hoh}, of everybody who survived a call-out, you were the fastest. You are the new Head of Household.`), toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'],
+    // the crown is HERE: without the mark the week's first screen got it, and the memory wall showed the new HOH on
+    // the turn screen before the chain had been played (the user, 2026-10-29)
+    hoh: act.hoh });
   return [{
     id: `bb-locust-w${ctx.week}`, kind: 'locust', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '16:00',
     kicker: 'Cam 05 · Backyard', title: 'The White Locust Resort', label: 'White Locust Resort', sub: 'One guest does not check out',

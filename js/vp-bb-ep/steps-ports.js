@@ -14,6 +14,8 @@
 // back from it.
 
 const strip = s => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+// (a leaf of its own: the house answering the voice, vp-bb-ep/house-reacts.js)
+import { houseReacts } from './house-reacts.js';
 
 /** An act's own beats (the ones the classic screen drew as cards), as steps.
  *  @returns {BB.Step[]} */
@@ -75,8 +77,9 @@ export function themeVoiceSteps(act, ctx, folded = false) {
 export function themeBeatScreens(act, ctx, kit) {
   if (!act?.line) return [];
   const hook = act.hook || 'beat';
-  const steps = themeVoiceSteps(act, ctx);
   const here = kit.houseNow(ctx);
+  // and somebody answers it (the user, 2026-10-29: "theres a lack of a reaction when the mastermind announce something")
+  const steps = [...themeVoiceSteps(act, ctx), ...houseReacts({ names: here, seed: `${ctx.week}|voice|${hook}`, hostile: act.mood === 'hostile', count: 1 })];
   return [{
     id: `bb-theme-${hook}-v`, kind: 'voice', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4,
     time: hook === 'vote' ? 'LIVE' : hook === 'noms' ? kit.ACT_TIME.nominations : hook === 'veto' ? kit.ACT_TIME['veto-ceremony'] : '09:30',
@@ -140,6 +143,8 @@ export function themeTurnScreens(act, ctx, kit) {
     const a = pair[(ctx.week || 0) % pair.length], b = pair[((ctx.week || 0) + 3) % pair.length] === a ? pair[((ctx.week || 0) + 1) % pair.length] : pair[((ctx.week || 0) + 3) % pair.length];
     steps.push(...talk.map(([w, t]) => ({ k: 'say', by: w === 'a' ? a : b, t })));
   }
+  // ...and more of the room than the same two lines every season
+  steps.push(...houseReacts({ names: pair, seed: `${ctx.week}|turn`, hostile: act.to === 'hostile', count: 2 }).slice(1));
   return [{
     id: 'theme-turn-v', kind: 'turn', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '23:40',
     kicker: 'Cam 04 · Living room', title: act.headline ? kit.titleCase(act.headline) : 'The Turn', label: 'The Turn', sub: `${act.speaker || 'The voice'} is not who it was on Sunday`,

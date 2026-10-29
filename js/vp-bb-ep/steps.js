@@ -49,6 +49,7 @@ import { seatedJurors } from '../bb/jury.js';
 import { finaleHouseScenes } from './finale-house.js';
 import { hasHohRoom, hohRoomBeats } from '../bb/hoh-room.js';
 import { mastermindReveal } from '../bb/mastermind-reveal.js';
+import { houseReacts } from './house-reacts.js';
 import { themeBeatScreens, themeVoiceSteps, themePrimerScreens, themeTurnScreens, haveNotScreens, departureScreens, instantScreens,
   doubleBreakScreen, americasVoteScreens, hackerScreens, hackerVoteScreens, roadkillScreens, pandoraScreens, detonationScreens,
   appStoreScreens, drawTwistSteps, campDirectorScreens, cliqueScreens, splitScreens, otherSideScreen, bucksScreens, sideBetScreens,
@@ -4982,6 +4983,12 @@ function twistAnnounceScreen(act, ctx, host) {
       ...(ann[0].sting && !String(ta.line).includes(ann[0].sting) ? [{ k: 'voice', own: true, by: ta.speaker, t: ann[0].sting, shake: true }] : []),
       { k: 'beat', t: 'The screen goes dark. Nobody moves.' }];
     rules.forEach((_, i) => { if (steps[3 + i]) steps[3 + i].rule = i + 1; });
+    // and then the room answers (the user, 2026-10-29: "theres a lack of a reaction when the mastermind announce
+    // something important"), unless the week's own scenes already did
+    if (!(act.socialBeats || []).some(b => b.lines?.length)) {
+      steps.push(...houseReacts({ names: ctx.house.filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann[0].twist || ann[0].name}`,
+        about: ann[0].name || null, hostile: ctx.row?.themeMood === 'hostile', count: 3 }));
+    }
     const vc = voiceOf(ctx.row?.themeId, ctx.row?.themeMood).color;
     for (const st of steps) if (st.k === 'voice') st.vc = vc;
     for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
@@ -5003,6 +5010,10 @@ function twistAnnounceScreen(act, ctx, host) {
     if (a.sting) steps.push({ k: 'host', by: host, t: a.sting, shake: true });
   }
   steps.push({ k: 'beat', t: 'The screen goes dark. Nobody moves.' });
+  if (!(act.socialBeats || []).some(b => b.lines?.length)) {
+    steps.push(...houseReacts({ names: ctx.house.filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann.map(a => a.twist || a.name).join('+')}`,
+      about: ann.length === 1 ? ann[0].name || null : null, count: 3 }));
+  }
   for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
   return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: ann.length === 1 ? `${ann[0].name || 'Twist'}: Announcement` : 'The Announcement',
     set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann.map(a => a.name).filter(Boolean).join(' · '),

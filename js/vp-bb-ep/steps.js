@@ -5757,6 +5757,21 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     const prev = ((/** @type {any} */ (globalThis).gs?.episodeHistory) || []).find(r => r && r.num === (row.num || 1) - 1);
     ssArrange(out, row, { prev, ssv, host: ctx.host });
     ssLiveConfessionals(out, { host: ctx.host || 'Josh' });
+    // There is no HOH room in the House of Secrets: Big Brother's "up in the HOH room" plays on the Love Room's plate,
+    // so ordinary bedroom talk aired in a red heart-shaped bed (the user, 2026-10-28: "you're still using the old
+    // bedroom plate, red"). The Love Room keeps the scenes that are about love; the rest go to the bedrooms.
+    {
+      const LOVE = /\b(kiss\w*|love|lov(?:ing|er)|romance|romantic|flirt\w*|cuddl\w*|showmance|crush|date|spoon\w*|snuggl\w*)\b/i;
+      const BEDS = ['bedroom-wide', 'bedroom-two', 'bedroom2-wide', 'bedroom2-two'];
+      const isLove = x => x && (x.plate === 'hoh-suite' || (!x.plate && x.set === 'hoh'));
+      const toBed = (x, key) => { const plate = pickBy(BEDS, key); return { ...x, set: 'bedroom', plate, room: 'Bedroom', kicker: String(x.kicker || '').replace(/HOH (Room|Suite)|Love Room/i, 'Bedroom') }; };
+      for (const s of out) {
+        const steps = s.steps || [];
+        const textFrom = i => { let t = ''; for (let j = i; j < steps.length && (j === i || !steps[j].scene); j++) t += ` ${steps[j].t || ''}`; return t; };
+        steps.forEach((st, i) => { if (isLove(st.scene) && !LOVE.test(textFrom(i))) steps[i] = { ...st, scene: toBed(st.scene, `${s.id}|${i}`) }; });
+        if (isLove(s) && !LOVE.test(textFrom(0))) Object.assign(s, toBed(s, `${s.id}|s`));
+      }
+    }
     // a hidden space whose plate the user has not made yet plays in the closest room built (vp-bb-ep/ss-groups.js)
     const fall = p => (p && SPACE_FALLBACK[p] && !plateBuilt(p) ? SPACE_FALLBACK[p] : p);
     for (const s of out) { if (s.plate) s.plate = fall(s.plate); for (const st of s.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; }

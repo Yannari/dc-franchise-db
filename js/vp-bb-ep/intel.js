@@ -9,7 +9,10 @@
 // in their heads right now (the side panel's "why" lines).
 import { esc, img, col } from './stage.js';
 
-export const TABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['power', 'Power']];
+export const TABS = [['heads', 'In their heads'], ['people', 'Relationships'], ['allies', 'Alliances'], ['deals', 'Deals'], ['power', 'Power'], ['kitty', 'Kitties']];
+// (Kitties: Secret Story's only, every housemate's own pot of money: the user, 2026-10-28, "we need kitty in intel")
+const money = n => `$${Math.round(Number(n) || 0).toLocaleString('en-US')}`;
+const ssOf = num => (globalThis.gs?.episodeHistory || []).find(e => +e.num === +num)?.gsSnapshot?.bb?.secretStory || null;
 const BOND_WORD = v => (v >= 6 ? 'Close' : v >= 3 ? 'Friends' : v > -2 ? 'Neutral' : v > -5 ? 'Tension' : 'Enemies');
 const BOND_CLS = v => (v >= 6 ? 'close' : v >= 3 ? 'friend' : v > -2 ? 'neutral' : v > -5 ? 'tense' : 'enemy');
 
@@ -89,11 +92,12 @@ function powerTab(num, L, face) {
   let h = '<div class="bbi-sub">In charge right now</div>';
   const seat = (label, names, cls) => `<div class="bbi-row">${names.map(face).join('')}<b>${esc(names.join(' & '))}</b><span class="bbi-bond ${cls}">${esc(label)}</span></div>`;
   const rows = [];
-  if (L?.hoh) rows.push(seat('Head of Household', [L.hoh], 'close'));
+  const SS = !!ssOf(num);
+  if (L?.hoh) rows.push(seat(SS ? "Won the Voice's game" : 'Head of Household', [L.hoh], 'close'));
   const noms = (L?.nom || []).filter(n => !(L?.out || []).includes(n) || n === evicted);
   if (noms.length) rows.push(seat(noms.length === 1 ? 'Nominated' : 'On the block', noms, 'enemy'));
   if (L?.veto) rows.push(seat('Power of Veto', [L.veto], 'friend'));
-  h += rows.length ? rows.join('') : '<div class="bbi-none">No Head of Household yet this week.</div>';
+  h += rows.length ? rows.join('') : `<div class="bbi-none">${SS ? "Nobody has won the Voice's game yet this week." :'No Head of Household yet this week.'}</div>`;
   const week = +num;
   const ledger = (E?.powerLedger || []).filter(p => p && p.powerId)
     .filter(p => ended || p.acquiredWeek < week || said.includes(p.name));
@@ -113,15 +117,28 @@ function powerTab(num, L, face) {
 
 /** The drawer for a screen at a step. `L` is the stage's ledger (L.why), `tab` and `who` the viewer's picks. */
 export function intelHtml(num, L, tab, who, snap = null, at = null) {
-  if (!TABS.some(t => t[0] === tab)) tab = 'heads';
+  const SS = ssOf(num);
+  const tabs = TABS.filter(([k]) => k !== 'kitty' || SS);
+  if (!tabs.some(t => t[0] === tab)) tab = 'heads';
   const W = weekAt(num, snap, L?.out || [], at && { ...at, said: L?.said || [] });
   let h = `<div class="bbi-head"><b>Intel</b><span>What the house doesn't know.</span><button type="button" class="bbi-x" data-close aria-label="Close Intel" title="Close (i)">&times;</button></div>
-    <div class="bbi-tabs">${TABS.map(([k, l]) => `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}</button>`).join('')}</div><div class="bbi-body">`;
+    <div class="bbi-tabs">${tabs.map(([k, l]) => `<button type="button" class="${k === tab ? 'on' : ''}" data-tab="${k}">${esc(l)}</button>`).join('')}</div><div class="bbi-body">`;
   const face = n => `<span class="bbi-f" style="--c:${col(n)}">${img(n)}</span>`;
   if (tab === 'heads') {
     h += L?.why?.length ? L.why.map(w => `<div class="bbi-why">${esc(w)}</div>`).join('') : '<div class="bbi-none">Nothing hidden in this moment. Keep watching.</div>';
   } else if (tab === 'power') {
     h += powerTab(num, L, face);
+  } else if (tab === 'kitty' && SS) {
+    // what each housemate has won, as the week began; the week's own winnings once the week has aired to its end
+    // (a kitty that grew on a buzz nobody has seen yet would give the buzz away)
+    const ended = W?.out != null;
+    const K = ended ? SS.kitty || {} : SS.kittyAtWeekStart || SS.kitty || {};
+    const room = (W?.players || Object.keys(K)).filter(n => K[n] != null);
+    const rows = room.map(n => [n, Number(K[n]) || 0]).sort((x, y) => y[1] - x[1]);
+    h += `<div class="bbi-sub">${ended ? 'Each kitty as the week ends' : 'Each kitty as the week began'}</div>`
+      + (rows.length ? rows.map(([n, v]) => `<div class="bbi-row">${face(n)}<b>${esc(n)}</b><span class="bbi-bond ${v > 0 ? 'friend' : 'enemy'}">${v > 0 ? money(v) : 'Empty'}</span></div>`).join('')
+        : '<div class="bbi-none">Nobody has a kitty yet.</div>')
+      + '<div class="bbi-pwd" style="margin-top:8px">The money each housemate has won so far: a secret found with the buzzer takes the other one\'s kitty, and the public crowns the winner with whatever is left in theirs.</div>';
   } else if (!W) {
     h += '<div class="bbi-none">This week was saved without its record, so the house as it stood is not known.</div>';
   } else if (tab === 'people') {
@@ -144,7 +161,7 @@ export function intelHtml(num, L, tab, who, snap = null, at = null) {
     const broken = W.deals.filter(d => d.broken).slice(-4);
     if (broken.length) h += `<div class="bbi-sub">Broken</div>${broken.map(d => `<div class="bbi-gone">${esc((d.players || []).join(' & '))} · ${esc(kind(d))}${d.brokenBy ? ` · broken by ${esc(d.brokenBy)}` : ''}</div>`).join('')}`;
   }
-  return `${h}${tab === 'heads' || tab === 'power' ? '' : `<div class="bbi-note">${W?.live ? 'As the house stands right now.' : 'As the week ends.'}</div>`}</div>`;
+  return `${h}${tab === 'heads' || tab === 'power' || tab === 'kitty' ? '' : `<div class="bbi-note">${W?.live ? 'As the house stands right now.' : 'As the week ends.'}</div>`}</div>`;
 }
 
 export const INTEL_CSS = `

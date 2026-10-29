@@ -7,7 +7,7 @@
 // viewer drops Big Brother's broadcast skin and wears the House of Secrets':
 //
 // - the HUD: the show's lettering (Fredoka, Nunito: assets/fonts), the Eye, the room
-//   in English, and YOUR KITTY;
+//   in English, and the VIEWER BANK (the viewer's own calls; each housemate's kitty is in Intel);
 // - the dialogue box of a visual novel: a name tab in the speaker's colour, the line typed
 //   at speaking pace (screens.js types any `.tx[data-full]`), the confessional's name plate,
 //   the Voice speaking through a living Eye;
@@ -106,7 +106,7 @@ export function ssHudHtml(S, st, fresh, o) {
     <div class="ssh-bug"><img class="ssh-eye" src="${EYE}" alt=""><div class="ssh-wm">SECRET STORY<span>WEEK ${esc(S.week)} · DAY ${esc(S.day)}</span></div>
       ${/LIVE/i.test(String(S.time || '')) ? '<span class="ssh-live">LIVE</span>' : `<span class="ssh-time">${esc(S.time || '')}</span>`}
       <span class="ssh-room ${fresh ? 'fresh' : ''}">${esc(String(room))}</span></div>
-    <div class="ssh-bank" title="Your kitty: call what happens next to grow it"><img src="${PROPS}/kitty-stand.webp" alt=""><div><i>YOUR KITTY</i><b>${money(b.kitty)}</b></div></div>
+    <div class="ssh-bank" title="Your bank, as a viewer: call what happens next to grow it. Each housemate's own kitty is in Intel."><img src="${PROPS}/kitty-stand.webp" alt=""><div><i>VIEWER BANK</i><b>${money(b.kitty)}</b></div></div>
   </div>`;
 }
 
@@ -228,7 +228,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const r = settleCall(o?.ssKey, st.settle.id, st.settle.answer, st.settle.n || 2);
     if (r.picked != null) {
       setTimeout(() => sfx(r.right ? 'coin' : 'lose'), 120);
-      h += `<div class="sss ${r.right ? 'win' : 'lose'}"><i>${r.right ? 'YOU CALLED IT' : 'WRONG CALL'}</i><b>${money(r.delta)}</b><span>Your kitty: ${money(r.kitty)}</span>
+      h += `<div class="sss ${r.right ? 'win' : 'lose'}"><i>${r.right ? 'YOU CALLED IT' : 'WRONG CALL'}</i><b>${money(r.delta)}</b><span>Your bank: ${money(r.kitty)}</span>
         ${r.right ? `<div class="sss-coins">${Array.from({ length: 16 }, (_, i) => `<img src="${PROPS}/kitty-stand.webp" style="--a:${(i * 22.5).toFixed(1)}deg;--d:${(i % 5) * 0.04}s" alt="">`).join('')}</div>` : ''}</div>`;
     }
   }

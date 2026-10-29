@@ -432,7 +432,7 @@ export function bbStepScreens(row, legacy = [], { host = 'Valeria', priorEvicted
     <input class="bbx-jump" type="number" min="1" max="${S.steps.length}" placeholder="Go to" title="Jump to a step: type its number and press Enter" onkeydown="if(event.key==='Enter')bbxJump('${uid}', this.value)">
   </div>
   <div class="bbx-under"><div class="bbx-script" id="bbx-script-${uid}">${scriptHtml(S)}</div>
-    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {}, spent: [], held: [], safe: [], stamps: {}, plus: null, bill: null, shut: false, chain: [], snubs: [], leftover: [] }, S)}</aside></div>
+    <aside class="bbx-side" id="bbx-side-${uid}">${sideHtml({ hoh: null, nom: [], veto: null, out: [], vetoPlay: [], ballots: [], stances: {}, spent: [], held: [], safe: [], stamps: {}, plus: null, bill: null, shut: false, chain: [], snubs: [], leftover: [] }, S, R0)}</aside></div>
   ${feedHtml}
 </div>`,
     });

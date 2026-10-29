@@ -140,13 +140,16 @@ export function gameTalkFor(week, ctx, clock, talked, lastGone) {
     // count came out as 'Ten' on a seven-to-two night)
     const ballots = [...new Map((ev?.ballots || []).filter(b => b && b.voter && b.evict).map(b => [b.voter, b])).values()];
     const lost = ballots.filter(b => b.evict !== lastGone && house.includes(b.voter) && house.includes(b.evict));
-    const won = ballots.length - lost.length;
-    if (lost.length && won > lost.length) {
+    // the count as the host read it: every ballot, not only the losing voters still in the house (a 4-3 night came
+    // out as 'Five to two' once one of the three had left: the read of 2026-10-29)
+    const won = ballots.filter(b => b.evict === lastGone).length;
+    const against = ballots.length - won;
+    if (lost.length && won > against) {
       const m = lost.slice().sort((x, y) => getBond(y.voter, lastGone) - getBond(x.voter, lastGone))[0];
       if (lost.length <= 2 || getBond(m.voter, lastGone) >= 2) {
         const W = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen'];
         const say = n => W[n] || String(n);
-        const count = `${say(won)[0].toUpperCase()}${say(won).slice(1)} to ${say(lost.length)}`;
+        const count = `${say(won)[0].toUpperCase()}${say(won).slice(1)} to ${say(against)}`;
         want('outside', { a: m.voter, b: closest(m.voter, [m.evict]), c: m.evict }, { gone: lastGone, count });
       }
     }

@@ -33,6 +33,28 @@ import { gs, seasonConfig } from '../core.js';
 const sizeOf = config => Math.max(0, Number((config || seasonConfig)?.jurySize) || 0);
 
 /**
+ * Everybody who left the game in a week, in the order they left, and how.
+ *
+ * A week is not always one eviction. The White Locust Resort's Call Out Chain and the Camp Director's Hit The Road
+ * take somebody out BEFORE the week's own vote (`resortEvicted`), and a double vote takes two in one night
+ * (`secondEvicted`). Everything that read only `week.evicted` forgot them: the jury never seated the White Locust's
+ * loser, and the placements had no place for them at all (the user, 2026-10-29: "make sure the white locust evicted
+ * go to the jury and isnt forgotten that tend to happen in double eviction", "make sure their placement is right").
+ * @returns {{ name: string, how: string }[]} how: 'white-locust', 'camp-director' or 'eviction'
+ */
+export function weekExits(week) {
+  const out = [];
+  if (!week) return out;
+  if (week.resortEvicted && !week.resortReversed) {
+    const locust = (week.acts || []).some(a => a?.type === 'white-locust');
+    out.push({ name: week.resortEvicted, how: locust ? 'white-locust' : 'camp-director' });
+  }
+  if (week.evicted && !week.evictionReversed) out.push({ name: week.evicted, how: 'eviction' });
+  if (week.secondEvicted && week.secondEvicted !== week.evicted) out.push({ name: week.secondEvicted, how: 'eviction' });
+  return out;
+}
+
+/**
  * How many houseguests are in the house on the night the FIRST juror is
  * evicted — counted at the start of that week, with the evictee still in it.
  *
@@ -89,7 +111,8 @@ export function seatedJurors({ upToWeek = null, config = seasonConfig } = {}) {
   const out = [];
   for (const week of weeks) {
     if (upToWeek != null && Number(week?.num) > Number(upToWeek)) continue;
-    if (!week?.evicted || week.evictionReversed) continue;
+    const exits = weekExits(week);
+    if (!exits.length) continue;
     // A week that never recorded its opening house still records an eviction,
     // and the eviction is the authority — the house size only decides whether
     // it was a jury one. Seasons saved before houseAtStart was written, and
@@ -98,8 +121,11 @@ export function seatedJurors({ upToWeek = null, config = seasonConfig } = {}) {
     // trailing clamp settles the count either way, which is all the old code
     // ever relied on.
     const opening = (week.houseAtStart || []).length;
-    if (opening > 0 && !evictionSeatsAJuror(opening, config)) continue;
-    out.push(week.evicted);
+    // each exit at the house size it happened at: the week's own vote is one smaller after a White Locust
+    exits.forEach((x, i) => {
+      if (opening > 0 && !evictionSeatsAJuror(opening - i, config)) return;
+      out.push(x.name);
+    });
   }
   return size ? out.slice(-size) : out;
 }

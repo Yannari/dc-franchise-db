@@ -130,10 +130,11 @@ describe('the chain', () => {
     expect(failures[0].target).toBe(act.evicted);
     // The safe player is never the one who goes.
     expect(act.evicted).not.toBe(act.safe);
-    // The crown goes to the fastest completed turn, and the safety winner is
-    // eligible: they completed a turn, they simply did it first.
-    const eligible = [{ name: act.safe, time: act.safetyTime }, ...act.survivors];
-    const fastest = [...eligible].sort((a, b) => a.time - b.time)[0].name;
+    // The crown goes to the fastest of everybody who SURVIVED A CALL-OUT, as the rules are read out
+    // (bb/white-locust.js); the safety winner is crowned only when nobody survived one. (This used to
+    // count the safety time too, and passed only while the seed never had a survivor slower than it.)
+    const fastest = act.survivors.length
+      ? [...act.survivors].sort((a, b) => a.time - b.time)[0].name : act.safe;
     expect(act.hoh).toBe(fastest);
     expect(week.hoh).toBe(act.hoh);
   });
@@ -239,5 +240,64 @@ describe('it reaches the reader', () => {
     expect(backlog).toMatch(/does not check out/);
     const runText = gs.bb.transcript || '';
     if (runText) expect(runText).toMatch(/WHITE LOCUST RESORT/);
+  });
+});
+
+// The user, 2026-10-29: "make sure the white locust evicted go to the jury and isnt forgotten that tend to happen in
+// double eviction", "make sure their placement is right too", "make sure that special elimination export its not a
+// normal eviction", and "nina goodbye is damn too short ... no reactions no goodbye ... people dont even talk about her
+// after".
+import { seatedJurors, weekExits } from '../js/bb/jury.js';
+import { extractBigBrotherSeasonTemplate } from '../js/stats-export.js';
+
+describe('the one who does not check out is a real exit', () => {
+  it('sits on the jury when the chain runs in jury weeks, before the week\'s own evictee', () => {
+    const week = playToResort(313, 6);
+    expect(week, 'no resort week').toBeTruthy();
+    const exits = weekExits(week);
+    expect(exits.map(x => x.how)).toEqual(['white-locust', 'eviction'].slice(0, exits.length));
+    const jury = seatedJurors();
+    if (jury.includes(week.evicted)) {
+      expect(jury, 'the resort loser was dropped from a jury the week\'s evictee sits on').toContain(week.resortEvicted);
+      expect(jury.indexOf(week.resortEvicted)).toBeLessThan(jury.indexOf(week.evicted));
+    }
+  });
+
+  it('gets a placement one below the week\'s evictee, and the export says how', () => {
+    const week = playToResort(313, 6);
+    const doc = extractBigBrotherSeasonTemplate(gs.bb.weeks, [...gs.activePlayers], { jurySize: 7 });
+    const p = n => doc.placements.find(x => x.name === n);
+    expect(p(week.resortEvicted), 'the resort loser has no placement').toBeTruthy();
+    if (week.evicted) expect(p(week.resortEvicted).placement).toBe(p(week.evicted).placement + 1);
+    expect(p(week.resortEvicted).specialExit?.how).toBe('white-locust');
+    const w = doc.weeks.find(x => (x.specialExits || []).some(s => s.name === week.resortEvicted));
+    expect(w, 'the week does not record the special elimination').toBeTruthy();
+    const places = doc.placements.map(x => x.placement).sort((a, b) => a - b);
+    expect(new Set(places).size, 'two people share a place').toBe(places.length);
+  });
+
+  it('reacts and says goodbye on the screen, and the house grieves them after', () => {
+    const week = playToResort(313, 4);
+    const act = chainAct(week);
+    expect((act.exitLines || []).length, 'the chain ended on a fact and a crown').toBeGreaterThanOrEqual(3);
+    expect(act.exitLines.some(l => l.k === 'resort')).toBe(true);
+    expect(act.exitLines.some(l => (l.by === week.resortEvicted) || String(l.t).includes(week.resortEvicted))).toBe(true);
+  });
+});
+
+import { getEpisodeEliminations } from '../js/run-ui.js';
+describe('the resort week, counted everywhere', () => {
+  it('counts the chain\'s crown as an HOH win, as the week record does', () => {
+    const week = playToResort(313, 4);
+    const hoh = week.hoh;
+    const byWeeks = gs.bb.weeks.filter(w => w.hoh === hoh).length;
+    expect(gs.bb.stats[hoh].hohWins, 'the White Locust HOH has no HOH win').toBe(byWeeks);
+  });
+  it('puts both names on the season tape, the resort loser first', () => {
+    const week = playToResort(313, 4);
+    const row = gs.episodeHistory.find(r => (r.acts || []).some(a => a.type === 'white-locust'));
+    const names = getEpisodeEliminations(row);
+    expect(names[0]).toBe(week.resortEvicted);
+    if (week.evicted) expect(names).toContain(week.evicted);
   });
 });

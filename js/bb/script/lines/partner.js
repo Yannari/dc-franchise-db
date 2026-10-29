@@ -139,7 +139,7 @@ export default {
       { by: 'b', say: "It's been over for a week. You know that." },
       { by: 'a', say: "I knew we were struggling. I didn't know you'd put me on the block for it." },
       { by: 'b', say: "This isn't about us. You're a vote I don't have any more." },
-      { by: 'a', dr: "We stopped talking at night a week ago. I didn't think {b} was counting votes while we did." }] },
+      { by: 'a', dr: "We stopped talking at night a week ago. I didn't think {b} was planning my eviction while we did." }] },
     { id: 'shn.c2', turns: [
       { beat: "{a}'s bag is already packed into the other bedroom by the time {b} comes up." },
       { by: 'b', say: "You moved your things." },

@@ -328,6 +328,9 @@ export function getEpisodeEliminations(ep) {
   const names = [
     ep.firstEliminated,
     ep.ambassadorData?.ambassadorEliminated,
+    // Out before the week's vote, so first: the White Locust's Call Out Chain and the Camp Director's road (the user,
+    // 2026-10-29: "the season tape should show double eviction martin and nina not just martin")
+    ...(ep.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted),
     ep.eliminated,
     ep.tiedDestinies?.eliminatedPartner,
     ep.emissaryEliminated,

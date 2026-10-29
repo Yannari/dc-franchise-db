@@ -14114,7 +14114,10 @@ function _buildVPScreensClassic(epRecord) {
           const _g = _coreGs || (typeof window !== 'undefined' ? window.gs : null);
           const priorEvicted = (_g?.episodeHistory || [])
             .filter(r => r && r.format === 'big-brother' && r.num < epRecord.num)
-            .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted)]).filter(Boolean);
+            .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted),
+              // out before the week's vote (the White Locust's chain, the Camp Director's road): the user, 2026-10-29,
+              // "i dont see nina greyed on the memory wall"
+              ...(r.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted)]).filter(Boolean);
           vpScreens = bbStepScreens(epRecord, vpScreens, { host: _bbHost(), priorEvicted, plea: name => _bbFinalPleaSpeech(epRecord, name),
             // a late arrival's introduction (Rivals): the same words and first read everybody got on move-in day
             intro: _bbIntroQuote, firstRead: _bbFirstRead });

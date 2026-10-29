@@ -34,7 +34,10 @@ const T = {
       neutral: ['A camera in the corner of the ceiling turns, slowly, to follow the conversation.',
         "AINSLEY's panel in the wall glows a little brighter, the way it does when she is listening.",
         'Somewhere in the house, AINSLEY politely reminds nobody in particular to drink some water.',
-        'The lights in the room adjust themselves by a few degrees. Nobody touched them.'],
+        'The lights in the room adjust themselves by a few degrees. Nobody touched them.',
+        'The panel in the kitchen wall blinks while people talk, as if it is taking notes.',
+        'A camera in the corner turns, slowly, to follow whoever just stood up.',
+        'AINSLEY\'s screen in the hallway shows the time to the second, and nothing else.'],
       hostile: ['The panel in the wall has gone red. It does not flicker any more. It just watches.',
         'Every camera in the room turns at once, and stays turned.',
         'AINSLEY announces the time, to the second, for no reason anybody can think of.'],
@@ -56,7 +59,10 @@ const T = {
   'summer-of-temptation': {
     room: {
       neutral: ["Down the hallway, the light over the Den's door is on. Nobody mentions it.",
-        "Somebody glances toward the Den's red door, then looks away, fast."],
+        "Somebody glances toward the Den's red door, then looks away, fast.",
+        'The Den\'s door is shut, and two people walking past it lower their voices without meaning to.',
+        'A single red light glows over the Den\'s door all afternoon.',
+        'Somebody has left a glass on the floor outside the Den, as if they changed their mind halfway.'],
       hostile: ["The Den's door is open a crack tonight. Nobody goes near it.",
         "A low red glow spills out under the Den's door and across the hallway floor."],
     },
@@ -76,7 +82,10 @@ const T = {
     room: {
       neutral: ['A door in the hallway that was not there yesterday is closed, and nobody tries the handle.',
         'The portraits on the landing seem to have been rehung overnight, in a different order.',
-        'Somewhere downstairs, a front-desk bell rings once. Nobody is at the desk.'],
+        'Somewhere downstairs, a front-desk bell rings once. Nobody is at the desk.',
+        'A key nobody recognises sits on the hallway table. Nobody picks it up.',
+        'The grandfather clock on the landing is ten minutes fast, and has been all week.',
+        'Somebody has turned every portrait on the stairs to face the wall, and somebody else has turned them back.'],
       hostile: ['Every door on the landing is locked tonight, except one.',
         'The hotel has gone very quiet. Even the clocks seem to be ticking more carefully.'],
     },
@@ -96,7 +105,10 @@ const T = {
     room: {
       neutral: ['Somebody is stacking chips on the kitchen counter, very neatly, while they listen.',
         'Across the room a slot machine pays out to nobody, lights and all.',
-        'The floor lights are low and warm, the way a room is lit when it wants you to stay.'],
+        'The floor lights are low and warm, the way a room is lit when it wants you to stay.',
+        'A dealer\'s shoe sits on the counter with three cards left in it. Nobody touches it.',
+        'The chip counter by the door has been reset to zero for everybody, or so it says.',
+        'A roulette wheel spins somewhere in the next room, all on its own, and stops on red.'],
       hostile: ['The party lighting is off. Under the counting lights, everybody looks like they owe somebody.',
         "Nobody's playing the machines any more. They sit there, lit, waiting."],
     },
@@ -115,7 +127,10 @@ const T = {
   'summer-camp': {
     room: {
       neutral: ['Somewhere outside, a whistle blows for an activity nobody signed up for.',
-        "The activity board by the door has a new list on it, in the Head Counsellor's very cheerful handwriting."],
+        "The activity board by the door has a new list on it, in the Head Counsellor's very cheerful handwriting.",
+        'Somebody has left a half-finished friendship bracelet on the porch rail.',
+        'The camp flag outside is at half mast, and nobody remembers lowering it.',
+        'A canoe paddle is propped against the kitchen door, still wet.'],
       hostile: ['No whistle today. The activity board still says Tuesday.',
         'The camp loudspeaker crackles on, as if to say something, and then clicks off again.'],
     },
@@ -134,7 +149,10 @@ const T = {
   'summer-school': {
     room: {
       neutral: ['The school bell rings for no lesson in particular, and everybody looks up anyway.',
-        'On the corridor wall, the yearbook photos smile down, each with a caption underneath.'],
+        'On the corridor wall, the yearbook photos smile down, each with a caption underneath.',
+        'The hallway lockers have new name tags on them, in somebody\'s very neat handwriting.',
+        'A bell rings for a lesson nobody is going to.',
+        'Somebody has written tomorrow\'s date on the classroom whiteboard and underlined it twice.'],
       hostile: ['The yearbook photos are still on the wall. Half of the captions have stopped being true.',
         'The bell has not rung all day. Nobody knows what period it is.'],
     },
@@ -184,7 +202,12 @@ export function addThemeTexture(sc, kindText, ctx) {
   // a line about the hidden accomplice only while there is one to find (bb/premiere-mystery.js accompliceLive)
   const mystery = accompliceLive();
   const fresh = l => !led[l] && (mystery || !/accomplice|planted/i.test(l));
-  const useDr = drs.some(fresh) && (rng() < 0.6 || !rooms.some(fresh));
+  // A themed Diary Room line is a thought about the season, and spliced into a conversation about something else it
+  // answers nothing ("Room service stopped. The hotel stopped being polite", after two people talked about a vote:
+  // the read of 2026-10-29: the scene was filed as house life, so a kind cannot be trusted to say what was talked
+  // about). It closes only a scene nobody talks in; a conversation gets the room instead.
+  const answers = sc.lines.some(l => l.kind === 'say');
+  const useDr = !answers && drs.some(fresh) && (rng() < 0.6 || !rooms.some(fresh));
   const pool = (useDr ? drs : rooms).filter(fresh);
   if (!pool.length) return sc;
   const text = pool[Math.floor(rng() * pool.length) % pool.length];

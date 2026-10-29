@@ -71,7 +71,8 @@ export async function bbEpisodeLines(rec) {
   const g = (typeof window !== 'undefined' ? window.gs : null) || {};
   const priorEvicted = (g.episodeHistory || [])
     .filter(r => r && r.format === 'big-brother' && r.num < rec.num)
-    .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted)]).filter(Boolean);
+    .flatMap(r => [r.eliminated, r.alsoEliminated, r.evicted, r.secondEvicted, ...(r.extraEvictions || []).map(x => x?.evicted),
+      ...(r.acts || []).filter(a => a?.type === 'white-locust' || a?.type === 'camp-director').map(a => a.evicted)]).filter(Boolean);
   const screens = bbWeekSteps(rec, { host: bbHostName(), priorEvicted, plea: name => vs._bbFinalPleaSpeech(rec, name) });
   const out = [], seen = new Set();
   for (const S of screens) for (const st of S.steps || []) {

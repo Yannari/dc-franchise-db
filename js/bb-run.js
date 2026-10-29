@@ -2199,6 +2199,11 @@ export function summariseWeek(week) {
             : `    ${r.target} does not make it. ${r.time}s against ${r.limit}. Eliminated on the spot.`);
         }
         line(`  ${act.evicted} does not check out of the White Locust Resort.`);
+        // the goodbye (bb/eviction-room.js resortExit), the same lines the screen plays
+        for (const l of act.exitLines || []) {
+          line(l.k === 'beat' ? `    ${l.t}` : l.k === 'dr' ? `    ${l.by}, in the Diary Room: "${l.t}"`
+            : l.k === 'resort' ? `    ${act.concierge || 'Big Brother'}: "${l.t}"` : `    ${l.by}: "${l.t}"`);
+        }
         line(`  Fastest turn of the night: ${act.hoh} — the new Head of Household.`);
         // The act's own beats, which the transcript guard is right to want:
         // the summary above says what happened, the beat says what it was like.

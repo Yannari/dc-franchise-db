@@ -11,6 +11,7 @@ import { buildPerfectMatchSeasonDocument } from './pm/export.js';
 import { DRAG_FORMAT, TRAITORS_FORMAT, PERFECT_MATCH_FORMAT, CHALLENGE_FORMAT, CIRCLE_FORMAT, RACE_FORMAT, BB_FORMAT } from './shows.js';
 import { SHOWS, seasonId, formatPrefix, DEFAULT_FORMAT, engineOf, familyOf, careerShowOf } from './shows.js';
 import { villainBoard } from './villain-score.js';
+import { weekExits } from './bb/jury.js';
 import { seasonFormat } from './core.js';
 import { refreshSocialFeed, socialPublishPayload } from './social/session.js';
 import { nextWindowFor } from './franchise-calendar.js';
@@ -4764,7 +4765,8 @@ function _bbPlacements(weeks, finalists) {
   // Only the LAST exit places you. Coming back and lasting six more weeks is
   // not a worse result than going out the first time.
   const order = [];
-  weeks.map(w => w.evicted).filter(Boolean).forEach(name => {
+  // every exit, in order, the White Locust's and a double vote's second included (bb/jury.js weekExits)
+  weeks.flatMap(w => weekExits(w).map(x => x.name)).forEach(name => {
     const at = order.indexOf(name);
     if (at >= 0) order.splice(at, 1);
     order.push(name);
@@ -4985,6 +4987,11 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
   const cast = Object.keys(placement);
   const winner = finalOrder[0] || null;
   const jurySize = meta.jurySize ?? 0;
+  // how somebody went out when it was not a vote (bb/jury.js weekExits): their last exit decides it
+  const specialOf = {};
+  weeks.forEach((w, i) => weekExits(w).forEach(x => {
+    specialOf[x.name] = x.how === 'eviction' ? null : { how: x.how, week: _nightOf[i].week };
+  }));
 
   const placements = cast
     .map(name => {
@@ -4999,6 +5006,8 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
         status: place === 1 ? 'Winner' : place <= finalOrder.length ? 'Finalist'
               : !jurySize ? 'Eliminated'
               : place <= jurySize + finalOrder.length ? 'Jury' : 'Pre-Jury',
+        // not evicted by a vote: the White Locust's chain, the Camp Director's road
+        ...(specialOf[name] ? { specialExit: specialOf[name] } : {}),
         votesReceived: bb.votesReceived || 0,
         // What the audience made of them. Live-only until now, which left fame
         // and every audience-facing page with nothing to read.
@@ -5129,6 +5138,13 @@ export function extractBigBrotherSeasonTemplate(weeks, finalists, meta = {}) {
       voteChanges: w.voteChanges,
       tieBreak: w.tieBreak,
       evicted: w.evicted,
+      // ── A SPECIAL ELIMINATION IS NOT AN EVICTION ──
+      // The White Locust's Call Out Chain (and the Camp Director's Hit The Road) takes somebody out before the week's
+      // vote, with no nomination and no ballot. Its own field, so a wiki and a summary say how they went (the user,
+      // 2026-10-29: "make sure that special elimination export its not a normal eviction").
+      ...(w.resortEvicted ? { specialExits: weekExits(w).filter(x => x.how !== 'eviction')
+        .map(x => ({ name: x.name, playerSlug: _slug(x.name), how: x.how,
+          label: x.how === 'white-locust' ? 'Failed the White Locust Resort call-out chain' : 'Eliminated on the Camp Director\'s Hit The Road' })) } : {}),
       // ── THE ARENA ────────────────────────────────────────────────
       //
       // Who was on the block when the Block Buster was played, and who won

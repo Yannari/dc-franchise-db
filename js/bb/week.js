@@ -100,7 +100,7 @@ import { runCliqueReturnees } from './clique-returnees.js';
 import { ssOn, assignSecrets, ssLaunchGroup, runSecretHunt, secretStoryNominations, secretStoryPublicVote, runPrime, afterPrime, ssNoPrimeWeek } from './secret-story.js';
 import { mysteryHouseguestOf } from './premiere-mystery.js';
 import { checkBBLastWords } from './last-words.js';
-import { checkEvictionRoom } from './eviction-room.js';
+import { checkEvictionRoom, resortExit } from './eviction-room.js';
 import { generateBBJuryHouse } from './jury-house.js';
 // The pawn ask is where the jury bubble is most visible in a decision: an
 // exposed houseguest a week from a seat takes a chair they would have refused.
@@ -2211,6 +2211,11 @@ export function simulateBBWeek(options = {}) {
       nominees: extra.nominees || week.finalNominees || week.initialNominees || [],
       vetoWinner: week.vetoWinner || null, week, ...extra,
     }, { rng, min: eventLibrary.length ? 22 : 0, max: eventLibrary.length ? 30 : 0 });
+    // The White Locust's loser, grieved first thing in the stretch after the chain (bb/eviction-room.js resortExit)
+    if (phase !== 'pre-hoh' && week._resortMourn?.length) {
+      act.socialBeats = [...week._resortMourn, ...act.socialBeats];
+      delete week._resortMourn;
+    }
     // The morning after the HOH's own showmance went home off their block: the guilt, and the houseguest who says
     // it to their face. Built here, first thing, rather than left to the draw (bb-events/partner-up.js).
     if (phase === 'pre-hoh' && !ss) {
@@ -2509,6 +2514,11 @@ export function simulateBBWeek(options = {}) {
     try {
       const chain = runCallOutChain(week, house, { rng });
       if (chain) {
+        // the one who does not check out reacts, says goodbye, and is grieved in the next stretch (bb/eviction-room.js)
+        try {
+          const ex = resortExit({ week, chain, house: [...house] });
+          if (ex) { chain.act.exitLines = ex.lines; if (ex.mourn.length) week._resortMourn = ex.mourn; }
+        } catch { /* the chain stands whatever the goodbye does */ }
         week.acts.push(addBeats(chain.act, { players: [chain.evicted], evicted: chain.evicted }));
         week.resortEvicted = chain.evicted;
         // Out of the house before the week runs. Every roster-scoped system
@@ -2526,6 +2536,9 @@ export function simulateBBWeek(options = {}) {
         if (at >= 0) house.splice(at, 1);
         preCrowned = house.includes(chain.hoh) ? chain.hoh : null;
         week.resortHoh = preCrowned;
+        // the chain's crown is an HOH win: the competition below never runs, and it is the only place that counted one
+        // (the user, 2026-10-29: "make sure white locust hoh is counted at hoh win in their resume")
+        if (preCrowned && gs.bb.stats?.[preCrowned]) gs.bb.stats[preCrowned].hohWins++;
       }
     } catch (err) {
       // Loud, like the detection catch below: a resort week that silently does

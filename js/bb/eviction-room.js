@@ -23,10 +23,12 @@
 // (last-words.js): the screen and both transcripts read it, never the live house. A season-long ledger picks the
 // least-heard line of each kind so a season of evictions does not say the same sentence twice.
 
-import { gs, seasonConfig } from '../core.js';
+import { gs, seasonConfig, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, addBond } from '../bonds.js';
 import { stableRng } from './knowledge.js';
+import { scriptBeat } from './script/inject.js';
+import { setBBTarget } from './shared-strategy.js';
 
 const pick = (rng, kind, pool) => {
   const book = gs.bb ? (gs.bb.roomLines ||= {}) : {};
@@ -168,4 +170,98 @@ export function evictionRoomLines(record, line) {
     else if (l.k === 'dr') line(`    ${l.by}, in the Diary Room: "${l.t}"`);
     else line(`    ${l.by}: "${l.t}"`);
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// THE ONE WHO DOES NOT CHECK OUT (the White Locust's Call Out Chain)
+// ══════════════════════════════════════════════════════════════════════
+//
+// The user, 2026-10-29: "nina goodbye is damn too short when she lost white locust we got no reactions no goodbye no
+// sadness no rage nothing its lame", and "people dont even talk about her after". The chain ended on a fact and a
+// crown. Now the one who failed reacts (angry when the person who sent them up was a friend, or it is their temper;
+// otherwise it lands), their closest friend reacts, they say goodbye at the gate, the caller says why in the Diary
+// Room, and the next stretch of house life opens on the friend grieving. Decided here, from the chain as it played.
+
+const OUT = {
+  rage: [
+    (e, c) => [e, `You knew, ${c}. You knew I couldn't do that in time.`],
+    (e, c) => [e, `You sent me up there on purpose. Don't stand there and pretend you didn't, ${c}.`],
+    (e, c) => [e, `Fine. Enjoy your crown. Enjoy all of it.`],
+  ],
+  betrayed: [
+    (e, c) => [e, `${c}. Of everybody in this house, you called me.`],
+    (e, c) => [e, `I trusted you, ${c}. I'd have done anything for you in here.`],
+  ],
+  sad: [
+    (e) => [e, `I really thought I had it.`],
+    (e) => [e, `That's it? That's how I go?`],
+    (e) => ['beat', `${e} sits down on the edge of the pool and puts ${pronouns(e).posAdj} face in ${pronouns(e).posAdj} hands.`],
+  ],
+};
+const FRIEND = [
+  (f, e, c) => ['beat', `${f} is crying before ${e} has even reached the gate.`],
+  (f, e, c) => c ? [f, `${c}, you did that on purpose. Everybody saw it.`] : ['beat', `${f} won't let go of ${e}.`],
+  (f, e) => ['beat', `${f} won't let go of ${e}, and the resort has to wait.`],
+  (f, e) => [f, `This isn't fair. ${e} didn't even get a vote.`],
+];
+const CALLER_DR = {
+  cold: [(c, e) => `I knew ${e} couldn't beat that clock. That was the whole point of calling ${pronouns(e).obj}.`,
+    (c, e) => `${e} was always going to be the one who failed. I just made sure it happened tonight.`],
+  sorry: [(c, e) => `I didn't want it to be ${e}. I thought the first one would be easy. I'm going to be thinking about that face all week.`,
+    (c, e) => `Calling ${e} up there was the worst thing I've done in this house, and I'd probably do it again.`],
+  plain: [(c, e) => `${e} was the name that made sense. I'll live with it.`,
+    (c, e) => `Somebody had to go up there. I picked ${e}, and the clock did the rest.`],
+};
+const cold = n => ['villain', 'mastermind', 'schemer'].includes(String(players.find(p => p.name === n)?.archetype || ''));
+
+/**
+ * The exit, for the chain's screen (`lines`), and the grief for the next stretch of house life (`mourn`).
+ * `chain` is runCallOutChain's result; `house` the house as the chain started.
+ */
+export function resortExit({ week, chain, house = [] }) {
+  const e = chain?.evicted;
+  if (!e) return null;
+  const rng = stableRng('resort-exit', e, week?.num || 0);
+  const failed = (chain.act?.rounds || []).find(r => r && !r.made && !r.sweep && r.target === e);
+  const c = failed?.caller || null;
+  const left = house.filter(n => n && n !== e);
+  const pickOf = (pool, key) => pool[Math.floor(rng() * pool.length) % pool.length];
+  const lines = [];
+  const push = got => {
+    const [by, t] = got;
+    if (by === 'beat') lines.push({ k: 'beat', t });
+    else lines.push({ k: 'say', by, t });
+  };
+  // ── the one who failed ──
+  const t = pStats(e).temperament ?? 5;
+  const betrayed = c && getBond(e, c) >= 3;
+  const mood = betrayed ? 'betrayed' : c && (t <= 4 || rng() < 0.25) ? 'rage' : 'sad';
+  push(pickOf(OUT[mood], 'out')(e, c));
+  // ── their closest friend ──
+  const friend = left.filter(n => n !== c).sort((a, b) => getBond(b, e) - getBond(a, e))[0];
+  if (friend && getBond(friend, e) >= 3) push(pickOf(FRIEND, 'friend')(friend, e, c));
+  // ── the gate ──
+  lines.push({ k: 'beat', t: `${e} hugs the house goodbye at the resort gate${friend && getBond(friend, e) >= 3 ? `, ${friend} last` : ''}, and walks out of the White Locust without looking back.` });
+  lines.push({ k: 'resort', t: `${e}, your stay is over. You will not be checking out.` });
+  // ── the caller, in the Diary Room ──
+  if (c && left.includes(c)) {
+    const reg = cold(c) ? 'cold' : getBond(c, e) >= 2 ? 'sorry' : 'plain';
+    lines.push({ k: 'dr', by: c, t: pickOf(CALLER_DR[reg], 'caller')(c, e) });
+  }
+  // ── what it costs: the friend holds it against the caller ──
+  if (friend && c && getBond(friend, e) >= 3 && friend !== c) {
+    try { addBond(friend, c, -1.5); setBBTarget(friend, c, `sent ${e} home in the call-out chain`, { week: week?.num || 0 }); } catch { /* texture */ }
+  }
+  // ── and the house talks about them afterwards ──
+  const mourn = [];
+  const mourner = left.filter(n => n !== c).sort((a, b) => getBond(b, e) - getBond(a, e))[0];
+  if (mourner && getBond(mourner, e) >= 2) {
+    const comfort = left.filter(n => n !== mourner && n !== e).sort((a, b) => getBond(b, mourner) - getBond(a, mourner))[0] || null;
+    const g = scriptBeat('fallout.grief', { a: mourner, b: comfort }, { ending: 'scene', intent: comfort ? 'held' : 'alone', gone: e },
+      { week, act: 'house', room: 'bedroom', salt: `resort-grief|${mourner}` });
+    if (g) mourn.push({ text: g.text, lines: g.lines, lineId: g.lineId, players: [mourner, comfort].filter(Boolean),
+      eventId: 'resort-grief', category: 'house-life', location: 'bedroom', badgeText: 'DOWN A FRIEND', badgeClass: 'blue' });
+    try { if (comfort) addBond(mourner, comfort, 0.8); } catch { /* texture */ }
+  }
+  return { lines, mourn };
 }

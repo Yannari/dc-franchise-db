@@ -6943,6 +6943,11 @@ export function generateBBSummaryText(ep) {
           ln('');
         }
         ln(`  ${act.evicted} does not check out of the White Locust Resort.`);
+        // the goodbye, the same lines the screen plays (bb/eviction-room.js resortExit)
+        for (const l of act.exitLines || []) {
+          ln(l.k === 'beat' ? `    ${l.t}` : l.k === 'dr' ? `    ${l.by}, in the Diary Room: "${l.t}"`
+            : l.k === 'resort' ? `    ${act.concierge || 'Big Brother'}: "${l.t}"` : `    ${l.by}: "${l.t}"`);
+        }
         ln(`  ${act.hoh} had the fastest turn of the night, and is the new Head of Household.`);
         ln('');
         for (const b of act.beats || []) ln(`  ${String(b.text || '').replace(/<[^>]+>/g, '')}`);

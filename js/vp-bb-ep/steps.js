@@ -4426,7 +4426,7 @@ function rewindScreens(act, ctx) {
   const cg = act.concierge;
   const say = cg ? t => ({ k: 'host', by: cg, t }) : t => ({ k: 'bb', t });
   /** @type {BB.Step[]} */ const steps = [
-    ...(cg ? [{ k: 'beat', t: `The houseguests are met at the resort gate by its concierge for the week: ${cg}, a fan favourite from another season.`, toast: ['THE CONCIERGE', '#f5c542'] }] : []),
+    ...(cg ? [{ k: 'beat', t: `The houseguests are met at the resort gate by its concierge for the week: ${cg}, a houseguest from an earlier season.`, toast: ['THE CONCIERGE', '#f5c542'] }] : []),
     { ...say(cg ? 'Welcome to the White Locust Resort! Relax, enjoy your stay. Just know that by the end of it, one of you will not be checking out.'
       : 'Houseguests, welcome to the White Locust Resort. By the end of your stay, one of you will not be checking out.'), rule: 1 },
     { ...say('First, you will all play for safety. The winner starts the call-out chain.'), rule: 2 },
@@ -4439,8 +4439,11 @@ function rewindScreens(act, ctx) {
     steps.push(...(r.callLines?.length ? scriptSteps(r.callLines) : [{ k: 'say', by: r.caller, t: `${r.target}, you're up.` }]));
     steps.push({ k: 'beat', t: `${r.target} has ${word(r.limit)} seconds: ${r.doing}.`, wlRound: [r.target, 'up', r.limit] });
     steps.push({ k: 'beat', t: r.made ? `${r.target} finishes in ${Math.round(r.time)} seconds.` : `${r.target} runs out of time.`, wlRound: [r.target, r.made ? 'made' : 'out', r.limit, Math.round(r.time)],
-      ...(r.made ? {} : { toast: ['DOES NOT CHECK OUT', '#ff3355'] }) }, ...(r.endLines?.length ? scriptSteps(r.endLines) : []));
+      ...(r.made ? {} : { toast: ['DOES NOT CHECK OUT', '#ff3355'], exit: r.target }) }, ...(r.endLines?.length ? scriptSteps(r.endLines) : []));
   }
+  // the one who does not check out: their reaction, a friend's, the gate, the caller's reason (bb/eviction-room.js
+  // resortExit; the user, 2026-10-29: "no reactions no goodbye no sadness no rage nothing")
+  for (const l of act.exitLines || []) steps.push(l.k === 'resort' ? say(l.t) : { ...l });
   for (const b of act.beats || []) steps.push(...linesOf(b));
   if (act.hoh) steps.push({ ...say(act.hoh === act.safe ? `${act.hoh}, nobody survived a call-out, so the crown is yours. You are the new Head of Household.`
     : `${act.hoh}, of everybody who survived a call-out, you were the fastest. You are the new Head of Household.`), toast: ['NEW HEAD OF HOUSEHOLD', '#f5c542'],

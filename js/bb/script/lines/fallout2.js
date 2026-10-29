@@ -26,7 +26,7 @@ export default {
       { by: 'a', dr: "{b} kept me. {b}, of all people. I've spent all week thinking {b} was against me, and I was wrong." }] },
     { id: 'fk.t2', turns: [
       { beat: '{b} waits until the kitchen is empty.' },
-      { by: 'b', say: "For what it's worth, I wrote {gone}'s name. Not yours." },
+      { by: 'b', say: "For what it's worth, I voted {gone} out. Not you." },
       { by: 'a', say: "Why would you do that for me?" },
       { by: 'b', say: "Because I'd rather play against you than against {gone}." },
       { by: 'a', say: "That's honest, at least." },
@@ -63,7 +63,7 @@ export default {
     { id: 'fk.c2', turns: [{ beat: '{a} hugs {b} for a long time in the hallway.' }, { by: 'a', say: "Thank you. I know what it cost you to vote against {gone}." }, { by: 'b', say: "It was always going to be you I kept." }, { by: 'b', dr: "{a} knows I kept that promise. Now I need {a} to keep the ones we made back." }] },
     { id: 'fk.c3', turns: [{ by: 'a', say: "You stuck with me." }, { by: 'b', say: "I said I would." }, { by: 'a', say: "People say a lot of things in here." }, { by: 'b', say: "I don't." }, { by: 'a', dr: "{b} voted to keep me and told me before I even asked. That's who I'm going to the end with." }] },
     { id: 'fk.c4', turns: [{ by: 'b', say: "How are you feeling?" }, { by: 'a', say: "Like I've been given my game back." }, { by: 'b', say: "Then let's not waste it." }, { by: 'a', dr: "{gone} is gone and I'm still here, partly because of {b}. We need to win the next HOH." }] },
-    { id: 'fk.c5', turns: [{ by: 'a', say: "I counted the votes last night. I knew one of them was yours." }, { by: 'b', say: "Of course it was mine." }, { by: 'a', say: "I needed to hear you say it." }, { by: 'b', dr: "{a} was scared last night. I could see it from the couch. I'm glad {a} doesn't have to be this morning." }] },
+    { id: 'fk.c5', turns: [{ by: 'a', say: "I went through it all last night. I knew one of the votes was yours." }, { by: 'b', say: "Of course it was mine." }, { by: 'a', say: "I needed to hear you say it." }, { by: 'b', dr: "{a} was scared last night. I could see it from the couch. I'm glad {a} doesn't have to be this morning." }] },
     { id: 'fk.c6', turns: [{ by: 'b', say: "I kept you. You'd have done the same." }, { by: 'a', say: "I would. You know I would." }, { by: 'b', say: "Then we're square." }, { by: 'a', dr: "{b} and I came through that vote together. Whatever comes next, we face it as a pair." }] },
   ],
   'fallout.keptme.doubt': [

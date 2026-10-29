@@ -16,7 +16,7 @@
 // until the camp resolves.
 
 import { gs } from '../core.js';
-import { isSeatedJuror } from './jury.js';
+import { isSeatedJuror, weekExits } from './jury.js';
 import { campers } from './camp-comeback.js';
 import { deliverInterviews } from '../exit-interview/core.js';
 import { exitStore as store, HOUSE_OPS as OPS, houseFacts, recordHouseExit, publishedExits } from '../exit-interview/house.js';
@@ -50,21 +50,31 @@ function record(name, week, rng, { how = 'evicted', placement = null, withName =
  */
 export function recordBBExits(week, { rng = Math.random } = {}) {
   if (!week) return [];
-  const leaving = [week.evicted, week.secondEvicted].filter(Boolean)
-    .filter((n, i, a) => a.indexOf(n) === i && goneForGood(n));
+  // every exit of the week, in order: the White Locust's loser (out before the vote) first (bb/jury.js weekExits;
+  // the user, 2026-10-29: "make sure the export do the kristal talk interview with both evicted")
+  const exits = weekExits(week).filter((x, i, a) => a.findIndex(y => y.name === x.name) === i && goneForGood(x.name));
+  const leaving = exits.map(x => x.name);
+  const special = new Map(exits.filter(x => x.how !== 'eviction').map(x => [x.name, x.how]));
+  // who called them up: the chain's failed round (bb/white-locust.js)
+  const callerOf = name => ((week.acts || []).find(a => a?.type === 'white-locust')?.rounds || [])
+    .find(r => r && !r.made && r.target === name)?.caller || null;
   // Campers sent home when the camp resolved, interviewed now.
   const campGone = ((gs.bb?.camp) || []).filter(c => c.gone && !c.returned && !c.interviewed);
   const how = name => week.departure?.name === name
-    ? (week.departure.kind === 'expulsion' ? 'expelled' : 'walked') : 'evicted';
+    ? (week.departure.kind === 'expulsion' ? 'expelled' : 'walked')
+    // out on a clock, not a vote: Kristal's 'lost-challenge' interview, in Big Brother's own words
+    : special.has(name) ? 'lost-challenge' : 'evicted';
+  const voted = leaving.filter(n => !special.has(n));
   const out = [];
   try {
     // The new evictees hear what reached the outside first (unless sequestered).
     deliverInterviews(store(), { at: week.num, canHear: canHearNow, ops: OPS });
     const n = leaving.length;
     leaving.forEach((name, i) => {
-      out.push(record(name, week, rng, {
+      out.push(record(name, special.has(name) ? { ...week, ballots: [] } : week, rng, {
         how: how(name), placement: active().length + n - i,
-        withName: n > 1 ? leaving.find(x => x !== name) : null,
+        // the chain's loser names whoever called them up; a double vote's two name each other
+        withName: special.has(name) ? callerOf(name) : voted.length > 1 ? voted.find(x => x !== name) : null,
       }));
     });
     for (const c of campGone) {

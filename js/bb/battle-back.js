@@ -246,6 +246,8 @@ export function applyReturn(name, act, weekNum) {
   // still happened and the transcript still says so.
   for (const w of gs.bb.weeks || []) {
     if (w.evicted === name && Number(w.num) <= weekNum) w.evictionReversed = true;
+    // (somebody the White Locust took out comes back the same way: bb/jury.js weekExits)
+    if (w.resortEvicted === name && Number(w.num) <= weekNum) w.resortReversed = true;
   }
 
   gs.popularity ||= {};

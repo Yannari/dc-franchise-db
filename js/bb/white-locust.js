@@ -25,7 +25,7 @@
 // against each other — send the person you want gone, or send the person most
 // likely to fail — and they are frequently not the same person. A strong player
 // called out early usually survives and then gets to aim the chain at you.
-import { gs, players, seasonConfig } from '../core.js';
+import { gs, players, seasonConfig, seasonFormat } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
 import { stableRng } from './knowledge.js';
@@ -41,12 +41,19 @@ import { pronounsOf } from '../pronouns-of.js';
  */
 export function conciergeOf(house = []) {
   try {
+    // THIS show's past seasons only: the franchise ledger holds every show's, and the latest fan favourite of all
+    // was a Circle player, introduced at the gate as "a fan favourite from another season" of a show he was never on
+    // (the user, 2026-10-29: "hector isnt a real houseguest next time pick a real old houseguest").
+    const show = seasonFormat(seasonConfig);
     // Latest last in the ledger: insertion order is the order they were played.
     const seasons = Object.entries(activeSeasons() || {}).filter(([, v]) => v)
-      .map(([k, v]) => ({ ...v, _n: Number(seasonKeyParts(k, v)?.num) || 0 })).reverse();
+      .map(([k, v]) => ({ ...v, _n: Number(seasonKeyParts(k, v)?.num) || 0, _show: seasonKeyParts(k, v)?.format }))
+      .filter(s => s._show === show).reverse();
     for (const s of seasons) {
-      const fav = s.fanFavorite?.name || s.fanFavorite;
-      if (fav && typeof fav === 'string' && !house.includes(fav)) return fav;
+      // the fan favourite first, as BB27 did it; else that season's winner, who is at least a houseguest the audience knows
+      for (const who of [s.fanFavorite?.name || s.fanFavorite, s.winner?.name || s.winner]) {
+        if (who && typeof who === 'string' && !house.includes(who)) return who;
+      }
     }
   } catch { /* no franchise */ }
   return null;

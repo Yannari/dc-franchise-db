@@ -754,11 +754,29 @@ export const SHOW = {
         '{when}. {guest} sat on that block, campaigned, and went out {votes}. Let’s go through it.',
         '{guest} spent all of {when} on the block. {votes}. Let’s go through it.',
       ],
+      // the White Locust's Call Out Chain (and the Camp Director's road): out with no nomination and no vote. {with}
+      // is whoever called them up (the user, 2026-10-29: "a special white locust for the one losing to it")
+      'lost-challenge': [
+        'No nomination, no campaign, no vote. {guest} was out of the game in {when} before the week had even started.',
+        '{with} called {guest} up in {when}, the clock beat {obj}, and that was it. Gone on the spot.',
+        '{guest} is the one who didn’t check out. {when}, a task, a clock, and no second chance. Let’s talk about it.',
+        'Most people get a week on the block to fight for their life. {guest} got a stopwatch. {when}.',
+      ],
     },
     OPEN_Q: {
       'seen-it-coming': ['Take me through the week on the block.', 'What does a week on the block feel like from the inside?'],
+      'lost-challenge': ['Why do you think {with} called you up?', 'Take me through the task. When did you know the time was gone?',
+        'Is it worse than being voted out? Nobody even had to write your name down.', 'What went through your head when your name was called?'],
     },
     OPEN_A: {
+      'lost-challenge': {
+        hot: ['{with} knew exactly what they were doing. They picked the task I was worst at and the shortest clock in the game.',
+          'I didn’t even get to campaign. One task, one clock, and I’m on a plane. That isn’t a game, that’s a coin toss.'],
+        soft: ['I’d rather go out doing something than sitting in a chair. I just wish I’d been faster.',
+          'Honestly, it’s a clean way to go. Nobody lied to me. The clock just beat me.'],
+        hurt: ['I could see the finish. I was right there, and then the buzzer went.',
+          'I keep replaying the last ten seconds. Every single time I think I can make it.'],
+      },
       'seen-it-coming': {
         hot: ['I spent four days campaigning to people who had already decided. They just let me keep talking.'],
         soft: ['I campaigned to everybody. I didn’t burn a single bridge on the way out, and I’m proud of that.'],

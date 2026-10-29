@@ -31,7 +31,7 @@
 import { gs, players } from '../core.js';
 import { pStats, pronouns } from '../players.js';
 import { getBond, getPerceivedBond, addBond } from '../bonds.js';
-import { seatedJurors, juryOpensAt, evictionSeatsAJuror } from './jury.js';
+import { seatedJurors, juryOpensAt, evictionSeatsAJuror, weekExits } from './jury.js';
 import { reconcileBBJury, believedVoters, stableRng, knowsVote } from './knowledge.js';
 import { seedJurorReads, moveRead, readOf, stanceOf } from './jury-sentiment.js';
 import { entranceOf, newsByLens, chooseNight, lensCase, reasonLine } from './jury-house-scenes.js';
@@ -138,7 +138,19 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
   const count = tie ? `It was a tie${wk?.hoh ? `, and ${wk.hoh} broke it` : ''}` : ballots.length && against < ballots.length ? `${Cap(NUM(against))} to ${NUM(ballots.length - against)}` : ballots.length ? 'Every single vote went against me' : null;
   // who they are, walking in (jury-house-scenes.js): its own dice, so nothing else moves
   beats.push(beat('ENTRANCE', [newcomer], entranceOf(newcomer, stableRng('jhentrance', week, newcomer))));
-  if (greeter) {
+  // Out on the White Locust's clock, not a vote: no HOH put them up and nobody wrote their name (the user, 2026-10-29)
+  const chain = wk?.resortEvicted === newcomer ? (wk.acts || []).find(x => x?.type === 'white-locust') : null;
+  if (chain) {
+    const caller = (chain.rounds || []).find(r => r && !r.made && r.target === newcomer)?.caller || null;
+    if (greeter) beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, [
+      `${greeter} is on the porch before the car has stopped. "Already? The week hasn't even started."`,
+      `${greeter} stands up. "You? What happened? There wasn't even a vote yet."`,
+    ])));
+    beats.push(beat('THE NEWS', [newcomer, caller].filter(Boolean), caller ? pick(rng, [
+      `${newcomer} drops the bag. "${caller} called me up in the chain. I had one task and a clock, and the clock won. No vote, no week, nothing."`,
+      `"${caller} sent me up there," ${newcomer} says, "and picked the one task I couldn't do in time. I didn't even get to campaign."`,
+    ]) : `"The resort kept the slowest one," ${newcomer} says. "That was me. No vote, no nomination. Just a stopwatch."`));
+  } else if (greeter) {
     beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, [
       `${greeter} hears the car first and is on the porch before ${newcomer} has the door open. "Get in here. Are you okay?"`,
       `${greeter} stands up slowly. "Oh no. Not you." ${newcomer} manages a smile. "Yeah. Me."`,
@@ -769,10 +781,11 @@ export function generateBBJuryHouse(week, rngIn) {
   // scene. Every arrival-only interlude of a season silently produced nothing
   // and only the weeks that happened to be full ever appeared.
   const seated = seatedJurors({ upToWeek: num });
-  const seatsTonight = week?.evicted && !week.evictionReversed
-    && evictionSeatsAJuror((week.houseAtStart || []).length);
-  const residents = seated.includes(week?.evicted) || !seatsTonight
-    ? seated : [...seated, week.evicted];
+  // Everybody who left this week and is a juror arrives tonight: the White Locust's loser too, who went out before
+  // the vote (the user, 2026-10-29: "nina wasnt in that jury house ... its like she was erased")
+  const opening = (week?.houseAtStart || []).length;
+  const tonight = weekExits(week).filter((x, i) => evictionSeatsAJuror(opening - i)).map(x => x.name);
+  const residents = [...seated, ...tonight.filter(n => !seated.includes(n))];
   if (residents.length < 1 || !juryOpensAt()) return null;
   const rng = rngIn || stableRng('juryhouse', num, residents.length);
 
@@ -797,19 +810,22 @@ export function generateBBJuryHouse(week, rngIn) {
     Object.fromEntries((gs.activePlayers || []).map(p => [p, Number(readOf(j, p).toFixed(2))]))]));
   const readsBefore = snapshot();
 
-  const arrivals = newcomer
-    ? arrivalBeats(newcomer, residents.filter(n => n !== newcomer), num, rng, out,
-      week.lastWords || null)
-    : [];
-  if (arrivals.length && newcomer) {
-    const rest = residents.filter(n => n !== newcomer);
-    const asker = rest.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0] || null;
-    const news = newsBeats(newcomer, rest, num, rng);
-    const lens = newsByLens(newcomer, asker, (gs.activePlayers || []).filter(n => n !== newcomer), stableRng('jhnews', num, newcomer));
+  // Everybody who arrives tonight, in the order they left: the White Locust's loser was out at the start of the
+  // week and is already on the sofa when the week's evictee walks in (only the evictee carries a parting shot).
+  const arrivingTonight = [...new Set([...tonight.filter(n => n !== newcomer && residents.includes(n)), newcomer].filter(Boolean))];
+  const arrivals = [];
+  arrivingTonight.forEach((who, i) => {
+    const later = arrivingTonight.slice(i + 1);
+    const rest = residents.filter(n => n !== who && !later.includes(n));
+    const mine = arrivalBeats(who, rest, num, rng, out, who === week?.evicted ? (week.lastWords || null) : null);
+    if (!mine.length) return;
+    const asker = rest.slice().sort((a, b) => getBond(who, b) - getBond(who, a))[0] || null;
+    const news = newsBeats(who, rest, num, rng);
+    const lens = newsByLens(who, asker, (gs.activePlayers || []).filter(n => n !== who), stableRng('jhnews', num, who));
     const at = news.findIndex(b => b.tag === 'THE NEWS' || b.tag === 'ALONE');
     if (at >= 0 && lens.length) news.splice(at, news[at].tag === 'THE NEWS' ? 1 : 0, ...(news[at].tag === 'THE NEWS' ? lens : []));
-    arrivals.push(...reunionBeats(newcomer, rest, rng), ...news);
-  }
+    arrivals.push(...mine, ...reunionBeats(who, rest, rng), ...news);
+  });
   if (arrivals.length) acts.push({ title: 'The Door Opens', beats: arrivals });
 
   // What the room passes between itself, whether or not tonight is a big one.

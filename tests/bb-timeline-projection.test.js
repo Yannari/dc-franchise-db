@@ -67,6 +67,15 @@ describe('a week that evicts two is projected as evicting two', () => {
     expect(dropAt(map, 1)).toBe(1);
   });
 
+  it('counts the White Locust Resort as a double', () => {
+    // The Call Out Chain takes one before the week starts and the week still votes one out: nine to seven (the
+    // user, 2026-10-29: "show it in the season timeline they should go from 9 to 7").
+    season([{ id: 't1', episode: 4, type: 'bb-white-locust' }]);
+    const map = buildEpisodeMap();
+    expect(dropAt(map, 4), 'a White Locust week projected only one eviction').toBe(2);
+    expect(dropAt(map, 3)).toBe(1);
+  });
+
   it('counts a double eviction as a double', () => {
     // Same bug, same list, never reported because nobody had checked it.
     season([{ id: 't1', episode: 3, type: 'bb-double-eviction' }]);

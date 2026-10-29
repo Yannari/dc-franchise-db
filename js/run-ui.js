@@ -3661,6 +3661,10 @@ export function buildEpisodeMap() {
     // and a room left to vote need eight houseguests, and below that the week
     // stands down to an ordinary one rather than running badly.
     if (_allTypes.includes('bb-duo-week') && active >= 8) elims = Math.max(elims, 2);
+    // The White Locust Resort takes one on the Call Out Chain before the week starts, and then the week runs its own
+    // vote: two out, nine to seven (the user, 2026-10-29). The guard is the engine's: runCallOutChain stands down
+    // under six (bb/white-locust.js).
+    if (_allTypes.includes('bb-white-locust') && active >= 6) elims = Math.max(elims, 2);
     // The Split House stands down rather than running badly, and the projection
     // has to stand down with it or it is wrong in the other direction — the
     // guard here mirrors `splitPossible` in bb-run.js exactly: ten houseguests

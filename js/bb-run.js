@@ -145,7 +145,9 @@ export function houseStructure(config = {}, castSize = 0) {
   // projection than it does in play.
   const twoAtOnce = (config.twistSchedule || [])
     .filter(t => t && (t.type === 'bb-double-eviction' || t.type === 'bb-split-house'
-      || t.type === 'bb-duo-week' || t.type === 'bb-triple-eviction'));
+      || t.type === 'bb-duo-week' || t.type === 'bb-triple-eviction'
+      // the Call Out Chain takes one before the week, and the week still votes one out (bb/white-locust.js)
+      || t.type === 'bb-white-locust'));
   // Counted by how many people the night removes BEYOND the ordinary one, so a
   // triple saves the calendar two weeks and a double one. Counting nights
   // rather than evictions had the projection run a season a week long.

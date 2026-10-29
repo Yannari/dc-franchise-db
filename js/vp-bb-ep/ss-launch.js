@@ -262,8 +262,9 @@ export function ssLaunchScreens(act, ctx, host, H) {
         hiding: !!s && s.kind === 'real-pair' && duoRel(s) === 'romance',
         people: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i),
         how: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social, promise: pickRot(PROMISE, i),
-        // (their own secret, told to the viewers at the end of the portrait; a shared or production one the Voice explains in the airlock)
-        reveal: !signs && s && (s.holders || []).length === 1 && !isProd(s) && !liveOwners.has(n) ? { text: s.text, kind: s.secretKind || s.kind } : null }));
+        // (never their own secret: the list of secrets shows every one on the night without saying whose, and only the
+        // ones who own theirs live put a face to one: the user, 2026-10-29. A shared or production one the Voice explains in the airlock)
+        reveal: null }));
     });
     // the airlock: the host on the earpiece, the Voice's word, the door
     steps.push({ k: 'beat', scene: SAS, t: g.length === 1 ? `In the airlock, ${g[0]} puts in an earpiece and checks ${pronouns(g[0]).posAdj || 'their'} hair in the mirror.` : `In the airlock, ${listOf(g)} put in their earpieces, side by side, and check their hair in the mirror.` },
@@ -350,53 +351,80 @@ export function ssLaunchScreens(act, ctx, host, H) {
       if (c.who.some(n => !inside.includes(n))) continue;
       out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house', ...checkin(c, H, host, firstSeason) }));
     }
-    // the list of secrets: the HOST reads it (the user, 2026-10-28), on the show's own board, never saying whose
-    for (const l of (L.lists || []).filter(x => x.after <= count && !doneLs.has(x))) {
-      doneLs.add(l);
-      // the board, five rows: the secret being owned right now, the ones read tonight, the faces already owned, then
-      // the rest of what the public has seen. A face only beside a secret its housemate has owned on air.
+    // the list of secrets: the HOST reads it (the user, 2026-10-28), on the show's own board, never saying whose. Each
+    // secret is shown on its own card first, then joins the board (2026-10-29: "they have to reveal each secret 1 by 1
+    // during launch night with a presentation"); a face goes up only when its housemate owns it, live, from the confessional
+    // (two lists due after the same arrival are one list, not two screens in a row)
+    const due = (L.lists || []).filter(x => x.after <= count && !doneLs.has(x));
+    due.forEach(x => doneLs.add(x));
+    for (const l of due.length ? [{ after: Math.max(...due.map(x => x.after)), secrets: due.flatMap(x => x.secrets || []) }] : []) {
+      // the board, five rows: the secret being owned right now, the ones read tonight (newest first), the faces already
+      // owned, then the rest of the list. A face only beside a secret its housemate has owned on air.
       const whoOf = sx => (sx.holders || []).find(h => owned.has(h)) || null;
+      const full = sx => secretOf((sx.holders || [])[0]) || (act.secrets || []).find(x => x.text === sx.text) || sx;
       const rowsNow = (fresh, now = null) => {
-        const mine = inside.map(n => secretOf(n)).filter(Boolean).filter((sx, i, a) => a.indexOf(sx) === i);
-        const pool = [...(now ? [now] : []), ...fresh, ...mine.filter(sx => whoOf(sx)), ...listed.slice().reverse(), ...mine];
+        const pool = [...(now ? [now] : []), ...fresh.slice().reverse(), ...listed.map(full).filter(sx => whoOf(sx)), ...listed.slice().reverse()].map(full);
         const seen = new Set();
         return pool.filter(sx => sx && !seen.has(sx.text) && seen.add(sx.text)).slice(0, 5)
-          .map(sx => ({ text: sx.text, who: whoOf(sx), new: sx === now || fresh.includes(sx) }));
+          .map(sx => ({ text: sx.text, who: whoOf(sx), new: (now && sx.text === now.text) || fresh.some(f => f.text === sx.text) }));
       };
-      /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what some of them are hiding.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${kk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
+      const lk = `${kk}|ls${l.after}`;
+      /** @type {any[]} */ const ls = [{ k: 'host', by: host, t: pickBy(["It's time for the list of secrets! Let's find out what they're hiding in there.", "And now, the moment you've all been waiting for: the list of secrets!", "Let's take a look at the famous list of secrets."], `${lk}|ls`), toast: ['THE LIST OF SECRETS', '#7c5cff'],
         secretlist: { rows: rowsNow([]) } }];
-      // one or two of the ones already inside own theirs, live from the confessional (a personal secret, kept alone)
-      // (one a list: the first of the night's two who is in the house by now; the last list takes whoever is left)
-      const isLast = l.after === lastList;
-      const owners = inside.filter(n => liveOwners.has(n) && !owned.has(n)).slice(0, isLast ? 2 : 1);
-      for (const n of owners) {
+      if (!listed.length) ls.push({ k: 'host', by: host, t: "Here's how it works. Every secret in that house goes up on this list tonight, one at a time. What we won't tell you is whose it is. That part is your job." });
+      const fresh = [];
+      l.secrets.forEach((sx, j) => {
+        const no = listed.length + j + 1;
+        // the card: the secret on its own, read out by the host
+        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(fresh), show: { no, text: sx.text, pair: !!sx.pair } },
+          t: sx.pair ? pickRot([`Secret number ${no}, and this one is shared. Two of our housemates are hiding it together: "${sx.text}."`, `Secret number ${no}. Two people in that house are keeping this one between them: "${sx.text}."`], no)
+            : pickRot([`Secret number ${no}. One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Here's secret number ${no}: "${sx.text}."`, `Secret number ${no}. Somebody in that house is keeping this: "${sx.text}."`, `Number ${no}: "${sx.text}."`], no + gi) });
+        fresh.push(sx);
+        // ...and onto the board, with a clue for the viewers when the Voice has hidden one
+        ls.push({ k: 'host', by: host, secretlist: { rows: rowsNow(fresh) },
+          t: (sx.clues || [])[0] ? `A little clue for you at home: hidden somewhere in the house, ${sx.clues[0]}.`
+            : pickRot(['Somebody in there is sitting on that one right now.', 'Have a think about who that could be.', 'Remember that one. It matters later.', "That one's going to be hard to keep."], no) });
+      });
+      listed.push(...fresh);
+      // one or two of the ones already inside own theirs, live from the confessional (a personal secret kept alone, already
+      // on the list): the first of the night's two who is in the house with theirs read by now; the last list takes the rest.
+      // Set up by the host first (the user, 2026-10-29: "secret revealed need a setup by the host not just dive direct in
+      // it... josh is an host make him act like it")
+      const isLast = l.after >= lastList;
+      const allIn = count >= order.length;
+      const onList = new Set(listed.map(x => x.text));
+      const owners = inside.filter(n => liveOwners.has(n) && !owned.has(n) && (signs || onList.has(secretOf(n)?.text))).slice(0, isLast ? 2 : 1);
+      owners.forEach((n, oi) => {
         const sx = secretOf(n);
         const kind = sx.secretKind || sx.kind;
         const story = KIND_STORY[kind] || KIND_STORY.past;
         const live = t => ({ k: 'dr', by: n, live: true, t });
-        ls.push({ k: 'host', by: host, t: pickBy([`First, let's go to the confessional, live. ${n}, can you hear me?`, `Let's go to the confessional. ${n}, it's ${host}, we're live.`], `${kk}|ask|${n}`), secretlist: { rows: rowsNow([]) } },
-          live(pickBy(["I can hear you! Hi! Hi, everybody!", "Loud and clear. My heart's going a hundred miles an hour."], `${kk}|hi|${n}`)),
-          { k: 'host', by: host, t: `One of the secrets on this list is yours. Tell everybody at home: which one?`, secretlist: { rows: rowsNow([], sx) } },
-          { ...live(pickBy([`That one. "${sx.text}."`, `It's that one. "${sx.text}." Wow. Seeing it up there.`], `${kk}|own|${n}`)), owns: true },
-          { k: 'host', by: host, t: pickBy(['Okay, you have to tell us. How does that happen to somebody?', 'Wow. Tell us the story. How did that happen?'], `${kk}|how|${n}`), secretlist: { rows: rowsNow([], sx) } },
-          live(pickBy(story, `${kk}|story|${n}`)),
-          { k: 'host', by: host, t: 'And who knows about it, back home?' },
-          live(pickBy(KNOWS, `${kk}|knows|${n}`)),
-          { k: 'host', by: host, t: `And in there? Why keep it at any price?` },
-          live(pickBy(WHY_KEEP, `${kk}|why|${n}`)),
-          { k: 'host', by: host, t: pickBy([`Thank you, ${n}. Good luck keeping that one all summer.`, `There it is, everybody: ${n}'s secret, on the list. Good luck, ${n}.`], `${kk}|got|${n}`), secretlist: { rows: rowsNow([], sx) } });
+        const ok = `${kk}|own|${n}`;
+        const setup = oi > 0 || owned.size
+          ? pickBy([[`And we're not finished. Another housemate has asked to talk to us from the confessional.`, `One more secret on this list is about to get a face. Nobody in the house knows ${pronouns(n).sub || 'they'}${pronouns(n).sub === 'they' ? "'re" : "'s"} gone.`],
+            ['Stay with me, because it happens again.', `A second housemate is going to own a secret tonight, live. And this one, I did not see coming.`]], `${ok}|set`)
+          : pickBy([[allIn ? 'Now, before we leave them for the night, something special.' : 'Now, before anybody else walks in, something special.', 'One of the housemates already in that house has agreed to do something very brave tonight: tell you, live, which of these secrets is theirs.', "And don't worry: nobody in the house can hear a word of this."],
+            ['Stay with me, because this next part is big.', 'Somebody in that house is about to own one of these secrets, live, in front of the whole country.', 'The others think they just went to fix their microphone.']], `${ok}|set`);
+        ls.push({ k: 'host', by: host, t: setup[0], toast: ['LIVE · THE CONFESSIONAL', '#ff3ea5'], secretlist: { rows: rowsNow([]) } });
+        for (const line of setup.slice(1)) ls.push({ k: 'host', by: host, t: line });
+        ls.push({ k: 'beat', t: pickBy([`The giant screen behind ${host} cuts to the confessional. ${n} is on the sofa, earpiece in, hands clasped tight.`, `The lights in the studio drop. On the screen: the confessional, and ${n}, sitting very straight.`], `${ok}|cut`), shake: true },
+          { k: 'host', by: host, t: pickBy([`${n}, it's ${host}. You're live. Can you hear me?`, `${n}! It's ${host}, and we're live. Can you hear me?`], `${ok}|ask`) },
+          live(pickBy(["I can hear you! Hi! Hi, everybody!", "Loud and clear. My heart's going a hundred miles an hour."], `${ok}|hi`)),
+          { k: 'host', by: host, t: 'One of the secrets on this list is yours. Take your time. Tell everybody at home: which one?', secretlist: { rows: rowsNow([], sx) } },
+          { ...live(pickBy([`That one. "${sx.text}."`, `It's that one. "${sx.text}." Wow. Seeing it up there.`], `${ok}|own`)), owns: true });
         owned.add(n);
-      }
-      const fresh = [];
-      for (const sx of l.secrets) {
-        const j = l.secrets.indexOf(sx);
-        fresh.push(sx);
-        ls.push({ k: 'host', by: host, t: sx.pair ? `Two of our housemates are hiding this one together: "${sx.text}."` : (j === 0 ? pickRot([`First on the list: "${sx.text}."`, `One of our housemates, man or woman, is hiding this: "${sx.text}."`], gi) : pickRot([`One of our housemates, man or woman, is hiding this: "${sx.text}."`, `Next on the list: "${sx.text}."`, `And this one: "${sx.text}."`], j + gi)), secretlist: { rows: rowsNow(fresh) } });
-        // (a clue is a noun phrase, singular or not: "somewhere in the house: five rings on a string")
-        if ((sx.clues || [])[0]) ls.push({ k: 'host', by: host, t: `A little clue for you at home: hidden somewhere in the house, ${sx.clues[0]}.`, secretlist: { rows: rowsNow(fresh) } });
-      }
-      listed.push(...fresh);
-      ls.push({ k: 'host', by: host, t: `That's ${l.secrets.length} more on the list. Who's hiding what? You've got all summer to work it out.`, secretlist: { rows: rowsNow([]) } });
+        // the list, updated: the secret has a face now
+        ls.push({ k: 'beat', t: `${n}'s face goes up on the list, next to it. The studio erupts.`, secretlist: { rows: rowsNow([], sx) }, toast: ['SECRET OWNED', '#ff3ea5'] },
+          { k: 'host', by: host, t: pickBy(['Okay, you have to tell us. How does that happen to somebody?', 'Wow. Tell us the story. How did that happen?'], `${ok}|how`) },
+          live(pickBy(story, `${ok}|story`)),
+          { k: 'host', by: host, t: 'And who knows about it, back home?' },
+          live(pickBy(KNOWS, `${ok}|knows`)),
+          { k: 'host', by: host, t: 'And in there? Why keep it at any price?' },
+          live(pickBy(WHY_KEEP, `${ok}|why`)),
+          { k: 'host', by: host, t: pickBy([`Thank you, ${n}. Good luck keeping that one all summer.`, `There it is, everybody: ${n}'s secret, on the list. Good luck, ${n}.`], `${ok}|got`), secretlist: { rows: rowsNow([], sx) } });
+      });
+      ls.push({ k: 'host', by: host, t: listed.length >= (act.secrets || []).length ? `That's every secret in the house, all ${listed.length} of them. Who's hiding what? You've got all summer to work it out.`
+        : `That's ${l.secrets.length} more on the list. Who's hiding what? You've got all summer to work it out.`, secretlist: { rows: rowsNow([]) } });
       out.push(base(`bb-ss-launch-list-${count}`, { ...STUDIO, title: 'The List of Secrets', label: 'List of Secrets', sub: `${l.secrets.length} secrets`, cast: [], steps: ls }));
     }
   });

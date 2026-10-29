@@ -136,11 +136,23 @@ export function planLaunch(state, ctx, { house = [], signs = false } = {}) {
   const arrives = s => Math.min(...(s.holders || []).map(h => order.indexOf(h)).filter(i => i >= 0));
   const told = new Set();
   const lists = [];
-  for (const after of [2, 6, 10]) {
+  const entry = s => ({ text: s.text, clues: (s.clues || []).slice(0, 2), pair: (s.holders || []).length > 1 });
+  if (!signs) {
+    // Without the signs, EVERY secret goes up on the list on the night, one at a time, and nobody is told whose (the
+    // user, 2026-10-29: "they have to reveal each secret 1 by 1 during launch night with a presentation but not always
+    // tell us whos the one with the secret except when its after the reveal in confessional"): a batch every few
+    // arrivals, the last one once everybody is in.
+    const slots = [2, 6, 10, 14, 18].filter(a => a < order.length).concat(order.length);
+    const all = secrets.slice().sort(() => rng() - 0.5);
+    slots.forEach((after, i) => {
+      const take = all.splice(0, Math.ceil(all.length / (slots.length - i)));
+      if (take.length) lists.push({ after, secrets: take.map(entry) });
+    });
+  } else for (const after of [2, 6, 10]) {
     if (after >= order.length) break;
     const later = secrets.filter(s => !told.has(s) && arrives(s) >= after).sort(() => rng() - 0.5).slice(0, 3);
     later.forEach(s => told.add(s));
-    if (later.length) lists.push({ after, secrets: later.map(s => ({ text: s.text, clues: (s.clues || []).slice(0, 2), pair: (s.holders || []).length > 1 })) });
+    if (later.length) lists.push({ after, secrets: later.map(entry) });
   }
   return { order, missions, checkins, lists, effects, signs: !!signs };
 }

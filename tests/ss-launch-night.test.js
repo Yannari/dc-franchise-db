@@ -95,16 +95,26 @@ describe('launch night, on screen', () => {
   // the user, 2026-10-29: "add an explanation of each production or shared secret in the airlock, and if necessary they
   // don't enter at the same time"; "the public has your secret, why is it always there, I don't see it as a twist";
   // "a secret revealed at the confessional is a back and forth with the host... at most two reveals of personal secrets"
-  it('without the Public\'s Signs, each tells their own secret in the portrait; the airlock explains the roles; two live reveals at most', () => {
+  // the user, 2026-10-29: "they have to reveal each secret 1 by 1 during launch night with a presentation but not always
+  // tell us whos the one with the secret except when its after the reveal in confessional and it update the list of
+  // secrets"; "secret revealed need a setup by the host not just dive direct in it"
+  it('without the Public\'s Signs, every secret gets its own card on the list and nobody says whose; the airlock explains the roles; two live reveals at most', () => {
     const screens = play();
     const steps = screens.flatMap(s => s.steps);
     const text = steps.map(st => String(st.t || ''));
     expect(text.filter(t => /audience lifts its signs|turn around|privilege/i.test(t))).toEqual([]);
-    // every personal secret, told on its card at the end of a portrait
-    const personal = gs.bb.secretStory.secrets.filter(s => (s.holders || []).length === 1 && s.source !== 'production');
-    // (the two who own theirs live keep it out of their portrait, so the confessional is where it comes out)
-    const live = new Set(steps.filter(st => st.owns).map(st => st.by));
-    for (const s of personal) expect(steps.some(st => st.card?.text === s.text && st.by === s.holders[0]), `${s.holders[0]}`).toBe(!live.has(s.holders[0]));
+    // no portrait tells its own secret; every secret of the house is shown once, on its own numbered card
+    expect(steps.filter(st => st.card?.text)).toEqual([]);
+    const cards = steps.map(st => st.secretlist?.show).filter(Boolean);
+    expect(cards.map(c => c.text).sort()).toEqual(gs.bb.secretStory.secrets.map(s => s.text).sort());
+    expect(cards.map(c => c.no)).toEqual(cards.map((_, i) => i + 1));
+    // a live reveal is set up by the host before the call, and the list shows the face straight after
+    for (const i of steps.map((st, j) => (st.owns ? j : -1)).filter(j => j >= 0)) {
+      const by = steps[i].by;
+      const first = steps.findIndex(st => st.k === 'dr' && st.live && st.by === by);
+      expect(steps.slice(Math.max(0, first - 6), first).filter(st => st.k === 'host').length, by).toBeGreaterThanOrEqual(3);
+      expect(steps[i + 1].secretlist.rows.some(r => r.who === by), by).toBe(true);
+    }
     // the roles, explained by the Voice in the airlock: the fake siblings walk in together, the accomplice gets orders
     expect(text.some(t => /Bowie and Chase, the Voice has given you a role/.test(t) || /Chase and Bowie, the Voice has given you a role/.test(t))).toBe(true);
     expect(text.some(t => /you are family\. Learn each other's lives/.test(t))).toBe(true);

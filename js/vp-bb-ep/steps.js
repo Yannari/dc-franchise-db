@@ -5372,6 +5372,35 @@ export function withSetups(chosen, stretch, aired) {
   return stretch.filter(x => keep.has(x));
 }
 
+/**
+ * Two House Life screens in a row are one (the user, 2026-10-29: "a screen house life after another house life screen
+ * doesnt have to be if they follow each other just merge them instead of dividing them"). Secret Story's running order
+ * (ss-episode.js ssArrange) moves screens about, and a stretch that ended at a screen moved elsewhere leaves two
+ * stretches of house life side by side. The second one's scenes carry its own day, time and opening room, so the HUD
+ * and the cut stay right; the Intel drawer reads the house from the first one's start to the second one's end.
+ */
+export function mergeHouseLife(out) {
+  const HL = s => s && s.kind === 'houselife' && /^bb-hl-/.test(String(s.id || ''));
+  for (let i = out.length - 1; i > 0; i--) {
+    const a = out[i - 1], b = out[i];
+    if (!HL(a) || !HL(b) || !(b.steps || []).length) continue;
+    const own = { set: b.set, plate: b.plate, room: b.room, cam: b.cam, kicker: b.kicker, cast: b.cast, mood: b.mood };
+    const day = b.day !== a.day ? { day: b.day } : {};
+    const steps = b.steps.map((st, j) => {
+      if (j === 0 && !st.scene) return { ...st, scene: { ...own, ...day, time: b.time } };
+      return st.scene ? { ...st, scene: { ...st.scene, ...day, time: st.scene.time || b.time } } : st;
+    });
+    a.steps = [...(a.steps || []), ...steps];
+    if ((MOOD_RANK[b.mood] || 0) > (MOOD_RANK[a.mood] || 0)) a.mood = b.mood;
+    if (b.storyScenes) a.storyScenes = [...(a.storyScenes || []), ...b.storyScenes];
+    if ('snap' in b) a.snap = b.snap;
+    const to = b.dayTo ?? b.day;
+    if (to !== a.day) { a.dayTo = to; a.title = `House Life · Days ${a.day}–${to}`; a.sub = `Days ${a.day} to ${to} in the house`; }
+    out.splice(i, 1);
+  }
+  return out;
+}
+
 /** Which way house life airs: one segment per stretch (default) or one scene per screen. */
 export function houseLifeMode() {
   try { return (typeof localStorage !== 'undefined' && localStorage.getItem('bb-houselife')) === 'scenes' ? 'scenes' : 'segments'; } catch { return 'segments'; }
@@ -5937,6 +5966,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // the prime the host's (vp-bb-ep/ss-episode.js)
     const prev = ((/** @type {any} */ (globalThis).gs?.episodeHistory) || []).find(r => r && r.num === (row.num || 1) - 1);
     ssArrange(out, row, { prev, ssv, host: ctx.host });
+    mergeHouseLife(out);
     ssLiveConfessionals(out, { host: ctx.host || 'Josh' });
     // There is no HOH room in the House of Secrets: Big Brother's "up in the HOH room" plays on the Love Room's plate,
     // so ordinary bedroom talk aired in a red heart-shaped bed (the user, 2026-10-28: "you're still using the old

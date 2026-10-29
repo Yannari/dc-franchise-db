@@ -334,7 +334,12 @@ const PLAN = {
   other: [["We don't know each other. We've never spoken. Got it?", 'Then when do we talk?', 'When the Voice says so. Not before.', 'Fine by me.'],
     ["In there, we're strangers. Not friends, not enemies. Strangers.", "Strangers. Do I at least get to say hello?", 'Once. Politely.', 'Politely. I can do politely.']],
 };
-const PLAN_OF = { 'fake-couple': 'couple', 'public-couple': 'couple', 'fake-siblings': 'family', 'public-family': 'family', enemies: 'enemies' };
+// a real tie hides that it is one: a couple, a family, two friends (js/ss/duos.js)
+PLAN.hide = [["In there, we've never met. Not one look, not one touch.", 'Not even a hug goodnight?', 'Not even that. Not until this is over.', "That's going to be the hardest part of the whole game."],
+  ["If anybody asks, I don't know you. I've never seen you before tonight.", 'And if I miss you?', 'Then you miss me from the other side of the room.', 'From the other side of the room. Okay.']];
+PLAN['hide-kin'] = [["We've never met. Different towns, different lives. Got it?", 'And if I call you by your nickname?', "You won't.", "I'll try not to."],
+  ["In there, I'm a stranger to you. Don't stick up for me, whatever happens.", 'Even if they go after you?', 'Especially then.', 'That one is going to be hard.']];
+const PLAN_OF = { 'fake-couple': 'couple', 'public-couple': 'couple', 'fake-siblings': 'family', 'public-family': 'family', enemies: 'enemies', hide: 'hide', 'hide-kin': 'hide-kin' };
 const ROLE_CALL = {
   accomplice: "I do whatever the Voice asks. Nobody can ever see me do it.", spy: "Everything private in there is going to end up out here. Sorry, everybody.",
   saboteur: "I'm going to make them chase the wrong things all summer.", oracle: 'I know something about this house that nobody else knows. That is power.',

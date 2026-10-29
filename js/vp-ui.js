@@ -873,6 +873,8 @@ export function applyThemeClass(className, moodIn) {
 }
 
 export function renderVPScreen() {
+  // (a title sequence's music never outlives its screen: vp-bb-ep/titles.js)
+  try { window.stopTitleMedia?.(); } catch (e) {}
   const content  = document.getElementById('vp-screen-content');
   const prevBtn  = document.getElementById('vp-prev-btn');
   const nextBtn  = document.getElementById('vp-next-btn');

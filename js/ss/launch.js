@@ -18,6 +18,7 @@
 import { addEvidence, secretOf } from './hunt.js';
 import { mint } from './kitty.js';
 import { roleOf } from './production.js';
+import { duoRel } from './duos.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
@@ -118,6 +119,11 @@ export function planLaunch(state, ctx, { house = [] } = {}) {
     const after = Math.max(...hs.map(h => order.indexOf(h))) + 1;
     checkins.push({ after, kind: hs.length > 1 ? 'plan' : 'role-call', who: hs, role: role || null, text: s.text });
     for (let i = 0; i < hs.length; i++) for (let j = i + 1; j < hs.length; j++) effects.bond.push([hs[i], hs[j], 0.5]);
+  }
+  // A REAL TIE (a couple, a family, two friends: js/ss/duos.js) agrees, once both are in, that they have never met
+  for (const s of (state.secrets || []).filter(x => x.kind === 'real-pair' && (x.holders || []).length === 2 && x.holders.every(h => order.includes(h)))) {
+    const after = Math.max(...s.holders.map(h => order.indexOf(h))) + 1;
+    checkins.push({ after, kind: 'plan', who: s.holders.slice(), role: duoRel(s) === 'romance' ? 'hide' : 'hide-kin', text: s.text });
   }
   checkins.sort((x, y) => x.after - y.after);
   // THE LIST OF SECRETS (S14): told to the public in batches, never saying whose.

@@ -137,9 +137,21 @@ export function bbxTitleLiveSilent(a) {
 const engine = () => (typeof window !== 'undefined' ? window.audio : null);
 
 /** Follow the site's volume and mute, then play. A browser that blocks it gets a play button. */
+// The titles' own music: an <audio> inside the screen keeps playing once the screen is replaced or the viewer
+// closes (the user, 2026-10-28: "the theme song doesn't stop when I close the VP"). Every one started is kept, and
+// stopped when the viewer closes (its 'vp:close') or draws another screen (vp-ui.js renderVPScreen).
+const titleMedia = new Set();
+export function trackTitleMedia(v) { if (v) titleMedia.add(v); }
+export function stopTitleMedia() {
+  for (const m of titleMedia) { try { m.pause(); } catch { /* gone */ } }
+  titleMedia.clear();
+}
+if (typeof document !== 'undefined') document.addEventListener('vp:close', stopTitleMedia);
+
 export function bbxTitleReady(v) {
   if (!v || v.dataset.started || !viewerOpen()) return;
   v.dataset.started = '1';
+  titleMedia.add(v);
   try { const a = engine(); if (a) { v.volume = Math.max(0, Math.min(1, (a.getVolume?.() ?? 0.7) * (a.getMusicLevel?.() ?? 1))); v.muted = !!a.isMuted?.(); } } catch { /* defaults */ }
   const p = v.play?.();
   if (p && typeof p.catch === 'function') p.catch(() => v.closest('.bbt')?.classList.add('blocked'));
@@ -147,6 +159,7 @@ export function bbxTitleReady(v) {
 export function bbxTitlePlay(btn) {
   const v = videoOf(btn);
   btn.closest('.bbt')?.classList.remove('blocked');
+  if (v) titleMedia.add(v);
   v?.play?.().catch?.(() => {});
 }
 /** The season's own render is missing: play the generic pair; if that is missing too, move on. */
@@ -177,7 +190,7 @@ export function stopTitles() {
   /** @type {NodeListOf<HTMLMediaElement>} */ (document.querySelectorAll('.bbt video, .bbt audio')).forEach(v => { try { v.pause(); v.dataset.started = ''; } catch { /* fine */ } });
 }
 
-if (typeof window !== 'undefined') Object.assign(window, { bbxTitleReady, bbxTitlePlay, bbxTitleFallback, bbxTitleDone, bbxTitleLiveSilent });
+if (typeof window !== 'undefined') Object.assign(window, { bbxTitleReady, bbxTitlePlay, bbxTitleFallback, bbxTitleDone, bbxTitleLiveSilent, stopTitleMedia });
 if (typeof document !== 'undefined') {
   document.addEventListener('vp:close', stopTitles);
   // the browser tab goes to the background: no titles playing to nobody

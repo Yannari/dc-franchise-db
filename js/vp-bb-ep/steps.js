@@ -36,6 +36,7 @@ import { ssMagnetoScreens } from './ss-magneto.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssProductionScreen } from './ss-production.js';
 import { ssSplitScreens } from './ss-split.js';
+import { ssDuoScreen } from './ss-couples.js';
 import { ssDeceptionWeekScreen, ssFalseVoiceRevealScreen, ssRobotUnmaskScreen, ssTicketScreen } from './ss-deceptions.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
@@ -5603,6 +5604,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-production': { const scr = ssProductionScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
+      case 'ss-duo': { const scr = ssDuoScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-deception': { const scr = ssDeceptionWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-split': { const scrs = ssSplitScreens(act, ctx, { ssv }); if (scrs.length) { flush(); for (const scr of scrs) ceremony(scr); } break; }
       case 'ss-voice-moment': { const scr = ssVoiceMomentScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }

@@ -38,6 +38,7 @@ import { houseEvent } from '../ss/house-events.js';
 import { productionWeek } from '../ss/production.js';
 import { startSplit, splitWeek, splitActive, SPLIT_KINDS } from '../ss/split.js';
 import { deceptionDue, falseVoiceWeek, revealFalseVoice, robotWeek, unmaskRobot } from '../ss/deceptions.js';
+import { coupleWeek } from '../ss/couples.js';
 import { voteMode, evictShares, houseDecides, ticketDue, ticketVote } from '../ss/public-votes.js';
 import { secretRoomDilemma } from '../ss/secret-room.js';
 import { cardsBeforeNominations, cardsAfterNominations, expireCards } from '../ss/powers.js';
@@ -621,6 +622,15 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     acts.push({ type: 'ss-production', week: ctx.week, ...rest,
       beats: [{ text: `${p.holders.join(' and ')}: the week's production mission (${p.role.replace(/-/g, ' ')}). ${p.ok ? 'Done.' : 'It goes wrong.'}`,
         players: p.holders.slice(0, 4), badgeText: 'PRODUCTION SECRET', badgeClass: 'purple', part: 'production' }] });
+  }
+  // A REAL TIE, KEPT HIDDEN (js/ss/couples.js): the couple's stolen moments, the jealousy, the slips; a family or two
+  // friends defending each other too hard. Every week can give them away.
+  for (const d of coupleWeek(state, { ...ctx, compat: (a, b) => { try { return romanticCompat(a, b); } catch { return false; } } }, { house: room })) {
+    applyFx(d.effects);
+    const { effects, evidence, ...rest } = d;
+    void effects; void evidence;
+    acts.push({ type: 'ss-duo', week: ctx.week, ...rest,
+      beats: [{ text: `${d.a} and ${d.b} keep their secret hidden (${d.kind}).${d.caughtBy ? ` ${d.caughtBy} nearly catches them.` : ''}`, players: [d.a, d.b], badgeText: 'A HIDDEN TIE', badgeClass: 'purple', part: 'duo' }] });
   }
   // WHO IS REALLY TALKING (js/ss/deceptions.js): a week of the false Voice, or of Monsieur Robot with an eliminated
   // housemate inside; both are revealed at the prime.

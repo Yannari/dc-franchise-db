@@ -14,7 +14,7 @@
 // The show's music, when the user adds it, is assets/audio/ss/theme.mp3 and
 // ending.mp3; until then the sequence plays on its own clock. Skippable.
 import { img, esc } from './stage.js';
-import { bbxTitleReady, bbxTitleDone } from './titles.js';
+import { bbxTitleReady, bbxTitleDone, trackTitleMedia } from './titles.js';
 
 const PROPS = 'assets/sets/bb/secret-story/props';
 const FRONT = 'assets/sets/bb/resort/secret-story/front-day.webp';
@@ -151,6 +151,7 @@ export function ssTitleClock(el) {
   box.classList.add('go');
   const secs = Number(box.dataset.secs) || 20;
   const v = /** @type {HTMLAudioElement} */ (el);
+  trackTitleMedia(v);
   setTimeout(() => {
     if (!box.isConnected) return;
     const v0 = v.volume;

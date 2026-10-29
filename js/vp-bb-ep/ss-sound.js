@@ -94,6 +94,8 @@ const BY_ID = [
   [/^bb-ss-event-clans-/, 'ss-epic'],
   [/^bb-ss-split-(start|duel)-/, 'ss-epic'],
   [/^bb-ss-split-end-/, 'ss-love'],
+  [/^bb-ss-duo-(stolen|jealous|care)-/, 'ss-love'],
+  [/^bb-ss-duo-/, 'ss-plot'],
   [/^bb-ss-event-room-/, 'ss-secretroom'],
   [/^bb-ss-event-mission-/, 'ss-mission'],
   [/^bb-ss-(hunt|clue|houseclue)-/, 'ss-hunt'],
@@ -117,7 +119,16 @@ const BY_ID = [
   [/^bb-ss-prime-(chat|kitties|couch)/, 'ss-fun'],
   [/^bb-ss-prime-goldenbuzz/, 'ss-quirky'],
   [/^bb-ss-prime-visit/, 'ss-love'],
-  [/^bb-ss-prime-verdict/, 'ss-wait'],
+  // (the user, 2026-10-28: "the prime music doesn't use the suspense at all": the verdict is the tension tracks;
+  // the envelope brings the bailiff's call and the name the goodbye, step by step: ssStepBed)
+  [/^bb-ss-prime-verdict/, 'ss-tension'],
+  [/^bb-ss-prime-mag-noms/, 'ss-tension'],
+  [/^bb-ss-prime-mag-clash/, 'ss-drama'],
+  [/^bb-ss-prime-mag-love/, 'ss-love'],
+  [/^bb-ss-prime-mag-hunt/, 'ss-hunt'],
+  [/^bb-ss-prime-(falsevoice|robot)/, 'ss-quirky'],
+  [/^bb-ss-prime-ticket/, 'ss-tension'],
+  [/^bb-ss-(false-voice|robot)-/, 'ss-quirky'],
   [/^bb-ss-prime-walk/, 'ss-sad'],
   [/^bb-ss-after/, 'ss-after'],
   [/^bb-ss-final-(v|open)$/, 'ss-finalists'],
@@ -129,7 +140,7 @@ const BY_ID = [
 const BY_MOOD = { mission: 'ss-mission', store: 'ss-store', drama: 'ss-drama', scheming: 'ss-plot', plan: 'ss-hunt', campaign: 'ss-plot', ceremony: 'ss-tension', secret: 'ss-hunt', fun: 'ss-fun', love: 'ss-love', deals: 'ss-plot', house: 'ss-fun' };
 // Big Brother's moment beds, in the House of Secrets
 const FROM_BB = { 'bb-drama': 'ss-drama', 'bb-scheming': 'ss-plot', 'bb-planning': 'ss-hunt', 'bb-campaign': 'ss-plot', 'bb-brewing': 'ss-tension', 'bb-secret': 'ss-hunt',
-  'bb-light': 'ss-fun', 'bb-house': 'ss-fun', 'bb-live-wait': 'ss-wait', 'bb-live-vote': 'ss-wait', 'bb-celebration': 'ss-winner', 'bb-comp-win': 'ss-epic', 'bb-comp': 'ss-epic',
+  'bb-light': 'ss-fun', 'bb-house': 'ss-fun', 'bb-live-wait': 'ss-tension', 'bb-live-vote': 'ss-tension', 'bb-celebration': 'ss-winner', 'bb-comp-win': 'ss-epic', 'bb-comp': 'ss-epic',
   'bb-pre-hoh': 'ss-tension', 'bb-post-hoh': 'ss-epic', 'bb-ending': 'ss-sad', 'bb-coming-up': 'ss-cliff', 'bb-previously': 'ss-previously', 'bb-confused': 'ss-quirky',
   'bb-deals': 'ss-plot', 'bb-veto-meeting': 'ss-tension', 'bb-jury-wait': 'ss-wait', 'bb-theme': 'ss-prime' };
 

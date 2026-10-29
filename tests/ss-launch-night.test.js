@@ -92,6 +92,17 @@ describe('launch night, on screen', () => {
     return bbWeekSteps(gs.episodeHistory.find(r => r.num === 1), { host: 'Josh' }).filter(s => /^bb-ss-launch|^bb-ss-secrets/.test(String(s.id)));
   };
   // the user, 2026-10-28: "why is the presentation in the confessional? ... and your presentations are too short"
+  // the user, 2026-10-29: "why do they all say you'll have to guess where I'm from, I filled every descriptor in cast
+  // setup" (the profile is on the franchise roster, not the cast entry); "I've watched every season" in season one
+  it("reads each housemate's life from the franchise roster, and season one has no past seasons", () => {
+    globalThis.FRANCHISE_ROSTER = NAMES.map((name, i) => ({ name, hometown: ['Riverton', 'Lakeside'][i % 2], occupation: 'Hairdresser', birthdate: '2000-05-01' }));
+    try {
+      const text = play().flatMap(s => s.steps).map(st => String(st.t || ''));
+      for (const n of NAMES) expect(text.some(t => t.startsWith(`I'm ${n}. I'm from `)), n).toBe(true);
+      expect(text.filter(t => /have to guess|every season|every single season|since I was a kid/i.test(t))).toEqual([]);
+      expect(text.some(t => /^Bowie, \d+, from Riverton\. Hairdresser\./.test(t))).toBe(true);
+    } finally { delete globalThis.FRANCHISE_ROSTER; }
+  });
   it('every portrait is filmed out in their life, never in the confessional, and is long enough to meet them', () => {
     const screens = play().filter(s => /^bb-ss-launch-arr-/.test(String(s.id)));
     expect(screens.length).toBeGreaterThan(3);

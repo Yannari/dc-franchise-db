@@ -145,7 +145,7 @@ export function portraitSteps(p, i, o = {}) {
   if (words) steps.push({ k: 'say', by: n, t: `Three words for me? ${words}` });
   if (o.life) steps.push({ k: 'say', by: n, t: o.life });
   // 5. why they came, and how they will play it
-  steps.push({ k: 'say', by: n, scene: at('city', 'Why I came'), t: said(iv.picked) || said(iv.hopeToGet) || pickBy(WHY, `${k}|w`) });
+  steps.push({ k: 'say', by: n, scene: at('city', 'Why I came'), t: said(iv.picked) || said(iv.hopeToGet) || pickBy(o.firstSeason ? WHY.filter(w => !/since I was a kid/.test(w)) : WHY, `${k}|w`) });
   if (o.people) steps.push({ k: 'say', by: n, t: o.people });
   const motto = said(iv.motto, 140);
   if (motto) steps.push({ k: 'say', by: n, t: motto });

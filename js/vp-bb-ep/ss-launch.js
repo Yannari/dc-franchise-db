@@ -134,7 +134,20 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const k = `${ctx.week}|ssl`;
   const order = (act.arrivals || []).length ? act.arrivals : [...new Set((act.secrets || []).flatMap(s => s.holders || []))];
   const secretOf = n => (act.secrets || []).find(s => (s.holders || []).includes(n));
-  const P = n => (ROSTER || []).find(x => x.name === n) || {};
+  // A cast entry carries only the game fields; the hometown, the job, the birthdate, the casting interview stay on the
+  // franchise roster (the user, 2026-10-29: "why do they all say you'll have to guess where I'm from, I filled every
+  // descriptor"), found by slug, then name, as js/ci-run.js rosterFactsOf does
+  const P = n => {
+    const c = (ROSTER || []).find(x => x.name === n) || {};
+    const roster = /** @type {any[]} */ (Array.isArray(globalThis.FRANCHISE_ROSTER) ? globalThis.FRANCHISE_ROSTER : []);
+    const r = (c.slug && roster.find(x => x.slug === c.slug)) || roster.find(x => x.name === n) || {};
+    const mine = Object.fromEntries(Object.entries(c).filter(([, v]) => v != null && v !== ''));
+    const out = { ...r, ...mine };
+    if (!out.age && out.birthdate) { const b = new Date(out.birthdate); if (!Number.isNaN(+b)) out.age = Math.max(16, new Date().getFullYear() - b.getFullYear()); }
+    return out;
+  };
+  // the very first season: nobody has watched it before (the user: "I've watched every season" in season one)
+  const firstSeason = !act.lastSummer && Number(globalThis.seasonConfig?.seasonNumber || 1) <= 1;
   const L = act.launch || {};
   const style = n => (act.styles || {})[n] || 'social';
   const out = [];
@@ -203,7 +216,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       : pickBy([`${listOf(g)} come down the stairs side by side, waving at the crowd.`, `${g[0]} takes the stairs two at a time. ${g.slice(1).join(' and ')} follow${g.length > 2 ? '' : 's'}, laughing.`, `${listOf(g)} walk on to a wall of noise.`], `${kk}|walk`) });
     steps.push({ k: 'host', by: host, t: g.length === 1 ? pickBy([`${g[0]}, welcome! How are you feeling?`, `${g[0]}! Welcome to Secret Story. Nervous?`, `${g[0]}, come here. Your heart must be racing.`], `${kk}|hi`)
       : pickBy([`Welcome, ${g.length > 2 ? 'all three of you' : 'both of you'}! How are you feeling?`, 'Welcome to Secret Story! Nervous?', `Look at you ${g.length > 2 ? 'three' : 'two'}. How are the nerves?`], `${kk}|hi`) });
-    g.forEach((n, j) => steps.push({ k: 'say', by: n, t: ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length] }));
+    g.forEach((n, j) => { const t = ARRIVE[(count + j + (ctx.week || 1) * 7) % ARRIVE.length]; steps.push({ k: 'say', by: n, t: firstSeason && /every season/.test(t) ? "Nobody's ever done this before. Nobody. And I'm one of the first." : t }); });
     if (shared) steps.push({ k: 'host', by: host, t: pickBy([`Now, ${youAll} didn't arrive together by accident, did you?`, `${youAll.replace(/^./, c => c.toUpperCase())} seem very comfortable together. Interesting...`], `${kk}|pair`) },
       { k: 'say', by: g[1], t: pickBy(["We can't say anything. Not one word.", "Next question!", "No comment. Absolutely no comment."], `${kk}|pair2`) });
     // the secrets, to the public only: the audience holds up the signs
@@ -230,7 +243,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
       let li = (i * 3) % LIFE.length;
       while (lifeUsed.has(li) && lifeUsed.size < LIFE.length) li = (li + 1) % LIFE.length;
       lifeUsed.add(li);
-      steps.push(...portraitSteps({ ...p, name: n }, i, { life: LIFE[li],
+      steps.push(...portraitSteps({ ...p, name: n }, i, { firstSeason, life: firstSeason && /every single season/.test(LIFE[li]) ? "I've never been on TV in my life. Not even in the background." : LIFE[li],
         hiding: !!s && s.kind === 'real-pair' && duoRel(s) === 'romance',
         people: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i),
         how: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social, promise: pickRot(PROMISE, i) }));
@@ -294,7 +307,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
     for (const c of (L.checkins || []).filter(x => x.after <= count && !doneCk.has(x))) {
       doneCk.add(c);
       if (c.who.some(n => !inside.includes(n))) continue;
-      out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house', ...checkin(c, H, host) }));
+      out.push(base(`bb-ss-launch-house-${count}-${c.kind}`, { set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · In the house', ...checkin(c, H, host, firstSeason) }));
     }
     // the list of secrets: the HOST reads it (the user, 2026-10-28), on the show's own board, never saying whose
     for (const l of (L.lists || []).filter(x => x.after <= count && !doneLs.has(x))) {
@@ -363,7 +376,7 @@ const ROLE_CALL = {
 };
 
 /** One live check-in on the house (js/ss/launch.js `checkins`). */
-function checkin(c, H, host = 'Josh') {
+function checkin(c, H, host = 'Josh', firstSeason = false) {
   const { pickBy } = H;
   const [a, b, x] = c.who;
   const kk = `ssl|ck|${c.after}|${a}|${b}`;
@@ -441,7 +454,7 @@ function checkin(c, H, host = 'Josh') {
       { k: 'say', by: fan, t: "Okay, so, that's the wall of clues. Every week the Voice puts up clues about our secrets." },
       { k: 'say', by: other, t: 'About our secrets? Like, mine too?' },
       { k: 'say', by: fan, t: "Everyone's. Check it every single morning." },
-      { k: 'dr', by: other, t: `I've never watched the show, and ${fan} has seen every season, so I'm sticking very close to ${fan}.` }];
+      { k: 'dr', by: other, t: firstSeason ? `${fan} read every rule twice before we even got here, so I'm sticking very close to ${fan}.` : `I've never watched the show, and ${fan} has seen every season, so I'm sticking very close to ${fan}.` }];
   } else if (c.kind === 'wall') steps = [
     { k: 'beat', t: `${[a, b, x].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')} stand in front of the empty wall of clues.` },
     { k: 'say', by: a, t: 'Is one of these going to be about me?' },

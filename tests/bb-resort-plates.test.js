@@ -21,7 +21,9 @@ const SETS = new Set(['ceremony', 'ceremony3', 'dining', 'kitchen', 'bedroom', '
   // Secret Story's own rooms (its house is its own theme: plates.json `only`)
   'attic', 'truths', 'arena',
   // ...and its hidden spaces (twist family 1: the Secret Box, the Control Tower, the intruders, the hotel, the Crystal House, the yacht)
-  'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber']);
+  'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber',
+  // ...and launch night's portraits, filmed out in each housemate's life (vp-bb-ep/ss-portraits.js)
+  'portrait']);
 const USES = new Set(['eviction', 'ceremony', 'nominations', 'house', 'meal', 'quiet', 'secret', 'dr']);
 // the stage's sets for the engine's rooms (ROOM_SET in vp-bb-ep/steps.js) and their Blender rooms
 const ROOM_SETS = { kitchen: 'kitchen', ceremony: 'living', bedroom: 'bedroom', hoh: 'hoh', yard: 'yard', dr: 'dr',

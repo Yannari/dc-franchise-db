@@ -22,6 +22,8 @@ const FRONT = 'assets/sets/bb/resort/secret-story/front-day.webp';
 // The show's music (assets/audio/ss/, git-ignored: the user's own copies): the generic, I Wanna Chat, and the
 // Epilogue. The sequence keeps its own clock and the music fades out when it ends; a missing file plays it silent.
 const MUSIC = true;
+// the generic's length (assets/audio/ss/theme.mp3, the music ends at 52.25 s), and the closing's
+const SONG = 52.6, OUTRO = 14;
 const GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '#c8137a', '#22c55e'];
 const col = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
@@ -99,10 +101,14 @@ export function ssTitleScreen(kind, cast = [], title = '', gone = []) {
   if (kind === 'intro') {
     // the Voice's slogan, as the real generic says it over the theme (S14 dailies: "Ils ont tous un secret…")
     const open = 4.4, said = 3.2 * 3;
-    const slot = Math.max(1.15, Math.min(1.8, 24 / Math.max(1, people.length)));
     const t0 = open + said;
-    const fin = 6;
-    secs = t0 + people.length * slot + fin;
+    // The whole sequence is the song (the user, 2026-10-29: the generic "I Wanna Chat", "manage to always place every
+    // players in it and end it with the same"): every housemate gets an equal share of what the slogan leaves, and the
+    // house and the logo land on the song's last bars, however big the cast.
+    const n = Math.max(1, people.length);
+    const slot = Math.max(0.6, Math.min(3, (SONG - t0 - 6) / n));
+    const fin = Math.max(4, SONG - t0 - n * slot);
+    secs = t0 + n * slot + fin;
     body = `<div class="burst"></div><img class="eye" src="${PROPS}/eye.webp" alt="">
       <div class="line" style="--d:${open - 0.2}s">${ssx('They all have a secret.', 'w')}</div>
       <div class="line sm" style="--d:${open + 3}s">${ssx('Their mission: keep it, whatever it costs.', 'w')}</div>
@@ -113,14 +119,15 @@ export function ssTitleScreen(kind, cast = [], title = '', gone = []) {
       <div class="line sm top" style="--d:${(secs - fin - 0.4).toFixed(2)}s">${ssx('And above all, never forget: beware of appearances.', 'w')}</div>
       <div class="logo" style="--d:${(secs - fin + 0.6).toFixed(2)}s;--fin:${fin - 0.6}s"><b>${letters('SECRET STORY')}</b>${title ? `<i>${esc(title)}</i>` : '<i>The House of Secrets</i>'}</div>`;
   } else {
-    secs = 14;
+    secs = OUTRO;
     const cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(people.length * 2))));
     const rows = Math.ceil(people.length / cols);
     const tw = Math.min(84 / cols - 1.2, (56.25 * 0.62 / Math.max(1, rows) - 1.2) * 0.8).toFixed(2);
     body = `<div class="burst"></div><div class="wall" style="--tw:${tw}cqw">${people.map((n, i) => `<div class="wt ${out.has(n) ? 'out' : ''}" style="--c:${col(n)};--d:${(0.3 + i * 0.12).toFixed(2)}s">${img(n)}</div>`).join('')}</div>
       <div class="logo" style="--d:${(0.6 + people.length * 0.12).toFixed(2)}s;--fin:6s;justify-content:flex-end;padding-bottom:5%"><b style="font-size:6cqw">${letters('SECRET STORY')}</b><i>Keep your secrets</i></div>`;
   }
-  const audio = kind === 'intro' ? 'assets/audio/ss/theme.mp3' : 'assets/audio/ss/ending.mp3';
+  // (the closing plays the same song's last bars, so it ends where the song does)
+  const audio = kind === 'intro' ? 'assets/audio/ss/theme.mp3' : `assets/audio/ss/theme.mp3#t=${(SONG - OUTRO).toFixed(1)}`;
   return {
     id: `bb-${kind === 'intro' ? 'titles' : 'closing'}`,
     label: kind === 'intro' ? 'Opening Titles' : 'Closing',
@@ -153,6 +160,8 @@ export function ssTitleClock(el) {
   const secs = Number(box.dataset.secs) || 20;
   const v = /** @type {HTMLAudioElement} */ (el);
   trackTitleMedia(v);
+  // (a sequence as long as its song ends with it: the song's own end closes it, `onended`)
+  if (secs >= SONG - 0.5 || /#t=/.test(v.getAttribute('src') || '')) return;
   setTimeout(() => {
     if (!box.isConnected) return;
     const v0 = v.volume;

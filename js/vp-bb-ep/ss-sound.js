@@ -24,11 +24,11 @@ const DIR = 'assets/audio/ss/';
 const BASE_VOL = 0.4;
 // the encoder's delay at the head of every file (measured on decode)
 const HEAD = 0.0251;
-const DUR = { theme: 59.0, 'previously-1': 84.37, 'previously-2': 76.59, 'previously-3': 35.63, launch: 58.36, anthem: 74.52, voice: 50.16, 'mission-1': 46.15, 'mission-2': 55.3,
+const DUR = { theme: 52.6, 'previously-1': 84.37, 'previously-2': 76.59, 'previously-3': 35.63, launch: 58.36, anthem: 74.52, voice: 50.16, 'mission-1': 46.15, 'mission-2': 55.3,
   bailiff: 58.71, 'finalists-2': 86.18, 'finalists-3': 95.47, winner: 75.38, 'party-1': 98.39, 'party-2': 58.29, 'party-3': 58.41, 'party-4': 54.95, 'party-5': 58.43,
   'fun-1': 58.41, 'fun-2': 58.38, 'fun-3': 74.03, 'fun-4': 84.27, 'fun-5': 41.39, after: 58.41, 'quirky-1': 88.64, 'quirky-2': 58.57, store: 26.55,
   'hunt-1': 58.41, 'hunt-2': 95.35, 'hunt-3': 39.51, 'hunt-4': 93.77, 'hunt-5': 93.77, 'hunt-6': 72.25, think: 79.84, plot: 31.05, 'drama-1': 102.76, 'drama-2': 21.09,
-  'tension-1': 57.11, 'tension-2': 58.11, cliff: 53.16, wait: 53.95, 'love-1': 28.87, 'love-2': 58.15, 'love-3': 59.99, 'love-4': 89.57,
+  'tension-1': 57.11, cliff: 53.16, wait: 53.95, 'love-1': 28.87, 'love-2': 58.15, 'love-3': 59.99, 'love-4': 89.57,
   'sad-1': 58.31, 'sad-2': 65.63, 'sad-3': 79.38, 'sad-4': 83.95, 'sad-5': 58.38, epic: 65.0, night: 147.04, secretroom: 58.31, arrivals: 142.97 };
 
 /** Each kind of moment, its tracks, and what they are. */
@@ -54,7 +54,8 @@ export const SS_BEDS = {
   'ss-think':      { files: ['think'], what: 'a quiet reflection' },
   'ss-plot':       { files: ['plot'], what: 'a plot, a scheme' },
   'ss-drama':      { files: ['drama-1', 'drama-2'], what: 'a row: incomprehension, stress' },
-  'ss-tension':    { files: ['tension-1', 'tension-2'], what: 'waiting for the axe to fall: expectation, fear' },
+  // ("Scary" is gone: the user, 2026-10-29, "remove that creepy music this isnt suspense music")
+  'ss-tension':    { files: ['tension-1'], what: 'waiting for the axe to fall: expectation' },
   'ss-cliff':      { files: ['cliff'], what: "the end of a daily: the narrator's cliffhanger" },
   'ss-wait':       { files: ['wait'], what: 'the verdict: waiting and waiting' },
   'ss-love':       { files: ['love-1', 'love-2', 'love-3', 'love-4'], what: 'love, intimacy, tenderness' },

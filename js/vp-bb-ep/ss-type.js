@@ -11,6 +11,20 @@
 //
 // Use `ssx(text, tone)` wherever a title is drawn, and put SS_TYPE_CSS in the page's styles.
 
+// The font's address, from this file and not from the page: a relative url() in a <style> resolves against
+// whichever page is open, and the user, 2026-10-29 ("i still dont see it use the Aachen Bold font"), saw the
+// names fall back to a plain sans. It is also loaded the moment Secret Story's code is, so the first name drawn
+// is already in it rather than swapped in late (or never, on a page that only draws it once).
+export const SS_FONT_URL = (() => { try { return new URL('../../assets/fonts/Aachen-Bold.otf', import.meta.url).href; } catch { return 'assets/fonts/Aachen-Bold.otf'; } })();
+export const SS_FONT_FACE = `@font-face{font-family:'SSAachen';src:url('${SS_FONT_URL}') format('opentype');font-weight:100 900;font-display:swap}`;
+if (typeof document !== 'undefined' && document.fonts && typeof FontFace === 'function') {
+  try {
+    const f = new FontFace('SSAachen', `url('${SS_FONT_URL}') format('opentype')`, { weight: '100 900', display: 'swap' });
+    document.fonts.add(f);
+    f.load().catch(() => { /* the @font-face in the styles tries again */ });
+  } catch { /* no FontFace here */ }
+}
+
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 /** The words, lettered as Secret Story letters its titles. */
@@ -20,7 +34,7 @@ export const ssx = (text, tone = '') => {
 };
 
 export const SS_TYPE_CSS = `
-@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900;font-display:swap}
+${SS_FONT_FACE}
 .ssx{position:relative;display:inline-block;font-family:'SSAachen',sans-serif!important;font-weight:700;font-style:normal;letter-spacing:.02em;line-height:1.08;
   text-shadow:none!important;-webkit-text-stroke:0;color:#fff;padding:0 .06em;white-space:nowrap}
 /* (one line: the copy behind must break exactly where the words in front do, and a title never breaks) */

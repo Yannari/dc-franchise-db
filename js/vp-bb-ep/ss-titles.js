@@ -27,7 +27,6 @@ const PAL = ['#ff3ea5', '#19d3c5', '#7c5cff', '#f5c542', '#ff7a59', '#3bb3ff', '
 const col = n => PAL[[...String(n)].reduce((h, c) => h + c.charCodeAt(0), 0) % PAL.length];
 
 const CSS = `
-@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900}
 @font-face{font-family:'SSNunito';src:url('assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000}
 .sst{position:relative;aspect-ratio:16/9;max-width:1200px;margin:0 auto;border-radius:14px;overflow:hidden;container-type:inline-size;
   background:radial-gradient(ellipse at 50% 45%,#5b0d4f 0%,#2b0d3f 45%,#0d0414 100%);color:#fff;font-family:'SSNunito',sans-serif}

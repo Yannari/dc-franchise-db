@@ -282,13 +282,20 @@ if (typeof window !== 'undefined') Object.assign(window, { ssCall, ssPress });
 
 // ── the look ────────────────────────────────────────────────────────────
 export const SS_CSS = `${SS_TYPE_CSS}
-@font-face{font-family:'SSAachen';src:url('assets/fonts/Aachen-Bold.otf') format('opentype');font-weight:100 900;font-display:swap}
 @font-face{font-family:'SSNunito';src:url('assets/fonts/Nunito.woff2') format('woff2');font-weight:200 1000;font-display:swap}
 .bbx .stage.ss{--ssp:#ff3ea5;--ssm:#c8137a;--sst:#19d3c5;--ssi:#2b0d3f;--ssg:#f5c542;--ssc:#fff6fb;font-family:'SSNunito',system-ui,sans-serif}
 /* a clean HD picture: no film grain, no scanlines (the user, 2026-10-28: "we're not in 2006 anymore") */
 .bbx .stage.ss .grain{display:none}
-/* the names under the faces, in the show's own lettering (Aachen Bold: the user, 2026-10-28) */
+/* the names under the faces, in the show's own lettering (Aachen Bold: the user, 2026-10-28), and lettered the
+   way the logo is (2026-10-29, "the font name has no stylization"): the pink fill in front, a copy behind it from
+   data-t carrying the white outline and the purple drop (vp-bb-ep/ss-type.js, .ssx) */
 .bbx .stage.ss .plate b,.bbx .stage.ss .plate span{font-family:'SSAachen',sans-serif!important;font-weight:400!important;letter-spacing:.04em}
+.bbx .stage.ss .gt .plate b{position:relative;font-size:1.6cqw;letter-spacing:.06em;text-shadow:none;padding:0 .08em}
+.bbx .stage.ss .gt .plate b::before{content:attr(data-t);position:absolute;left:.08em;top:0;white-space:nowrap;color:#fff;-webkit-text-stroke:.2em #fff;pointer-events:none;
+  filter:drop-shadow(.04em .06em 0 #9b1a7c) drop-shadow(.03em .05em 0 #5b0d4f) drop-shadow(0 .12em .25em rgba(15,0,25,.7))}
+.bbx .stage.ss .gt .plate b>span{position:relative;color:transparent;-webkit-background-clip:text;background-clip:text;text-shadow:none;
+  background-image:linear-gradient(180deg,#ffe0f3 0%,#ff7fcb 28%,#ff2a9a 55%,#d4157f 78%,#8e0f63 100%)}
+.bbx .stage.ss .gt.host .plate b>span{background-image:linear-gradient(180deg,#e6fffb 0%,#6ff0e2 30%,#19d3c5 60%,#0d8f86 100%)}
 .bbx .stage.ss .ledtv::after{background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 30%)}
 .bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
 .bbx .stage.ss .toast b{font-family:'SSAachen',sans-serif;font-weight:700;letter-spacing:.02em}

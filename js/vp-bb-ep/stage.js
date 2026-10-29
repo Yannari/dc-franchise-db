@@ -215,7 +215,7 @@ function tileHtml(n, x, cls, L, extra = '', more = '', fx = '') {
   const ph = (-((String(n).length * 7 + Math.round(x)) % 26) / 10).toFixed(1);
   return `<div class="gt ${cls}" style="left:${x}%;--c:${col(n)};--ry:${ry}deg;--ph:${ph}s;${more}">${fx}
     <div class="tile"><span class="i">${esc(String(n)[0])}</span>${img(n)}${extra}</div>
-    <div class="plate"><b>${esc(n)}</b>${chipsFor(n, L)}</div></div>`;
+    <div class="plate"><b data-t="${esc(n)}"><span>${esc(n)}</span></b>${chipsFor(n, L)}</div></div>`;
 }
 const DRRING = `<svg viewBox="-100 -100 200 200"><circle r="78" fill="none" stroke="#22e1ff" stroke-width="2.2" opacity=".85"/><circle r="86" fill="none" stroke="#a593ff" stroke-width="1.2" stroke-dasharray="3 6" opacity=".7"/></svg>`;
 
@@ -803,7 +803,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const cast = castAt(S, idx);
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
   // the host on the stage with them (move-in night), not on a screen
-  if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
+  if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b data-t="${esc(o.host)}"><span>${esc(o.host)}</span></b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
   if ((SCENE_KINDS.has(S.kind) || S.sceneful) && !seated && cast.length > 3) {
     const focus = focusAt(S, idx);
@@ -861,7 +861,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
     const walk = seated && fresh && idx > 0 && idx > sceneStartOf(S, idx) ? walkFrom(S, seated, n, idx) : '';
     if (seated && n === o.host) {
       const a = seatOf(S, seated, n);
-      if (a) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''} ${walk ? 'walk' : ''}" style="${walk}left:${a.at[0]}%;--c:#ff2e4d;bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}"><div class="tile">${img(o.host, true)}</div><div class="plate"><b>${esc(o.host)}</b><span class="hostlab">HOST</span></div></div>`;
+      if (a) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''} ${walk ? 'walk' : ''}" style="${walk}left:${a.at[0]}%;--c:#ff2e4d;bottom:${(a.at[1] * 0.5625).toFixed(2)}cqw;width:${a.w.toFixed(2)}cqw;z-index:${zOf(a)}"><div class="tile">${img(o.host, true)}</div><div class="plate"><b data-t="${esc(o.host)}"><span>${esc(o.host)}</span></b><span class="hostlab">HOST</span></div></div>`;
       continue;
     }
     if (seated) {

@@ -301,3 +301,31 @@ describe('the resort week, counted everywhere', () => {
     if (week.evicted) expect(names).toContain(week.evicted);
   });
 });
+
+// The user, 2026-10-29, on a season saved before the fix: "i dont see nina final interview exit nina wasnt in the jury
+// at ep11 after the fix would she be in it at ep12?" and "i mean also on-air kristal talk exit interview". The week
+// after catches up what the old save never recorded: the interview (which On Air reads) and the jury-house door.
+describe('a season saved before the resort loser counted', () => {
+  it('records their interview and walks them into the jury house the next week', () => {
+    const week = playToResort(313, 6);
+    expect(week, 'no resort week').toBeTruthy();
+    const gone = week.resortEvicted;
+    expect(seatedJurors(), 'the resort loser is not a juror in this seed').toContain(gone);
+    // what the old save looked like: no interview, and a jury house without them
+    gs.exitInterviews = (gs.exitInterviews || []).filter(r => r.guest !== gone);
+    const jh = (week.acts || []).find(a => a.type === 'jury-house');
+    expect(jh, 'the resort week had no jury house').toBeTruthy();
+    jh.residents = jh.residents.filter(n => n !== gone);
+    withSeededRandom(314, () => { simulateBBEpisode(); });
+    const rec = gs.exitInterviews.find(r => r.guest === gone);
+    expect(rec, 'still no interview a week later').toBeTruthy();
+    expect(rec.week).toBe(week.num);
+    expect(rec.how).toBe('lost-challenge');
+    const next = gs.bb.weeks.find(w => w.num === week.num + 1);
+    const door = (next.acts || []).find(a => a.type === 'jury-house');
+    const beats = (door?.acts || []).flatMap(a => a.beats || []);
+    expect(beats.some(b => b.tag === 'ENTRANCE' && (b.players || []).includes(gone)),
+      'the jury house never shows them arriving').toBe(true);
+    expect(door.residents).toContain(gone);
+  });
+});

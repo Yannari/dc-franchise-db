@@ -123,7 +123,7 @@ const beat = (tag, playersIn, text) => ({ tag, players: playersIn.filter(Boolean
  * season, and which of those happens depends on how much the residents rate
  * the person telling it.
  */
-function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
+function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null, late = false) {
   const beats = [];
 
   const greeter = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0];
@@ -142,7 +142,11 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null) {
   const chain = wk?.resortEvicted === newcomer ? (wk.acts || []).find(x => x?.type === 'white-locust') : null;
   if (chain) {
     const caller = (chain.rounds || []).find(r => r && !r.made && r.target === newcomer)?.caller || null;
-    if (greeter) beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, [
+    // late: the arrival a season saved before 2026-10-29 never showed, so it airs a week on (generateBBJuryHouse)
+    if (greeter) beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, late ? [
+      `${greeter} gets up when the car pulls in. "${newcomer}. We heard somebody went out before the vote. Sit down and tell us."`,
+      `${greeter} opens the door. "So it was you. Nobody in here knew how anybody leaves before a vote. Come in."`,
+    ] : [
       `${greeter} is on the porch before the car has stopped. "Already? The week hasn't even started."`,
       `${greeter} stands up. "You? What happened? There wasn't even a vote yet."`,
     ])));
@@ -812,12 +816,26 @@ export function generateBBJuryHouse(week, rngIn) {
 
   // Everybody who arrives tonight, in the order they left: the White Locust's loser was out at the start of the
   // week and is already on the sofa when the week's evictee walks in (only the evictee carries a parting shot).
-  const arrivingTonight = [...new Set([...tonight.filter(n => n !== newcomer && residents.includes(n)), newcomer].filter(Boolean))];
+  // A juror whose own exit week had a jury house that never showed them walking in arrives now, first: a season saved
+  // before 2026-10-29 seated the White Locust's loser without a door (the user: "nina wasnt in the jury at ep11 after
+  // the fix would she be in it at ep12?"). Keyed to the exit week's own act, so a season with no jury house yet is untouched.
+  const weeks = gs.bb?.weeks || [];
+  const exitWeekOf = new Map(weeks.flatMap(w => weekExits(w).map(x => [x.name, w])));
+  const late = seated.filter(n => {
+    const w = exitWeekOf.get(n);
+    if (!w || w === week || tonight.includes(n)) return false;
+    const shown = weeks.filter(x => Number(x.num) >= Number(w.num) && x !== week)
+      .map(x => (x.acts || []).find(a => a?.type === 'jury-house')).filter(Boolean);
+    return shown.length > 0 && !shown.some(a => (a.residents || []).includes(n));
+  });
+  const arrivingTonight = [...new Set([...late, ...tonight.filter(n => n !== newcomer && residents.includes(n)), newcomer].filter(Boolean))];
   const arrivals = [];
   arrivingTonight.forEach((who, i) => {
     const later = arrivingTonight.slice(i + 1);
     const rest = residents.filter(n => n !== who && !later.includes(n));
-    const mine = arrivalBeats(who, rest, num, rng, out, who === week?.evicted ? (week.lastWords || null) : null);
+    const isLate = late.includes(who);
+    const mine = arrivalBeats(who, rest, isLate ? Number(exitWeekOf.get(who).num) : num, rng, out,
+      who === week?.evicted ? (week.lastWords || null) : null, isLate);
     if (!mine.length) return;
     const asker = rest.slice().sort((a, b) => getBond(who, b) - getBond(who, a))[0] || null;
     const news = newsBeats(who, rest, num, rng);

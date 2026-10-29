@@ -69,6 +69,7 @@ export function recordBBExits(week, { rng = Math.random } = {}) {
   try {
     // The new evictees hear what reached the outside first (unless sequestered).
     deliverInterviews(store(), { at: week.num, canHear: canHearNow, ops: OPS });
+    out.push(...catchUp(week, rng));
     const n = leaving.length;
     leaving.forEach((name, i) => {
       out.push(record(name, special.has(name) ? { ...week, ballots: [] } : week, rng, {
@@ -86,6 +87,37 @@ export function recordBBExits(week, { rng = Math.random } = {}) {
   } catch (e) {
     if (typeof process !== 'undefined' && process.env?.EXIT_DEBUG) throw e;
   }
+  return out;
+}
+
+/**
+ * An earlier week's exit that never sat down with Kristal, recorded now under its own week. Before 2026-10-29 only
+ * `week.evicted` was interviewed, so the White Locust's loser in a season already under way had no interview at all
+ * (the user: "i dont see nina final interview exit"). Only weeks the interviews were running for (one of that week's
+ * exits has a record), so a season saved before Kristal-talKs existed does not record a whole season at once.
+ */
+function catchUp(week, rng) {
+  const weeks = (gs.bb?.weeks || []).filter(w => w && w !== week && Number(w.num) < Number(week.num));
+  const all = [...weeks, week].flatMap(w => weekExits(w).map(x => ({ ...x, week: w })))
+    .filter((x, i, a) => a.findIndex(y => y.name === x.name && y.week === x.week) === i);
+  const live = new Set(store().filter(r => r.show === 'big-brother').map(r => `${r.week}|${r.guest}`));
+  const known = new Set(store().filter(r => r.show === 'big-brother').map(r => r.guest));
+  const out = [];
+  all.forEach((x, i) => {
+    if (x.week === week || known.has(x.name) || !goneForGood(x.name)) return;
+    if (!weekExits(x.week).some(y => live.has(`${x.week.num}|${y.name}`))) return;
+    const chain = x.how === 'white-locust'
+      ? ((x.week.acts || []).find(a => a?.type === 'white-locust')?.rounds || []).find(r => r && !r.made && r.target === x.name)?.caller || null
+      : null;
+    // everybody who left from this exit on is below them, with tonight's still to come
+    const below = all.length - i;
+    out.push(record(x.name, x.how === 'eviction' ? x.week : { ...x.week, ballots: [] }, rng, {
+      how: x.how === 'eviction' ? 'evicted' : 'lost-challenge',
+      placement: active().length + below,
+      withName: chain,
+    }));
+    known.add(x.name);
+  });
   return out;
 }
 

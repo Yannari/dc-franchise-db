@@ -104,7 +104,8 @@ const BY_ID = [
   [/^bb-ss-buzz-.*-room$|^bb-ss-prime-(truths|accusation)/, 'ss-plot'],
   [/^bb-ss-buzz-.*-reveal$/, 'ss-anthem'],
   [/^bb-ss-(black-buzzer|buzz-)|^bb-ss-prime-(airlock|dil|phone|noms)/, 'ss-tension'],
-  [/^bb-ss-noms/, 'ss-tension'],
+  // (the user, 2026-10-28: "the nomination music is creepy": the plotting tracks, not the fear ones)
+  [/^bb-ss-noms/, 'ss-plot'],
   [/^bb-ss-secretroom/, 'ss-secretroom'],
   [/^bb-ss-sroom-/, 'ss-tension'],
   [/^bb-ss-group-/, 'ss-secretroom'],
@@ -121,7 +122,7 @@ const BY_ID = [
   [/^bb-ss-prime-visit/, 'ss-love'],
   // (the user, 2026-10-28: "the prime music doesn't use the suspense at all": the verdict is the tension tracks;
   // the envelope brings the bailiff's call and the name the goodbye, step by step: ssStepBed)
-  [/^bb-ss-prime-verdict/, 'ss-tension'],
+  [/^bb-ss-prime-verdict/, 'ss-bailiff'],
   [/^bb-ss-prime-mag-noms/, 'ss-tension'],
   [/^bb-ss-prime-mag-clash/, 'ss-drama'],
   [/^bb-ss-prime-mag-love/, 'ss-love'],
@@ -129,7 +130,8 @@ const BY_ID = [
   [/^bb-ss-prime-(falsevoice|robot)/, 'ss-quirky'],
   [/^bb-ss-prime-ticket/, 'ss-tension'],
   [/^bb-ss-(false-voice|robot)-/, 'ss-quirky'],
-  [/^bb-ss-prime-walk/, 'ss-sad'],
+  // (the sad music is for the elimination itself; the interview on the set is calm: the user, 2026-10-28)
+  [/^bb-ss-prime-walk/, 'ss-think'],
   [/^bb-ss-after/, 'ss-after'],
   [/^bb-ss-final-(v|open)$/, 'ss-finalists'],
   [/^bb-ss-(journeys|final-journey)/, 'ss-sad'],
@@ -151,7 +153,7 @@ export function ssBaseFor(screen) {
   if (screen?.kind === 'houselife') return 'ss-fun';
   if (screen?.kind === 'scene') return BY_MOOD[screen.mood] || 'ss-fun';
   if (screen?.kind === 'hoh') return 'ss-epic';
-  if (screen?.kind === 'noms') return 'ss-tension';
+  if (screen?.kind === 'noms') return 'ss-plot';
   if (screen?.kind === 'voice') return 'ss-voice';
   // (any other Secret Story screen: a quiet bed rather than silence)
   return 'ss-think';
@@ -171,6 +173,8 @@ export const ssMoodBed = mood => BY_MOOD[mood] || 'none';
  */
 export function ssStepBed(screen, st) {
   if (!st) return null;
+  // (a step that names its own music: the verdict's suspense, the elimination's sad turn)
+  if (st.bed) return st.bed;
   if (st.prop === 'envelope') return 'ss-bailiff';
   if (st.winner || st.confetti) return 'ss-winner';
   if (st.out && /^bb-ss-prime-verdict/.test(String(screen?.id || ''))) return 'ss-sad';

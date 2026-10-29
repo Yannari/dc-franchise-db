@@ -24,7 +24,7 @@
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { voiceLine } from '../bb/story/register.js';
-import { players as ROSTER } from '../core.js';
+import { players as ROSTER, seasonConfig as SEASON_CFG } from '../core.js';
 import { SS_FORMAT } from '../shows.js';
 import { ssLaunchScreens } from './ss-launch.js';
 import { ssFinalScreens } from './ss-final.js';
@@ -3236,18 +3236,27 @@ function ssNomScreen(act, ctx) {
   // (a voter left with nobody to name, the pool all immune or already up, names nobody: no line)
   const ballots = (ss.ballots || []).filter(b => (b.picks || []).filter(Boolean).length).slice(0, 6);
   const saidWhy = new Set();
+  // the call, in the living room, to the whole house (the user, 2026-10-28: "we need a living room announcement when
+  // the nominations happen, so they go one by one")
+  const everyone = (ctx.house || []).filter(Boolean);
+  steps.push(ssv('Housemates, please gather in the living room.', { scene: { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: everyone.slice(0, 10).map((n, i, a) => [n, Math.round(8 + 84 * i / Math.max(1, a.length - 1))]) }, toast: ['NOMINATIONS', '#e0b84a'] }),
+    ssv(ss.inverted ? 'It is time for the nominations. This week, you will name the two housemates you want to SAVE. When the Voice calls your name, come to the confessional, one at a time.'
+      : ss.exclusive ? `It is time for the nominations. This week, only ${ss.exclusive} will name the nominees. ${ss.exclusive}, the confessional is waiting for you.`
+        : 'It is time for the nominations. When the Voice calls your name, come to the confessional, one at a time.'),
+    { k: 'beat', t: pickBy(['Everybody stays on the sofas, very still, waiting for their name.', 'Nobody looks at anybody. Somebody starts biting their nails.'], `${ctx.week}|nomcall`) });
   ballots.forEach((b, i) => {
+    if (!ss.exclusive) steps.push(ssv(`${b.voter}, to the confessional, please.`, { scene: { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: [[b.voter, 50]] } }));
     const [x, y] = b.picks || [];
     // (no reason said twice in one night: each pool is walked from a different start)
     const why = n => { const pool = WHY[b.reasons?.[n]] || WHY.gut; let j = hash(`${ctx.week}|why|${b.voter}|${n}`) % pool.length; for (let t = 0; t < pool.length && saidWhy.has(pool[j]); t++) j = (j + 1) % pool.length; saidWhy.add(pool[j]); return pool[j]; };
-    if (i === 0) steps.push(ssv(ss.inverted ? `${b.voter}, this week it's the other way round. Which two housemates do you want to save?`
-      : ss.exclusive ? `${b.voter}, this week you alone name the nominees. Who are they, and why?`
-        : `${b.voter}, it's time for your nominations. Which two housemates do you nominate, and why?`, { scene: DR(b.voter), toast: ['NOMINATIONS', '#e0b84a'] }));
+    steps.push(ssv(ss.inverted ? `${b.voter}, which two housemates do you want to save?`
+      : ss.exclusive ? `${b.voter}, you alone name the nominees. Who are they, and why?`
+        : `${b.voter}, which two housemates do you nominate, and why?`, { scene: DR(b.voter) }));
     const SAVE = ["they've been good to me since day one", 'I trust them, simple as that', "they're the ones I'd want next to me at the end", "they've had my back all week"];
     const t = ss.inverted ? `I save ${listOf((b.picks || []).filter(Boolean))}, because ${pickBy(SAVE, `${ctx.week}|save|${b.voter}`)}.`
       : ss.exclusive ? `I nominate ${listOf((b.picks || []).filter(Boolean))}. ${x}, because ${why(x)}.${y ? ` ${y}, because ${why(y)}.` : ''}`
         : y ? `I nominate ${x}, because ${why(x)}. And ${y}, because ${why(y)}.` : `I nominate ${x}, because ${why(x)}.`;
-    steps.push({ k: 'dr', by: b.voter, t, ...(i ? { scene: DR(b.voter) } : {}) });
+    steps.push({ k: 'dr', by: b.voter, t });
   });
   if ((ss.ballots || []).length > 6) steps.push({ k: 'beat', t: 'One by one, the others go into the confessional and name their two.' });
   if (ss.secondRound) steps.push(ssv(`There is a tie between ${listOf(ss.secondRound.tied || [])}. Everybody back to the confessional, one name each.`, { toast: ['SECOND ROUND', '#e0b84a'] }));
@@ -3661,6 +3670,70 @@ function ssVoluntaryScreen(seg, ctx, host) {
 }
 
 // THE VERDICT, read in the airlock (the public's shares, the saved first).
+// THE VERDICT, AS THE SHOW READS IT (the user, 2026-10-28: "build up the suspense: announce one, they enter, then
+// start again with the rest; 'the one who stays is a girl' when there are two or three girls; then eliminate; then
+// the reaction of the other candidates: cry, rage, joy, hug, ignore; bye bye; come to the stage"). The percentages
+// are a season setting (Season Setup, "The public's percentages"): shown, shown only once the name is out, or never.
+const ssPctMode = () => { const v = SEASON_CFG?.ssPercents; return v === 'show' || v === 'hide' ? v : 'end'; };
+const genderWord = n => { const s = String(pronouns(n)?.sub || '').toLowerCase(); return s === 'she' ? 'woman' : s === 'he' ? 'man' : null; };
+function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }) {
+  const show = ssPctMode();
+  const board = (who, all = false) => (show === 'show' || (show === 'end' && all)) ? { board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: all || who.includes(x) ? `${pc[x]}%` : '?' })) } } : {};
+  /** @type {any[]} */ const steps = [];
+  const left = noms.slice();
+  const order = saved.slice().sort((a, b) => (pc[b] || 0) - (pc[a] || 0));
+  const said = [];
+  order.forEach((n, i) => {
+    const lastTwo = left.length === 2;
+    steps.push({ k: 'host', by: host, bed: 'ss-bailiff', t: lastTwo ? `${listOf(left)}. Two of you left. One of you goes back into the house tonight. The other leaves the adventure.`
+      : i === 0 ? pickBy(['The first housemate the public has chosen to save tonight is...', 'The first housemate going back into the House of Secrets is...'], `${k}|s0`)
+        : pickBy(["We start again. The next housemate the public has saved is...", 'And the next one going back into the house is...', 'Next. The public has also saved...'], `${k}|s${i}`) });
+    // the hint, when the airlock is mixed: "the one who stays is a woman"
+    const words = left.map(genderWord);
+    const g = genderWord(n);
+    // (the first name and the last two only: a hint every round is a pattern, not suspense)
+    if ((i === 0 || lastTwo) && g && words.includes('woman') && words.includes('man') && words.filter(w => w === g).length < left.length) {
+      steps.push({ k: 'host', by: host, t: lastTwo ? `The one who stays with us tonight is a ${g}.` : `...a ${g}.` },
+        { k: 'beat', t: pickBy([`In the airlock, the ${g === 'woman' ? 'women' : 'men'} squeeze each other's hands a little harder.`, `A gasp from the airlock. Not everybody can be the one.`], `${k}|h${i}`), tense: left.slice() });
+    }
+    steps.push({ k: 'beat', t: pickBy(['A long pause. The host looks at the card, then at the camera.', 'The host lets the silence sit. Nobody in the airlock breathes.', 'The music builds. On the sofas, somebody covers their eyes.', 'Five seconds. Ten. The host says nothing at all.'], `${k}|p${i}`), suspense: true });
+    said.push(n);
+    steps.push({ k: 'host', by: host, t: `${n}${show === 'show' ? `, with ${pc[n]}% of the vote` : ''}! You're staying. You can go back into the House of Secrets.`, safe: n, ...board(said) },
+      { k: 'beat', t: pickBy([`${n} lets go of the others' hands, hugs each of them, and walks out of the airlock.`, `${n} cries out, hugs everybody still in the airlock, and runs back to the house.`, `${n} stands frozen for a second, then walks back into the living room to a pile of hugs.`], `${k}|out${i}`) },
+      { k: 'say', by: n, t: pickBy(['Thank you. Thank you, thank you, thank you.', "I can't believe it. I really can't.", 'I owe you all, out there. Every one of you.', 'Another week. I get another week.'], `${k}|joy${i}`) });
+    left.splice(left.indexOf(n), 1);
+    if (left.length > 1 && left.length < noms.length) steps.push({ k: 'beat', t: pickBy([`And then there were ${left.length}.`, `${listOf(left)} are still holding hands.`], `${k}|left${i}`), tense: left.slice() });
+  });
+  if (pairOut) steps.push({ k: 'host', by: host, t: `${ev} and ${pairOut}${show === 'show' ? `, with ${pc[ev]}% and ${pc[pairOut]}%` : ''}... tonight, the public sends you BOTH home.`, push: true, shake: true, out: ev, bed: 'ss-sad', big: [ev, 'Eliminated', 'out'],
+    settle: { id: `${k}|out`, answer: ev, n: noms.length }, ...board(noms, true) });
+  else steps.push({ k: 'host', by: host, t: `${ev}${show === 'show' ? `, with ${pc[ev]}% of the vote` : ''}... the public has decided that your adventure ends tonight.`, push: true, shake: true, out: ev, bed: 'ss-sad', big: [ev, 'Eliminated', 'out'],
+    settle: { id: `${k}|out`, answer: ev, n: noms.length }, ...board(noms, true) });
+  return steps;
+}
+// The house reacts, by what each of them was to the one leaving: tears, anger, a smile they hide, a hug, a turned back.
+function ssVerdictReactions(ctx, { noms, saved, ev, k }) {
+  const house = (ctx.house || []).filter(n => n && n !== ev);
+  const by = (f) => house.slice().sort((a, b) => f(b) - f(a));
+  const close = by(n => bondNow(ctx, ev, n));
+  /** @type {any[]} */ const steps = [{ k: 'beat', bed: 'ss-sad', t: pickBy([`In the living room, the screen goes quiet on ${ev}'s face.`, `The living room freezes. Then everybody moves at once.`], `${k}|r0`) }];
+  const used = new Set();
+  const take = n => { if (!n || used.has(n)) return null; used.add(n); return n; };
+  const cryer = take(close[0]);
+  if (cryer) steps.push({ k: 'beat', t: `${cryer} is in tears.` }, { k: 'say', by: cryer, t: pickBy([`No. No, not ${ev}. Not tonight.`, `${ev}, I love you! I'll see you outside!`], `${k}|cry`) });
+  // anger: somebody close to them, with a short fuse
+  const rager = take(close.slice(0, 4).filter(n => n !== cryer).sort((a, b) => (Number(pStatsSafe(a).temperament) || 5) - (Number(pStatsSafe(b).temperament) || 5))[0]);
+  if (rager && bondNow(ctx, ev, rager) > 1) steps.push({ k: 'say', by: rager, t: pickBy(["That's not fair. That is NOT fair!", `They got it wrong. They got it so wrong.`], `${k}|rage`) }, { k: 'beat', t: `${rager} storms off to the garden.` });
+  // the one who is not sorry, and hides it badly
+  const glad = take(close[close.length - 1]);
+  if (glad && bondNow(ctx, ev, glad) < -1) steps.push({ k: 'beat', t: pickBy([`${glad} looks down to hide a smile. Not well enough.`, `${glad} claps with everybody else, and does not mean it.`], `${k}|glad`) });
+  const hugger = take(saved.find(n => !used.has(n)) || close.find(n => !used.has(n)));
+  if (hugger) steps.push({ k: 'beat', t: `${hugger} pulls ${ev} into a long hug through the airlock door.` });
+  // ignored: the one who never liked them does not even look up
+  const cold = take(close.slice().reverse().find(n => !used.has(n) && bondNow(ctx, ev, n) < 0));
+  if (cold) steps.push({ k: 'beat', t: `${cold} does not even look up.` });
+  return steps;
+}
+
 function ssVerdictScreen(act, ctx, host) {
   const noms = act.nominees || [];
   const ev = act.evicted;
@@ -3705,17 +3778,14 @@ function ssVerdictScreen(act, ctx, host) {
       { k: 'say', by: power, push: true, t: `${ev}. I'm sorry, ${ev}.` });
     for (const n of noms.filter(x => x !== ev)) steps.push({ k: 'host', by: host, t: `${n}, you're staying.`, safe: n });
     steps.push({ k: 'host', by: host, t: `${ev}, ${power} has chosen. Your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'], settle: { id: `${k}|out`, answer: ev, n: noms.length } });
-  } else if (mode === 'save') for (const n of saved) steps.push({ k: 'host', by: host, t: `${n}... with ${pc[n]}% of the vote, you're staying in the House of Secrets.`, safe: n,
-    board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: x === n || saved.indexOf(x) < saved.indexOf(n) ? `${pc[x]}%` : '?' })) } });
-  if (mode === 'save' && !power && pairOut) steps.push({ k: 'host', by: host, t: `${ev} and ${pairOut}, with ${pc[ev]}% and ${pc[pairOut]}%... tonight, the public sends you BOTH home.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
-    settle: { id: `${k}|out`, answer: ev, n: noms.length }, board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
-  else if (mode === 'save' && !power) steps.push({ k: 'host', by: host, t: `${ev}, with ${pc[ev]}%, the public has decided that your adventure ends tonight.`, push: true, shake: true, out: ev, big: [ev, 'Eliminated', 'out'],
-    settle: { id: `${k}|out`, answer: ev, n: noms.length },
-    board: { title: "THE PUBLIC'S VOTE", rows: noms.map(x => ({ n: x, text: `${pc[x]}%` })) } });
-  steps.push({ k: 'beat', t: pickBy([`${saved[0] || 'The others'} grabs ${ev} and does not let go.`, `${ev} nods, and smiles, and wipes ${pronouns(ev).posAdj || 'their'} eyes.`, `In the living room, somebody screams. ${ev} laughs through the tears.`], `${k}|r`) });
-  if (friend) steps.push({ k: 'say', by: friend, t: pickBy([`${ev}, I love you! I'll see you outside!`, `We'll finish this for you, ${ev}!`, `${ev}! You were the best thing in this house!`], `${k}|f`) });
+  } else if (mode === 'save' && !power) steps.push(...ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host }));
+  if (mode !== 'save' || power) {
+    steps.push({ k: 'beat', bed: 'ss-sad', t: pickBy([`${saved[0] || 'The others'} grabs ${ev} and does not let go.`, `${ev} nods, and smiles, and wipes ${pronouns(ev).posAdj || 'their'} eyes.`, `In the living room, somebody screams. ${ev} laughs through the tears.`], `${k}|r`) });
+    if (friend) steps.push({ k: 'say', by: friend, t: pickBy([`${ev}, I love you! I'll see you outside!`, `We'll finish this for you, ${ev}!`, `${ev}! You were the best thing in this house!`], `${k}|f`) });
+  } else steps.push(...ssVerdictReactions(ctx, { noms, saved, ev, k }));
   steps.push({ k: 'say', by: ev, push: true, t: pickBy(["Thank you, all of you. Keep your secrets. Play hard.", "I love you guys. Look after each other.", `${ctx.week <= 1 ? 'Seven days' : `${ctx.week} weeks`}, and the best of my life. Win it, one of you.`], `${k}|bye`) },
-    { k: 'beat', t: `${listOf(saved)} ${saved.length === 1 ? 'goes' : 'go'} back into the house to a pile of hugs. The airlock closes on ${ev}.`, exit: ev });
+    { k: 'host', by: host, t: pickBy([`${ev}, come and join me on the stage!`, `${ev}, the stage is waiting for you. Come and join me!`], `${k}|stage`) },
+    { k: 'beat', t: `${ev} waves one last time through the glass. The airlock closes.`, exit: ev });
   return ssLive(ctx, { id: `bb-ss-prime-verdict-w${ctx.week}`, ...AIRLOCK, title: 'The Verdict', label: 'The Verdict', sub: listOf(noms),
     // side by side in the airlock, holding hands (the real verdict; the user's reference)
     cast: noms.map((n, i, a) => [n, Math.round(50 + (i - (a.length - 1) / 2) * 12.5)]), hands: true, steps });

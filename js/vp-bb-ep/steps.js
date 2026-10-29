@@ -5779,7 +5779,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // studio, on the living room's big screen when the prime goes to the house. Set on every scene too, since a
     // step's scene inherits its screen's flags.
     const studio = x => /^studio/.test(String(x.set || '')) || /^ss-studio/.test(String(x.plate || ''));
-    const NO_TV = new Set(['dr', 'attic', 'truths', 'arena', 'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber']);
+    const NO_TV = new Set(['dr', 'portrait', 'attic', 'truths', 'arena', 'box', 'tower', 'intruders', 'hotel', 'crystal', 'yacht', 'antechamber']);
     const flags = x => ({ hostOn: studio(x), tvObj: !studio(x) && !NO_TV.has(String(x.set || '')) });
     for (const s of out) {
       if (!(s.steps || []).some(st => st.k === 'host')) continue;

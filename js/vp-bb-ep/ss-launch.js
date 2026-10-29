@@ -18,6 +18,8 @@
 // The steps' helpers come from steps.js (`H`), so the screens look like the rest.
 
 import { launchToSpaceSteps } from './ss-groups.js';
+import { portraitSteps } from './ss-portraits.js';
+import { duoRel } from '../ss/duos.js';
 
 const pickRot = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
 const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -64,9 +66,6 @@ const ASSET = { mental: ['my head. I notice everything', "my memory. I never for
   strategic: ['strategy. I always have a plan', 'my brain. I think three moves ahead'], physical: ['energy. I never stop', "I'm strong, and I win games"],
   endurance: ['I never give up', 'patience. I can wait as long as it takes'], loyalty: ['loyalty. My friends can count on me', 'my heart. I really care about people'],
   temperament: ['I stay calm, whatever happens', 'my calm. Nothing gets to me'] };
-const TEASER = { read: "I'm going to watch every single one of them.", provoke: "I'm going to shake that house up.", manipulate: "Lying, betraying, manipulating... that's the game I love.",
-  alliance: 'I want my little family in there, and fast.', social: "Everybody's going to love me. That's the plan.", loyal: 'My friends, I protect. Everyone else? Good luck.',
-  comp: "Every game, I'm winning it.", float: "They won't even see me coming.", coattail: "I'll find the strongest one and stick to them.", lowkey: "They won't even see me coming.", rise: "They won't even see me coming." };
 const SEASON_IDEA = {
   loft: 'This summer, the house is the same house. The secrets are not.',
   chalet: "This summer, the House of Secrets is twenty metres above the city. There's nowhere to run.",
@@ -81,7 +80,6 @@ const ARRIVE = ['Nervous. Excited. Mostly nervous.', "I've been waiting for this
   "I've watched every season. I know what I'm doing. I hope.", 'Terrified. Is that allowed?', 'Like the luckiest person alive.',
   'Calm on the outside. Not on the inside.', "I can't wait to meet everybody.", "I'm going to find every single secret in there.", 'Shaking. Look at my hands.',
   "It's like my birthday and my first day of school at the same time.", 'I promised my family I would make them proud.'];
-const NTH = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth'];
 
 /** The top stat a housemate would name as their biggest asset. */
 const topStat = (p, i) => {
@@ -153,9 +151,8 @@ export function ssLaunchScreens(act, ctx, host, H) {
     ssv(SEASON_IDEA[act.houseTheme] || SEASON_IDEA.loft),
     ssv('They all have a secret. Their mission: to keep it, whatever it costs. But will they manage without being unmasked?'),
   ];
-  const teased = order.slice(0, 4);
-  open.push({ k: 'beat', t: `${teased.length} of tonight's housemates, a few seconds each:` });
-  teased.forEach((n, i) => open.push({ k: 'dr', by: n, t: TEASER[style(n)] || pickRot(Object.values(TEASER), i) }));
+  // (no teaser of the housemates before the doors open: "why do we have this at launch night, we don't even know them
+  // yet", the user, 2026-10-28; they are met one by one, with their portraits)
   open.push(ssv('And above all, never forget: beware of appearances.'),
     { k: 'beat', t: 'The studio lights come up on a crowd already on its feet.', shake: true },
     { k: 'host', by: host, t: `Good evening, and welcome to the launch of Secret Story! Tonight, ${order.length} people move into the House of Secrets, and every one of them is hiding something.` },
@@ -224,19 +221,19 @@ export function ssLaunchScreens(act, ctx, host, H) {
       else if ((s.holders || []).length > 1) steps.push({ k: 'host', by: host, t: `And ${n} isn't the only one keeping it. Somebody else in that house shares this secret.` });
     });
     steps.push({ k: 'host', by: host, t: `${listOf(g)}, the airlock is waiting for you. While ${they} head${g.length > 1 ? '' : 's'} over there, let's get to know ${them} a little better.` });
-    // the portraits, in their own words
+    // the portraits: filmed out in their lives, in their own words (where they are from, their work, their love life,
+    // what they do for fun, why they came: vp-bb-ep/ss-portraits.js), never in the confessional they have not seen yet
     g.forEach((n, j) => {
       const p = P(n), i = count + j;
-      const bits = [p.age ? `${p.age}` : null, p.hometown ? `from ${p.hometown}` : null].filter(Boolean).join(', ');
-      const job = p.occupation ? ` ${String(p.occupation).replace(/^./, c => c.toUpperCase())}.` : '';
-      steps.push({ k: 'beat', t: bits || job ? `${n}${bits ? `, ${bits}` : ''}.${job}` : `${n}, the ${NTH[i] || 'next'} housemate of the season.`, toast: ['PORTRAIT', '#e0b84a'] });
-      const arch = (ROSTER || []).find(x => x.name === n)?.archetype || 'social-butterfly';
-      steps.push({ k: 'dr', by: n, t: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i) });
+      const s = secretOf(n);
+      const arch = p.archetype || 'social-butterfly';
       let li = (i * 3) % LIFE.length;
       while (lifeUsed.has(li) && lifeUsed.size < LIFE.length) li = (li + 1) % LIFE.length;
       lifeUsed.add(li);
-      if (g.length === 1) steps.push({ k: 'dr', by: n, t: LIFE[li] });
-      steps.push({ k: 'dr', by: n, t: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social }, { k: 'dr', by: n, t: pickRot(PROMISE, i) });
+      steps.push(...portraitSteps({ ...p, name: n }, i, { life: LIFE[li],
+        hiding: !!s && s.kind === 'real-pair' && duoRel(s) === 'romance',
+        people: pickRot(PEOPLE_THINK[arch] || PEOPLE_THINK['social-butterfly'], i),
+        how: HOW_I_PLAY[style(n)] || HOW_I_PLAY.social, promise: pickRot(PROMISE, i) }));
     });
     // the airlock: the host on the earpiece, the Voice's word, the door
     steps.push({ k: 'beat', scene: SAS, t: g.length === 1 ? `In the airlock, ${g[0]} puts in an earpiece and checks ${pronouns(g[0]).posAdj || 'their'} hair in the mirror.` : `In the airlock, ${listOf(g)} put in their earpieces, side by side, and check their hair in the mirror.` },
@@ -274,7 +271,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
         if (partner) steps.push({ k: 'beat', t: `${partner} shakes ${n}'s hand like they have never met.`, tense: [n, partner] },
           { k: 'dr', by: partner, t: pickBy([`I have to act like I don't know ${n}. That is going to be the hardest part.`, `${n} walked in and I didn't even blink. I'm proud of that.`], `${kk}|pair|${n}`) });
       }
-      if (!alone) steps.push({ k: 'beat', t: pickBy([`${here[here.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${listOf(who)} shake${who.length > 1 ? '' : 's'} hands with everybody, one at a time.`, `${listOf(here.slice(-2))} pretend to have been there for years.`], `${kk}|greet|${who[0]}`) });
+      if (!alone) steps.push({ k: 'beat', t: pickBy([`${here[here.length - 1]} is first to the door with a hug.`, 'The ones already inside cheer.', `${listOf(who)} shake${who.length > 1 ? '' : 's'} hands with everybody, one at a time.`, `${listOf(here.slice(-2))} ${here.length > 1 ? 'pretend' : 'pretends'} to have been there for years.`], `${kk}|greet|${who[0]}`) });
     };
     if (inHouse.length) { enter(inHouse, false); inside.push(...inHouse); }
     if (toSpace.length) { steps.push(...launchToSpaceSteps(act.group, toSpace, H, kk, spaceSent)); spaceSent.push(...toSpace); }

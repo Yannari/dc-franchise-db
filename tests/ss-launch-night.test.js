@@ -91,6 +91,24 @@ describe('launch night, on screen', () => {
     delete seasonConfig.ssSecrets;
     return bbWeekSteps(gs.episodeHistory.find(r => r.num === 1), { host: 'Josh' }).filter(s => /^bb-ss-launch|^bb-ss-secrets/.test(String(s.id)));
   };
+  // the user, 2026-10-28: "why is the presentation in the confessional? ... and your presentations are too short"
+  it('every portrait is filmed out in their life, never in the confessional, and is long enough to meet them', () => {
+    const screens = play().filter(s => /^bb-ss-launch-arr-/.test(String(s.id)));
+    expect(screens.length).toBeGreaterThan(3);
+    const lines = {};
+    let inPortrait = false;
+    for (const s of screens) for (const st of s.steps) {
+      if (st.scene) inPortrait = !!st.scene.portrait;
+      if (inPortrait) {
+        expect(st.k, `${s.id}: ${st.t}`).not.toBe('dr');
+        if (st.scene) expect(st.scene.bgUrl).toMatch(/^assets\/sets\//);
+        if (st.k === 'say') (lines[st.by] ||= []).push(st.t);
+      }
+    }
+    for (const n of NAMES) expect((lines[n] || []).length, n).toBeGreaterThanOrEqual(6);
+    const text = Object.values(lines).flat().join(' ');
+    expect(text).not.toMatch(/\b(HOH|veto|jury|houseguest|undefined|NaN)\b/);
+  });
   it("on the list of secrets, a face only goes up after that housemate owns it, live, to Josh", () => {
     const screens = play();
     const owned = new Set();

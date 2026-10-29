@@ -223,6 +223,8 @@ function setDiv(set, season, S = null) {
   // the scene's own plate, spot and seating stay with the scene (the read of 2026-10-14: confessionals
   // were drawn on the library, and at every ceremony on the old Blender Diary Room, not the couch)
   const own = !S || set === S.set;
+  // a scene filmed outside the house carries its own picture (Secret Story's portraits: vp-bb-ep/ss-portraits.js)
+  if (own && S?.bgUrl) return `<div class="set set-${set} photo plate" data-plate="${esc(String(S.bgUrl).replace(/^.*\//, '').replace(/\.webp$/, ''))}" style="background-image:url('${esc(S.bgUrl)}')"></div>`;
   const plate = plateHtml(S ? { ...S, set, ...(own ? {} : { plate: null, spot: null, seated: null, arena: false, built: false }) } : { set }, season);
   if (plate) return plate;
   return `<div class="set set-${set} photo" style="background-image:url('${roomUrl(season, set)}')"><div class="floor"></div></div>`;

@@ -382,6 +382,8 @@ export function beginThreads(state, rng, entry) {
   const happy = ranked.find(t => t.type === 'progress' || t.type === 'spark');
   if (happy && !headline.includes(happy)) headline[headline.length - 1] = happy;
   state._th = { ep: state.ep, headline: headline.map(t => t.id), used: {}, queue: carry.filter(alive), top: headline[0]?.id || null };
+  // Every story the screen has followed, for the stretch's answers and the season-read audit.
+  for (const t of headline) (state.headlined ||= {})[t.id] = state.headlined[t.id] || state.ep;
   // A probe's window into the choice (tests only; never set in a season the user plays).
   if (globalThis.__PM_THREAD_LOG) globalThis.__PM_THREAD_LOG.push({ ep: state.ep, moment: entry?.moment,
     live: live(state).map(t => `${t.type}:${castOf(t).join('/')} b${t.beat}${headline.includes(t) ? '*' : ''} ${['told', 'seen', 'talked', 'vented', 'noticed', 'carried', 'chatted', 'shutDue', 'moment'].filter(k => t[k] != null && t[k] !== false).join(',')}`) });

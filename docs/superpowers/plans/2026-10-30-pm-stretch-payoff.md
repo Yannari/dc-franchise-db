@@ -47,7 +47,17 @@ Plays seeds 7, 12, 21 with the transcript cast (copy `makeIslanders` + names fro
 - [ ] Write it; run `npx vitest run --config vitest.audit.config.js tests/pm-stretch-audit.test.js`; paste the numbers into this plan under **Baseline**.
 - [ ] Commit.
 
-**Baseline:** (filled by step 1)
+**Baseline (2026-10-30, seeds 7/12/21):**
+- lines per villa episode: mean 495 / 498 / 539 (min ~300, max ~730)
+- thin phases (<25 lines, no story): 19 / 18 / 15, mostly "It all gets too much" (6–24 lines)
+- stories followed a season: 44 / 44 / 45; dropped (faded/fizzled/settled) 10% / 14% / 7%. The bigger leak
+  is `shut` (6–8 a season): the same graft closes and REOPENS (seed 7 Sophie→Jordan: ep10 faded, ep18
+  shut, ep23 open). Target after: about 20 followed a season, each A answered, no pair reopened inside
+  three episodes of a `shut`.
+- fire pit: 6 / 5 / 6 ceremonies; picks that took a partner 6 / 3 / 7; **named that partner: 0 / 0 / 0**
+- breakdown sections: 17 / 14 / 15 episodes
+- most-heard lines: 7–11× a season ("Like nothing was happening? That's never nothing." 9×,
+  "Great. Thanks. Love that for me." 10×, "That's not a fair question." 11×)
 
 ### Task 2: The fire pit tells the truth
 

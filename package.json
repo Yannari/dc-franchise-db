@@ -49,7 +49,8 @@
     "avatars:files": "node tools/gen-avatar-manifest.mjs --write-files --check",
     "d1:exec": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file",
     "d1:migrate:portraits": "wrangler d1 execute dc-franchise --config worker/wrangler.toml --remote --file worker/live_season_migration_portrait.sql",
-    "typecheck:bb": "node scripts/typecheck-bb.mjs"
+    "typecheck:bb": "node scripts/typecheck-bb.mjs",
+    "audit:pm-stretch": "vitest run --config vitest.audit.config.js tests/pm-stretch-audit.test.js"
   },
   "repository": {
     "type": "git",

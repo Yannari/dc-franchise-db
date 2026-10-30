@@ -82,8 +82,16 @@ describe('each format plays as the real show does', () => {
   });
   it('couples-vote: every couple names one, and nobody hears "public" that night', () => {
     for (const { seed, row, prev } of nights.filter(n => n.row.pm.dumpFormat === 'couples-vote')) {
-      // The couples as the vote found them: the day plays before it, and can split one.
-      expect(kinds(row).filter(k => k === 'couples-vote').length, `s${seed}`).toBe((row.pm.couplesBefore || prev.pm.couples).length);
+      // The couples as the vote found them: the day plays before it, and can split one;
+      // and a new arrival who picks at the fire pit before the vote is a couple by then.
+      const evs = row.pm.events.slice(row.pm.momentFrom);
+      const firstVote = evs.findIndex(e => e.kind === 'couples-vote');
+      let couples = (row.pm.couplesBefore || prev.pm.couples).map(c => [...c]);
+      for (const e of evs.slice(0, firstVote).filter(e => e.kind === 'recouple-pick')) {
+        const [a, b] = e.players;
+        couples = [...couples.filter(c => !c.includes(a) && !c.includes(b)), [a, b]];
+      }
+      expect(kinds(row).filter(k => k === 'couples-vote').length, `s${seed}`).toBe(couples.length);
       const said = row.pm.events.slice(row.pm.momentFrom).flatMap(e => e.script.lines.map(l => l.text)).join(' ');
       expect(said, `s${seed} e${row.num}`).not.toMatch(/the public/i);
     }

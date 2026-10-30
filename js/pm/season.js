@@ -126,7 +126,11 @@ function villaDayEvents(state, rng, entry, seed) {
   // ~300 for a villa day; the user set 300-350).
   const big = exitNight(entry) || entry.moment === 'bombshell' || entry.moment === 'photos';
   const cut = n => (big && !casa ? Math.max(1, n - 2) : n);
-  const T = { morning: cut(TEXTURE.morning) + (casa ? 3 : 0), day: cut(TEXTURE.day) + (casa ? 6 : 0), evening: cut(TEXTURE.evening) + (entry.moment === 'villa' ? 2 : 0) + (casa ? 7 : 0) };
+  // …and a day with little story (no plan in the couples-only week, a quiet
+  // stretch) keeps the villa's old texture: a story-less day at the reduced
+  // texture aired 82 lines (2026-10-30, the spec audit's floor is 100).
+  const quiet = (state._th?.headline || []).length < 2 ? { morning: 2, day: 3, evening: 2 } : { morning: 0, day: 0, evening: 0 };
+  const T = { morning: cut(TEXTURE.morning) + quiet.morning + (casa ? 3 : 0), day: cut(TEXTURE.day) + quiet.day + (casa ? 6 : 0), evening: cut(TEXTURE.evening) + quiet.evening + (entry.moment === 'villa' ? 2 : 0) + (casa ? 7 : 0) };
   const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
   if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
@@ -206,7 +210,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-27b';
+export const PM_ENGINE = '2026-10-30';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new

@@ -51,7 +51,7 @@ import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
 import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
-import { planStretch, planIds, roleOf } from './stretch.js';
+import { planStretch, planIds, roleOf, held, closeness } from './stretch.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2, rekindle: 1 };
 // A doubt's reason, as the break-up's cause (breakups.js).
@@ -119,7 +119,7 @@ function settle(state) {
       if (partnerOf(state, t.t) === t.c) { close(t, 'won', state); continue; }
       if (partnerOf(state, t.t) !== t.p) { close(t, 'apart', state); continue; }
       if ((attr(state, t.c, t.t) ?? 0) < 4.5 || t.shut) { close(t, t.shut ? 'shut' : 'moved-on', state); continue; }
-      if (state.ep - t.ep >= 4) close(t, 'faded', state);
+      if (state.ep - t.ep >= 4 && !held(state, t)) close(t, 'faded', state);
     } else if (t.type === 'doubt') {
       if (partnerOf(state, t.a) !== t.p) { close(t, 'apart', state); continue; }
       if (romance(t.a, t.p) >= 6 && t.beat >= 3) { close(t, 'mended', state); continue; }
@@ -132,7 +132,7 @@ function settle(state) {
         state.threads.push(make(state, 'graft', { c: t.x, t: t.a, p: t.p, from: t.id }, 0.9));
         continue;
       }
-      if (state.ep - t.ep >= 4) close(t, 'faded', state);
+      if (state.ep - t.ep >= 4 && !held(state, t)) close(t, 'faded', state);
     } else if (t.type === 'secret') {
       const sec = state.secrets.find(s => s.id === t.sec);
       if (!sec || sec.known || partnerOf(state, t.p) !== t.x) close(t, sec?.known ? 'out' : 'apart', state);
@@ -140,17 +140,17 @@ function settle(state) {
       // Coupled up at last, or one of them with somebody else, or it fizzled.
       if (partnerOf(state, t.a) === t.b) { close(t, 'coupled', state); continue; }
       if (partnerOf(state, t.a) || partnerOf(state, t.b)) { close(t, 'apart', state); continue; }
-      if (Math.min(attr(state, t.a, t.b) ?? 0, attr(state, t.b, t.a) ?? 0) < 3 || state.ep - t.ep >= 4) close(t, 'fizzled', state);
+      if (Math.min(attr(state, t.a, t.b) ?? 0, attr(state, t.b, t.a) ?? 0) < 3 || (state.ep - t.ep >= 4 && !held(state, t))) close(t, 'fizzled', state);
     } else if (t.type === 'rekindle') {
       // Back on by another road (a second chance), or it went nowhere.
       if (!broken(state, t.a, t.b)) { close(t, 'rekindled', state); continue; }
       // Coupled up with somebody else since: there is nothing to ask.
       if (!(partnerOf(state, t.a) === t.b || (!partnerOf(state, t.a) && !partnerOf(state, t.b)))) { close(t, 'apart', state); continue; }
-      if (state.ep - t.ep >= 4) close(t, 'faded', state);
+      if (state.ep - t.ep >= 4 && !held(state, t)) close(t, 'faded', state);
     } else if (t.type === 'progress') {
       if (partnerOf(state, t.a) !== t.b) { close(t, 'apart', state); continue; }
       if (stepOf(state, t.a, t.b) === 'official' && stepOf(state, t.b, t.a) === 'official') close(t, 'official', state);
-      else if (state.ep - t.ep >= 5) close(t, 'settled', state);
+      else if (state.ep - t.ep >= 5 && !held(state, t)) close(t, 'settled', state);
     }
   }
 }
@@ -202,6 +202,7 @@ function openGrafts(state, rng) {
         if (cp && (romance(c, cp) >= want - (player ? 3 : 0.5) || ['closed-off', 'exclusive', 'official'].includes(stepOf(state, c, cp)))) continue;
         // …and not twice on the same three once it ended.
         if ((state.threadDone || {})[`graft:${c}>${t}`] != null && state.ep - state.threadDone[`graft:${c}>${t}`] < 4) continue;
+        if ((state.threadShut || {})[`graft:${c}>${t}`] != null && state.ep - state.threadShut[`graft:${c}>${t}`] < 8) continue;
         const heat = (want / 10) * (0.5 + st(state, c, 'boldness')) * (fresh ? 1.6 : 1) * (0.6 + (attr(state, t, c) ?? 0) / 15)
           * (player ? 1.6 : NICE.has(state.profiles[c]?.archetype) ? 0.6 : 1);
         cands.push({ c, t, p, heat });
@@ -362,6 +363,9 @@ export function beginThreads(state, rng, entry) {
       : t.type === 'progress' ? `progress:${[t.a, t.b].sort().join('+')}` : t.type === 'spark' ? `spark:${[t.a, t.b].sort().join('+')}`
       : t.type === 'rekindle' ? `rekindle:${[t.a, t.b].sort().join('+')}` : `secret:${t.sec}`;
     (state.threadDone ||= {})[key] = state.ep;
+    // Told to back off, in so many words: the same chase doesn't start again for a long while
+    // (seed 7, 2026-10-30: Sophie went after Jordan in episodes 10, 18 and 23, and nothing changed).
+    if (t.why === 'shut') (state.threadShut ||= {})[key] = state.ep;
   }
   // The final has no villa day, and the reunion none at all.
   if (['final', 'reunion'].includes(entry?.moment)) { state._th = { ep: state.ep, headline: [], used: {}, queue: [] }; return; }
@@ -678,7 +682,10 @@ function secretBeat(state, rng, t, phase) {
   // told to wait, they wait the day at least (season read 2026-10-25: "wait a
   // day", then the telling two hours later).
   if (t.carried && (phase === 'day' || phase === 'evening') && (t.advised === 'tell' || state.ep > t.carriedEp)) {
-    const goes = t.advised === 'tell' ? 0.75 : 0.25 + 0.4 * st(state, t.w, 'boldness');
+    // The nearer the fire pit, the harder it is to sit on (pm/stretch.js): a
+    // secret in the stretch's plan comes out before the night, or is kept on camera.
+    const near = held(state, t) ? 0.5 * closeness(state) * (0.5 + st(state, t.w, 'loyalty')) : 0;
+    const goes = Math.min(0.95, (t.advised === 'tell' ? 0.75 : 0.25 + 0.4 * st(state, t.w, 'boldness')) + near);
     if (rng() >= goes) { if (t.carried && state.ep > t.ep) t.waited = (t.waited || 0) + 1; return []; }
     const tell = makeEvent(state, rng, { phase, kind: 'gossip', players: [t.w, t.p, t.x], aired: true, extra: { ...tag('tell') } });
     const out = [tell];

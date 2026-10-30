@@ -20,7 +20,9 @@
 // The plan decides what the SCREEN follows. It never decides a result: who
 // picks whom is recoupling.js desire(), unchanged.
 import { romance } from './feelings.js';
-import { partnerOf } from './events.js';
+import { partnerOf, makeEvent } from './events.js';
+import { getBond, addBond } from '../bonds.js';
+import { feel } from './emotions.js';
 
 /** The nights somebody can leave on: a stretch ends on one. */
 export const EXIT_MOMENTS = new Set(['recoupling', 'public-vote', 'stick-or-twist', 'semi-final', 'final']);
@@ -45,7 +47,10 @@ export function storyScore(state, t) {
     return p ? 1 - Math.min(romance(n, p), romance(p, n)) / 10 : 0;
   }));
   const running = Math.min(4, Math.max(0, state.ep - t.ep));
-  return (t.heat || 0) + (STAKES[t.type] ?? 0) + 0.2 * running + 0.4 * cold + 0.1 * Math.min(3, cast.length);
+  // A story the last stretch followed and its fire pit couldn't answer (a vote
+  // night has no picks) carries: the next stretch picks it up first.
+  const carried = state.planned?.[t.id] ? 1 : 0;
+  return (t.heat || 0) + (STAKES[t.type] ?? 0) + 0.2 * running + 0.4 * cold + 0.1 * Math.min(3, cast.length) + carried;
 }
 
 /** The plan's live thread ids, A first. */
@@ -109,3 +114,91 @@ export function planStretch(state, entry, nextExit) {
   for (const id of state.stretch.seen) (state.planned ||= {})[id] = state.planned[id] || state.ep;
   return state.stretch;
 }
+
+// ── the fire pit answers it ───────────────────────────────────────────
+// A thread any stretch has followed can't fade (threads.js settle reads this):
+// the villa lives with it until a night that answers it.
+export function held(state, t) {
+  // A story the screen has followed waits for a fire pit to answer it (answerStretch),
+  // through Casa Amor and across a vote night that couldn't.
+  return !!state.planned?.[t.id];
+}
+
+/** How near the fire pit is, 0 at the start of the stretch to 1 on the night. */
+export function closeness(state) {
+  const s = state.stretch;
+  if (!s || s.off) return 0;
+  return Math.max(0, Math.min(1, 1 - (s.ceremony - state.ep) / (s.ceremony - s.from + 1)));
+}
+
+const friendOf = (state, n, not) => state.villa
+  .filter(o => o !== n && !not.includes(o) && state.profiles[o]?.gender === state.profiles[n]?.gender)
+  .sort((x, y) => getBond(n, y) - getBond(n, x))[0] || null;
+
+/**
+ * The answer to each of the plan's stories still open on the night of its
+ * fire pit — said by what the night did, never decided here — and a scene for
+ * every answer the fire pit itself didn't show (a vote night has no picks;
+ * a graft whose target simply stayed put has no moment of its own).
+ * Returns the debrief scenes. Secrets nobody told carry into the next stretch,
+ * with the one keeping it saying why.
+ */
+export function answerStretch(state, rng, entry, m) {
+  const s = state.stretch;
+  if (!s || s.off || state.ep !== s.ceremony) return [];
+  // A night with no picks can't answer who ends up with whom: while a
+  // recoupling is still to come, a chase, a doubt or a spark carries to it.
+  const picksTonight = entry?.moment === 'recoupling' || !state._recouplingAhead;
+  const night = (m?.events || []).filter(e => e.kind === 'recouple-pick' || e.kind === 'recouple-refused');
+  const shown = (...ns) => night.some(e => ns.every(n => e.players.slice(0, 2).includes(n)));
+  const out = [];
+  // Every answer moves something (CLAUDE.md): the couple it tested, the friend
+  // who heard it, the one who kept quiet.
+  const EFFECT = {
+    'graft-won': ([a, b]) => addBond(a, b, 0.5),
+    'graft-stayed': ([a, b, c]) => { addBond(a, b, 0.6); addBond(a, c, -0.3); feel(state, b, 'security', 0.5); },
+    'graft-apart': ([a, f]) => { addBond(a, f, 0.3); feel(state, a, 'confidence', -0.3); },
+    'doubt-recommit': ([a, b]) => { addBond(a, b, 0.5); feel(state, b, 'security', 0.4); },
+    'doubt-ended': ([a, f, x]) => { addBond(a, f, 0.4); addBond(f, x, -0.3); },
+    kept: ([w]) => feel(state, w, 'guilt', 0.6),
+  };
+  const scene = (kind, players, of, role, more = {}) => {
+    EFFECT[of]?.(players);
+    const e = makeEvent(state, rng, { phase: 'debrief', kind, players, aired: true,
+      extra: { pop: { [players[0]]: { approval: 0.1, fame: 0.5 } }, of, stretch: role, ...more } });
+    out.push(e);
+  };
+  // This stretch's stories, and any an earlier stretch carried here.
+  const ids = [...new Set([...(s.seen || []), ...Object.keys(state.planned || {})])];
+  for (const id of ids) {
+    const t = (state.threads || []).find(x => x.id === id);
+    if (!t || t.over) continue;
+    const role = roleOf(state, id) || 'c';
+    const here = n => state.villa.includes(n);
+    if (!picksTonight && t.type !== 'secret' && t.type !== 'progress') { s.answers[id] = 'carried'; continue; }
+    if (t.type === 'graft') {
+      const why = partnerOf(state, t.t) === t.c ? 'won' : partnerOf(state, t.t) === t.p ? 'stayed' : 'apart';
+      closeIt(state, t, why);
+      if (why === 'won' && here(t.c) && !shown(t.c, t.t)) scene('stretch-answer', [t.c, t.t], 'graft-won', role);
+      if (why === 'stayed' && here(t.t) && here(t.p) && !shown(t.t, t.p)) scene('stretch-answer', [t.t, t.p, t.c], 'graft-stayed', role);
+      if (why === 'apart' && here(t.c)) { const f = friendOf(state, t.c, [t.t, t.p]); if (f) scene('stretch-answer', [t.c, f, t.t], 'graft-apart', role); }
+    } else if (t.type === 'doubt') {
+      const why = partnerOf(state, t.a) === t.p ? 'recommit' : 'ended';
+      closeIt(state, t, why);
+      if (here(t.a) && here(t.p) && why === 'recommit' && !shown(t.a, t.p)) scene('stretch-answer', [t.a, t.p], 'doubt-recommit', role);
+      if (here(t.p) && why === 'ended') { const f = friendOf(state, t.p, [t.a]); if (f) scene('stretch-answer', [t.p, f, t.a], 'doubt-ended', role); }
+    } else if (t.type === 'secret') {
+      // Nobody told: it carries, and the one keeping it says why on camera.
+      // What it was, and who with, so the keeping says it (talk/stretch.js SECRET_KEPT).
+      const sec = (state.secrets || []).find(z => z.id === t.sec);
+      if (here(t.w) && here(t.p)) scene('secret-kept', [t.w, t.p, t.x], 'kept', role, { sec: sec?.kind || null, with: sec?.with && state.villa.includes(sec.with) ? sec.with : null });
+    } else {
+      const [a, b] = [t.a, t.b];
+      const why = partnerOf(state, a) === b ? 'together' : 'apart';
+      closeIt(state, t, why);
+    }
+    s.answers[id] = t.over ? t.why : 'carried';
+  }
+  return out;
+}
+function closeIt(state, t, why) { t.over = true; t.why = why; t.endEp = state.ep; }

@@ -903,6 +903,8 @@ export const KINDS = {
     'betray-see', 'betray-confront', 'betray-end', 'mugged-low', 'found-love', 'villa-happy', 'redeem-reflect', 'redeem-act', 'redeem-doubt', 'grass-talk', 'grass-frozen', 'grass-confront', 'parents-named', 'parents-advice', 'parents-mediate', 'parents-wobble', 'exw-stir', 'exw-partner', 'exw-talk', 'exw-back', 'vote-fallout', 'vote-callout', 'grudge-cold', 'grudge-clash', 'grudge-end', 'visit-arrive', 'visit-confront', 'visit-leave', 'sc-arrive', 'sc-rules', 'sc-vote', 'sc-stay', 'sc-leave',
     // the storylines and what the villa makes of them (pm/threads.js)
     'graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'rekindle',
+    // the stretch's stories, answered after its fire pit (pm/stretch.js)
+    'stretch-answer', 'secret-kept',
     // the day before the night (pm/threads.js tonightBeats)
     'pick-chat', 'vote-worry', 'stick-twist']
     .map(k => [k, { salience: 1, cast: () => null,

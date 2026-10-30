@@ -134,7 +134,7 @@ export const FEATURED_AT = 2.5, SHORT_AT = 1.6;
 // (the user picked the tiers: ~600-900 clicks an episode).
 export const FEATURED_CAP = 24, SHORT_CAP = 34;
 // The storylines' own scenes (pm/threads.js), whole however busy the day.
-const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist']);
+const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist', 'stretch-answer', 'secret-kept']);
 
 /** featured · short · note for a tiered kind, or null for a kind always written whole. */
 export function tierOf(state, ev, tiered) {

@@ -27,7 +27,7 @@ const THREE = new Set([
   'movie-after', 'postcard', 'enemy-bitch', 'enemy-freeze', 'enemy-snipe', 'enemy-clash', 'chal-buzz', 'chal-watch', 'chal-row', 'chal-spark', 'sports-pick', 'sports-race', 'knowing-q', 'goals-board', 'tower-fall', 'talent-act', 'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'dump-tie', 'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick']);
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'took-back', 'refused', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
@@ -95,6 +95,8 @@ describe('a placeholder only where somebody fills it', () => {
       // "Back on?" casts a third only when a friend saw it (threads.js rekindleBeat).
       if (k === 'rekindle') { expect(e.when?.of, tag(k, s, e)).toBe('noticed'); continue; }
       // An ex's sting casts a third only when a friend is there (events.js 'ex-sting').
+      // A stretch's answer casts a third when someone else was in the story (pm/stretch.js answerStretch).
+      if (k === 'stretch-answer') { expect(['graft-stayed', 'graft-apart', 'doubt-ended'].includes(e.when?.of), tag(k, s, e)).toBe(true); continue; }
       if (k === 'ex-sting') { expect(e.when?.of, tag(k, s, e)).toBe('stung'); continue; }
       if (k === 'casa-react' && e.when?.of === 'stung') continue;
       expect(THREE.has(k), tag(k, s, e)).toBe(true);
@@ -209,7 +211,7 @@ describe('a line happens at its own time of day', () => {
   const NIGHT = /\b(goodnight|night, then|a quick kiss before the fire pit|help me with my hair before the fire pit)\b/i;
   const phases = e => [].concat(e.when?.phase || []);
   // Kinds that only ever happen at bedtime: a bed shared at Casa.
-  const NIGHT_KINDS = new Set(['bed-share']);
+  const NIGHT_KINDS = new Set(['stretch-answer', 'secret-kept', 'bed-share']);
   it('morning words only in the morning, night words only at night', () => {
     const bad = [];
     for (const [k, s, e] of ENTRIES) {

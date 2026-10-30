@@ -56,6 +56,19 @@ describe('pm stretch', () => {
     }
   });
 
+  it('answers every story the stretch followed: none fades, fizzles or just settles', () => {
+    for (const seed of SEEDS) {
+      const { state, rows } = seasons[seed];
+      const kept = new Set(rows.flatMap(r => (r.pm?.events || []).filter(e => e.kind === 'secret-kept').map(e => e.players.join('|'))));
+      for (const t of state.threads.filter(x => state.planned?.[x.id])) {
+        if (!t.over) continue;
+        expect(['faded', 'fizzled', 'settled'], `seed ${seed} ${t.type} ${t.id} ep${t.ep}-${t.endEp}`).not.toContain(t.why);
+      }
+      // A secret nobody told by its fire pit is kept on camera.
+      expect(kept.size + state.threads.filter(x => x.type === 'secret' && state.planned?.[x.id]).length).toBeGreaterThan(0);
+    }
+  });
+
   it('scores a story by what it puts at stake, proportionally', () => {
     const state = { ep: 5, villa: ['A', 'B', 'C'], couples: [['B', 'C']], profiles: {} };
     const graft = { type: 'graft', ep: 3, heat: 1, c: 'A', t: 'B', p: 'C' };

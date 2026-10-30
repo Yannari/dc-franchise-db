@@ -9,7 +9,7 @@
 // DICE: every episode draws from its own `streamFor(seed, 'ep:N')`, every
 // profile from `profile:<name>`, every spark from `spark:a>b`. One episode's
 // draws never move another's (ADDING-A-SHOW §11.5 M).
-import { exitNight } from './stretch.js';
+import { exitNight, answerStretch } from './stretch.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { PERFECT_MATCH_FORMAT } from '../shows.js';
@@ -499,6 +499,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // THE DEBRIEF after a big night (pm/debrief.js), on its own dice, so the
     // rest of the season plays exactly as it did without it.
     m.events.push(...nightDebrief(state, streamFor(seed, `debrief:${entry.ep}${state.epSalt}`), entry, pre, m));
+    // The stretch's stories, answered by the night (pm/stretch.js): what the fire pit didn't show, said after it.
+    m.events.push(...answerStretch(state, streamFor(seed, `answer:${entry.ep}${state.epSalt}`), entry, m));
     state.history.push(...m.events);
     syncLadder(state);
     // Feelings move once a day's worth of events has happened: love grows in

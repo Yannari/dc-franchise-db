@@ -324,7 +324,7 @@ describe('a season saved before the resort loser counted', () => {
     const next = gs.bb.weeks.find(w => w.num === week.num + 1);
     const door = (next.acts || []).find(a => a.type === 'jury-house');
     const beats = (door?.acts || []).flatMap(a => a.beats || []);
-    expect(beats.some(b => b.tag === 'ENTRANCE' && (b.players || []).includes(gone)),
+    expect(beats.some(b => b.tag === 'THE DOOR' && (b.players || []).includes(gone)),
       'the jury house never shows them arriving').toBe(true);
     expect(door.residents).toContain(gone);
   });

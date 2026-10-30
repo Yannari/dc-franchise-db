@@ -75,110 +75,68 @@ export function leaderFor(juror, alive) {
     const n = alive.slice().sort((a, b) => getBond(juror, a) - getBond(juror, b))[0];
     return { lens, name: n };
   }
+  // a lens with nothing to go on (nobody has kept or broken a deal) does not pick somebody at random and invent
+  // a reason for them: it falls back on what everyone can see, the wins and the evictions
   const score = SCORE[lens] || SCORE.challenge;
-  const n = alive.slice().sort((a, b) => score(b, alive) - score(a, alive))[0];
+  const flat = new Set(alive.map(n => score(n, alive))).size <= 1;
+  const use = flat ? (alive.some(n => bootsOf(n).length) ? SCORE.control : SCORE.challenge) : score;
+  const seen = n => winsOf(n) * 10 + liked(n, alive);
+  const n = alive.slice().sort((a, b) => use(b, alive) - use(a, alive) || seen(b) - seen(a))[0];
   return { lens, name: n };
 }
-/** The reason, in the voice of somebody with this lens, as the words after the name. */
-function reasonFor(lens, n, alive) {
-  const p = P(n);
-  const boots = bootsOf(n), al = alliancesOf(n)[0];
-  switch (lens) {
-    case 'control': return boots.length
-      ? `${n} sent ${boots.slice(0, 2).join(' and ')} home and never got blood on ${p.posAdj} hands. Watch who ${p.sub} talks to before every vote.`
-      : al ? `${n} is in the middle of ${al.name}, and every vote goes the way that group wants.` : `every vote goes the way ${n} wants. ${p.Sub} just never says it out loud.`;
-    case 'challenge': return winsOf(n) ? `${n} has won ${word(winsOf(n))} competition${winsOf(n) === 1 ? '' : 's'}. When ${p.sub} needs a win, ${p.sub} gets one.` : `nobody's won much, honestly. It's anybody's game.`;
-    case 'social': return `everybody in that house likes ${n}. Nobody ever wants to put ${p.obj} up, and that's the whole game.`;
-    case 'loyalty': return keptOf(n) ? `${n} keeps ${p.posAdj} word. Every deal ${p.sub} made, ${p.sub} stuck to. That's rare in there.` : `${n} has never stabbed anyone in the back. Not once.`;
-    case 'honesty': return `${n} is the only one in there who hasn't lied to anybody's face.`;
-    case 'hidden': return `${n}. Nobody's watching ${p.obj}, and that's exactly why ${p.sub}'s dangerous. ${p.Sub}'s closer to everyone than people realise.`;
-    default: return `${n} is playing the best game in there, whatever anybody says.`;
-  }
+const listOf = xs => xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs[0] || '';
+// What a juror can say about somebody, true of them: a reason is one of these, never a claim the record does not
+// hold (the user, 2026-10-30: Nina said "Ben has never stabbed anyone in the back. Not once." and then, voting,
+// the same sentence about Dominic; and "they talk like bots"). Spoken, short, in the order a lens reaches for them.
+function factsAbout(n, alive, speaker = null) {
+  const p = P(n), w = winsOf(n), boots = bootsOf(n), al = alliancesOf(n)[0], noms = nomsOf(n);
+  const kept = keptOf(n), broke = brokeOf(n), like = liked(n, alive), hid = hiddenOf(n, alive);
+  return {
+    challenge: w >= 2 ? `${n}'s won ${word(w)} competitions. When ${p.sub} ${p.sub === 'they' ? 'need' : 'needs'} a win, ${p.sub} ${p.sub === 'they' ? 'get' : 'gets'} one.` : w === 1 ? `${n} won a competition when it mattered.` : null,
+    // the speaker sent home by them says so in the first person (Brightly said "Hicks was HOH when Brightly went home")
+    control: boots.includes(speaker) ? `${n} was HOH the week I went home, and ${p.sub} made it happen.` : boots.length ? `${n} was HOH when ${listOf(boots.slice(0, 2))} went home.` : al && (al.members || []).length >= 3 ? `${n}'s at the centre of ${al.name}, and that group decides the votes.` : null,
+    loyalty: kept ? `${n} kept every deal ${p.sub} made. That's rare in there.` : null,
+    honesty: kept && !broke ? `${n} never broke a deal with anybody.` : null,
+    social: like > 1.5 ? `Everybody in that house likes ${n}.${noms === 0 ? ` Nobody's ever put ${p.obj} up.` : ''}` : null,
+    hidden: hid > 3 ? `${n}'s closer to people than anybody realises, and nobody's watching ${p.obj}.` : null,
+    survived: noms >= 2 ? `${n}'s been on the block ${word(noms)} times and ${p.sub}'s still there.` : noms === 0 ? `${n} hasn't been nominated once.` : null,
+  };
+}
+const FALLBACK = ['control', 'challenge', 'survived', 'social', 'loyalty', 'hidden'];
+/** The reason, as somebody with this lens would give it: a true sentence about `n`. */
+function reasonFor(lens, n, alive, speaker = null) {
+  return reasonsFor(lens, n, alive, speaker)[0];
+}
+/** Every true reason about `n`, the lens's own first: a caller that rotates them picks the least said. */
+export function reasonsFor(lens, n, alive, speaker = null) {
+  const f = factsAbout(n, alive, speaker);
+  const all = [...new Set([f[lens], ...FALLBACK.map(k => f[k])].filter(Boolean))];
+  return all.length ? all : [`I just think ${n}'s playing the best game in there.`];
 }
 /** Why `juror` thinks `n` deserves it, in their own lens: a sentence. */
 export function reasonLine(juror, n) {
   const lens = lensOf(juror);
   const alive = gs.activePlayers || [];
-  if (lens === 'grudge') return `${n} is the only one in there I don't have a problem with. That's my reason.`;
-  return Cap(reasonFor(lens, n, alive));
+  if (lens === 'grudge') return `${n}'s the only one in there I don't have a problem with.`;
+  return Cap(reasonFor(lens, n, alive, juror));
 }
 const pickBy = (rng, list) => list[Math.floor(rng() * list.length) % list.length];
 
-// ── the entrance: who the newcomer is, walking in ──
+// ── how the newcomer takes it: by who they are ──
 const MOODS = {
   angry: ['hothead', 'chaos-agent', 'villain'],
   analytic: ['mastermind', 'schemer', 'perceptive-player'],
   emotional: ['underdog', 'showmancer', 'social-butterfly', 'hero'],
   easy: ['floater', 'goat', 'wildcard', 'loyal-soldier', 'challenge-beast'],
 };
-export function entranceOf(newcomer, rng) {
-  const arch = archOf(newcomer);
-  const mood = Object.keys(MOODS).find(k => MOODS[k].includes(arch)) || 'easy';
-  const p = P(newcomer);
-  return pickBy(rng, {
-    angry: [
-      `${newcomer} throws ${p.posAdj} bag on the floor before saying hello. "Don't. Don't ask me if I'm okay. I'm not okay."`,
-      `${newcomer} walks in already talking. "I want everyone to know I saw it coming, and nobody listened to me. Nobody."`,
-      `${newcomer} slams the door harder than ${p.sub} means to. "Sorry. Actually, no. I'm not sorry. I'm furious."`,
-    ],
-    analytic: [
-      `${newcomer} walks in, sits down at the table and asks for a pen. "Before anybody says anything, let me walk you through exactly how that vote happened."`,
-      `${newcomer} is calm, almost too calm. "I know who did it, I know why, and honestly, it was a good move. I'd have done the same."`,
-      `${newcomer} takes a long look around the room. "Okay. So this is the jury. Let's talk about what you all don't know yet."`,
-    ],
-    emotional: [
-      `${newcomer} makes it two steps inside and starts crying. "Sorry. I held it together all the way here. I just can't any more."`,
-      `${newcomer} hugs every single person in the room, one by one, before saying a word.`,
-      `${newcomer} stands in the doorway with ${p.posAdj} hand over ${p.posAdj} mouth. "I really thought I was going to make it."`,
-    ],
-    easy: [
-      `${newcomer} wanders in, drops onto the couch and puts ${p.posAdj} feet up. "Well. That happened."`,
-      `${newcomer} shrugs as ${p.sub} comes through the door. "Honestly? I'm a bit relieved. That house was exhausting."`,
-      `${newcomer} grins at the room. "Did you miss me? Don't answer that."`,
-    ],
-  }[mood]);
-}
-
-// ── the news, through the newcomer's lens ──
-export function newsByLens(newcomer, asker, alive, rng) {
+/** 'angry' | 'analytic' | 'emotional' | 'easy' */
+export const moodOf = n => Object.keys(MOODS).find(k => MOODS[k].includes(archOf(n))) || 'easy';
+/** What the house news is, in this juror's eyes: the person they would name, and the true reason. */
+export function newsOf(newcomer, alive) {
   const lead = leaderFor(newcomer, alive);
-  if (!lead) return [];
+  if (!lead) return null;
   const n = lead.name;
-  const why = lead.lens === 'grudge' ? `${n} has everybody fooled, and it makes me sick.` : Cap(reasonFor(lead.lens, n, alive));
-  // they lead with what THEY care about: a strategist with who runs it, a loyal juror with who
-  // can be trusted, a hothead with who they cannot stand
-  const lead1 = {
-    control: [`It's ${n}'s house now.`, `${n} is running it. Everybody else just hasn't noticed yet.`],
-    challenge: [`${n} keeps winning. That's the story of the house.`, `It's all about ${n}. Every competition, every week.`],
-    social: [`If you want the real power in that house, it's not the competitions.`, `Forget the competitions.`],
-    loyalty: [`Can I tell you who I respect in there?`, `I'll tell you who I still trust.`],
-    honesty: [`Let me tell you who I'd believe in there.`, `Honestly, there's one person I'd take at their word.`],
-    hidden: [`Watch ${n}. Nobody else is.`, `Everyone's looking at the wrong person. It's ${n}.`],
-    grudge: [`All I can think about is ${n}.`, `Honestly? ${n}. I can't even talk about anyone else.`],
-  }[lead.lens] || [`It's ${n}.`];
-  const open = pickBy(rng, lead1);
-  const out = [beat('THE NEWS', [asker || newcomer, newcomer, n], asker
-    ? pickBy(rng, [
-      `${asker} pulls a chair close. "Okay. Tell us everything. What's it like in there now?" ${newcomer} takes a second. "${open} ${why}"`,
-      `${asker} can't wait any longer. "We've had no news for a week. Talk." ${newcomer} leans back. "${open} ${why}"`,
-      `${asker} hands ${newcomer} a drink. "Start with the house. Who matters in there now?" ${newcomer} doesn't hesitate. "${open} ${why}"`,
-    ])
-    : `${newcomer} says it to the empty room. "${open} ${why}"`)];
-  // somebody with a different lens hears the same house and names somebody else; never the same
-  // disagreement twice in a season
-  const askerLead = asker ? leaderFor(asker, alive) : null;
-  const said = gs.bb ? (gs.bb.juryNewsSaid ||= {}) : {};
-  const key = asker && askerLead ? `${asker}|${askerLead.name}` : null;
-  if (key && askerLead.name !== n && askerLead.lens !== lead.lens && !said[key]) {
-    said[key] = true;
-    const theirs = askerLead.lens === 'grudge' ? `I still can't stand ${askerLead.name}, and that's not going to change.` : Cap(reasonFor(askerLead.lens, askerLead.name, alive));
-    out.push(beat('ANOTHER VIEW', [asker, askerLead.name], pickBy(rng, [
-      `${asker} isn't convinced. "Really? I'd have said ${askerLead.name}. ${theirs}"`,
-      `${asker} frowns. "That's not how it looked from where I was sitting. ${theirs}"`,
-      `${asker} shakes ${P(asker).posAdj} head. "We're going to disagree on that one. ${theirs}"`,
-    ])));
-  }
-  return out;
+  return { name: n, lens: lead.lens, whys: lead.lens === 'grudge' ? [`${n} has everybody fooled, and I can't stand it.`] : reasonsFor(lead.lens, n, alive, newcomer).map(Cap) };
 }
 
 // ══════════════ the scenes a night can be built from ══════════════

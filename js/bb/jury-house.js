@@ -34,7 +34,7 @@ import { getBond, getPerceivedBond, addBond } from '../bonds.js';
 import { seatedJurors, juryOpensAt, evictionSeatsAJuror, weekExits } from './jury.js';
 import { reconcileBBJury, believedVoters, stableRng, knowsVote } from './knowledge.js';
 import { seedJurorReads, moveRead, readOf, stanceOf } from './jury-sentiment.js';
-import { entranceOf, newsByLens, chooseNight, lensCase, reasonLine } from './jury-house-scenes.js';
+import { moodOf, newsOf, chooseNight, lensCase, reasonLine, reasonsFor, lensOf } from './jury-house-scenes.js';
 import { pronounsOf } from '../pronouns-of.js';
 
 const clamp01 = v => Math.max(0, Math.min(1, v));
@@ -122,125 +122,199 @@ const beat = (tag, playersIn, text) => ({ tag, players: playersIn.filter(Boolean
  * corrected or hardens into the thing the room believes for the rest of the
  * season, and which of those happens depends on how much the residents rate
  * the person telling it.
+ *
+ * ONE conversation, in the order it happens (the user, 2026-10-30, of a night with two arrivals: "it doesnt flow",
+ * "they talk like bots", "super repetitive"). It used to be four writers stacked: an entrance (already on the couch),
+ * then the door (opened by somebody else), then up to three friends each running to that door to hug them, then the
+ * news, and the second arrival of the night got the same hugs and the same questions word for word. Now: the door,
+ * opened by one person; how they take it; what happened, said plainly; who they blame and whether the room agrees;
+ * one or two others who have something to say to them; the news from the house, once a night; and their vote, with a
+ * reason that is true of the person they name. `night` carries what tonight has already said.
  */
-function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null, late = false) {
+function arrivalScene(newcomer, residents, week, out, night, lastWords = null, late = false) {
   const beats = [];
-
-  const greeter = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0];
-  // What happened to them, as the house saw it: who held the key, and the count (both said out
-  // loud on eviction night). The user, 2026-10-07: "the dialogue is really boring, not deep."
+  const say = list => leastUsed(night.rng, list, night.used);
+  const p = P(newcomer);
+  const sub = p.sub, Sub = p.Sub, is = IS(newcomer);
+  const greeter = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0] || null;
+  // What happened to them, as the house saw it: who held the key, and the count (both said out loud on eviction
+  // night). The user, 2026-10-07: "the dialogue is really boring, not deep."
   const wk = (gs.bb?.weeks || []).find(w => w.num === week) || out.weekObj || null;
   const hohOf = wk?.hoh && wk.hoh !== newcomer ? wk.hoh : null;
   const ev = (wk?.acts || []).find(x => x?.type === 'eviction');
   const ballots = [...new Map((ev?.ballots || []).filter(b => b?.voter && b.evict).map(b => [b.voter, b])).values()];
-  const against = ballots.filter(b => b.evict === newcomer).length;
-  const tie = ballots.length && against * 2 === ballots.length;
-  const count = tie ? `It was a tie${wk?.hoh ? `, and ${wk.hoh} broke it` : ''}` : ballots.length && against < ballots.length ? `${Cap(NUM(against))} to ${NUM(ballots.length - against)}` : ballots.length ? 'Every single vote went against me' : null;
-  // who they are, walking in (jury-house-scenes.js): its own dice, so nothing else moves
-  beats.push(beat('ENTRANCE', [newcomer], entranceOf(newcomer, stableRng('jhentrance', week, newcomer))));
+  const against = ballots.filter(b => b.evict === newcomer).length, others = ballots.length - against;
+  const count = !ballots.length ? null
+    : against * 2 === ballots.length ? `It was a tie${hohOf ? `, and ${hohOf} broke it` : ''}.`
+      : !others ? 'Every single vote went against me.'
+        : against - others === 1 ? `It was ${NUM(against)} to ${NUM(others)}. One vote.`
+          : `${Cap(NUM(against))} votes to ${NUM(others)}.`;
+  // a replacement nominee went up at the veto meeting, not at the nominations
+  const replaced = (wk?.initialNominees || []).length && !wk.initialNominees.includes(newcomer) && (wk.finalNominees || []).includes(newcomer);
   // Out on the White Locust's clock, not a vote: no HOH put them up and nobody wrote their name (the user, 2026-10-29)
   const chain = wk?.resortEvicted === newcomer ? (wk.acts || []).find(x => x?.type === 'white-locust') : null;
-  if (chain) {
-    const caller = (chain.rounds || []).find(r => r && !r.made && r.target === newcomer)?.caller || null;
-    // late: the arrival a season saved before 2026-10-29 never showed, so it airs a week on (generateBBJuryHouse)
-    if (greeter) beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, late ? [
-      `${greeter} gets up when the car pulls in. "${newcomer}. We heard somebody went out before the vote. Sit down and tell us."`,
-      `${greeter} opens the door. "So it was you. Nobody in here knew how anybody leaves before a vote. Come in."`,
-    ] : [
-      `${greeter} is on the porch before the car has stopped. "Already? The week hasn't even started."`,
-      `${greeter} stands up. "You? What happened? There wasn't even a vote yet."`,
-    ])));
-    beats.push(beat('THE NEWS', [newcomer, caller].filter(Boolean), caller ? pick(rng, [
-      `${newcomer} drops the bag. "${caller} called me up in the chain. I had one task and a clock, and the clock won. No vote, no week, nothing."`,
-      `"${caller} sent me up there," ${newcomer} says, "and picked the one task I couldn't do in time. I didn't even get to campaign."`,
-    ]) : `"The resort kept the slowest one," ${newcomer} says. "That was me. No vote, no nomination. Just a stopwatch."`));
-  } else if (greeter) {
-    beats.push(beat('THE DOOR', [greeter, newcomer], pick(rng, [
-      `${greeter} hears the car first and is on the porch before ${newcomer} has the door open. "Get in here. Are you okay?"`,
-      `${greeter} stands up slowly. "Oh no. Not you." ${newcomer} manages a smile. "Yeah. Me."`,
-      `${greeter} takes ${newcomer}'s bag without a word, then hugs ${P(newcomer).obj}. "Come sit by the fire. You look exhausted."`,
-      `${greeter} looks up from the couch and laughs, not unkindly. "I had a bet with myself it would be you this week. I'm sorry I won."`,
-      `${greeter} is at the door before it shuts. "You're here. Come in, sit down. What happened?"`,
-      `${greeter} gets to ${newcomer} first and hugs ${P(newcomer).obj} for a long time. "I'm so sorry. Sit down and tell me everything."`,
-      `${greeter} pours ${newcomer} a drink without asking. "Okay. From the start. What happened in there?"`,
-    ])));
-    beats.push(beat('THE NEWS', [newcomer, hohOf].filter(Boolean), hohOf
-      ? pick(rng, [
-      `${newcomer} doesn't sit. "${hohOf} won HOH and came straight for me.${count ? ` ${count}.` : ''} I had the whole week to stop it and I couldn't."`,
-      `${newcomer} stares at the fire for a while before answering. "${hohOf} put me up, and the house followed.${count ? ` ${count}.` : ''} That's it. That's the whole story."`,
-      `${newcomer} lets out a long breath. "${hohOf} had the key this week. I knew I was in trouble the second ${P(hohOf).sub} won.${count ? ` ${count}.` : ''}"`,
-        `${newcomer} sits down heavily. "${hohOf} won HOH and put me up.${count ? ` ${count}.${against - (ballots.length - against) >= 3 || against === ballots.length ? " It wasn't even close." : against - (ballots.length - against) <= 1 && !tie ? ' One vote. One.' : ''}` : ''}"`,
-        `"${hohOf} had the key," ${newcomer} says. "${hohOf} put me on the block, and the house went along with it.${count ? ` ${count}.` : ''}"`,
-      ])
-      : `"I don't even know where to start," ${newcomer} says. "${count ? `${count}. ` : ''}I thought I had the numbers."`));
+  const caller = chain ? (chain.rounds || []).find(r => r && !r.made && r.target === newcomer)?.caller || null : null;
+  const mood = moodOf(newcomer);
+  // a true reason for somebody, the least said tonight and this season (jury-house-scenes.js reasonsFor)
+  const why = (juror, n) => lensOf(juror) === 'grudge' ? reasonLine(juror, n)
+    : say(reasonsFor(lensOf(juror), n, gs.activePlayers || [], juror).map(Cap));
+
+  // ── the door ──
+  if (night.arrived) beats.push(beat('ANOTHER CAR', [], say([
+    'Another car pulls up outside.', 'Headlights again. A second car is coming up the drive.', 'They hear another car door outside.'])));
+  night.arrived = true;
+  if (!greeter) {
+    beats.push(beat('THE DOOR', [newcomer], `${newcomer} walks into an empty lodge. ${Sub} ${is} the first juror, and there is nobody here to tell what happened.`));
   } else {
-    beats.push(beat('THE DOOR', [newcomer], `${newcomer} walks into an empty lodge, the first juror, and stands in the quiet for a long time. Nobody here to tell what happened. Nobody to ask.`));
-    beats.push(beat('THE NEWS', [newcomer], `${newcomer} talks to the empty room anyway. "${hohOf ? `${hohOf} put me up.` : 'I went up.'}${count ? ` ${count}.` : ''} And I didn't see it coming."`));
+    const gp = P(greeter), bond = getBond(newcomer, greeter);
+    beats.push(beat('THE DOOR', [greeter, newcomer], late ? say([
+      `${greeter} opens the door. "${newcomer}? We didn't know you'd gone. Come in."`,
+      `${greeter} opens the door and stares. "${newcomer}? Nobody told us anything. Come in, sit down."`,
+    ]) : chain ? say([
+      `${greeter} opens the door. "${newcomer}? There hasn't even been a vote yet. What happened?"`,
+      `${greeter} gets up when the car pulls in. "It's too early for an eviction." Then ${newcomer} walks in.`,
+    ]) : bond >= 3 ? say([
+      `${greeter} is at the door before ${newcomer} can knock, and hugs ${p.obj}. "Oh no. I'm so sorry. Come in."`,
+      `${greeter} opens the door and pulls ${newcomer} straight into a hug. "Not you. Come here."`,
+      `${greeter} sees who it is and puts ${gp.posAdj} hands over ${gp.posAdj} face. "No. Not you. Come in."`,
+    ]) : bond <= -2 ? say([
+      `${greeter} opens the door. For a second neither of them says anything. "Well," ${greeter} says. "Come in, then."`,
+      `${greeter} opens the door, sees who it is, and steps back to let ${newcomer} in without a word.`,
+    ]) : say([
+      `${greeter} opens the door. "${newcomer}. Come in. Are you okay?"`,
+      `${greeter} opens the door. "Hey. Come in, put your bag down."`,
+      `${greeter} gets the door. "${newcomer}! Come in. We've been waiting all night to see who it would be."`,
+    ])));
+    beats.push(beat('ARRIVES', [newcomer], say({
+      angry: [`${newcomer} drops ${p.posAdj} bag by the door. "Don't ask me if I'm okay. I'm not."`,
+        `"I'm fine," ${newcomer} says, in a voice that isn't fine. "I'm just really angry right now."`],
+      analytic: [`${newcomer} sits down. "I'm okay. Honestly, I saw it coming."`,
+        `"I'm fine," ${newcomer} says. "I knew it was coming. I just couldn't stop it."`],
+      emotional: [`${newcomer} starts crying as soon as ${sub} ${is} inside. "Sorry. I held it together the whole way here."`,
+        `${newcomer} stands in the middle of the room for a second. "I really thought I was going to make it."`],
+      easy: [`${newcomer} drops onto the couch. "Well. That's that, then."`,
+        `${newcomer} shrugs. "I'm okay. Honestly, it's a bit of a relief. That house was exhausting."`],
+    }[mood])));
   }
 
-  // What they believe, said out loud to a room that will argue with it.
-  const believed = believedVoters(newcomer, newcomer);
-  const accusedByBlowup = lastWords?.reveal?.accused;
-  const story = accusedByBlowup || believed[0] || null;
-  if (story) {
-    const why = story === hohOf ? `${story} had the key and used it on me.` : `${story} told me I had ${P(story).posAdj} vote. I didn't.`;
-    beats.push(beat('THE STORY', [newcomer, story], lastWords
-      ? pick(rng, [
-        `${newcomer} has not stopped saying it since the door. "It was ${story}. ${why} I said it on my way out and I'll say it in here."`,
-        `"You saw what I said on my way out?" ${newcomer} asks. "I meant it. It was ${story}. ${why}"`,
-      ])
-      : greeter ? pick(rng, [
-      `${greeter} asks it gently. "Do you know who flipped?" ${newcomer} nods. "${story}. ${why}"`,
-      `${greeter} waits until ${newcomer} has a drink in hand. "Who do you blame?" ${newcomer} answers without a pause. "${story}. ${why}"`,
-      `${greeter} can't help asking. "Somebody turned on you, didn't they?" ${newcomer} nods slowly. "${story}. ${why} I'd bet anything on it."`,
-        `${greeter} asks the question everybody asks. "Who got you?" ${newcomer} doesn't hesitate. "${story}. ${why}"`,
-        `"Who do you think flipped?" ${greeter} asks. "${story}," ${newcomer} says. "${why} I've gone over it a hundred times."`,
-      ]) : `"It was ${story}," ${newcomer} says to nobody. "${why}"`));
+  // ── what happened ──
+  const asker = greeter;
+  if (asker) beats.push(beat('ASKED', [asker], say([`"What happened?" ${asker} asks.`, `${asker} sits down next to ${p.obj}. "Tell us what happened."`, `"So what happened in there?" ${asker} asks.`])));
+  const tail = mood === 'emotional' ? ' I really thought I had the votes.' : mood === 'angry' ? ' And I knew it was coming.' : '';
+  const what = chain
+    ? caller ? say([
+      `"${caller} called me up in the chain," ${newcomer} says. "I had to finish my task before the time ran out, and I didn't. I was gone before the vote even happened."`,
+      `"It was the chain," ${newcomer} says. "${caller} picked me, I ran out of time, and that was it. I didn't even get to campaign."`,
+    ]) : `"The resort sent home whoever was slowest," ${newcomer} says. "That was me. There wasn't even a vote."`
+    : replaced && hohOf ? `"I wasn't even on the block until the veto meeting," ${newcomer} says. "${hohOf} put me up as the replacement.${count ? ` ${count}` : ''}"`
+      : hohOf ? say([
+        `"${hohOf} put me up," ${newcomer} says. "${count || 'And the house went along with it.'}${tail}"`,
+        `"${hohOf} won HOH and nominated me," ${newcomer} says. "${count || 'That was it.'}${tail}"`,
+      ]) : `"I went up, and I couldn't get off the block," ${newcomer} says.${count ? ` "${count}"` : ''}`;
+  beats.push(beat('WHAT HAPPENED', [newcomer, hohOf || caller].filter(Boolean), what));
 
-    // The room corrects them, or does not. A resident who actually knows how
-    // that vote went can say so — and whether it takes depends on how much the
-    // newcomer rates them, which is the same machinery as the door.
-    // Somebody who actually knows how that ballot went can settle it. Failing
-    // that, somebody close to the accused will argue the other way — which is
-    // not knowledge, just loyalty, and lands or does not on that basis.
+  // ── who they blame, and whether the room agrees ──
+  const believed = believedVoters(newcomer, newcomer);
+  const story = lastWords?.reveal?.accused || believed[0] || null;
+  if (story && !chain) {
+    const why = story === hohOf ? `${story} put me on the block. I don't need anybody else to blame.` : `${story} told me I had ${P(story).posAdj} vote. I don't think I did.`;
+    beats.push(beat('THE STORY', [newcomer, story], lastWords ? say([
+      `"You saw what I said on my way out?" ${newcomer} says. "I meant it. It was ${story}. ${why}"`,
+      `${newcomer} hasn't stopped thinking about it since the door. "It was ${story}. ${why}"`,
+    ]) : asker ? say([
+      `"Who do you think did it?" ${asker} asks. "${story}," ${newcomer} says. "${why}"`,
+      `"Do you know who turned on you?" ${asker} asks. ${newcomer} nods. "${story}. ${why}"`,
+    ]) : `"It was ${story}," ${newcomer} says to nobody. "${why}"`));
+    // Somebody who actually knows how that ballot went can settle it. Failing that, somebody close to the accused
+    // will argue the other way — which is not knowledge, just loyalty, and lands or does not on that basis.
     const knower = residents.find(r => knowsVote(r, story, newcomer));
-    const corrector = knower ? null
-      : residents.find(r => !knowsVote(r, story, newcomer) && getBond(r, story) > 2);
+    // (nobody argues the HOH out of it: the nomination is on the record. "No. Axel was trying to keep you" was said of
+    // the HOH who nominated her and broke the tie)
+    const corrector = knower || story === hohOf ? null : residents.find(r => !knowsVote(r, story, newcomer) && getBond(r, story) > 2);
     if (knower) {
-      const weight = credibility(newcomer, knower);
-      moveRead(newcomer, story, { strength: -1.6, credibility: weight, kind: 'confirmed',
+      moveRead(newcomer, story, { strength: -1.6, credibility: credibility(newcomer, knower), kind: 'confirmed',
         week, text: `${knower} confirmed it: ${story} voted ${newcomer} out.` });
-      beats.push(beat('CONFIRMED', [knower, newcomer, story], pick(rng, [
-      `${knower} puts down ${P(knower).posAdj} mug. "I can tell you how it went, if you want. You're right. It was ${story}."`,
-      `${knower} hesitates, then decides. "I knew before I left. ${story} was always going to vote you out."`,
-        `${knower} does not enjoy saying it. "You're right. I know you're right, because I know how that vote went."`,
+      beats.push(beat('CONFIRMED', [knower, newcomer, story], say([
+        `${knower} nods. "You're right. It was ${story}. I knew before I left."`,
         `"I wasn't going to be the one to tell you," ${knower} says. "But yes. It was ${story}."`,
-        `${knower} nods slowly, and the last bit of doubt goes out of ${newcomer}'s face.`,
+        `${knower} puts down ${P(knower).posAdj} mug. "You're right about ${story}. I know how that vote was going."`,
       ])));
     } else if (corrector) {
-      const weight = credibility(newcomer, corrector);
-      const moved = moveRead(newcomer, story, { strength: 1.4, credibility: weight, kind: 'corrected',
+      const moved = moveRead(newcomer, story, { strength: 1.4, credibility: credibility(newcomer, corrector), kind: 'corrected',
         week, text: `${corrector} argued ${newcomer} off ${story}.` });
-      beats.push(beat('CORRECTED', [corrector, newcomer, story], Math.abs(moved) > 0.35
-        ? pick(rng, [
-          `${corrector} leans forward. "Listen to me. ${story} was the one person still fighting for you. You've got this backwards." ${newcomer} goes very quiet.`,
-          `${corrector} shakes ${P(corrector).posAdj} head firmly. "No. Not ${story}. I watched ${story} try to save you all week." ${newcomer} looks shaken. "Then who?"`,
-          `${corrector} pushes back hard. "It wasn't ${story}. I'd bet the vote on it. ${P(story).Sub} fought for you." ${newcomer} does not want to hear it, and hears it anyway.`,
-          `${corrector} won't let it go. "You've got the wrong person." ${newcomer} argues for a while, then stops.`,
-          `${corrector} walks ${newcomer} through the week from the other side of it. By the end ${newcomer} is much less sure.`,
-        ])
-        : pick(rng, [
-          `${corrector} tries to defend ${story}. ${newcomer} cuts in. "I know you like ${story}. That's exactly why you can't see it."`,
-          `${corrector} tries. "It wasn't ${story}. ${story} was on your side." ${newcomer} shakes ${P(newcomer).posAdj} head. "You weren't there at the end. I was."`,
-          `${corrector} shakes ${P(corrector).posAdj} head. "I don't think it was ${story}." ${newcomer} isn't having it. "Then who? Because I know what ${story} told me, and I know how I left."`,
-        ])));
+      beats.push(beat('CORRECTED', [corrector, newcomer, story], Math.abs(moved) > 0.35 ? say([
+        `${corrector} shakes ${P(corrector).posAdj} head. "No. ${story} was trying to keep you. I'm sure of it." ${newcomer} goes quiet.`,
+        `"It wasn't ${story}," ${corrector} says. "${story} was on your side." ${newcomer} looks at ${P(corrector).obj} for a long time. "Then who was it?"`,
+      ]) : say([
+        `"It wasn't ${story}," ${corrector} says. ${newcomer} shakes ${p.posAdj} head. "You weren't there at the end. I was."`,
+        `${corrector} tries to defend ${story}. "I know you like ${story}," ${newcomer} says. "That's why you can't see it."`,
+      ])));
     }
   }
+  // The blowup follows them in, and the people who were in the room when it happened arrive later carrying their
+  // own opinion of it.
+  if (lastWords) out.blowupsRelitigated.push({ juror: newcomer, accused: lastWords.reveal.accused, isTrue: lastWords.isTrue });
 
-  // The blowup follows them in, and the people who were in the room when it
-  // happened arrive later carrying their own opinion of it.
-  if (lastWords) {
-    out.blowupsRelitigated.push({ juror: newcomer, accused: lastWords.reveal.accused, isTrue: lastWords.isTrue });
+  // ── the others in the room who have something to say to them ──
+  beats.push(...reunionBeats(newcomer, residents.filter(r => r !== greeter), say));
+
+  // ── the news from the house: once a night (a second arrival comes from the same house, the same night) ──
+  const alive = (gs.activePlayers || []).filter(n => n !== newcomer);
+  if (!alive.length) return beats;
+  const news = newsOf(newcomer, alive);
+  if (asker && news && !night.newsTold) {
+    night.newsTold = true;
+    // the true reasons rotate: the same fact about the same leader every week was the same scene every week
+    news.why = say(news.whys);
+    beats.push(beat('THE NEWS', [asker, newcomer, news.name], say([
+      `"So who's running things in there now?" ${asker} asks. "${news.name}," ${newcomer} says. "${news.why}"`,
+      `"Who's the one to beat?" ${asker} asks. ${newcomer} doesn't have to think. "${news.name}. ${news.why}"`,
+      `"Okay. What's it like in there now?" ${asker} asks. "It's ${news.name}'s house," ${newcomer} says. "${news.why}"`,
+    ])));
+    let pair = null;
+    for (const a of alive) for (const b of alive) if (a < b && (!pair || getBond(a, b) > getBond(pair[0], pair[1]))) pair = [a, b];
+    if (pair && getBond(pair[0], pair[1]) >= 4 && !pair.includes(news.name)) beats.push(beat('THE PAIR', [newcomer, ...pair], say([
+      `"And ${pair[0]} and ${pair[1]} are basically a pair now," ${newcomer} adds. "Nobody's tried to split them up."`,
+      `"Watch ${pair[0]} and ${pair[1]}," ${newcomer} says. "They'll take each other to the end if nobody stops them."`,
+    ])));
+  }
+
+  // ── their vote, tonight ──
+  const fav = favourite(newcomer), least = leastFavourite(newcomer);
+  if (!fav) return beats;
+  const voteAsker = residents.find(r => r !== asker && r !== greeter) || asker;
+  if (voteAsker) {
+    const mine = fav === news?.name && night.newsTold && beats.some(b => b.tag === 'THE NEWS')
+      ? `"${fav}," ${newcomer} says. "For the same reason."`
+      : `"${fav}," ${newcomer} says. "${why(newcomer, fav)}"`;
+    beats.push(beat('THE QUESTION', [voteAsker, newcomer, fav], `${say([
+      `"If you had to vote tonight, who would it be?" ${voteAsker} asks.`,
+      `"Who are you voting for?" ${voteAsker} asks.`,
+      `"Who do you want to win?" ${voteAsker} asks.`,
+    ])} ${mine}`));
+    // somebody in the room sees it differently: once a night
+    // somebody in the room sees it differently: once a night, and never the same juror for the same player twice in
+    // a season (Dana's "It's Hicks for me" came back every week)
+    const heard = gs.bb ? (gs.bb.juryNewsSaid ||= {}) : {};
+    const other = !night.disagreed && residents.find(j => j !== voteAsker && j !== newcomer && favourite(j) && favourite(j) !== fav && !heard[`${j}|${favourite(j)}`]);
+    if (other) {
+      night.disagreed = true;
+      const theirs = favourite(other);
+      heard[`${other}|${theirs}`] = true;
+      beats.push(beat('DISAGREE', [other, fav, theirs], say([
+        `"${fav}?" ${other} says. "No. I'm voting for ${theirs}. ${why(other, theirs)}"`,
+        `${other} shakes ${P(other).posAdj} head. "Not me. It's ${theirs} for me. ${why(other, theirs)}"`,
+      ])));
+    }
+  } else {
+    beats.push(beat('ALONE', [newcomer, fav], `${newcomer} sits by the fire on ${p.posAdj} own. If ${sub} had to vote tonight, it would be ${fav}. "${why(newcomer, fav)}"`));
+  }
+  if (least && least !== fav && !night.grudge && readOf(newcomer, least) < -0.8) {
+    night.grudge = true;
+    beats.push(beat('THE GRUDGE', [newcomer, least], say([
+      `"And ${least} isn't getting my vote," ${newcomer} says. "Not after how ${P(least).sub} treated me."`,
+      `"I'll tell you now, it won't be ${least}," ${newcomer} says. "Whatever ${least} says at the end."`,
+    ])));
   }
   return beats;
 }
@@ -248,11 +322,11 @@ function arrivalBeats(newcomer, residents, week, rng, out, lastWords = null, lat
 // ── the room meets the newcomer ───────────────────────────────────────
 // The user, 2026-10-07: "they don't really talk about each other in the jury house. Are they happy
 // or sad to see the new one? Arguments, hugs, sadness... 'what was your strategy exactly, you were
-// floating and you got rid of me, your only ally'." Every resident with history with the newcomer
-// says so, from the record: who nominated whom (said out loud at every ceremony), the alliances
-// they shared (both were in it), how close they were, and who each believes wrote their name.
-function reunionBeats(newcomer, residents, rng) {
-  const draw = drawer(rng);
+// floating and you got rid of me, your only ally'." The residents with the most history with the newcomer
+// (not the one who opened the door: they have had their moment) say so, from the record: who nominated whom
+// (said out loud at every ceremony), the alliances they shared, how close they were, and who each believes
+// wrote their name. Two at most: three in a row was a queue, not a room.
+function reunionBeats(newcomer, residents, say) {
   const weeks = gs.bb?.weeks || [];
   const nominated = (by, who) => weeks.some(w => w.hoh === by && (w.acts || []).some(a => a?.type === 'nominations' && (a.nominees || []).includes(who)));
   const shared = (a, b) => (gs.namedAlliances || []).filter(al => (al.members || []).includes(a) && (al.members || []).includes(b)).map(al => al.name);
@@ -270,117 +344,40 @@ function reunionBeats(newcomer, residents, rng) {
     else if (wins(newcomer) === 0 && (gs.bb?.stats?.[newcomer]?.timesNominated || 0) <= 1) kind = 'floater';
     const heat = { 'ally-betrayed': 5, 'nominated-me': 4, 'voted-me': 3, friend: 2, cold: 2, floater: 1 }[kind] || 0;
     return { j, kind, al: al[0], heat };
-  }).filter(r => r.kind).sort((a, b) => b.heat - a.heat).slice(0, 3);
+  }).filter(r => r.kind).sort((a, b) => b.heat - a.heat).slice(0, 2);
   const beats = [];
   for (const { j, kind, al } of rows) {
     const pj = P(j);
-    if (kind === 'ally-betrayed') beats.push(beat('BETRAYED', [j, newcomer], draw('re139', [
-      `${j} stands up but doesn't come closer. "We were in ${al} together. I trusted you more than anyone in that house, and you sent me here. Why?" ${newcomer} sits down heavily. "Because you were the bigger threat to me. I'm sorry. I mean that."`,
-      `${j} says it before anyone else can speak. "Hello, partner. Remember ${al}? I do. I remember it every day out here." ${newcomer} closes ${pn.posAdj} eyes. "I deserve that."`,
-      `${j} hasn't moved from the couch. "I was in ${al} with you. I was your only real ally in that house, and you got rid of me. So I'm not getting up to hug you."`,
-      `${j} waits until the hugs are over. "${al}. Remember that? We made it together. Then you turned on me the second it suited you." ${newcomer} doesn't look away. "It wasn't personal. It was the numbers." "It was personal to me," ${j} says.`,
+    if (kind === 'ally-betrayed') beats.push(beat('BETRAYED', [j, newcomer], say([
+      `${j} doesn't get up. "We were in ${al} together, and you sent me here. Why?" ${newcomer} sits down across from ${pj.obj}. "Because you were a bigger threat to me than anyone. I'm sorry."`,
+      `${j} speaks before anyone else can. "Hi, partner. Remember ${al}? I think about it every day out here." ${newcomer} closes ${pn.posAdj} eyes. "I deserve that."`,
+      `${j} stays on the couch. "I was in ${al} with you. I trusted you, and you got rid of me. So I'm not getting up to hug you."`,
     ])));
-    else if (kind === 'nominated-me') beats.push(beat('THE KEY', [j, newcomer], draw('re656', [
-      `${j} raises a glass from across the room. "To the person who put me on the block. Welcome." ${newcomer} raises an empty hand back. "Fair."`,
-      `${j} doesn't get up. "You nominated me. I've had weeks to think about what I'd say when you walked in." ${newcomer} waits. "And?" ${j} shrugs. "Turns out I'm just glad I'm not the only one who lost to this house."`,
-      `${j} looks at ${newcomer} for a long moment. "You had the key, and you used it on me. I understood it. I didn't like it." ${newcomer} nods. "I'd want you to be honest. Thank you for that."`,
-      `${j} folds ${pj.posAdj} arms. "You put me on the block. Now you're here too. Funny how that works." ${newcomer} sits across from ${pj.obj}. "I know. I'd do it again, and I'm still sorry it was you."`,
-      `${j} gives ${newcomer} a long look. "You nominated me. You looked me in the eye at that ceremony." ${newcomer} nods. "I did. You were coming for me, and you know it." ${j} almost smiles. "I was."`,
+    else if (kind === 'nominated-me') beats.push(beat('THE KEY', [j, newcomer], say([
+      `${j} raises a glass from across the room. "To the person who put me on the block. Welcome." ${newcomer} laughs a little. "Fair enough."`,
+      `${j} looks at ${newcomer} for a moment. "You nominated me. I understood it. I didn't like it." ${newcomer} nods. "That's fair."`,
+      `${j} folds ${pj.posAdj} arms. "You put me on the block, and now you're here too." ${newcomer} sits down across from ${pj.obj}. "I know. I'm still sorry it was you."`,
     ])));
-    else if (kind === 'voted-me') beats.push(beat('THE BALLOT', [j, newcomer], draw('re1170', [
-      `${j} is waiting by the door. "Before you sit down, I need to know. Did you vote me out?" ${newcomer} hesitates a second too long, and ${j} has the answer.`,
-      `${j} stays on the couch. "I know you voted me out. I'm not angry any more. I just want you to say it." ${newcomer} takes a breath. "Okay. I did."`,
-      `${j} doesn't stand up. "You voted me out. I know you did." ${newcomer} sighs. "Can we at least wait until I've put my bag down?"`,
-      `${j} has been waiting for this. "So. Did you vote me out?" ${newcomer} takes a long time to answer. "Does it matter now?" "It matters to me," ${j} says.`,
+    else if (kind === 'voted-me') beats.push(beat('THE BALLOT', [j, newcomer], say([
+      `${j} is waiting. "Before you sit down. Did you vote me out?" ${newcomer} hesitates a second too long, and ${j} has the answer.`,
+      `${j} doesn't stand up. "I know you voted me out. I'm not angry any more. I just want you to say it." ${newcomer} takes a breath. "Okay. I did."`,
+      `"So," ${j} says. "Did you vote me out?" ${newcomer} sighs. "Can I put my bag down first?"`,
     ])));
-    else if (kind === 'friend') beats.push(beat('FRIEND', [j, newcomer], draw('re1566', [
-      `${j} runs to the door and grabs ${newcomer} in a hug. "No, no, no. Not you. You were supposed to win this."`,
-      `${j} holds on for a long time. "I'm so sad you're here, and so happy to see you. Both at once. I don't know what to do with that."`,
-      `${j} wipes ${pj.posAdj} eyes. "I watched the door all night hoping it wouldn't be you."`,
-      `${j} hugs ${newcomer} and doesn't let go. "I'm so sorry. I really wanted it to be you at the end. I was rooting for you every week."`,
-      `${j} has tears in ${pj.posAdj} eyes. "I'm happy to see you, and I hate that I'm seeing you here. You deserved to go further."`,
+    else if (kind === 'friend') beats.push(beat('FRIEND', [j, newcomer], say([
+      `${j} gets up and hugs ${newcomer}. "I'm so sorry. I really wanted you to win."`,
+      `${j} is crying a little. "I was hoping it wouldn't be you. I really was."`,
+      `"I'm happy to see you," ${j} says, "but I hate that it's here."`,
+      `${j} squeezes ${newcomer}'s hand. "You deserved to go a lot further than this."`,
     ])));
-    else if (kind === 'cold') beats.push(beat('COLD', [j, newcomer], draw('re1934', [
-      `${j} doesn't look away from the fire. "Great. The one person I hoped would never walk through that door."`,
-      `${j} gets up and leaves the room the moment ${newcomer} walks in. Everybody notices. Nobody says anything.`,
-      `${j} barely looks up. "Of course it's you." ${newcomer} drops the bag. "Nice to see you too."`,
-      `${j} stays by the window. "Welcome to the jury. Don't expect me to make room on the couch."`,
+    else if (kind === 'cold') beats.push(beat('COLD', [j, newcomer], say([
+      `${j} doesn't look away from the fire. "Of course it's you."`,
+      `${j} gets up and leaves the room when ${newcomer} walks in. Everybody notices. Nobody says anything.`,
+      `${j} barely looks up. "Welcome to the jury. Don't expect me to make room on the couch."`,
     ])));
-    else if (kind === 'floater') beats.push(beat('THE STRATEGY', [j, newcomer], draw('re2240', [
-      `${j} crosses ${pj.posAdj} arms. "So tell me what you did in there. Because from where I was sitting, you didn't do much of anything." ${newcomer} bristles. "I didn't get caught doing it. There's a difference."`,
-      `${j} is blunt. "You never won anything. You never made a move I could see. How did you even last this long?" ${newcomer} answers calmly. "By not making enemies. I didn't make any. Somebody still wanted me out."`,
-      `${j} gets straight to it. "Okay, honest question. What was your strategy, exactly? Because from out here it looked like you were floating." ${newcomer} bristles. "Staying off the block is a strategy. I was there longer than you were."`,
-      `${j} doesn't hold back. "What were you actually doing in there? You never won anything. You never put anyone up." ${newcomer} shrugs. "I kept everybody happy, and it kept me there for weeks. Right up until it didn't."`,
+    else if (kind === 'floater') beats.push(beat('THE STRATEGY', [j, newcomer], say([
+      `"Honest question," ${j} says. "What was your strategy? From out here it looked like you were floating." ${newcomer} bristles. "Staying off the block is a strategy. I lasted longer than you did."`,
+      `${j} is blunt. "You never won anything. How did you last this long?" ${newcomer} shrugs. "I didn't make enemies. Somebody still wanted me out, though."`,
     ])));
-  }
-  return beats;
-}
-
-// ── the news from the house ───────────────────────────────────────────
-// The user, 2026-10-07: "it's rather quick". An arrival was a hug and one sentence. The newcomer
-// is the only news the jury gets, so they are asked for it: who is running the house now, who is
-// close to whom, and who they would give the money to today. Public facts only (wins, who is
-// still there, who is visibly close); the favourite is the newcomer's own read.
-function newsBeats(newcomer, residents, week, rng) {
-  const beats = [];
-  // the same night, different words: a season of arrivals rotates through every version
-  const rot = list => leastUsed(rng, list);
-  const alive = (gs.activePlayers || []).filter(n => n !== newcomer);
-  if (!alive.length) return beats;
-  const wins = n => { const st = gs.bb?.stats?.[n] || {}; return (st.hohWins || 0) + (st.vetoWins || 0) + (st.blockBusterWins || 0); };
-  const top = alive.slice().sort((a, b) => wins(b) - wins(a))[0];
-  let pair = null;
-  for (const a of alive) for (const b of alive) if (a < b && (!pair || getBond(a, b) > getBond(pair[0], pair[1]))) pair = [a, b];
-  const fav = favourite(newcomer), least = leastFavourite(newcomer);
-  const asker = residents.slice().sort((a, b) => getBond(newcomer, b) - getBond(newcomer, a))[0];
-  // the reason is the newcomer's own: what THEY value (jury-house-scenes.js lensOf)
-  const why = n => reasonLine(newcomer, n);
-  if (asker) {
-    beats.push(beat('THE NEWS', [asker, newcomer, top], rot([
-      `${asker} drags a chair over. "Okay. Catch us up. Who's on top?" ${newcomer} doesn't have to think about it. "${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions, and everybody's scared of ${P(top).obj}."`,
-      `${asker} can't wait any longer. "What's it like in there now?" ${newcomer} shakes ${P(newcomer).posAdj} head. "It's ${top}'s game. ${top} keeps winning, and nobody can get a shot at ${P(top).obj}."`,
-      `${asker} pulls a chair close. "Tell us about the house. Who's in charge?" ${newcomer} laughs, without much in it. "${top}. ${top} has won ${NUM(wins(top))} competitions, and the rest of us are just trying to stay out of the way."`,
-      `${asker} can't wait any longer. "Okay. Who's the threat now?" ${newcomer} answers before the question is finished. "${top}. Obviously ${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions."`,
-      `${asker} leans in. "So who's running the house now?" ${newcomer} doesn't need to think. "${top}. ${top} has won ${NUM(wins(top))} competitions. Every week it's ${top}'s house."`,
-      `${asker} wants to know everything. "Who's winning in there?" ${newcomer} doesn't hesitate. "${top}. ${NUM(wins(top)).replace(/^./, c => c.toUpperCase())} competitions. Nobody can beat ${P(top).obj} at anything."`,
-    ])));
-    if (pair && getBond(pair[0], pair[1]) >= 4 && !pair.includes(top)) beats.push(beat('THE PAIR', [newcomer, ...pair],
-      rot([
-        `${newcomer} has one more piece of news. "And ${pair[0]} and ${pair[1]} are still together. Nobody's even trying to split them."`,
-        `${newcomer} keeps going. "And ${pair[0]} and ${pair[1]} are joined at the hip. Everybody knows it. Nobody's done anything about it yet."`,
-        `${newcomer} has more. "Watch ${pair[0]} and ${pair[1]}. They've been working together for weeks, and they're going to take each other to the end if nobody splits them."`,
-        `${newcomer} lowers ${P(newcomer).posAdj} voice. "${pair[0]} and ${pair[1]} are a pair. If you're voting for one of them, you're basically voting for both."`,
-      ])));
-    beats.push(beat('THE QUESTION', [asker, newcomer, fav], rot([
-      `${asker} puts it to ${newcomer} directly. "Who are you voting for?" ${newcomer} answers right away. "${fav}. ${why(fav)}"`,
-      `${asker} keeps it simple. "Who deserves it?" ${newcomer} thinks about it, then answers. "${fav}. ${why(fav)}"`,
-      `${asker} turns to ${newcomer}. "If it ended tonight, who gets your vote?" ${newcomer} takes a breath. "${fav}. ${why(fav)}"`,
-      `${asker} waits for the room to go quiet. "So who's your winner?" ${newcomer} doesn't need long. "${fav}. ${why(fav)}"`,
-      `"Okay, real question," ${asker} says. "Who do you want to win?" ${newcomer} answers straight away. "Right now? ${fav}. ${why(fav)}"`,
-    ])));
-    // somebody in the room disagrees, with their own favourite
-    const other = residents.find(j => j !== asker && favourite(j) && favourite(j) !== fav);
-    if (other) beats.push(beat('DISAGREE', [other, fav, favourite(other)],
-      rot([
-        `${other} jumps in. "You'll change your mind about ${fav}. Wait until you've been out here a week."`,
-      `${other} laughs. "${fav}? We're going to have a lot to argue about. I'm voting for ${favourite(other)}."`,
-        `${other} shakes ${P(other).posAdj} head. "Not for me. I'd give it to ${favourite(other)} before ${fav}. You haven't been out here long enough to see it yet."`,
-        `${other} disagrees straight away. "${fav}? Really? ${favourite(other)} has played a much better game, and you know it."`,
-        `${other} has a different answer. "It's ${favourite(other)} for me. We can argue about it at the roundtable."`,
-      ])));
-    if (least && least !== fav) beats.push(beat('THE GRUDGE', [newcomer, least],
-      rot([
-        `${newcomer} speaks up without being asked. "And I'll tell you now, ${least} isn't getting my vote. Not after how ${P(least).sub} treated me."`,
-      `${newcomer} gets quieter. "The one I can't forgive is ${least}. I won't pretend I'm neutral about that."`,
-        `${newcomer} looks at the fire. "The one I won't vote for is ${least}. Whatever ${least} says at the end, I'll remember how ${P(least).sub} played me."`,
-        `${newcomer} is very calm about the next part. "${least} isn't getting my vote. I watched how ${least} treated people in there."`,
-        `${newcomer} isn't finished. "And ${least}? Never. ${least} could make the best speech in history and I'd still say no."`,
-      ])));
-  } else {
-    // the first juror, alone: the same news, said to an empty room
-    beats.push(beat('ALONE', [newcomer, fav], `${newcomer} sits by the fire with nobody to talk to. "If I had to vote tonight, it would be ${fav}. ${why(fav)}"`));
-    if (least && least !== fav) beats.push(beat('ALONE', [newcomer, least], `${newcomer} goes quiet for a moment, then says one more name. "And not ${least}. Never ${least}. Not after how ${P(least).sub} played me."`));
-    beats.push(beat('ALONE', [newcomer], `${newcomer} stays up late, looking at the door. "I hope the next one through it is somebody I like. It's going to be a long few weeks."`));
   }
   return beats;
 }
@@ -830,19 +827,14 @@ export function generateBBJuryHouse(week, rngIn) {
   });
   const arrivingTonight = [...new Set([...late, ...tonight.filter(n => n !== newcomer && residents.includes(n)), newcomer].filter(Boolean))];
   const arrivals = [];
+  // what tonight has already said, across every arrival: its own dice, so the words move nothing else
+  const said = { rng: stableRng('jharrival', num, residents.join('|')), used: new Set(), arrived: false, newsTold: false, disagreed: false, grudge: false };
   arrivingTonight.forEach((who, i) => {
     const later = arrivingTonight.slice(i + 1);
     const rest = residents.filter(n => n !== who && !later.includes(n));
     const isLate = late.includes(who);
-    const mine = arrivalBeats(who, rest, isLate ? Number(exitWeekOf.get(who).num) : num, rng, out,
-      who === week?.evicted ? (week.lastWords || null) : null, isLate);
-    if (!mine.length) return;
-    const asker = rest.slice().sort((a, b) => getBond(who, b) - getBond(who, a))[0] || null;
-    const news = newsBeats(who, rest, num, rng);
-    const lens = newsByLens(who, asker, (gs.activePlayers || []).filter(n => n !== who), stableRng('jhnews', num, who));
-    const at = news.findIndex(b => b.tag === 'THE NEWS' || b.tag === 'ALONE');
-    if (at >= 0 && lens.length) news.splice(at, news[at].tag === 'THE NEWS' ? 1 : 0, ...(news[at].tag === 'THE NEWS' ? lens : []));
-    arrivals.push(...mine, ...reunionBeats(who, rest, rng), ...news);
+    arrivals.push(...arrivalScene(who, rest, isLate ? Number(exitWeekOf.get(who).num) : num, out, said,
+      who === week?.evicted ? (week.lastWords || null) : null, isLate));
   });
   if (arrivals.length) acts.push({ title: 'The Door Opens', beats: arrivals });
 

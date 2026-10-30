@@ -420,16 +420,17 @@ function exWalksIn(state, rng, ev) {
 // one's partner or best friend has it out with the voter; the one who
 // survived it asks "you voted for me?"; and a tactical vote dressed up as
 // something kinder is called by someone who saw through it.
-//   vote-fallout  [p, v, t]  p (close to t) at voter v. `of`: threat · grudge · tactical
-//   vote-callout  [t, v]     t survived v's vote. `of`: threat · grudge · tactical
+//   vote-fallout  [p, v, t]  p (close to t) at voter v. `of`: threat · grudge · tactical · unfair
+//   vote-callout  [t, v]     t survived v's vote. `of`: threat · grudge · tactical · unfair
 function voteFallout(state, rng, seen, ev) {
   let shown = 0;
   for (const e of seen) {
     if (shown >= 2) return;
-    if (e.kind !== 'ballot-reveal' || !e.extra?.motive || state.ep - e.ep > 1) continue;
+    if (e.kind !== 'ballot-reveal' || !(e.extra?.motive || e.extra?.unfair) || state.ep - e.ep > 1) continue;
     const [v, t] = e.players;
     if (!state.villa.includes(v)) continue;
-    const why = e.extra.motive === 'threat' || e.extra.motive === 'grudge' ? e.extra.motive : 'tactical';
+    // `unfair`: a strong couple voted out over a weaker one (moments.js 2b) — nobody needs to see through anything.
+    const why = e.extra.motive === 'threat' || e.extra.motive === 'grudge' ? e.extra.motive : e.extra.motive ? 'tactical' : 'unfair';
     if (!state.villa.includes(t)) {
       // Gone: the one who loved them, or their closest friend, is left with the voter.
       const p = roomMates(state, v).filter(n => n !== v && (romance(n, t) >= 4 || getBond(n, t) >= 3))

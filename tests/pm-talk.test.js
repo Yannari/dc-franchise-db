@@ -27,9 +27,10 @@ const THREE = new Set([
   'movie-after', 'postcard', 'enemy-bitch', 'enemy-freeze', 'enemy-snipe', 'enemy-clash', 'chal-buzz', 'chal-watch', 'chal-row', 'chal-spark', 'sports-pick', 'sports-race', 'knowing-q', 'goals-board', 'tower-fall', 'talent-act', 'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'dump-tie', 'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept', 'pick-plan']);
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept', 'pick-plan', 'dump-unfair']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'took-back', 'refused', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
-const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect']);
+// dump-unfair: the couple the villa kept, always both named (talk/dumping.js slots).
+const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect', 'dump-unfair']);
 const ABOUT_CAUSES = ['jealous', 'envy', 'rival', 'stole', 'told'];
 // Kinds whose {a} is always coupled with somebody outside the scene ({pa}).
 const PA_ALWAYS = new Set(['loyalty', 'vent', 'bed-share', 'graft-shut', 'stick-twist']);
@@ -81,7 +82,7 @@ describe('a placeholder only where somebody fills it', () => {
       // {card}: the question frozen in the ice.
       if (/\{card\}/.test(x)) expect(k, tag(k, s, e)).toBe('icebreaker');
       // {d} is named only in the kinds that cast four.
-      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt', 'postcard', 'knowing-q', 'goals-board', 'pick-plan', ...STORY_FOUR], tag(k, s, e)).toContain(k);
+      if (/\{d[.}]/.test(x)) expect(['camp-clash', 'hideaway-vote', 'snog-marry-pie', 'receipt', 'headline', 'couple-goals', 'step-reveal', 'step-choose', 'walk-doubt', 'postcard', 'knowing-q', 'goals-board', 'pick-plan', 'dump-unfair', ...STORY_FOUR], tag(k, s, e)).toContain(k);
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });
@@ -138,7 +139,7 @@ describe('a placeholder only where somebody fills it', () => {
       expect(!!e.when?.after || e.when?.hasWith === true || k === 'group-chat' || (k === 'vent' && ['eyes', 'triangle'].includes(e.when?.why))
         || (k === 'blowup' && (e.when?.of === 'jealousy' || ['rival', 'took', 'gone', 'moved'].includes(e.when?.cause)))
         // …an ex's sting names the new one, and a break-up with a reason names who it's about.
-        || k === 'ex-sting' || (k === 'doubt-end' && ['eyes', 'triangle'].includes(e.when?.why)), tag(k, s, e)).toBe(true);
+        || k === 'ex-sting' || k === 'dump-unfair' || (k === 'doubt-end' && ['eyes', 'triangle'].includes(e.when?.why)), tag(k, s, e)).toBe(true);
     }
   });
   it('{about} only where the scene has somebody it is about', () => {

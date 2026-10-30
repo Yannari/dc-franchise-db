@@ -870,7 +870,7 @@ export const KINDS = {
   // arrivals.js / casa.js / villa-day.js), which hands the ledger writes in
   // `extra.pop` and the major moments in `extra.majorPop`.
   ...Object.fromEntries(['entrance', 'date', 'steal', 'recouple-pick', 'dump-buildup',
-    'dump-verdict', 'ballot-reveal', 'dump-reaction', 'dump-goodbye', 'dump-fallout',
+    'dump-verdict', 'ballot-reveal', 'dump-reaction', 'dump-unfair', 'dump-betrayed', 'dump-goodbye', 'dump-fallout',
     'casa-return', 'photos', 'declaration', 'final-result', 'envelope', 'walk', 'reveal',
     // the ladder, the feelings, the friendships and the villa's rituals
     'close-off', 'keeping-open', 'open-back-up', 'head-turned', 'exclusive-ask', 'official-ask',
@@ -1237,8 +1237,11 @@ function changedFeelings(state, now) {
 const NO_HUT = new Set(['final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech']);
 
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
-const SIDE_STORY = /^(triangle|rival|crush|camp|feud|betray|redeem|grass|parents|exw|enemy)-|^game-(plan|latch|two-faced|suspect|called|fallout|end)$|^(code-call|mugged-low|found-love|villa-happy)$/;
+const SIDE_STORY = /^(triangle|rival|crush|camp|feud|betray|redeem|grass|parents|exw|enemy)-|^ex-(awkward|jealous)$|^game-(plan|latch|two-faced|suspect|called|fallout|end)$|^(code-call|mugged-low|found-love|villa-happy|torch|blowup|pile-in|villa-divided|cold-shoulder|clear-the-air|double-standard)$/;
 const SIDE_AIRED = 2;
+// One side story is one family of scenes: a rivalry's villa taking sides is the rivalry.
+const SIDE_FAMILY = { 'code-call': 'rival', 'pile-in': 'blowup', 'villa-divided': 'blowup' };
+const sideFamily = k => SIDE_FAMILY[k] || (k.startsWith('camp-') ? 'rival' : k.startsWith('game-') ? 'game' : k.split('-')[0]);
 export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired = null, major = [] }) {
   const def = KINDS[kind];
   state.seq = (state.seq || 0) + 1;
@@ -1252,22 +1255,37 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   }
   // THE EDIT (2026-10-30, the stretch): the villa's side stories — triangles,
   // rivalries, feuds, enemies, the game players, the arcs — all run every day,
-  // and an episode aired ten of them on top of its own three stories. While a
-  // stretch has a plan, the side stories of people outside its main two air
-  // two an episode; the rest happen (bonds, feelings, secrets) and the edit cuts them,
-  // as it cuts any scene: unaired, read in the transcript, and Movie Night or
-  // the photos can still bring one out.
-  if (aired === true && phase !== 'challenge' && SIDE_STORY.test(kind) && state.stretch && !state.stretch.off && !players.some(n => ['a', 'b'].includes(storyRoleOf(state, n)))) {
-    const n = state._sideAired?.ep === state.ep ? state._sideAired.n : 0;
-    if (n >= SIDE_AIRED) aired = false;
-    else state._sideAired = { ep: state.ep, n: n + 1 };
-  }
+  // and an episode aired ten of them on top of its own three stories. Two an
+  // episode air; the rest happen (bonds, feelings, secrets) and the edit cuts
+  // them, as it cuts any scene: unaired, read in the transcript, and Movie Night
+  // or the photos can still bring one out. The season read the same day found
+  // what that first cut missed (user: "overloaded"): it only ran while a stretch
+  // had a plan, so the last week aired seven in one evening, and the main
+  // story's people carried every side story they were in on top of their own.
+  // Now it always runs; an islander is in one side story an episode; and the
+  // stretch's main two stories' people only in one that is about that story.
   const ev = { id: `${state.ep}-${state.seq}`, ep: state.ep, phase, kind, players: [...players],
     aired: aired == null ? rng() < airP : !!aired, major: [...major],
     hut: null, pop: {}, extra,
     // How everyone in it felt going in, so a later line can say "thanks for
     // yesterday" only when yesterday really happened (pm/script.js history).
     moods: Object.fromEntries(players.map(n => [n, moodOf(state, n)])) };
+  // (After the dice: a side story the dice put on air is cut the same as one that was always going to air.)
+  if (ev.aired && phase !== 'challenge' && SIDE_STORY.test(kind) && !extra?.thread) {
+    const s = state._sideAired?.ep === state.ep ? state._sideAired : (state._sideAired = { ep: state.ep, n: 0, fam: {} });
+    const fam = sideFamily(kind);
+    const plan = state.stretch && !state.stretch.off;
+    const offStory = plan && players.some(n => {
+      const r = storyRoleOf(state, n);
+      if (r !== 'a' && r !== 'b') return false;
+      // In the story: somebody else in this scene is in the same story.
+      return !players.some(m => m !== n && storyRoleOf(state, m) === r);
+    });
+    const busy = players.some(n => s.fam[n] && s.fam[n] !== fam);
+    const already = players.length && players.every(n => s.fam[n] === fam);
+    if (offStory || busy || (!already && s.n >= SIDE_AIRED)) ev.aired = false;
+    else { if (!already) s.n++; for (const n of players) s.fam[n] = fam; }
+  }
   // Which villa it happened in, while the villa is split for Casa Amor: the
   // screens and the transcript cut between them (season read 2026-10-25: the
   // two villas' scenes ran together, and nobody could tell which was which).

@@ -12,7 +12,7 @@ import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
 import { revealExchange, sourOf } from './script.js';
 import { streamFor } from '../dr/rng.js';
 import { romance } from './feelings.js';
-import { closedness } from './ladder.js';
+import { closedness, coupleStrength } from './ladder.js';
 import { broken, splitOf, rekindle, splitRecords } from './just-friends.js';
 import { recordSplit, verdictPop } from './breakups.js';
 import { breakHeart, feel, jealousOf, jealousyHit, healOnReunion } from './emotions.js';
@@ -281,6 +281,76 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
       ev('dump-verdict', [n], { [n]: { approval: 0, fame: 2 } }, [n], { staying: staying > 0 });
     }
   }
+  // 2b. "You've kept THEM?" (user, 2026-10-30: "when the islanders eliminate a
+  // strong couple while other couples are weaker it should have consequences —
+  // they always go friendly, never angry, there's never real drama"). When the
+  // villa votes out a couple plainly stronger than one it keeps, the dumped
+  // one with the shortest fuse says so at the fire pit, a friend who is staying
+  // backs them, and the voters wear it: with the dumped couple's friends, with
+  // the public, and the next day (arcs.js voteFallout reads `unfair`).
+  const unfairVoters = new Set();
+  if (voteNight && VILLA_DECIDES.has(channel)) {
+    const strength = (a, b) => 0.5 * coupleStrength(state, a, b) + (romance(a, b) + romance(b, a)) / 40;
+    const kept = state.couples.filter(c => !c.some(n => dumped.includes(n)) && !broken(state, c[0], c[1]));
+    const weakest = kept.map(c => [c, strength(c[0], c[1])]).sort((x, y) => x[1] - y[1])[0];
+    const seen = new Set();
+    for (const n of dumped) {
+      const q = partners[n];
+      if (!q || seen.has(n) || !weakest) continue;
+      // Both sent home, or one of them and the other left standing ("you've split us up").
+      const partnerStays = !dumped.includes(q);
+      seen.add(n); seen.add(q);
+      const gap = strength(n, q) - weakest[1];
+      if (gap < 0.2) continue;
+      // The exes' vote counts too: they are at the fire pit, and gone by morning.
+      const voters = [...new Set(ballots.filter(b => !b.save && (b.couple?.includes(n) || [n, q].includes(b.target))).map(b => b.voter))]
+        .filter(v => ![n, q].includes(v));
+      if (!voters.length) continue;
+      // The one who says it: the shorter fuse of those going; the voter they face: the one they like least.
+      const temper = x => (state.profiles[x]?.stats?.temperament ?? 5) - (state.profiles[x]?.stats?.boldness ?? 5) * 0.5;
+      const [a, b] = partnerStays || temper(n) <= temper(q) ? [n, q] : [q, n];
+      const v = [...voters].sort((x, y) => getBond(a, x) - getBond(a, y))[0];
+      const f = roomMates(state, a).filter(m => !dumped.includes(m) && !voters.includes(m) && m !== b && getBond(a, m) > 2)
+        .sort((x, y) => getBond(a, y) - getBond(a, x))[0] || null;
+      const hot = rng() < 0.35 + 0.5 * (1 - (state.profiles[a]?.stats?.temperament ?? 5) / 10) + 0.3 * Math.min(1, gap);
+      for (const w of voters) {
+        unfairVoters.add(w);
+        for (const x of [n, q, ...(f ? [f] : [])]) { addBond(x, w, -0.8); addRelationshipDimension(x, w, 'resentment', x === f ? 0.6 : 1); }
+        if (state.villa.includes(w)) feel(state, w, 'guilt', 0.4);
+      }
+      if (f) addBond(f, a, 0.5);
+      const pop = { [a]: { approval: 1.2, fame: 2 }, [b]: { approval: 0.8, fame: 1 },
+        ...Object.fromEntries(voters.map(w => [w, { approval: -0.6, fame: 1 }])) };
+      if (f) pop[f] = { approval: 0.4, fame: 1 };
+      ev('dump-unfair', [a, b, v, ...(f ? [f] : []), ...weakest[0]], pop, [a, v], { of: hot ? 'furious' : 'cold', friend: !!f, partnerStays });
+      for (const e of events) if (e.kind === 'ballot-reveal' && voters.includes(e.players[0]) && [n, q].includes(e.players[1])) e.extra.unfair = true;
+    }
+  }
+  // 2c. "You voted for me?" A close friend's name on a ballot against them,
+  // said out loud: one dumped islander stops in front of that friend on the
+  // way out. Once a night, and not on a night that already had 2b.
+  if (voteNight && VILLA_DECIDES.has(channel) && !events.some(e => e.kind === 'dump-unfair')) {
+    const hurt = [];
+    for (const n of dumped) for (const b of ballots) {
+      if (b.save || b.silent || ![n, partners[n]].includes(b.target) && !b.couple?.includes(n)) continue;
+      const v = b.voter;
+      if (v === n || v === partners[n] || !state.villa.includes(v) || dumped.includes(v)) continue;
+      const close = getBond(n, v);
+      if (close >= 1.5) hurt.push([n, v, close]);
+    }
+    const [n, v, close] = hurt.sort((x, y) => y[2] - x[2])[0] || [];
+    if (n && rng() < 0.45 + 0.08 * close) {
+      const hot = rng() < 0.3 + 0.5 * (1 - (state.profiles[n]?.stats?.temperament ?? 5) / 10);
+      addBond(n, v, -1.5); addBond(v, n, -0.8);
+      addRelationshipDimension(n, v, 'resentment', 1.2);
+      feel(state, v, 'guilt', 0.8);
+      unfairVoters.add(v);
+      // …and whoever is closest to n, staying, sees it.
+      const f = roomMates(state, n).filter(m => !dumped.includes(m) && m !== v && getBond(n, m) > 2).sort((x, y) => getBond(n, y) - getBond(n, x))[0];
+      if (f) { addBond(f, v, -0.5); addRelationshipDimension(f, v, 'resentment', 0.4); }
+      ev('dump-betrayed', [n, v], { [n]: { approval: 0.8, fame: 1.5 }, [v]: { approval: -0.4, fame: 1.2 } }, [n, v], { of: hot ? 'furious' : 'cold' });
+    }
+  }
   // 3. reaction: the partner left behind, and the ones who cannot stay without them
   for (const n of dumped) {
     const p = partners[n];
@@ -324,9 +394,17 @@ export function dumpingScene(state, rng, { atRisk = [], dumped, ballots = [], ch
   for (const n of dumped) {
     // …from the ones staying: on a double dumping, one leaver told another
     // "don't let anyone mess you about once I'm gone" (season 31).
-    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1 && !dumped.includes(m) && m !== (state._passedOver?.ep === state.ep ? state._passedOver.of[n] : undefined)).slice(0, hugs);
+    // Never a hug from somebody who just voted them out unfairly (2b).
+    const friends = roomMates(state, n).filter(m => getBond(n, m) > 1 && !dumped.includes(m) && !unfairVoters.has(m) && m !== (state._passedOver?.ep === state.ep ? state._passedOver.of[n] : undefined)).slice(0, hugs);
     for (const f of friends) { addBond(n, f, 0.2); ev('dump-goodbye', [n, f], { [n]: { approval: 0.5, fame: 0.5 } }); }
-    ev('dump-goodbye', [n], { [n]: { approval: 1.5, fame: 1 } });
+    // Voted out by people they don't like, and in no mood to hide it: the last
+    // words are a parting shot, not a thank-you (user, 2026-10-30: "they always
+    // go friendly, never angry"). In proportion to the dislike and the temper.
+    const against = VILLA_DECIDES.has(channel) ? (state.dumpedBy?.[n] || []).filter(v => state.villa.includes(v) && v !== n) : [];
+    const dislike = against.length ? -against.reduce((t, v) => t + getBond(n, v), 0) / against.length : 0;
+    const bitter = dislike > 0.5 && rng() < Math.min(0.8, dislike / 4) * (1.3 - (state.profiles[n]?.stats?.temperament ?? 5) / 10);
+    if (bitter) for (const v of against) { addBond(v, n, -0.3); feel(state, v, 'guilt', 0.2); }
+    ev('dump-goodbye', [n], { [n]: { approval: bitter ? 0.6 : 1.5, fame: bitter ? 1.8 : 1 } }, [], bitter ? { bitter: true } : {});
   }
   removeFromVilla(state, [...dumped, ...solidarityWalk]);
   state._leaving = null;

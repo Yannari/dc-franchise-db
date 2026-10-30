@@ -243,6 +243,15 @@ export function rivalries(state, rng, entry = null) {
       continue;
     }
     if (t.ep === state.ep) continue;
+    // One of them has moved on: happier in their own couple than after h.
+    // A rivalry used to run on (season read 2026-10-30: Ayesha, settled with
+    // her partner, still fighting Zara over Dante on day 49).
+    const movedOn = n => { const q = partnerOf(state, n); return q && q !== h && romance(n, q) >= wants(state, n, h); };
+    if (movedOn(x) || movedOn(y) || Math.min(wants(state, x, h), wants(state, y, h)) < 4) {
+      t.over = true; t.why = 'moved-on';
+      (state.rivalDone ||= {})[[h, x, y].sort().join('|')] = state.ep;
+      continue;
+    }
     // The rivals' own move, then the villa's — a second villa step after a
     // row or a dig, when everyone has something to say about it.
     if (rng() < 0.8) stepRivalry(state, rng, t, ev);

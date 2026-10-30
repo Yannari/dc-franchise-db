@@ -69,8 +69,13 @@ export function grudgeOf(state, a, b) {
     if (e.kind === 'pile-in' && p[0] === b && p[2] === a) return { grudge: 'sided', about: p[1] !== a && p[1] !== b ? p[1] : null };
   }
   // Both after the same person: the one a wants, who b wants too (or has).
-  const rival = state.villa.find(x => x !== a && x !== b && (attr(state, a, x) ?? 0) >= 5
-    && ((attr(state, b, x) ?? 0) >= 5 || partnerOf(state, b) === x) && partnerOf(state, a) !== x);
+  // Only while a still wants them: a coupled islander who likes their own
+  // partner more has no rival (season read 2026-10-30, day 49: Ayesha, happy
+  // in her couple, "You know how I feel about Dante" to Zara — "what's even the point").
+  const mine = partnerOf(state, a);
+  const stillWants = x => !mine || (attr(state, a, x) ?? 0) >= (attr(state, a, mine) ?? 0) + 2;
+  const rival = state.villa.find(x => x !== a && x !== b && (attr(state, a, x) ?? 0) >= 5 && stillWants(x)
+    && ((attr(state, b, x) ?? 0) >= 5 || partnerOf(state, b) === x) && mine !== x);
   if (rival) return { grudge: 'rival', about: rival };
   // Nothing happened: what a can't stand about b, from who b is — b's most
   // marked trait (narration only: it picks the words, never an outcome). The

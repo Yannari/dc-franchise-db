@@ -387,9 +387,14 @@ export function beginThreads(state, rng, entry) {
   // behind them and play a beat at most (threadBeats).
   planStretch(state, entry, state._nextExit);
   const plan = planIds(state).map(id => state.threads.find(t => t.id === id));
-  const headline = [...plan, ...ranked.filter(t => !plan.includes(t))].slice(0, HEADLINES);
+  // The main two stories' people are in those stories, and no other: a
+  // background story about them is the same people pulled two ways (user,
+  // 2026-10-30, "overloaded": Dan in a chase, a doubt and a feud in one stretch).
+  const main = new Set(plan.filter(t => ['a', 'b'].includes(roleOf(state, t.id))).flatMap(castOf));
+  const behind = ranked.filter(t => !plan.includes(t) && !castOf(t).some(n => main.has(n)));
+  const headline = [...plan, ...behind].slice(0, HEADLINES);
   // At least one happy one, when there is one (the real episodes always had one).
-  const happy = ranked.find(t => t.type === 'progress' || t.type === 'spark');
+  const happy = behind.find(t => t.type === 'progress' || t.type === 'spark');
   if (happy && !headline.includes(happy) && headline.length > plan.length) headline[headline.length - 1] = happy;
   state._th = { ep: state.ep, headline: headline.map(t => t.id), used: {}, queue: carry.filter(alive), top: headline[0]?.id || null, plan: plan.map(t => t.id) };
   // Every story the screen has followed, for the stretch's answers and the season-read audit.

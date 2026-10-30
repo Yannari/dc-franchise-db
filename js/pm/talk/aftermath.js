@@ -94,16 +94,23 @@ export const VOTE_FALLOUT = build('vote-fallout', {
       { when: { of: 'grudge' }, stage: "In the dressing room, {a} turns round to face {b}.", turns: [['a', "You couldn't wait, could you? First chance you got, you went for {c}."]] },
       { when: { of: 'tactical' }, stage: "At the kitchen table, {a} puts {a.posAdj} cup down and looks straight at {b}.", turns: [['a', "All that about not seeing their connection grow? Come on. That was tactical, and everyone at this table knows it."]] },
       { when: { of: 'tactical' }, stage: "By the fire pit, {a} catches {b} on {b.posAdj} own.", turns: [['a', "You got rid of {c} because it helps you. Not because of anything {c} did."]] },
+      // A strong couple voted out over a weaker one (moments.js 2b).
+      { when: { of: 'unfair' }, stage: "The morning after. {a} finds {b} in the kitchen.", turns: [['a', "I didn't sleep. I kept thinking about {c} walking up those steps."], ['a', "They were the strongest couple in here, and you sent them home. Why?"]] },
+      { when: { of: 'unfair' }, stage: "On the daybeds, {a} sits down opposite {b}.", turns: [['a', "I need to ask you something, and I need you to be honest. Why {c}? Of all the couples you could have voted for."]] },
+      { when: { of: 'unfair' }, stage: "{a} waits until {b} is on {b.posAdj} own by the pool.", turns: [['a', "I miss {c} already. And every time I look at you, I remember you're the reason {c}'s gone."]] },
     ],
     answer: [
       { when: { of: 'threat' }, turns: [['b', "I was protecting my couple. I'm allowed to do that."], ['a', "{c} never did anything to you."], ['b', "I wasn't going to wait until {c} did."]] },
       { when: { of: 'threat' }, turns: [['b', "That's not fair."], ['a', "Neither was your vote."]] },
       { when: { of: 'grudge' }, turns: [['b', "It was honest. That's what we were asked for."], ['a', "You got someone I cared about dumped because you don't like them."], ['b', "Yeah. I did. And {c} gave me every reason."]] },
+      { when: { of: 'unfair' }, turns: [['b', "I voted for who I thought should go. I'm allowed to do that."], ['a', "You're allowed. I just don't have to be okay with it."]] },
+      { when: { of: 'unfair' }, turns: [['b', "I know you're upset about {c}. I get it."], ['a', "I'm upset because it was wrong. Everyone could see they were happy."], ['b', "I'm sorry. I'd vote the same way again."]] },
+      { when: { of: 'unfair' }, turns: [['b', "I didn't think they were that strong."], ['a', "You never spent five minutes with them. That's why."]] },
       { when: { of: 'tactical' }, turns: [['b', "It wasn't tactical. It was my honest opinion."], ['a', "Then why {c}? Why the strongest couple in here?"], ['b', "That's a big thing to say."], ['a', "It's a big thing to do."]] },
     ],
     land: [
       { turns: [], beat: "{b} gets up and goes inside, and {a} lets {b.obj} go." },
-      { turns: [], beat: "The whole pool has gone quiet, and stays quiet." },
+      { turns: [], beat: "Everyone nearby has gone quiet, and stays quiet." },
     ],
   },
 });

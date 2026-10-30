@@ -135,6 +135,8 @@ export const SOLIDARITY = build('solidarity', {
 
 export const DUMP_GOODBYE = build('dump-goodbye', {
   tiered: false,
+  // `bitter`: voted out by people {a} doesn't like, and {a} isn't hiding it (moments.js).
+  facts: (state, ev) => ({ bitter: !!ev.extra?.bitter }),
   plans: {
     featured: [
       { when: { withB: true }, plan: ['hug', 'words'] },
@@ -147,91 +149,180 @@ export const DUMP_GOODBYE = build('dump-goodbye', {
   },
   moves: {
     hug: [
-      { when: { withB: true }, turns: [], beat: "{b} reaches {a} and squeezes {a.obj} tight." },
+      { when: { withB: true }, turns: [], beat: "{b} reaches {a} and holds on tight." },
       { when: { withB: true }, turns: [], beat: "{b} hugs {a} for a long time, and neither of them wants to let go." },
       { when: { withB: true }, turns: [], beat: "{b} pulls {a} in, already crying." },
     ],
     words: [
       { when: { withB: true }, turns: [
-        ['b', "I'm going to miss you so much. Honestly, this place isn't going to be the same without you."],
-        ['a', "Stop it. You'll set me off. Stay in touch, yeah? I mean it."],
-        ['b', "The second I'm out, I'm calling you."],
+        ['b', "I'm going to miss you so much. It's not going to be the same in here without you."],
+        ['a', "Don't. You'll make me cry. Message me the second you're out, okay?"],
+        ['b', "The second I'm out. I promise."],
       ] },
       { when: { withB: true }, turns: [
-        ['a', "Win this for me. Promise me you'll go all the way."],
-        ['b', "I'll do my best. For both of us."],
-        ['a', "And don't let anyone take my spot on the daybed."],
+        ['a', "Go all the way. Promise me."],
+        ['b', "I'll try. I'll do it for both of us."],
       ] },
       { when: { withB: true }, turns: [
-        ['b', "Who am I going to talk to at three in the morning now?"],
-        ['a', "You'll find someone. Just don't find someone better than me."],
-        ['b', "Impossible. You're irreplaceable."],
+        ['b', "Who am I going to talk to at night now? You're the one I tell everything."],
+        ['a', "You'll be fine. You've got more people in here than you think."],
+        ['b', "It won't be the same."],
       ] },
       { when: { withB: true }, turns: [
-        ['a', "Look after everyone for me. You're the one who keeps it all together in here, you know that? You're the glue."],
-        ['b', "I'm not the glue. You were the glue."],
-        ['a', "Well, now you've got to be."],
+        ['a', "Look after everyone for me. You're the one who keeps it all together in here."],
+        ['b', "I don't think I am."],
+        ['a', "You are. You just don't see it."],
       ] },
       { when: { withB: true, known: true }, turns: [
-        ['b', "You were the first friend I made in here. Do you remember? You came over and asked if I wanted a drink, and we didn't stop talking for three hours."],
-        ['a', "I remember. Best decision I made in here."],
+        ['b', "You were the first friend I made in here. Do you remember? You came over and asked if I wanted a drink, and we talked for three hours."],
+        ['a', "I remember. I'm so glad I did."],
       ] },
       { when: { withB: true, ...GIRLS }, turns: [
-        ['b', "{~Girl}, I'm going to call you the second I'm out. We've got so much to talk about."],
-        ['a', "You'd better. And I want every detail of what happens after I've gone."],
-        ['b', "Every detail. I promise."],
+        ['b', "{~Girl}, I'm calling you the second I'm out."],
+        ['a', "You'd better. I want to hear everything that happens after I've gone."],
+        ['b', "Everything. I promise."],
       ] },
       { when: { withB: true, ...BOYS }, turns: [
-        ['b', "Come here, {~bro}. {~Proper} hug."],
-        ['a', "You've been a brother to me in here, you know that?"],
-        ['b', "Stop it. Don't make me cry in front of everyone."],
+        ['b', "Come here, {~bro}."],
+        ['a', "You've been like a brother to me in here. I mean that."],
+        ['b', "Stop it. I'm going to cry in front of everyone."],
       ] },
       { when: { withB: true }, turns: [
-        ['a', "Don't cry. If you cry, I cry, and then we're both a mess on {~telly}."],
-        ['b', "Too late. I'm crying."],
-        ['a', "Oh, come here."],
+        ['a', "Please don't cry. If you cry, I'll cry."],
+        ['b', "Too late."],
       ] },
       { when: { withB: true }, turns: [
-        ['b', "I can't believe it's you. Of all the people in here, it should never have been you."],
-        ['a', "It's okay. It's a game. Somebody had to go, and it was me. I'm just glad I met you."],
+        ['b', "I can't believe it's you. It should never have been you."],
+        ['a', "It's okay. Somebody had to go. I'm just glad I met you."],
       ] },
     ],
     steps: [
-      { when: { withB: false }, stage: "{a} picks up {a.posAdj} suitcase at the top of the steps and turns round one last time.", turns: [] },
-      { when: { withB: false }, stage: "{a} walks to the steps with everyone following, and stops.", turns: [] },
-      { when: { withB: false }, stage: "The whole villa walks {a} up to the gate.", turns: [] },
+      { when: { withB: false, bitter: false }, stage: "{a} picks up {a.posAdj} suitcase at the top of the steps and turns round one last time.", turns: [] },
+      { when: { withB: false, bitter: false }, stage: "{a} walks to the steps with everyone following, and stops.", turns: [] },
+      { when: { withB: false, bitter: false }, stage: "The whole villa walks {a} up to the gate.", turns: [] },
+      { when: { withB: false, bitter: true }, stage: "{a} picks up {a.posAdj} suitcase and doesn't wait for anyone to follow.", turns: [] },
+      { when: { withB: false, bitter: true }, stage: "At the top of the steps, {a} turns round, and doesn't smile.", turns: [] },
     ],
     speech: [
-      { when: { withB: false, weeks: true }, turns: [
-        ['a', "Thank you. All of you. Honestly, this has been the best few weeks of my life. I came in here not knowing anyone, and I'm leaving with friends I'll have forever. Don't you dare forget about me."],
+      { when: { withB: false, bitter: false, weeks: true }, turns: [
+        ['a', "Thank you. All of you. These have been the best few weeks of my life. I came in here not knowing anyone, and I'm leaving with friends I'll keep forever."],
       ] },
-      { when: { withB: false, early: false, weeks: false }, turns: [
-        ['a', "It wasn't long, I know. But it was the best time. Thank you for making me feel so welcome, every single one of you. I'll be watching, so behave yourselves."],
+      { when: { withB: false, bitter: false, early: false, weeks: false }, turns: [
+        ['a', "It wasn't long, I know. But I loved it. Thank you for making me feel so welcome, every one of you."],
       ] },
-      { when: { withB: false, early: true }, turns: [
-        ['a', "I didn't even get to unpack properly. That's how quick that was. But you lot are amazing, and I'm going to miss you. Look after each other."],
+      { when: { withB: false, bitter: false, early: true }, turns: [
+        ['a', "I didn't even get to unpack. That's how quick it was. But you've all been lovely to me, and I'm going to miss you. Look after each other."],
       ] },
-      { when: { withB: false }, turns: [
-        ['a', "Love you all. Honestly, I do. Don't do anything I wouldn't do, which isn't much, so do whatever you want, actually."],
+      { when: { withB: false, bitter: false }, turns: [
+        ['a', "I love you all. I really do. I'm sad it's over, but I'm not sorry I came."],
       ] },
-      { when: { withB: false, reg: 'big' }, turns: [
-        ['a', "Right! I'm not crying! I'm not! Okay, I'm crying a bit. I love every single one of you, and if any of you mess this up, I'll know, because I'll be watching every episode. Every single one."],
+      { when: { withB: false, bitter: false, reg: 'big' }, turns: [
+        ['a', "I said I wasn't going to cry, and I'm crying. I love every single one of you. Please look after each other."],
       ] },
-      { when: { withB: false, reg: 'dry' }, turns: [
-        ['a', "Well. That's me. Someone finish my cereal, it's in the cupboard. And look after the swing seat. It's been good to me."],
+      { when: { withB: false, bitter: false, reg: 'dry' }, turns: [
+        ['a', "I'm not very good at goodbyes, so I'll keep it short. Thank you. I mean it."],
       ] },
-      { when: { withB: false, reg: 'soft' }, turns: [
-        ['a', "I just want to say thank you. You've all been so kind to me, even on the days I wasn't easy to be around. I'm leaving here a better person than I came in, and that's because of you lot."],
+      { when: { withB: false, bitter: false, reg: 'soft' }, turns: [
+        ['a', "I just want to say thank you. You've all been so kind to me, even on the days I wasn't easy to be around. I'm leaving a better person than I came in."],
       ] },
-      { when: { withB: false, reg: 'sharp' }, turns: [
-        ['a', "I'm not going to stand here and make a big speech. You know how I feel about most of you. The ones I love, I'll see on the outside. The rest of you, good luck."],
+      { when: { withB: false, bitter: false, reg: 'sharp' }, turns: [
+        ['a', "I'm not going to make a big speech. The people I love know who they are, and I'll see them on the outside."],
+      ] },
+      { when: { withB: false, bitter: true }, turns: [
+        ['a', "I'm not going to pretend I'm happy. Some of you voted for me because you wanted me gone, not because you had to. You know who you are."],
+      ] },
+      { when: { withB: false, bitter: true }, turns: [
+        ['a', "Thank you to the people who were real with me. The rest of you, I hope it was worth it."],
+      ] },
+      { when: { withB: false, bitter: true }, turns: [
+        ['a', "I came here to find love, and I tried. Some of you made it a lot harder than it needed to be, and I won't forget that."],
+      ] },
+      { when: { withB: false, bitter: true }, turns: [
+        ['a', "I'm hurt. I'm not going to lie about it. I thought some of you were better than that."],
       ] },
     ],
     leave: [
-      { when: { withB: false }, turns: [], beat: "The villa waves until {a} is out of sight." },
-      { when: { withB: false }, turns: [], beat: "{a} blows a kiss over {a.posAdj} shoulder and walks out through the gate." },
-      { when: { withB: false }, turns: [], beat: "Somebody shouts {a}'s name one more time, and {a} turns and waves before the gate closes." },
+      { when: { withB: false, bitter: false }, turns: [], beat: "The villa waves until {a} is out of sight." },
+      { when: { withB: false, bitter: false }, turns: [], beat: "{a} blows a kiss over {a.posAdj} shoulder and walks out through the gate." },
+      { when: { withB: false, bitter: false }, turns: [], beat: "Somebody shouts {a}'s name one more time, and {a} turns and waves before the gate closes." },
+      { when: { withB: false, bitter: true }, turns: [], beat: "{a} walks out through the gate without looking back." },
+      { when: { withB: false, bitter: true }, turns: [], beat: "Nobody says anything until the gate has closed behind {a}." },
     ],
   },
   notes: [],
+});
+
+// dump-unfair  [a, b, c, (d)]  The villa has just voted out {a} and {b}, a
+//              strong couple, and kept {x} and {about}, a weaker one
+//              (moments.js 2b). {a} says so. {c} voted them out; {d}, staying,
+//              backs {a}. `of`: furious · cold. `partnerStays`: only {a} is
+//              going, and {b} stays behind.
+export const DUMP_UNFAIR = build('dump-unfair', {
+  tiered: false,
+  facts: (state, ev) => ({ friend: !!ev.extra?.friend, partnerStays: !!ev.extra?.partnerStays }),
+  slots: (state, ev) => ({ x: ev.players[ev.extra?.friend ? 4 : 3], about: ev.players[ev.extra?.friend ? 5 : 4] }),
+  plans: { featured: ['open', 'answer', 'friend?', 'close'], short: ['open', 'answer', 'close'] },
+  moves: {
+    open: [
+      { when: { partnerStays: false, of: 'furious' }, stage: "{a} doesn't sit back down.", turns: [['a', "You've sent us home. Us. And you've kept {x} and {about}, who haven't had a real conversation all week."]] },
+      { when: { of: 'furious' }, stage: "{a} is on {a.posAdj} feet, looking round the fire pit.", turns: [['a', "I can't believe this. Me and {b} are the strongest couple in this villa, and every one of you knows it."], ['a', "And you've kept {x} and {about} over us?"]] },
+      { when: { of: 'furious' }, stage: "{a} turns to {c}.", turns: [['a', "Look at me, {c}. Do you really think {x} and {about} are more real than us? Because you don't. Nobody does."]] },
+      { when: { partnerStays: false, of: 'furious' }, stage: "{a} stands up before the host has finished.", turns: [['a', "That's a joke. That's an actual joke. We're the ones who came here and found something, and we're the ones going home."]] },
+      { when: { partnerStays: false, of: 'cold' }, stage: "{a} stands up slowly, holding {b}'s hand.", turns: [['a', "I'm not going to shout. I just want to say one thing before we go."], ['a', "We came in here to find someone, and we did. {x} and {about} are still sitting there, and we're the ones leaving. That says everything about this vote."]] },
+      { when: { of: 'cold' }, stage: "{a} looks across the fire pit at {c}.", turns: [['a', "I'm not angry, {c}. I'm hurt. I thought you were my friend."]] },
+      { when: { partnerStays: true, of: 'furious' }, stage: "{a} doesn't sit back down.", turns: [['a', "You've split us up. Me and {b} were the strongest couple in here, and you've kept {x} and {about} together instead."]] },
+      { when: { partnerStays: true, of: 'furious' }, stage: "{a} looks round the fire pit, then at {b}.", turns: [['a', "{b} is the best thing that's happened to me in here, and you've taken me away from {b.obj}. For {x} and {about}? Really?"]] },
+      { when: { partnerStays: true, of: 'cold' }, stage: "{a} stands up and holds {b}'s hand.", turns: [['a', "I'm not angry with you, {b}. I'm angry with whoever thought {x} and {about} deserved it more than us."]] },
+      { when: { partnerStays: false, of: 'cold' }, stage: "{a} takes a breath before {a} speaks.", turns: [['a', "We were happy. That's all we've been in here. Happy. And that's what got us sent home."]] },
+    ],
+    answer: [
+      { turns: [['c', "It wasn't personal. I had to pick someone."], ['a', "You did pick someone. You picked us."]] },
+      { turns: [['c', "I voted for who I thought should go. I'm sorry it was you."], ['a', "No, you're not."]] },
+      { turns: [['c', "I just didn't think you were as strong as you think you are."], ['a', "You've never once sat down and asked us how we are."]] },
+      { turns: [['c', "I know you're upset. I'd be upset too."], ['a', "Don't do that. Don't be nice to me now."]] },
+      { turns: [], beat: "{c} looks down at the fire and doesn't answer." },
+      { turns: [['c', "Everyone had to vote. I'm not the only one."], ['a', "You're the one I thought had our backs."]] },
+    ],
+    friend: [
+      { when: { friend: true }, turns: [['d', "No, {a}'s right. That was wrong, and everyone sitting here knows it."]] },
+      { when: { friend: true }, turns: [['d', "I'm sorry, but I'm not going to pretend that was fair. It wasn't."], ['c', "Nobody asked you."], ['d', "I'm saying it anyway."]] },
+      { when: { friend: true }, turns: [['d', "{a} and {b} are the best couple in here. I can't believe we're losing them."]] },
+    ],
+    close: [
+      { when: { of: 'furious' }, turns: [], beat: "{b} pulls {a} away before {a} can say anything else." },
+      { when: { partnerStays: false, of: 'furious' }, turns: [['b', "Come on. Leave it. It's not worth it."]], beat: "{a} lets {b} lead the way out, and doesn't look at {c} again." },
+      { when: { partnerStays: false, of: 'cold' }, turns: [], beat: "{a} and {b} hug the people they want to hug, and walk straight past {c}." },
+      { when: { partnerStays: true }, turns: [['b', "I'll be out there as soon as I can. I promise."], ['a', "You'd better be."]], beat: "{b} holds on to {a} until the very last second." },
+      { when: { partnerStays: true, of: 'furious' }, turns: [], beat: "{b} has to hold {a} back, and walks {a} to the steps without letting go." },
+      { when: { of: 'cold' }, turns: [['b', "We know what we had. That's what matters."], ['a', "I know. It still hurts."]] },
+    ],
+  },
+});
+
+// dump-betrayed  [a, b]  {a} is going home, and {b}, a close friend, voted
+//                for it (moments.js 2c). `of`: furious · cold.
+export const DUMP_BETRAYED = build('dump-betrayed', {
+  tiered: false,
+  plans: { featured: ['open', 'answer', 'close'], short: ['open', 'answer'] },
+  moves: {
+    open: [
+      { when: { of: 'furious' }, stage: "On the way to the steps, {a} stops in front of {b}.", turns: [['a', "You voted for me. You. I've sat with you every single night in here."]] },
+      { when: { of: 'furious' }, stage: "{a} turns round before the steps.", turns: [['a', "Out of everyone, {b}. I didn't think it would be you."]] },
+      { when: { of: 'furious' }, stage: "{a} looks straight at {b}.", turns: [['a', "I told you everything in here. Everything. And you said my name."]] },
+      { when: { of: 'cold' }, stage: "{a} hugs everyone at the fire pit, and stops at {b}.", turns: [['a', "I'm sorry. I can't hug you. Not tonight."]] },
+      { when: { of: 'cold' }, stage: "{a} waits for {b} to look up.", turns: [['a', "I just want to know one thing. Were we ever really friends?"]] },
+    ],
+    answer: [
+      { turns: [['b', "Of course we were. I had to vote for someone."], ['a', "And you picked me."]] },
+      { turns: [['b', "I'm sorry. Honestly, it was the hardest thing I've done in here."], ['a', "It didn't look hard."]] },
+      { turns: [['b', "Please don't leave like this."], ['a', "Then you shouldn't have voted for me."]] },
+      { when: { taken: true }, turns: [['b', "I voted for the couple, not for you."], ['a', "I'm in the couple, {b}."]] },
+      { turns: [], beat: "{b} opens {b.posAdj} mouth to say something, then doesn't." },
+    ],
+    close: [
+      { turns: [], beat: "{a} walks up the steps without looking back." },
+      { turns: [], beat: "{b} stares at the fire after {a} has gone, and nobody next to {b.obj} says a word." },
+      { turns: [], beat: "{b} is the only one at the fire pit who doesn't wave." },
+    ],
+  },
 });

@@ -28,6 +28,18 @@ export function believeStep(state, viewer, a, step) { (state.ladderBelief ||= {}
 /** `a` tells `viewer` where they stand — the belief becomes the truth. */
 export function tellStep(state, viewer, a) { believeStep(state, viewer, a, stepOf(state, a, viewer)); }
 
+/**
+ * A couple apart once the night is over split up, and can be asked to be
+ * exclusive (or official) again if they get back together (user, 2026-10-30).
+ * Read after the night (season.js), not in syncLadder: a fire pit empties the
+ * couples while it re-forms them, and a couple who chose each other again
+ * had not split.
+ */
+export function forgetAsks(state) {
+  const live = new Set(state.couples.map(([a, b]) => pair(a, b)));
+  for (const key of Object.keys(state.asked || {})) if (!live.has(key.split(':')[1])) delete state.asked[key];
+}
+
 /** Couples that formed start on `coupled`; couples that ended leave the ladder. */
 export function syncLadder(state) {
   const live = new Set(state.couples.map(([a, b]) => pair(a, b)));
@@ -115,14 +127,22 @@ export function decideLadder(state, rng, attachmentOf = null) {
     const [asker, askee] = ra + state.profiles[a].stats.boldness / 20 >= rb + state.profiles[b].stats.boldness / 20 ? [a, b] : [b, a];
     const rAsk = Math.max(ra, rb), rYes = readiness(state, askee, asker, attachmentOf);
     const both = Math.min(at(stepOf(state, a, b)), at(stepOf(state, b, a)));
+    // Each question once a couple (user, 2026-10-30: "make sure we don't have
+    // those exclusive questions twice for the same couple, unless they broke up
+    // then got back together"). A no, or opening back up after a yes, used to
+    // put the same question on screen again a few days later.
+    const asked = state.asked ||= {};
+    const once = k => !asked[`${k}:${pair(a, b)}`];
     if (both >= at('open') && both < at('exclusive') && at(stepOf(state, asker, askee)) >= at('open')
-      && rng() < rAsk * 0.5) {
+      && once('exclusive') && rng() < rAsk * 0.5) {
+      asked[`exclusive:${pair(a, b)}`] = true;
       // Measured: 70% of asks were being declined. Most asks land on the
       // real show; a decline is the exception that hurts.
       const yes = rng() < clamp(0.35 + rYes * 1.4, 0, 0.97);
       if (yes) { setStep(state, a, b, 'exclusive'); setStep(state, b, a, 'exclusive'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'exclusive-ask', from: asker, to: askee, yes });
-    } else if (both === at('exclusive') && rng() < rAsk * 0.35) {
+    } else if (both === at('exclusive') && once('official') && rng() < rAsk * 0.35) {
+      asked[`official:${pair(a, b)}`] = true;
       const yes = rng() < clamp(0.3 + rYes * 1.4, 0, 0.97);
       if (yes) { setStep(state, a, b, 'official'); setStep(state, b, a, 'official'); tellStep(state, a, b); tellStep(state, b, a); }
       out.push({ kind: 'official-ask', from: asker, to: askee, yes });

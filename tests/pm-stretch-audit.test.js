@@ -9,6 +9,10 @@
 import { it } from 'vitest';
 import { playReadSeason, phaseLines, eventLines } from './helpers/pm-read.js';
 
+// The side stories (js/pm/events.js SIDE_STORY), read off the scene kinds.
+const SIDE = /^(triangle|rival|crush|camp|feud|betray|redeem|grass|parents|exw|enemy)-|^ex-(awkward|jealous)$|^game-(plan|latch|two-faced|suspect|called|fallout|end)$|^(code-call|mugged-low|found-love|villa-happy|torch|blowup|pile-in|villa-divided|cold-shoulder|clear-the-air|double-standard)$/;
+const fam = k => ({ 'code-call': 'rival', 'pile-in': 'blowup', 'villa-divided': 'blowup' })[k] || (k.startsWith('camp-') ? 'rival' : k.startsWith('game-') ? 'game' : k.split('-')[0]);
+
 const SEEDS = (process.env.PM_SEEDS || '7,12,21').split(',').map(Number);
 const NOT_VILLA = new Set(['first-coupling', 'final', 'reunion']);
 const UNANSWERED = new Set(['faded', 'fizzled', 'settled']);
@@ -72,6 +76,16 @@ it('season read audit', () => {
       }
       dupGoodbyes += Object.values(bye).filter(n => n > 1).length;
     }
+    // Overload: side scenes an episode, and islanders carrying two side stories at once.
+    const sidePer = [];
+    let doubled = 0;
+    for (const r of rows) {
+      const side = (r.pm?.events || []).filter(e => e.aired && e.phase !== 'challenge' && SIDE.test(e.kind) && !e.extra?.thread);
+      sidePer.push(side.length);
+      const fams = {};
+      for (const e of side) for (const n of e.players) (fams[n] ||= new Set()).add(fam(e.kind));
+      doubled += Object.values(fams).filter(f => f.size > 1).length;
+    }
     const top = Object.entries(heard).sort((x, y) => y[1] - x[1]).slice(0, 10);
     out.push(`\n== seed ${seed}: ${rows.length} episodes, ${villa.length} villa ==`,
       `lines per villa episode: mean ${mean(per)}, min ${Math.min(...per)}, max ${Math.max(...per)}`,
@@ -80,6 +94,7 @@ it('season read audit', () => {
       `stories followed: ${followed.length}, closed ${closed.length}, dropped (faded/fizzled/settled) ${dropped.length} (${Math.round(100 * dropped.length / Math.max(1, closed.length))}%) · ${JSON.stringify(whys)}`,
       `stretch stories: ${planned.length}, closed ${pClosed.length}, dropped ${pDropped.length} · ${JSON.stringify(pWhys)}`,
       `fire pit: ${ceremonies} ceremonies, ${changed} picks changed a couple, ${took} took, left or took back a partner, ${named} named them`,
+      `side scenes an episode: mean ${(sidePer.reduce((x, y) => x + y, 0) / sidePer.length).toFixed(1)}, max ${Math.max(...sidePer)} · islanders in two side stories in one episode: ${doubled}`,
       `episodes with a breakdown section: ${breakdownEps} · goodbye lines repeated on one night: ${dupGoodbyes}`,
       `most heard:`, ...top.map(([t, n]) => `  ${n}x  ${t.slice(0, 110)}`));
   }

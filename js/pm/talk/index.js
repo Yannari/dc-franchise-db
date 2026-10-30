@@ -87,7 +87,7 @@ import { CASA_MISS, BED_SHARE } from './casa.js';
 import { CHALLENGE_KISS, CHALLENGE_WIN } from './challenge.js';
 import { DEBRIEF } from './debrief.js';
 import { RECOUPLE_PICK } from './recouple.js';
-import { DUMP_REACTION, SOLIDARITY, DUMP_GOODBYE } from './dumping.js';
+import { DUMP_REACTION, SOLIDARITY, DUMP_GOODBYE, DUMP_UNFAIR, DUMP_BETRAYED } from './dumping.js';
 import { DATE_PICKED, DATE, DATE_BACK } from './dates.js';
 import { DECLARATION } from './final.js';
 import { INTRO } from './intro.js';
@@ -138,7 +138,7 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
   'challenge-kiss': CHALLENGE_KISS, 'challenge-win': CHALLENGE_WIN,
   reassurance: REASSURANCE, 'jealous-confront': JEALOUS_CONFRONT, 'jealous-retaliate': JEALOUS_RETALIATE, confession: CONFESSION, 'no-show': NO_SHOW, debrief: DEBRIEF,
-  'recouple-pick': RECOUPLE_PICK, 'dump-reaction': DUMP_REACTION, solidarity: SOLIDARITY, 'dump-goodbye': DUMP_GOODBYE,
+  'recouple-pick': RECOUPLE_PICK, 'dump-reaction': DUMP_REACTION, solidarity: SOLIDARITY, 'dump-goodbye': DUMP_GOODBYE, 'dump-unfair': DUMP_UNFAIR, 'dump-betrayed': DUMP_BETRAYED,
   'date-picked': DATE_PICKED, date: DATE, 'date-back': DATE_BACK,
   'close-off': CLOSE_OFF, 'keeping-open': KEEPING_OPEN, 'open-back-up': OPEN_BACK_UP, 'exclusive-ask': EXCLUSIVE_ASK,
   'official-ask': OFFICIAL_ASK, 'ask-declined': ASK_DECLINED, 'love-said': LOVE_SAID, 'love-hanging': LOVE_HANGING,

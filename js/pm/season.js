@@ -23,7 +23,7 @@ import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
   relationshipLabel, setMask } from './feelings.js';
-import { syncLadder, stepOf } from './ladder.js';
+import { syncLadder, forgetAsks, stepOf } from './ladder.js';
 import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js';
 import { addBond, getBond, bKey } from '../bonds.js';
 import { proneness } from './breakdown.js';
@@ -210,7 +210,7 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * the last aired episode (restoreFromAired). Bump it when the villa changes
  * enough that an old season should be offered the new one.
  */
-export const PM_ENGINE = '2026-10-30';
+export const PM_ENGINE = '2026-10-30b';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new
@@ -517,6 +517,7 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     m.events.push(...answerStretch(state, streamFor(seed, `answer:${entry.ep}${state.epSalt}`), entry, m));
     state.history.push(...m.events);
     syncLadder(state);
+    forgetAsks(state);
     // Feelings move once a day's worth of events has happened: love grows in
     // couples, masks are chosen, beliefs drift toward what was shown.
     const mrng = streamFor(seed, `mask:${entry.ep}${state.epSalt}`);

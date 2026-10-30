@@ -142,7 +142,7 @@ describe('the stage at rest names nobody, and each click shows exactly its line'
 describe('the breaks: "Coming up" and "Next time"', () => {
   it('"Previously on" plays last episode\'s aired lines in full, and says who really left', async () => {
     const { roundExits, PERFECT_MATCH_FORMAT } = await import('../js/shows.js');
-    let seen = 0;
+    let seen = 0, hooked = 0;
     const rows = season(1);
     rows.forEach((row, i) => {
       if (!i) return;
@@ -156,8 +156,13 @@ describe('the breaks: "Coming up" and "Next time"', () => {
       }
       const exit = open.steps.find(s => /left the villa/.test(s.text || ''));
       for (const x of roundExits(prev, PERFECT_MATCH_FORMAT)) expect(exit?.text, `e${row.num}`).toContain(x.name);
+      // …and ends where the last episode left off: its hook (pm/stretch.js hookFor).
+      const hook = prev.pm.events.find(e => e.kind === 'hook' && e.aired);
+      const last = (hook?.script?.lines || []).filter(l => !l.action && l.who).pop();
+      if (last) { hooked++; expect(open.steps.slice(-3).map(s => s.text), `e${row.num}`).toContain(last.text); }
     });
     expect(seen).toBeGreaterThan(5);
+    expect(hooked).toBeGreaterThan(3);
   });
 
   it('a teaser cuts its line off, never shows how anything ends, and nothing that did not air', async () => {

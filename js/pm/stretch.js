@@ -212,3 +212,48 @@ export function answerStretch(state, rng, entry, m) {
   return out;
 }
 function closeIt(state, t, why) { t.over = true; t.why = why; t.endEp = state.ep; }
+
+// ── the end of the episode ────────────────────────────────────────────
+// Every episode ends on something unanswered (user, 2026-10-30, after reading
+// a stretch built this way: each episode ended on a text or a look, and the
+// next one picked it up). The last thing before the credits: a text about
+// tomorrow, or the stretch's main story lying awake. The next episode's
+// "Previously" ends on it (vp-pm/steps.js).
+const TEXT_OF = { recoupling: 'text-recouple', 'public-vote': 'text-vote', bombshell: 'text-bombshell' };
+export function hookFor(state, rng, entry, next) {
+  if (!next || ['final', 'reunion', 'casa-open', 'casa-nights'].includes(entry?.moment) || ['reunion', 'final', 'casa-open'].includes(next.moment)) return [];
+  if (state.split || state.villa.length < 4) return [];
+  const s = state.stretch;
+  const a = s && !s.off && s.a ? byId(state, s.a) : null;
+  const cast = a && !a.over ? castOf(a).filter(n => state.villa.includes(n)) : [];
+  const text = next.moment === 'bombshell' || (next.arrivals?.bombshell && next.moment !== 'recoupling') ? 'text-bombshell' : TEXT_OF[next.moment] || null;
+  const pickOne = xs => xs[Math.floor(rng() * xs.length)];
+  let of = null, players = null;
+  // A text about tomorrow, or the story itself: about half and half when there's
+  // a story to end on, so a run of episodes doesn't end on the same phone beeping.
+  const story = a && cast.length >= 2;
+  if (text && (!story || rng() < 0.5)) {
+    // Read out by somebody outside the story; the story's people react.
+    const watchers = cast.length >= 2 ? cast.slice(0, 2) : state.villa.filter(n => !cast.includes(n)).slice(0, 2);
+    const reader = pickOne(state.villa.filter(n => !watchers.includes(n)));
+    if (reader && watchers.length === 2) { of = text; players = [reader, ...watchers]; }
+  }
+  if (!of && a && cast.length >= 2) {
+    if (a.type === 'graft' && cast.includes(a.t) && cast.includes(a.p) && cast.includes(a.c)) { of = 'story-graft'; players = [a.t, a.p, a.c]; }
+    else if (a.type === 'doubt' && cast.includes(a.a) && cast.includes(a.p)) { of = 'story-doubt'; players = [a.a, a.p]; }
+    else if (a.type === 'secret' && cast.includes(a.w) && cast.includes(a.p) && cast.includes(a.x)) { of = 'story-secret'; players = [a.w, a.p, a.x]; }
+    else if (['progress', 'spark', 'rekindle'].includes(a.type)) { of = 'story-close'; players = [a.a, a.b]; }
+  }
+  // No story to end on (the couples-only week, a quiet stretch): the couple
+  // with the least holding them together, in bed, talking about tomorrow.
+  if (!of) {
+    const shaky = (state.couples || []).filter(c => c.every(n => state.villa.includes(n)))
+      .map(c => [c, Math.min(romance(c[0], c[1]), romance(c[1], c[0]))]).sort((x, y) => x[1] - y[1])[0]?.[0];
+    if (shaky) { of = 'couple-night'; players = [...shaky]; }
+  }
+  if (!of) return [];
+  // What it leaves behind: a night's worry for whoever it's about.
+  for (const n of players.slice(1)) feel(state, n, 'stress', 0.2);
+  if (of === 'story-close') addBond(players[0], players[1], 0.2);
+  return [makeEvent(state, rng, { phase: 'hook', kind: 'hook', players, aired: true, extra: { pop: {}, of, stretch: s?.a ? 'a' : null } })];
+}

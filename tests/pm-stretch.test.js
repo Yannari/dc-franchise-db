@@ -84,6 +84,23 @@ describe('pm stretch', () => {
     expect(seen).toBeGreaterThan(0);
   });
 
+  it('ends every villa episode on a hook, the last scene of the episode', async () => {
+    const { phasesOf } = await import('../js/pm/transcript.js');
+    for (const seed of SEEDS) {
+      const { rows } = seasons[seed];
+      const finalEp = rows.find(r => r.moment === 'final')?.num ?? Infinity;
+      let hooks = 0, villa = 0;
+      for (const r of rows) {
+        if (r.num >= finalEp - 1 || r.pm?.casaRoom || ['casa-open', 'casa-nights'].includes(r.moment)) continue;
+        villa++;
+        const phases = phasesOf(r);
+        if (phases[phases.length - 1][0] === 'hook') hooks++;
+        expect(phases.slice(0, -1).some(p => p[0] === 'hook'), `seed ${seed} ep${r.num}: a hook only ever last`).toBe(false);
+      }
+      expect(hooks, `seed ${seed}`).toBeGreaterThanOrEqual(villa - 2);
+    }
+  });
+
   it('scores a story by what it puts at stake, proportionally', () => {
     const state = { ep: 5, villa: ['A', 'B', 'C'], couples: [['B', 'C']], profiles: {} };
     const graft = { type: 'graft', ep: 3, heat: 1, c: 'A', t: 'B', p: 'C' };

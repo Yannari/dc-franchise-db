@@ -844,6 +844,16 @@ function previouslyScreen(row, prev) {
     steps.push({ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg: 'night', headline: 'Previously', cast: [],
       text: `And at the end of the night, ${list} left the villa.`, fx: { teaser: 'previously' }, sceneStart: true, sceneEnd: true, ev: -1 });
   }
+  // …and where it left off (pm/stretch.js hookFor): the last thing before the
+  // credits is the first thing this episode picks up.
+  const hook = (prev.pm.events || []).find(e => e.kind === 'hook' && e.aired);
+  for (const line of (hook?.script?.lines || []).filter(l => !l.action && l.who).slice(-2)) {
+    steps.push({ part: 'teaser', kind: 'teaser', who: line.who, voice: '', bg: 'night', headline: 'Previously',
+      text: line.text, cast: castOf(hook, line.who, words().host),
+      fx: { teaser: 'previously' }, sceneStart: true, sceneEnd: true, ev: -1 });
+  }
+  if (hook?.script?.beat) steps.push({ part: 'teaser', kind: 'teaser', who: narr, voice: 'narrator', bg: 'night', headline: 'Previously', cast: [],
+    text: hook.script.beat, fx: { teaser: 'previously' }, sceneStart: true, sceneEnd: true, ev: -1 });
   return { key: `previously-${row.num}`, phase: 'previously', label: 'Previously', bg: 'day', rail: null, steps, teaser: 'previously' };
 }
 /** Where everyone stands, as the narrator puts it at the top of the episode. */

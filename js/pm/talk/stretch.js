@@ -198,3 +198,55 @@ export const SECRET_KEPT = build('secret-kept', {
     ],
   },
 });
+
+// ── the hook: the last thing before the credits (pm/stretch.js hookFor) ──
+//   text-recouple / text-vote / text-bombshell  [a, b, c]  {a} reads a text about
+//       tomorrow; {b} and {c} are the stretch's main story, and the camera finds them
+//   story-graft   [a, b, c]  {a} in bed next to {b}, awake, with {c} across the room
+//   story-doubt   [a, b]     {a} awake next to {b}, who is asleep
+//   story-secret  [a, b, c]  {a} knows what {c} did, and watches {b} go to sleep
+//   story-close   [a, b]     {a} and {b}, the happy story, whispering in the dark
+export const HOOK = build('hook', {
+  tiered: false,
+  plans: { featured: ['set', 'turn'], short: ['set', 'turn'] },
+  moves: {
+    set: [
+      { when: { of: ['text-recouple', 'text-vote', 'text-bombshell'] }, stage: "Everyone is getting ready for bed when {a}'s phone goes off.", turns: [['a', "I've got a text!"]] },
+      { when: { of: ['text-recouple', 'text-vote', 'text-bombshell'] }, stage: "The lights are about to go out when a phone beeps on the dressing table.", turns: [['a', "Everyone, come here. I've got a text."]] },
+      { when: { of: ['text-recouple', 'text-vote', 'text-bombshell'] }, stage: "Half the villa is already in bed. {a} sits up with {a.posAdj} phone lit up.", turns: [['a', "Nobody go to sleep. I've got a text."]] },
+      { when: { of: 'story-graft' }, stage: "The bedroom, after the lights go out. {a} is lying next to {b}, wide awake.", turns: [] },
+      { when: { of: 'story-graft' }, stage: "Everyone has gone quiet in the bedroom. {a} is lying very still next to {b}, eyes open.", turns: [] },
+      { when: { of: 'story-doubt' }, stage: "The bedroom, late. {b} keeps drifting off. {a} is still staring at the ceiling.", turns: [] },
+      { when: { of: 'story-doubt' }, stage: "{a} lies on {a.posAdj} side of the bed, as far from {b} as the bed allows.", turns: [] },
+      { when: { of: 'story-secret' }, stage: "Lights out. {a} watches {b} climb into bed, laughing at something {c} just said.", turns: [] },
+      { when: { of: 'story-secret' }, stage: "The bedroom is dark. Two beds along, {b} and {c} are whispering, and {a} can hear every word.", turns: [] },
+      { when: { of: 'story-close' }, stage: "The bedroom, lights out. {a} and {b} are whispering under the covers.", turns: [] },
+      { when: { of: 'couple-night' }, stage: "The bedroom, lights out. {a} and {b} are lying on their backs, looking at the ceiling.", turns: [] },
+      { when: { of: 'couple-night' }, stage: "Everyone else is asleep. {a} and {b} are still whispering.", turns: [] },
+    ],
+    turn: [
+      { when: { of: 'text-recouple' }, turns: [['a', "\"Islanders, tomorrow night there will be a recoupling. #ChooseWisely\""]], beat: "Nobody says anything. Across the room, {b} looks straight at {c}." },
+      { when: { of: 'text-recouple' }, turns: [['a', "\"Islanders, there will be a recoupling tomorrow night. Anyone left single could be dumped. #SleepWell\""]], beat: "{b} and {c} both look at the floor at exactly the same moment." },
+      { when: { of: 'text-recouple' }, turns: [['a', "\"Islanders, tomorrow night there will be a recoupling.\""], ['a', "That's it. That's all it says."]], beat: "Somebody laughs, nervously. {b} doesn't. {b} is looking at {c}." },
+      { when: { of: 'text-recouple' }, turns: [['a', "\"Islanders, get some sleep. Tomorrow, there's a recoupling. #ItsAllChanging\""]], beat: "{c} rolls over to face the wall. {b} lies there with {b.posAdj} eyes open." },
+      { when: { of: 'text-vote' }, turns: [['a', "\"Islanders, the public have been voting for their favourite couples. Tomorrow you'll find out who's at risk. #TheyveBeenWatching\""]], beat: "{b} glances at {c}. {c} is already looking." },
+      { when: { of: 'text-vote' }, turns: [['a', "\"Islanders, the public vote closes tonight. #EverythingCounts\""]], beat: "Everyone goes quiet. {b} pulls the covers up and turns away from {c}." },
+      { when: { of: 'text-bombshell' }, turns: [['a', "\"Islanders, get ready. Tomorrow, somebody new walks into the villa. #FreshFace\""]], beat: "The room goes off. In the middle of it, {b} is very quiet, and {c} notices." },
+      { when: { of: 'text-bombshell' }, turns: [['a', "\"Islanders, tomorrow you'll be getting a new arrival. #WhoCouldItBe\""]], beat: "{c} laughs along with everyone. {b} doesn't." },
+      { when: { of: 'text-bombshell' }, turns: [['a', "\"Islanders, somebody is on their way. Sleep tight. #NewArrival\""]], beat: "Everyone starts guessing at once. {b} lies back down without a word, and {c} watches {b} do it." },
+      { when: { of: 'text-vote' }, turns: [['a', "\"Islanders, tomorrow the public decide who's at risk. #MakeItCount\""]], beat: "{b} reaches for {c}'s hand in the dark, then thinks better of it." },
+      { when: { of: 'story-graft' }, turns: [], beat: "Across the room, {c} is awake too. For a second they look at each other in the dark. Then {a} turns over to face {b}." },
+      { when: { of: 'story-graft' }, turns: [['b', "Are you awake?"], ['a', "No."]], beat: "{a} lies there with {a.posAdj} eyes open, looking at the bed where {c} is sleeping." },
+      { when: { of: 'story-graft' }, turns: [['a', "Goodnight."], ['b', "Goodnight."]], beat: "{a} closes {a.posAdj} eyes. On the other side of the room, {c} doesn't." },
+      { when: { of: 'story-doubt' }, turns: [['b', "Are you okay?"], ['a', "Yeah. Go back to sleep."]], beat: "{a} doesn't sleep for a long time." },
+      { when: { of: 'story-doubt' }, turns: [], beat: "{b} reaches over in {b.posAdj} sleep. {a} moves away, just a little." },
+      { when: { of: 'story-secret' }, turns: [['a', "Tomorrow. I have to tell {b} tomorrow."]], beat: "{a} says it into the pillow, so quietly nobody hears." },
+      { when: { of: 'story-secret' }, turns: [], beat: "{c} catches {a} looking, and smiles. {a} doesn't smile back." },
+      { when: { of: 'story-close' }, turns: [['b', "Can I tell you something?"], ['a', "Go on."], ['b', "Tomorrow. I'll tell you tomorrow."]], beat: "{a} lies there grinning at the dark for a long time." },
+      { when: { of: 'couple-night' }, turns: [['a', "Do you think we'll still be here at the end?"], ['b', "I don't know."], ['a', "That's not very reassuring."], ['b', "It's honest."]], beat: "Neither of them says anything else, and neither of them sleeps for a while." },
+      { when: { of: 'couple-night' }, turns: [['b', "Can I ask you something?"], ['a', "Go on."], ['b', "If we went home tomorrow. Would you be heartbroken, or would you be relieved?"]], beat: "{a} takes a long time to answer. Long enough that {b} turns over." },
+      { when: { of: 'couple-night', feels: 'strong' }, turns: [['a', "Whatever happens tomorrow, I'm glad it was you."], ['b', "Don't say it like that. Like it's the end."]] },
+      { when: { of: 'story-close' }, turns: [['a', "I think I'm falling for you."], ['b', "Say that again. Tomorrow. In daylight."]] },
+    ],
+  },
+});

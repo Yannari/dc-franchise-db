@@ -9,7 +9,7 @@
 // DICE: every episode draws from its own `streamFor(seed, 'ep:N')`, every
 // profile from `profile:<name>`, every spark from `spark:a>b`. One episode's
 // draws never move another's (ADDING-A-SHOW §11.5 M).
-import { exitNight, answerStretch } from './stretch.js';
+import { exitNight, answerStretch, hookFor } from './stretch.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { PERFECT_MATCH_FORMAT } from '../shows.js';
@@ -600,6 +600,10 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         }
       }
     }
+    // The last thing before the credits (pm/stretch.js hookFor): a text about
+    // tomorrow, or the stretch's main story lying awake. On its own dice.
+    const nextEntry = schedule[schedule.indexOf(entry) + 1] || null;
+    for (const e of hookFor(state, streamFor(seed, `hook:${entry.ep}${state.epSalt}`), entry, nextEntry)) { m.events.push(e); state.history.push(e); }
     if (m.extra?.final) final = m.extra.final;
     const snap = ledgerSnapshot(state.ledger);
     const { rel, labels } = relationshipSnapshot(state);

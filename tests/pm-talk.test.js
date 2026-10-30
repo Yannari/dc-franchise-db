@@ -96,6 +96,8 @@ describe('a placeholder only where somebody fills it', () => {
       if (k === 'rekindle') { expect(e.when?.of, tag(k, s, e)).toBe('noticed'); continue; }
       // An ex's sting casts a third only when a friend is there (events.js 'ex-sting').
       // A stretch's answer casts a third when someone else was in the story (pm/stretch.js answerStretch).
+      // A hook casts a third on a text night and on a graft or a secret (pm/stretch.js hookFor).
+      if (k === 'hook') { expect(list(e.when?.of).every(o => o.startsWith('text-') || o === 'story-graft' || o === 'story-secret'), tag(k, s, e)).toBe(true); continue; }
       if (k === 'stretch-answer') { expect(['graft-stayed', 'graft-apart', 'doubt-ended'].includes(e.when?.of), tag(k, s, e)).toBe(true); continue; }
       if (k === 'ex-sting') { expect(e.when?.of, tag(k, s, e)).toBe('stung'); continue; }
       if (k === 'casa-react' && e.when?.of === 'stung') continue;
@@ -211,7 +213,7 @@ describe('a line happens at its own time of day', () => {
   const NIGHT = /\b(goodnight|night, then|a quick kiss before the fire pit|help me with my hair before the fire pit)\b/i;
   const phases = e => [].concat(e.when?.phase || []);
   // Kinds that only ever happen at bedtime: a bed shared at Casa.
-  const NIGHT_KINDS = new Set(['stretch-answer', 'secret-kept', 'bed-share']);
+  const NIGHT_KINDS = new Set(['stretch-answer', 'secret-kept', 'hook', 'bed-share']);
   it('morning words only in the morning, night words only at night', () => {
     const bad = [];
     for (const [k, s, e] of ENTRIES) {

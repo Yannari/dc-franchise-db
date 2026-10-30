@@ -73,7 +73,7 @@ import { WHERE_HEAD_MORE, WHERE_HEAD_PLANS } from './more/where-head-more.js';
 import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './more/story-more.js';
 import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
-import { STRETCH_ANSWER, SECRET_KEPT } from './stretch.js';
+import { STRETCH_ANSWER, SECRET_KEPT, HOOK } from './stretch.js';
 import { JUST_FRIENDS } from './just-friends.js';
 import { REKINDLE } from './rekindle.js';
 import { PICK_CHAT, VOTE_WORRY, STICK_TWIST } from './tonight.js';
@@ -198,6 +198,7 @@ extend(VOTE_WORRY, VOTE_WORRY_VOLUME); extend(PICK_CHAT, PICK_CHAT_VOLUME); exte
 TALK['doubt-end'] = DOUBT_END;
 TALK['stretch-answer'] = STRETCH_ANSWER;
 TALK['secret-kept'] = SECRET_KEPT;
+TALK.hook = HOOK;
 TALK['just-friends'] = JUST_FRIENDS;
 // Overthinking while the partner is at Casa: the other villa's lines lead (talk/alone.js).
 OVERTHINKING.leads = [...(OVERTHINKING.leads || []), 'paAway'];

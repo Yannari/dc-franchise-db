@@ -43,6 +43,8 @@ describe('pm fire pit', () => {
   it('names the third person in every pick that has one', () => {
     for (const p of picks) {
       // (A pick after a no follows the refusal scene, which names who said it.)
+      // (An ex taken back says so in the ex's own words, talk/recouple.js exPick, which lead.)
+      if (p.e.extra.exPick) continue;
       const c = p.e.extra.tookFrom || p.e.extra.leftFrom || p.e.extra.stole;
       if (c) expect(said(p.e), tag(p)).toContain(c);
     }

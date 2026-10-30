@@ -4,6 +4,8 @@
 // notes: [entries] }. Put together by pm/script.js talkScript; how islanders talk is
 // docs/pm-dialogue-style.md; which scenes are long, short or a note, and what each
 // follows from, is pm/story/director.js.
+import { GRAFT_EYES_WHOLE } from './whole/graft-eyes.js';
+import { FRIENDSHIP_WHOLE } from './whole/friendship.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
@@ -133,6 +135,9 @@ extend(BED_SHARE, BED_MORE); extend(DUMP_GOODBYE, GOODBYE_MORE); extend(DECLARAT
 // A couple of friends at the final (pm/just-friends.js): their own date, film and speeches.
 extend(FINAL_DATE, FINAL_DATE_MATES); extend(JOURNEY_OPEN, JOURNEY_OPEN_MATES); extend(JOURNEY_END, JOURNEY_END_MATES); extend(DECLARATION, DECLARATION_MATES);
 for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads || []), 'mates']; extend(DATE, DATE_MORE);
+
+// Whole conversations (pm/talk/whole/): one talk start to finish, in the speakers' own voices.
+extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,

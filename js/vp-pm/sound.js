@@ -241,7 +241,7 @@ const SITUATION = {
   cheating: ['photos', 'head-turned', 'bed-share'],
   drama: ['argument', 'blowup', 'pile-in', 'villa-divided', 'jealous-confront', 'told-confront', 'stirrer-confront', 'jealous-retaliate', 'cold-shoulder',
     'casa-row', 'photo-row', 'movie-row', 'movie-callout', 'enemy-clash', 'enemy-snipe', 'chal-row', 'lie-row', 'triangle-rivals', 'triangle-ultimatum', 'apology-rejected', 'kin-protect',
-    'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch', 'camp-confront', 'camp-clash', 'camp-split', 'camp-switch', 'feud-confront', 'feud-interrupt', 'feud-shade', 'game-called', 'game-fallout', 'betray-see', 'betray-confront', 'grass-confront', 'parents-wobble', 'vote-fallout', 'vote-callout', 'grudge-clash', 'visit-arrive', 'visit-confront', 'sc-arrive'],
+    'rival-shade', 'rival-row', 'code-call', 'rival-won', 'crush-watch', 'camp-confront', 'camp-clash', 'camp-split', 'camp-switch', 'feud-confront', 'feud-interrupt', 'feud-shade', 'game-called', 'game-fallout', 'betray-see', 'betray-confront', 'grass-confront', 'parents-wobble', 'vote-fallout', 'vote-callout', 'grudge-clash', 'dump-unfair', 'dump-betrayed', 'visit-arrive', 'visit-confront', 'sc-arrive'],
   cry: ['walk-doubt', 'walk-after', 'mugged-low', 'betray-end', 'redeem-act', 'crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'walk-goodbye', 'solidarity', 'kin-goodbye', 'kin-walk'],
@@ -249,7 +249,9 @@ const SITUATION = {
   suspense: ['recouple-open', 'dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'dump-tie', 'top-couple-pick', 'couples-vote',
     'ex-ballot', 'final-recoupling', 'recouple-pick', 'recouple-refused', 'steal',
     // Stick or twist: the host, and every walk-in, under the wait (each choice's own music plays over it).
-    'casa-host', 'casa-return'],
+    'casa-host', 'casa-return',
+    // The stretch (pm/stretch.js): a plan for tonight's pick, and the last thing before the credits.
+    'pick-plan', 'hook'],
   // The final: the declarations and the places under the wait, then the
   // winners (steps.js finalSteps marks which is which).
   // One track under every declaration (user: "declarations screens should have 1 music"):
@@ -262,7 +264,7 @@ const SITUATION = {
   // The villa between the big moments: the show's own pop, quieter (manifest
   // vol), under the chats, the games and the small talk (user: "the music and
   // sfx are not enough"; half of an episode played in silence).
-  villa: ['chat', 'friendship', 'debrief', 'advice', 'gossip', 'loyalty', 'keeping-open', 'date-back', 'date-picked',
+  villa: ['chat', 'friendship', 'stretch-answer', 'just-friends', 'debrief', 'advice', 'gossip', 'loyalty', 'keeping-open', 'date-back', 'date-picked',
     'bombshell-guess', 'close-off', 'course-pick', 'parents-advice', 'families', 'challenge-rules', 'challenge-text',
     'snog-marry-pie', 'heart-rate', 'rival-play', 'pull', 'deep-chat', 'clear-the-air', 'game-plan', 'crush-confide',
     'hideaway-morning', 'couple-goals', 'knowing-me', 'tod-truth', 'redeem-reflect'],

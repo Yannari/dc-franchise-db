@@ -430,6 +430,8 @@ function scriptRng(state) {
 // Ellie being taken back from the one who had just picked her).
 // `why`: a vote's reason (pm/villa-vote.js motives) — a grudge vote said with a
 // line about "nothing you've done" contradicted its own ballot (season 31).
+// What a whole conversation has to have been written for, when it's true (talkScript).
+const WHOLE_MUST = ['friction', 'rowedToday', 'kissed', 'heard', 'rebuffed', 'stoleFrom', 'promised'];
 const LEADING = ['mates', 'exes', 'stoleFrom', 'rebuffed', 'heard', 'kissed', 'promised', 'rowedToday', 'justMet', 'heat', 'going', 'why', 'another', 'behind', 'friction'];
 
 // The furthest islander a line names ({c} is the third): a line that names
@@ -578,9 +580,18 @@ export function fill(text, ps, partners = {}) {
   // An intro tape's own facts, from the character file (pm/talk/intro.js): only
   // what the file says, never invented.
   for (const k of ['age', 'job', 'town', 'one', 'ones']) if (partners[k] != null) text = text.split(`{${k}}`).join(partners[k]);
-  return text.replace(/\{(pa|pb|about|a|b|c|d|x)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf))?\}/g, (m, who, form) => {
+  return text.replace(/\{(pa|pb|about|a|b|c|d|x)(?:\.(sub|obj|pos|posAdj|ref|Sub|Obj|PosAdj|gf|he|He))?\}/g, (m, who, form) => {
     const n = names[who];
     if (!n) return m;
+    // {b.he}: "he" or "she" — and the name for anybody else, so the verb after
+    // it always agrees ("she wants me", "Sam wants me"; never "they wants me").
+    // People say "he" and "she" (season read 2026-10-30: "Josh would hate it.
+    // Josh would absolutely hate it." read like nobody talks).
+    if (form === 'he' || form === 'He') {
+      const g = players.find(p => p.name === n)?.gender;
+      const w = g === 'm' ? 'he' : g === 'f' ? 'she' : null;
+      return w ? (form === 'He' ? w[0].toUpperCase() + w.slice(1) : w) : n;
+    }
     // {b.gf}: what you ask {b} to be — from the roster, never guessed.
     if (form === 'gf') return { f: 'girlfriend', m: 'boyfriend' }[players.find(p => p.name === n)?.gender] || 'partner';
     return form ? pro(n)[form] : n;
@@ -785,6 +796,29 @@ function talkScript(state, ev, talk) {
   if (tier === 'note' && talk.notes?.length) {
     const e = pickScript(state, leading(talk.notes), ps, facts, { lead: false });
     if (e) { noteUse(state, e, ps); return { ...renderScript(e, ps, state, slots), tier }; }
+  }
+  // A WHOLE CONVERSATION (season read 2026-10-30, the user: "why are they just
+  // switching subject like that — what's the correlation between him and Jess
+  // and whistling?"). A scene stitched from pieces picked one at a time says
+  // whatever each piece says; a kind that has `whole` entries plays one of
+  // those instead, written start to finish as one talk, its lines in the
+  // speaker's own voice (variant blocks on `reg` and `persona`). The pieces
+  // are what's left when no whole one fits.
+  // …and only one written for what today did to them (a fall-out, a row, a kiss,
+  // being told, being turned down): a whole talk that doesn't name it would forget it.
+  const whole = talk.moves.whole?.length ? leading(talk.moves.whole)
+    .filter(e => matches(e.when, facts) && WHOLE_MUST.every(k => !facts[k] || e.when?.[k] != null)) : [];
+  if (whole.length) {
+    const e = pickScript(state, whole, ps, facts, { lead: false });
+    if (e) {
+      noteUse(state, e, ps);
+      let r = renderScript(e, ps, state, slots);
+      if (!r.stage && talk.stages?.length) {
+        const st = pickScript(state, talk.stages, ps, facts, { lead: false });
+        if (st) { noteUse(state, st, ps); r = { ...r, stage: renderScript(st, ps, state, slots).stage }; }
+      }
+      return { ...r, tier };
+    }
   }
   const parts = [];
   for (const raw of planOf(talk, tier === 'note' ? 'short' : tier, facts)) {

@@ -17,8 +17,11 @@ import { playPerfectMatchSeason } from '../js/pm/season.js';
 const ENTRIES = Object.entries(TALK).flatMap(([kind, t]) => [
   ...Object.entries(t.moves).flatMap(([slot, pool]) => pool.map(e => [kind, slot, e])),
   ...t.notes.map(e => [kind, 'note', e]), ...(t.stages || []).map(e => [kind, 'stage', e])]);
-const texts = e => [e.stage, e.beat, ...(e.turns || []).map(t => t[1])].filter(Boolean);
-const spoken = e => (e.turns || []).map(t => t[1]);
+// A turn is [speaker, line], or a block of the same line in each speaker's voice ({ by, vary }).
+const flat = e => (e.turns || []).flatMap(t => (Array.isArray(t) ? [t] : t.vary.flatMap(v => v.turns)));
+const varyBeats = e => (e.turns || []).flatMap(t => (Array.isArray(t) ? [] : t.vary.map(v => v.beat)));
+const texts = e => [e.stage, e.beat, ...varyBeats(e), ...flat(e).map(t => t[1])].filter(Boolean);
+const spoken = e => flat(e).map(t => t[1]);
 const narration = e => [e.stage, e.beat].filter(Boolean);
 const tag = (kind, slot, e) => `${kind}.${slot} ${e.id}`;
 
@@ -56,10 +59,10 @@ describe('the movements are well-formed', () => {
     expect(ids.length).toBe(new Set(ids).size);
   });
   it('speakers are the cast, or Dior where the show has the host speak', () => {
-    for (const [k, s, e] of ENTRIES) for (const t of e.turns || []) expect(['a', 'b', 'c', 'd', 'dior'], tag(k, s, e)).toContain(t[0]);
+    for (const [k, s, e] of ENTRIES) for (const t of flat(e)) expect(['a', 'b', 'c', 'd', 'dior'], tag(k, s, e)).toContain(t[0]);
   });
   it('every condition is a known fact', () => {
-    for (const [k, s, e] of ENTRIES) for (const key of Object.keys(e.when || {})) expect(FACT_KEYS, tag(k, s, e)).toContain(key);
+    for (const [k, s, e] of ENTRIES) for (const w of [e.when, ...(e.turns || []).flatMap(t => (Array.isArray(t) ? [] : t.vary.map(v => v.when)))]) for (const key of Object.keys(w || {})) expect(FACT_KEYS, tag(k, s, e)).toContain(key);
     for (const [kind, t] of Object.entries(TALK)) for (const tier of ['featured', 'short']) {
       const p = t.plans[tier];
       if (typeof p[0] !== 'string') for (const x of p) for (const key of Object.keys(x.when || {})) expect(FACT_KEYS, `${kind} plan`).toContain(key);
@@ -70,7 +73,7 @@ describe('the movements are well-formed', () => {
 describe('a placeholder only where somebody fills it', () => {
   it('only known placeholders, and never a subject pronoun', () => {
     for (const [k, s, e] of ENTRIES) for (const x of texts(e)) {
-      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|one|ones|day|quote|card|mine|Mine|top|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf))?)\}$/);
+      for (const [m] of x.matchAll(/\{(?!~)[^}]*\}/g)) expect(m, tag(k, s, e)).toMatch(/^\{(where|Where|about|age|job|town|one|ones|day|quote|card|mine|Mine|top|(pa|pb|a|b|c|d|x|about)(\.(obj|pos|posAdj|ref|Obj|PosAdj|gf|he|He))?)\}$/);
       // {age} {job} {town}: an intro tape's, from the character file; {one} {ones}: who the tape's islander goes for.
       if (/\{(age|job|town|one|ones)\}/.test(x)) expect(k, tag(k, s, e)).toBe('intro');
       // {day}: the day a declaration's moment happened (script.js clipSlots).
@@ -256,7 +259,7 @@ describe('a line about a body or a partner fits who says it', () => {
     const bad = [];
     for (const [k, s, e] of ENTRIES) {
       const w = e.when || {};
-      for (const [who, line] of e.turns || []) {
+      for (const [who, line] of flat(e)) {
         if (who !== 'a' && who !== 'b') continue;
         // A look that only fits one gender is only ever the look of someone who goes for it (intro.js lookOf).
         const gated = w.gender || w.bGender || w.into || ['pretty-girl', 'pretty-boy'].includes(w.look);

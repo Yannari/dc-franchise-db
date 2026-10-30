@@ -1,0 +1,66 @@
+// The stretch (pm/stretch.js): the episodes up to the next fire pit follow one
+// main story and up to two smaller ones (docs/superpowers/specs/2026-10-30-pm-stretch-payoff-design.md).
+import { describe, it, expect, beforeAll } from 'vitest';
+import { playReadSeason } from './helpers/pm-read.js';
+import { storyScore, exitNight } from '../js/pm/stretch.js';
+
+const SEEDS = [7, 12, 21];
+const seasons = {};
+beforeAll(() => {
+  for (const seed of SEEDS) {
+    const log = [];
+    globalThis.__PM_STRETCH_LOG = log;
+    seasons[seed] = { ...playReadSeason(seed), log };
+    globalThis.__PM_STRETCH_LOG = null;
+  }
+});
+
+describe('pm stretch', () => {
+  it('ends a stretch on the nights somebody can leave', () => {
+    expect(exitNight({ moment: 'recoupling' })).toBe(true);
+    expect(exitNight({ moment: 'public-vote' })).toBe(true);
+    expect(exitNight({ moment: 'villa' })).toBe(false);
+    expect(exitNight({ moment: 'casa-nights' })).toBe(false);
+  });
+
+  it('plans every villa episode between the first night and the final recoupling', () => {
+    for (const seed of SEEDS) {
+      const { log, rows } = seasons[seed];
+      const finalRe = rows.find(r => r.pm?.finalRecoupling)?.num ?? Infinity;
+      const casa = new Set(rows.filter(r => r.pm?.casaRoom).map(r => r.num));
+      for (const x of log) {
+        if (x.ep === 1 || x.ep > finalRe || casa.has(x.ep) || ['final', 'reunion', 'casa-open', 'casa-nights', 'stick-or-twist'].includes(x.moment)) continue;
+        expect(x.off, `seed ${seed} ep${x.ep} ${x.moment}`).toBe(false);
+        expect(x.a, `seed ${seed} ep${x.ep} has a main story`).toBeTruthy();
+      }
+    }
+  });
+
+  it("puts the plan's stories at the top of the day", () => {
+    for (const seed of SEEDS) for (const x of seasons[seed].log) {
+      if (x.off) continue;
+      expect(x.headline.slice(0, x.plan.length), `seed ${seed} ep${x.ep}`).toEqual(x.plan);
+    }
+  });
+
+  it('keeps the main story to the fire pit unless it is over', () => {
+    for (const seed of SEEDS) {
+      const { log, state } = seasons[seed];
+      for (let i = 1; i < log.length; i++) {
+        const [p, x] = [log[i - 1], log[i]];
+        if (p.off || x.off || x.ep > p.ceremony || !p.a) continue;
+        const t = state.threads.find(z => z.id === p.a);
+        if (t.over && t.endEp <= x.ep) continue;
+        expect(x.a, `seed ${seed} ep${x.ep}`).toBe(p.a);
+      }
+    }
+  });
+
+  it('scores a story by what it puts at stake, proportionally', () => {
+    const state = { ep: 5, villa: ['A', 'B', 'C'], couples: [['B', 'C']], profiles: {} };
+    const graft = { type: 'graft', ep: 3, heat: 1, c: 'A', t: 'B', p: 'C' };
+    const progress = { type: 'progress', ep: 3, heat: 1, a: 'B', b: 'C' };
+    expect(storyScore(state, graft)).toBeGreaterThan(storyScore(state, progress));
+    expect(storyScore(state, { ...graft, ep: 1 })).toBeGreaterThan(storyScore(state, graft));
+  });
+});

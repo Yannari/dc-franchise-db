@@ -34,6 +34,12 @@ it('season read audit', () => {
     const dropped = closed.filter(t => UNANSWERED.has(t.why));
     const whys = {};
     for (const t of closed) whys[t.why] = (whys[t.why] || 0) + 1;
+    // The stretch's stories (pm/stretch.js): the ones the screen leads with.
+    const planned = (state.threads || []).filter(t => state.planned?.[t.id]);
+    const pClosed = planned.filter(t => t.over);
+    const pDropped = pClosed.filter(t => UNANSWERED.has(t.why));
+    const pWhys = {};
+    for (const t of pClosed) pWhys[t.why] = (pWhys[t.why] || 0) + 1;
     // The fire pit: picks that took somebody's partner, and whether that partner was named.
     let took = 0, named = 0, changed = 0, ceremonies = 0;
     for (const r of rows) {
@@ -42,13 +48,13 @@ it('season read audit', () => {
       ceremonies++;
       const before = r.pm.couplesBefore || [];
       const partner = n => before.find(c => c.includes(n))?.find(x => x !== n) || null;
-      const pickers = new Set(picks.map(e => e.players[0]));
-      for (const e of picks) {
+            for (const e of picks) {
         const [a, b] = e.players;
-        const pb = partner(b);
-        if (pb && pb !== a && pickers.has(pb)) {
+        // Whose partner was taken, left or taken back (moments.js: a couple who called it off is neither).
+        const third = e.extra?.tookFrom || e.extra?.leftFrom || e.extra?.stole;
+        if (third) {
           took++;
-          if (eventLines(e).some(l => l.text.includes(pb))) named++;
+          if (eventLines(e).some(l => l.who === third || l.text.includes(third))) named++;
         }
         if (partner(a) !== b) changed++;
       }
@@ -72,7 +78,8 @@ it('season read audit', () => {
       `lines per phase: ${Object.entries(byPhase).map(([k, v]) => `${k} ${mean(v)}`).join(' · ')}`,
       `thin phases (<25 lines, no story): ${thin.length}${thin.length ? ' — ' + thin.slice(0, 8).join(', ') : ''}`,
       `stories followed: ${followed.length}, closed ${closed.length}, dropped (faded/fizzled/settled) ${dropped.length} (${Math.round(100 * dropped.length / Math.max(1, closed.length))}%) · ${JSON.stringify(whys)}`,
-      `fire pit: ${ceremonies} ceremonies, ${changed} picks changed a couple, ${took} took a partner, ${named} named that partner`,
+      `stretch stories: ${planned.length}, closed ${pClosed.length}, dropped ${pDropped.length} · ${JSON.stringify(pWhys)}`,
+      `fire pit: ${ceremonies} ceremonies, ${changed} picks changed a couple, ${took} took, left or took back a partner, ${named} named them`,
       `episodes with a breakdown section: ${breakdownEps} · goodbye lines repeated on one night: ${dupGoodbyes}`,
       `most heard:`, ...top.map(([t, n]) => `  ${n}x  ${t.slice(0, 110)}`));
   }

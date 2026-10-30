@@ -51,6 +51,7 @@ import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
 import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
+import { planStretch, planIds, roleOf } from './stretch.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2, rekindle: 1 };
 // A doubt's reason, as the break-up's cause (breakups.js).
@@ -377,13 +378,20 @@ export function beginThreads(state, rng, entry) {
   if (entry?.moment === 'bombshell') openGrafts(state, rng);
   const ranked = live(state).map(t => [t, t.heat + (t.last === state.ep - 1 ? 0.5 : 0) + (t.type === 'progress' ? 0.2 : 0)])
     .sort((x, y) => y[1] - x[1]).map(([t]) => t);
-  const headline = ranked.slice(0, HEADLINES);
+  // THE STRETCH (pm/stretch.js): what the episodes up to the next fire pit are
+  // about. Its stories lead the day; the rest of the villa's threads fill in
+  // behind them and play a beat at most (threadBeats).
+  planStretch(state, entry, state._nextExit);
+  const plan = planIds(state).map(id => state.threads.find(t => t.id === id));
+  const headline = [...plan, ...ranked.filter(t => !plan.includes(t))].slice(0, HEADLINES);
   // At least one happy one, when there is one (the real episodes always had one).
   const happy = ranked.find(t => t.type === 'progress' || t.type === 'spark');
-  if (happy && !headline.includes(happy)) headline[headline.length - 1] = happy;
-  state._th = { ep: state.ep, headline: headline.map(t => t.id), used: {}, queue: carry.filter(alive), top: headline[0]?.id || null };
+  if (happy && !headline.includes(happy) && headline.length > plan.length) headline[headline.length - 1] = happy;
+  state._th = { ep: state.ep, headline: headline.map(t => t.id), used: {}, queue: carry.filter(alive), top: headline[0]?.id || null, plan: plan.map(t => t.id) };
   // Every story the screen has followed, for the stretch's answers and the season-read audit.
   for (const t of headline) (state.headlined ||= {})[t.id] = state.headlined[t.id] || state.ep;
+  if (globalThis.__PM_STRETCH_LOG) { const st = state.stretch || {};
+    globalThis.__PM_STRETCH_LOG.push({ ep: state.ep, moment: entry?.moment, off: !!st.off, a: st.a, b: st.b, c: st.c, ceremony: st.ceremony, plan: state._th.plan, headline: state._th.headline }); }
   // A probe's window into the choice (tests only; never set in a season the user plays).
   if (globalThis.__PM_THREAD_LOG) globalThis.__PM_THREAD_LOG.push({ ep: state.ep, moment: entry?.moment,
     live: live(state).map(t => `${t.type}:${castOf(t).join('/')} b${t.beat}${headline.includes(t) ? '*' : ''} ${['told', 'seen', 'talked', 'vented', 'noticed', 'carried', 'chatted', 'shutDue', 'moment'].filter(k => t[k] != null && t[k] !== false).join(',')}`) });
@@ -813,7 +821,8 @@ export function threadBeats(state, rng, phase, max = Infinity) {
     tried.push(id);
     const t = (state.threads || []).find(x => x.id === id);
     if (!t || t.over) continue;
-    const cap = id === th.top ? 4 : 3;
+    // The stretch's stories carry the day; a story behind them plays a beat (pm/stretch.js).
+    const cap = id === th.top ? 4 : !th.plan?.length || th.plan.includes(id) ? 3 : 1;
     if ((th.used[id] || 0) >= cap) continue;
     let evs = [];
     if (t.type === 'graft') evs = phase === 'evening' ? [...graftEvening(state, rng, t, phase)] : [];
@@ -828,6 +837,9 @@ export function threadBeats(state, rng, phase, max = Infinity) {
     t.last = state.ep;
     t.beat++;
     moved++;
+    // Which of the stretch's stories this is (pm/stretch.js): the fire pit and the audit read it.
+    const role = roleOf(state, id);
+    if (role) for (const e of evs) e.extra = { ...(e.extra || {}), stretch: role };
     out.push(...evs);
     for (const e of evs) queueReaction(state, e);
   }

@@ -9,6 +9,7 @@
 // DICE: every episode draws from its own `streamFor(seed, 'ep:N')`, every
 // profile from `profile:<name>`, every spark from `spark:a>b`. One episode's
 // draws never move another's (ADDING-A-SHOW §11.5 M).
+import { exitNight } from './stretch.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { PERFECT_MATCH_FORMAT } from '../shows.js';
@@ -440,6 +441,10 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // whenever the pace alone kept a night safe. From the third, a night that
     // can spare somebody dumps (moments.js recoupleNight, voteNight).
     const dry = state.ep - (state.lastExitEp ?? 1);
+    // The next night somebody can leave on, and whether the couples-only week has begun:
+    // the stretch's plan runs up to it (pm/stretch.js).
+    state._nextExit = ahead.find(e => exitNight(e))?.ep ?? entry.ep;
+    state._afterFinalRecoupling = schedule.some(e => e.finalRecoupling && e.ep < entry.ep);
     const ctx = { rng, entry, seed, queues, popularity: gs.popularity, splitOrStealOn, closed: false, pace, votesAhead, coupledAhead, plainNights: nights, firstVote, surplus, slotsAhead, dry };
     // For a partner walking out with the dumped (moments.js): only while the season can spare them.
     state._surplus = surplus;

@@ -150,6 +150,37 @@ const PROP = {
   portrait: { src: 'portrait', cls: 'p-portrait', cue: '', snd: '' },
 };
 
+// eight hearts, each its own drift and delay (inline SVG: a heart is a path, never a box of divs)
+const HEARTS = Array.from({ length: 8 }, (_, i) => `<svg viewBox="0 0 32 29" style="--i:${i};--x:${((i * 37) % 9) - 4}cqw;--s:${(0.7 + ((i * 13) % 6) / 10).toFixed(2)}"><path d="M16 28 C 6 20 0 14 0 8 A 8 8 0 0 1 16 4 A 8 8 0 0 1 32 8 C 32 14 26 20 16 28 Z" fill="${i % 3 ? '#ff4f9a' : '#ff9cc6'}"/></svg>`).join('');
+
+/** Leans the two kissing tiles in until they meet, and puts the hearts between them. */
+function placeKiss() {
+  if (typeof document === 'undefined') return;
+  for (const k of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ss-kiss:not([data-placed])'))) {
+    k.dataset.placed = '1';
+    const root = k.closest('[id^="bbx-st-"]') || document;
+    const tile = n => /** @type {HTMLElement|null} */ ([...root.querySelectorAll('.gt:not(.host) .plate b[data-t]')].find(b => /** @type {HTMLElement} */ (b).dataset.t === n)?.closest('.gt') || null);
+    const a = tile(k.dataset.a), b = tile(k.dataset.b);
+    if (!a || !b || !a.parentElement) { k.remove(); continue; }
+    const [l, r] = a.offsetLeft <= b.offsetLeft ? [a, b] : [b, a];
+    const mid = (l.offsetLeft + r.offsetLeft) / 2, half = l.offsetWidth * 0.36;
+    // (each slides to just short of the middle and tips towards the other; the stage redraws them on the next step)
+    l.style.setProperty('--kx', `${(mid - half - l.offsetLeft).toFixed(1)}px`); l.style.setProperty('--kr', '7deg');
+    r.style.setProperty('--kx', `${(mid + half - r.offsetLeft).toFixed(1)}px`); r.style.setProperty('--kr', '-7deg');
+    l.classList.add('ss-kissing'); r.classList.add('ss-kissing');
+    k.style.left = `${mid.toFixed(1)}px`;
+    k.style.top = `${(l.offsetTop + l.offsetHeight * 0.1).toFixed(1)}px`;
+    a.parentElement.appendChild(k);
+  }
+}
+
+// The painted board on the user's clue room plates (to-edit-family5), in % of the stage: the cork area, its round
+// frames for faces (centres), a frame's width, and the cards' type size
+const PLATE_BOARD = {
+  'ss-clue-room': { L: 27.8, T: 17, W: 31.4, H: 29.8, f: [[30.1, 9.6], [34.7, 9.6], [52.6, 9.6], [57.2, 9.6]], fd: 4.2, fs: 0.62 },
+  'ss-clue-board': { L: 40.7, T: 16, W: 53.8, H: 38.7, f: [[44.3, 7.4], [52, 7.4], [82.2, 7.4], [90.2, 7.4]], fd: 6.4, fs: 0.95 },
+};
+
 /** Puts each new clue card in its housemate's hand: beside their tile, in the same (zoomed) layer as the tiles,
  * measured in layout pixels so the camera moves it with them. A pass flies from the giver's hand to the taker's. */
 function placeCarry() {
@@ -242,7 +273,19 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   }
   // THE CLUE ROOM'S BOARD (vp-bb-ep/ss-clue-room.js): the cork board, the cards pinned to it, and the faces the group
   // has strung to them; the card being talked about lit up, a new one popping in
-  if (st.clueBoard && (st.clueBoard.cards || []).length) {
+  // (on the user's own plates the board is painted: the cards go onto it, the faces into its empty round frames)
+  const PB = st.clueBoard && PLATE_BOARD[S.plate];
+  if (PB && (st.clueBoard.cards || []).length) {
+    const B = st.clueBoard;
+    const cards = B.cards.slice(-8);
+    const cols = Math.min(4, cards.length), rows = cards.length > 4 ? 2 : 1;
+    const at = i => ({ x: PB.L + PB.W * (((i % 4) + 0.5) / cols), y: PB.T + PB.H * ((Math.floor(i / 4) + 0.5) / rows) });
+    const pins = (B.pins || []).filter(p => cards.some(c => c.clue === p.clue)).slice(0, PB.f.length);
+    const lines = pins.map((p, j) => { const c = at(cards.findIndex(x => x.clue === p.clue)); return `<line x1="${PB.f[j][0]}" y1="${PB.f[j][1] + PB.fd * 0.9}" x2="${c.x.toFixed(1)}" y2="${(c.y - PB.H / rows * 0.32).toFixed(1)}"/>`; }).join('');
+    h += `<div class="ss-board onplate ${fresh ? 'fresh' : ''}" style="--fs:${PB.fs}cqw"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+      ${pins.map((p, j) => `<span class="sbf ${B.add === p.face && fresh ? 'pop' : ''}" style="left:${PB.f[j][0]}%;top:${PB.f[j][1]}%;width:${PB.fd}%;--c:${H.col(p.face)}"><i>${esc(String(p.face)[0])}</i>${H.img(p.face)}</span>`).join('')}
+      ${cards.map((c, i) => { const p = at(i); return `<b class="sbc ${B.focus === c.clue ? 'on' : ''} ${B.fresh === c.clue && fresh ? 'pop' : ''}" style="left:${p.x.toFixed(1)}%;top:${p.y.toFixed(1)}%;width:${(PB.W / cols * 0.8).toFixed(1)}%;min-height:${(PB.H / rows * 0.55).toFixed(1)}%;--r:${((i * 37) % 9) - 4}deg">${esc(c.clue)}</b>`; }).join('')}</div>`;
+  } else if (st.clueBoard && (st.clueBoard.cards || []).length) {
     const B = st.clueBoard;
     const cards = B.cards.slice(-8);
     const pins = (B.pins || []).filter(p => cards.some(c => c.clue === p.clue)).slice(0, 5);
@@ -252,6 +295,12 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     h += `<div class="ss-board ${fresh ? 'fresh' : ''}"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
       ${pins.map((p, j) => `<span class="sbf ${B.add === p.face && fresh ? 'pop' : ''}" style="left:${fx(j)}%;--c:${H.col(p.face)}"><i>${esc(String(p.face)[0])}</i>${H.img(p.face)}</span>`).join('')}
       ${cards.map((c, i) => `<b class="sbc ${B.focus === c.clue ? 'on' : ''} ${B.fresh === c.clue && fresh ? 'pop' : ''}" style="left:${cx(i)}%;top:${cy(i)}%;--r:${((i * 37) % 9) - 4}deg">${esc(c.clue)}</b>`).join('')}</div>`;
+  }
+  // A KISS (the user, 2026-10-30: "kiss should be more of an event with animation of them kissing"): the two tiles
+  // lean in and meet in the middle, the room glows pink, and hearts float up from between them
+  if (st.kiss && st.kiss.length === 2) {
+    h += `<div class="ss-kissglow ${fresh ? 'fresh' : ''}"></div><div class="ss-kiss" data-a="${esc(st.kiss[0])}" data-b="${esc(st.kiss[1])}">${HEARTS}</div>`;
+    setTimeout(placeKiss, 0);
   }
   // THE CLUE IN HAND (vp-bb-ep/steps.js ssHandedClueScreen; the user, 2026-10-29: "the clue screen needs the card
   // animated when they walk out"): it flies out of the confessional into their hand, then is held up, passed to
@@ -386,6 +435,8 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .bbx .stage.ss .vign{background:radial-gradient(ellipse at center,transparent 70%,rgba(0,0,0,.22))}
 .bbx .stage.ss .toast b{font-family:'SSAachen',sans-serif;font-weight:700;letter-spacing:.02em}
 .bbx .stage.ss .bigrev b,.bbx .stage.ss .bigrev i{font-family:'SSAachen',sans-serif}
+.bbx .stage.ss .bigrev b{font-size:min(9cqw,calc(140cqw / var(--len,10)))}
+.bbx .stage.ss .bigrev.name b{font-size:min(7.5cqw,calc(130cqw / var(--len,10)))}
 .bbx .stage.ss .fboard{font-family:'SSNunito',sans-serif;border-radius:1.4cqw;background:linear-gradient(160deg,rgba(43,13,63,.92),rgba(80,12,70,.9));box-shadow:0 0 0 .25cqw var(--ssp),0 1.5cqw 4cqw rgba(0,0,0,.45)}
 .bbx .stage.ss .fboard .fh{font-family:'SSAachen',sans-serif;color:var(--ssg)}
 /* (the board's amount is .ft, a class Big Brother's camera thumbnails also style as a 16:9 box) */
@@ -466,10 +517,21 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
 /* the rig over the studio: six spots sweeping down on the stairs, the room flashing white on the name */
+.gt.ss-kissing{translate:var(--kx) 0;rotate:var(--kr);transition:translate 1.1s cubic-bezier(.3,.1,.2,1),rotate 1.1s cubic-bezier(.3,.1,.2,1);z-index:6}
+.ss-kissglow{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,rgba(255,120,180,.38),rgba(120,0,70,.25) 70%);mix-blend-mode:screen}
+.ss-kissglow.fresh{animation:ss-kglow 1.6s ease-out both}
+.ss-kiss{position:absolute;width:0;height:0;z-index:7;pointer-events:none}
+.ss-kiss svg{position:absolute;left:-1.4cqw;top:0;width:2.8cqw;scale:var(--s);opacity:0;animation:ss-heart 2.6s ease-out infinite;animation-delay:calc(1s + var(--i) * .3s)}
+@keyframes ss-kglow{from{opacity:0}to{opacity:1}}
+@keyframes ss-heart{0%{opacity:0;translate:0 0}15%{opacity:1}100%{opacity:0;translate:var(--x) -14cqw;rotate:calc(var(--x) * 3deg)}}
 .ss-board{position:absolute;left:50%;top:7.5cqw;width:56cqw;height:20cqw;translate:-50% 0;z-index:21;border-radius:.8cqw;pointer-events:none;
   background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0 .3cqw,transparent .4cqw) 0 0/2.2cqw 2.2cqw,linear-gradient(160deg,#9a6a3f,#7b4f2b);
   box-shadow:0 0 0 .5cqw #e0b84a,0 0 0 .75cqw #8a5a12,0 1.6cqw 3cqw rgba(30,0,30,.55)}
 .ss-board.fresh{animation:ss-board-in .5s cubic-bezier(.2,.9,.3,1.2) both}
+.ss-board.onplate{left:0;top:0;width:100%;height:100%;translate:none;background:none;box-shadow:none;border-radius:0}
+.ss-board.onplate.fresh{animation:none}
+.ss-board.onplate .sbc{font-size:var(--fs);padding:.3cqw .4cqw}
+.ss-board.onplate .sbf{aspect-ratio:1;width:auto}
 .ss-board svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .ss-board line{stroke:#d61f3c;stroke-width:.35;vector-effect:non-scaling-stroke;stroke-width:2.2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
 .sbc{position:absolute;width:21%;min-height:28%;translate:-50% -50%;rotate:var(--r);display:grid;place-items:center;padding:.5cqw .7cqw;box-sizing:border-box;

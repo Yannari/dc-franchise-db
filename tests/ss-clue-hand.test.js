@@ -40,6 +40,19 @@ describe('the clue handed out in the confessional', () => {
       }
     }
   });
+  it("read out to everybody: the house warms to the reader, the public too, and the clue's holder cools on them", () => {
+    let seen = 0;
+    const rng = seededRandom(5);
+    for (let i = 0; i < 200 && seen < 5; i++) {
+      const act = handClue(fresh(), { rng, week: 2, stat: (n, k) => (n === 'Cy' && k === 'social' ? 10 : n === 'Cy' && k === 'strategic' ? 1 : 5), bond }, { holder: 'Ana', house: names, to: 'Cy' });
+      if (act.share !== 'all') continue;
+      seen++;
+      expect(act.effects.bond).toContainEqual(['Ana', 'Cy', -1]);
+      for (const n of names.filter(x => x !== 'Cy' && x !== 'Ana')) expect(act.effects.bond).toContainEqual(['Cy', n, 0.3]);
+      expect(act.effects.pub.some(([n, axis, d]) => n === 'Cy' && axis === 'warmth' && d > 0)).toBe(true);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
   it('the strategic keep it more often than the sociable and loyal', () => {
     let keepSharp = 0, keepWarm = 0;
     // (one stream for the whole run: a fresh seed per draw reads only each seed's first number)

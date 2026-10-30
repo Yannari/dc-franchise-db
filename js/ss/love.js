@@ -121,7 +121,10 @@ export function loveWeek(state, ctx, { house = [], couples = [], sparks = [] } =
       const yes = compat(other, first) && B(a, b) + rng() * 3 >= 4;
       e.bond.push([a, b, yes ? 1.2 : -0.4]);
       e.pub.push([first, yes ? 'arc' : 'pity', yes ? 0.2 : 0.2, yes ? 'said "I like you" first' : 'was told "not yet"']);
-      return { kind, a: first, b: other, yes, effects: e };
+      // the first kiss, seen through the window half the time: a friend is glad for them, anybody else has a story
+      const seenBy = yes && rng() < 0.5 ? others(a, b)[Math.floor(rng() * others(a, b).length)] || null : null;
+      if (seenBy) e.bond.push([seenBy, first, B(seenBy, first) > 2 ? 0.3 : -0.3]);
+      return { kind, a: first, b: other, yes, seenBy, effects: e };
     }
     if (kind === 'doubt') {
       const d = others(a, b).filter(x => (VILLAIN.includes(arch(x)) || S(x, 'strategic') >= 7) && B(x, a) < 2).sort((x, y) => S(y, 'strategic') - S(x, 'strategic'))[0];

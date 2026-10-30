@@ -299,5 +299,7 @@
  "ss-studio-interview": {"room": "living-room", "sets": ["studio"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
  "ss-studio-after": {"room": "living-room", "sets": ["studio"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
  "ss-studio-final": {"room": "living-room", "sets": ["finale"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
- "ss-studio-bench": {"room": "living-room", "sets": ["finale-jury"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"}
+ "ss-studio-bench": {"room": "living-room", "sets": ["finale-jury"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
+ "ss-clue-room": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "clue room|the board", "only": "secret-story"},
+ "ss-clue-board": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"}
 }

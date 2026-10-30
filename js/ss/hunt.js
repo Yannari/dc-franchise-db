@@ -171,8 +171,15 @@ export function handClue(state, ctx, { holder = undefined, how = 'voice', house 
   // (the record remembers who holds it and how far it went: the clue room's board and trades read it)
   const rec = state.shownClues.at(-1);
   if (rec) { rec.got = got; rec.share = share; }
-  const close = share === 'few' || share === 'one' ? 0.6 : share === 'all' ? 0.12 : 0;
-  const effects = { bond: close ? shared.filter(n => !holders.includes(n)).map(n => [got, n, close]) : [] };
+  // (shown to a few: they are closer for it. Read out to everybody (the user, 2026-10-30): the house likes you a bit
+  // more for playing fair, the public too, and whoever's clue it was likes you less)
+  /** @type {{ bond: any[], pub: any[] }} */ const effects = { bond: [], pub: [] };
+  if (share === 'few' || share === 'one') effects.bond.push(...shared.filter(n => !holders.includes(n)).map(n => [got, n, 0.6]));
+  else if (share === 'all') {
+    effects.bond.push(...house.filter(n => n !== got && !holders.includes(n)).map(n => [got, n, 0.3]));
+    effects.bond.push(...holders.filter(h => house.includes(h)).map(h => [h, got, -1]));
+    effects.pub.push([got, 'warmth', 0.08, 'read a clue out to the whole house']);
+  }
   const told = share === 'all' ? 'reads it out to the whole house' : share === 'none' ? 'keeps it to themselves' : `shows it to ${shared.join(' and ')}`;
   return { ...act, got, share, shared, effects,
     beats: [{ text: `In the confessional, the Voice gives ${got} a clue about somebody's secret: ${act.clue}. ${got} ${told}.`,

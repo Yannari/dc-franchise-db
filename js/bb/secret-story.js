@@ -450,12 +450,21 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   // The Voice's clues of the week: each one to one housemate, in the confessional, who decides who else sees it
   // (hunt.js handClue). Two a week, and a third in the back half of the season when the Voice wants the hunt to
   // finish. They come before the days of hunting, which argue over them.
+  const gotClue = new Set();
   for (let c = 0; c < (room.length <= 9 ? 3 : 2); c++) {
     const hidden = room.filter(n => secretOf(state, n) && !secretOf(state, n).found);
     if (!hidden.length) break;
     const holder = hidden[Math.floor(rng() * hidden.length)];
-    const clue = handClue(state, ctx, { holder, how: 'voice', house: room });
-    if (clue) { applyFx(clue.effects); acts.push(clue); }
+    // WHY THEM (the user, 2026-10-30: "it isnt really said why michelle and alexander got 1"): the Voice's quiz (the
+    // first right answer, the sharp more often), a name drawn from the box (anybody), or a reward for keeping every
+    // rule this week (the loyal and even-tempered more often; only the one rewarded knows)
+    // (one of the Voice's clues a week per housemate: the same name winning the quiz and the draw read as a fix)
+    const others = room.filter(n => !(secretOf(state, holder)?.holders || []).includes(n) && !gotClue.has(n));
+    const way = ['quiz', 'draw', 'reward'][Math.floor(rng() * 3)];
+    const lean = n => (way === 'quiz' ? st(n, 'mental') + st(n, 'intuition') * 0.5 : way === 'reward' ? st(n, 'loyalty') + st(n, 'temperament') * 0.5 : 1) * (0.5 + rng());
+    const to = others.slice().sort((a, b) => lean(b) - lean(a))[0];
+    const clue = handClue(state, ctx, { holder, how: 'voice', house: room, to });
+    if (clue) { applyFx(clue.effects); acts.push({ ...clue, why: way }); gotClue.add(clue.got); }
   }
   // THE CLUE ROOM (js/ss/clue-room.js): the week's public clues go up on the board; allies brainstorm over it,
   // and pin, trade or keep the clues they were shown; about every other week the Voice puts something in the room

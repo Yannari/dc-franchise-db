@@ -184,7 +184,7 @@ const EVENT_BEAT = {
   box: e => `A locked box in the clue room opens on a riddle. ${e.finder} solves it and takes the clue inside.`,
   auction: e => `The Voice auctions one clue in the clue room. ${e.finder} pays $${(e.paid || 0).toLocaleString('en-US')} for it.`,
   tamper: e => `Overnight, a new clue appears on the board: ${e.clue}. Nobody saw who put it there.`,
-  rivals: e => `${e.pair[0]} and ${e.pair[1]} are called into the clue room: pool their clues, or lose them. ${e.pooled ? 'They pool them.' : 'They refuse, and lose them.'}`,
+  rivals: e => `${e.pair[0]} and ${e.pair[1]} are called into the clue room: show each other every clue they hold, or the Voice takes them all back. ${e.pooled ? 'They show each other.' : 'One refuses, and they both lose their clues.'}`,
 };
 
 // the locked box's riddles: none gives anything away; the answer opens the padlock

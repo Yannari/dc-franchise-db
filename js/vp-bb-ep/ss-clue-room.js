@@ -39,7 +39,7 @@ export function ssClueRoomScreens(act, ctx, H) {
     ];
     s.read.slice(0, 2).forEach((r, i) => {
       const who = g[(i + 1) % g.length];
-      steps.push({ k: 'say', by: who, clueBoard: { cards, pins, focus: r.clue }, t: R(OVER_CARD, `r${i}`)(r.clue) },
+      steps.push({ k: 'say', by: who, scene: ROOM(g, 'ss-clue-board'), clueBoard: { cards, pins, focus: r.clue }, t: R(OVER_CARD, `r${i}`)(r.clue) },
         { k: 'say', by: g[(i + 2) % g.length] === who ? s.leader : g[(i + 2) % g.length], t: R(GUESS, `g${i}`) });
       if (r.face) steps.push({ k: 'beat', clueBoard: { cards, pins, focus: r.clue, add: r.face }, t: `A face goes up next to it, on a pin, with a piece of red string: ${r.face}.` });
     });
@@ -47,7 +47,7 @@ export function ssClueRoomScreens(act, ctx, H) {
       const other = p.to[0];
       cards.push({ clue: p.clue });
       steps.push({ k: 'say', by: p.by, t: R(["I haven't told anyone this. The Voice gave me a clue too.", "Okay. I've been sitting on something. You need to see it."], `p0|${p.by}`) },
-        { k: 'beat', clueBoard: { cards: [...cards], pins, focus: p.clue, fresh: p.clue }, t: `${p.by} pins a new card to the board: ${p.clue}.` },
+        { k: 'beat', scene: ROOM([p.by, ...p.to], 'ss-clue-board'), clueBoard: { cards: [...cards], pins, focus: p.clue, fresh: p.clue }, t: `${p.by} pins a new card to the board: ${p.clue}.` },
         { k: 'say', by: other, t: R(['You kept that from the whole house?', "And you're only showing us now?", 'Okay. That changes things.'], `p1|${p.by}`) },
         { k: 'say', by: p.by, t: R(["I'm not keeping it from you. That's the point.", "From the house, yes. Not from you."], `p2|${p.by}`) });
     }
@@ -128,19 +128,21 @@ function eventScreen(act, e, ctx, H, board) {
   } else if (e.kind === 'rivals') {
     const [a, b] = e.pair;
     steps = [
-      ssv(`${a}, ${b}. To the clue room, both of you.`, { toast: ['THE CLUE ROOM', '#e0b84a'], scene: ROOM([a, b]),
-        ask: { id, q: `Will ${a} and ${b} pool their clues?`, opts: ['Both say yes', 'One refuses'] } }),
+      ssv(`${a}, ${b}. To the clue room, both of you.`, { toast: ['SHARE OR LOSE', '#e0b84a'], scene: ROOM([a, b]),
+        ask: { id, q: `Will ${a} and ${b} show each other their clues?`, opts: ['Both say yes', 'One refuses'] } }),
       { k: 'beat', t: R([`${a} and ${b} have not said a kind word to each other in days. Now they share a sofa.`, `${a} sits as far from ${b} as the room allows.`], 1) },
-      ssv('You will pool everything you have worked out about the secrets in this house: every clue, every theory. Or you will both forget it, here and now.'),
+      // (the deal in plain words: the user, 2026-10-30, "i dont understand this whats happening whats the pool?")
+      ssv(`You are hunting the same secrets, and each of you holds clues the other has never seen. Here is my offer. Show each other every clue you have, right now, and you both walk out of this room knowing more.`),
+      ssv('If either of you says no, I take back every clue I have given you both, and the notes you have made on them go in the bin. You will both start again from nothing.'),
       { k: 'say', by: a, t: e.yes[0] ? R(['Fine. Yes.', "I don't like it. Yes."], 2) : R(['No. Not with them.', 'Never.'], 2) },
       { k: 'say', by: b, t: e.yes[1] ? R(['Yes.', "If they're in, I'm in."], 3) : R(["No. They'd use it against me.", 'No chance.'], 3), settle: { id, answer: e.pooled ? 'Both say yes' : 'One refuses', n: 2 } },
-      e.pooled ? ssv('Then share.') : ssv('Then you both lose it. Everything.'),
-      { k: 'beat', t: e.pooled ? `For an hour, ${a} and ${b} go through every card on the board, side by side. It is the longest conversation they have had.` : `They come out of the clue room knowing less than when they went in, and blaming each other for it.`, tense: e.pooled ? undefined : [a, b] },
+      e.pooled ? ssv('Then show each other. Everything.') : ssv('Then I take them back. All of them.'),
+      { k: 'beat', t: e.pooled ? `For an hour, ${a} and ${b} lay their clue cards out on the table, side by side. It is the longest conversation they have had.` : `A hand comes through the hatch in the wall. ${a} and ${b} put their clue cards in it, one by one, and their notebooks after them.`, tense: e.pooled ? undefined : [a, b] },
       ...(e.pooled ? [{ k: 'dr', by: a, t: R(["I never thought I'd say it. That was useful.", "We're not friends. But we're not stupid either."], 4) }]
         : [{ k: 'dr', by: e.yes[0] ? b : a, t: R(["I'd rather lose it than give it to them.", "Pool my clues with them? I'd rather start again from nothing."], 4) },
           ...(e.yes[0] || e.yes[1] ? [{ k: 'dr', by: e.yes[0] ? a : b, t: R(["All that work. Gone, because they couldn't say one word.", 'I said yes. They said no. And we both pay for it.'], 5) }] : [])])];
   }
-  const TITLE = { object: 'Something in the Clue Room', box: 'The Locked Box', auction: 'The Clue Auction', tamper: 'A New Card on the Board', rivals: 'Pool or Lose' };
+  const TITLE = { object: 'Something in the Clue Room', box: 'The Locked Box', auction: 'The Clue Auction', tamper: 'A New Card on the Board', rivals: 'Share or Lose' };
   return { id: `bb-ss-clueroom-ev-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '17:00', ...ROOM(e.searchers || e.pair || []), sceneful: true,
     title: TITLE[e.kind] || 'The Clue Room', label: 'The Clue Room', sub: TITLE[e.kind] || '', steps };
 }

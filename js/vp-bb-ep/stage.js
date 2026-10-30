@@ -997,8 +997,9 @@ export function stageHtml(screens, si, idx, fresh, o) {
     const [a, b, tone] = st.big;
     // (Secret Story letters its own words: vp-bb-ep/ss-type.js)
     const big = t => (SSN ? ssx(t) : esc(t));
-    h += tone ? `<div class="bigrev name ${tone} ${fresh ? 'fresh' : ''}"><b>${big(a)}</b><i>${esc(b)}</i></div>`
-      : `<div class="bigrev ${fresh ? 'fresh' : ''}"><i>${esc(a)}</i><b>${big(b)}</b></div>`;
+    // (--len: a long title is set smaller so it fits the screen)
+    h += tone ? `<div class="bigrev name ${tone} ${fresh ? 'fresh' : ''}" style="--len:${String(a).length}"><b>${big(a)}</b><i>${esc(b)}</i></div>`
+      : `<div class="bigrev ${fresh ? 'fresh' : ''}" style="--len:${String(b).length}"><i>${esc(a)}</i><b>${big(b)}</b></div>`;
   }
   if (fresh && st && st.door) h += '<div class="doorflood"></div>';
   // the Head of Household's key turning in the door of the room (the night the room opens)

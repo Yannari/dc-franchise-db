@@ -22,10 +22,11 @@ const POOL = who => SC('yard', 'pool-loungers', 'The Pool', who, 5);
 /**
  * @param {any} act an 'ss-love' act
  * @param {any} ctx the week's context
- * @param {{ ssv: Function }} H
+ * @param {{ ssv: Function, pronouns?: Function }} H
  */
 export function ssLoveScreen(act, ctx, H) {
   const { ssv } = H;
+  const P = n => { try { return /** @type {any} */ (H.pronouns?.(n)) || {}; } catch { return {}; } };
   const { a, b, c } = act;
   if (!a || !b) return null;
   const k = `${ctx.week}|love|${a}|${b}|${act.kind}`;
@@ -51,7 +52,7 @@ export function ssLoveScreen(act, ctx, H) {
         ['Did you plan any of this?', 'No. None of it. I came here to play, and then there was you.']], 'r5').map((t, j) => ({ k: 'say', by: j ? a : b, t })),
       ...R([["I'm scared of what the others will do to us now.", 'Let them try. Tonight is ours.'], ["I don't want this to be just a game thing.", "It isn't. You know it isn't."],
         ['I keep forgetting there are cameras.', 'Good. Forget them. Just for tonight.']], 'r7').map((t, j) => ({ k: 'say', by: j ? a : b, t })),
-      { k: 'beat', t: R(['A long kiss, and the candles burn down.', 'They talk until three in the morning, and fall asleep mid-sentence.', 'They laugh until they cry, and the camera finally looks away.'], 'r9') },
+      { k: 'beat', kiss: [a, b], bed: 'ss-love', t: R(['A long kiss, and the candles burn down.', 'They kiss, and the camera in the ceiling finally looks away.'], 'r9') },
       { k: 'dr', by: a, t: R([`That night with ${b} is the best thing that has happened to me in here. Maybe anywhere.`, `I didn't think I could feel like this on TV.`, `Whatever happens now, I had that night.`], 'r10') },
       { k: 'dr', by: b, t: R([`I'm falling for ${a}. There. The whole country can know.`, `I've never felt that safe in this house.`, `It was perfect. Too perfect. That scares me a little.`], 'r11') },
       { k: 'beat', scene: KIT([a, b, ...house.slice(0, 3)]), t: `The next morning, ${a} and ${b} come down the stairs holding hands. The kitchen goes very quiet, then very loud.` },
@@ -85,7 +86,10 @@ export function ssLoveScreen(act, ctx, H) {
       { k: 'beat', t: R([`${b} does not answer straight away.`, `${b} looks at ${a} for a long time.`, `${b} laughs, nervously, then stops.`], 'c01') },
     ];
     if (act.yes) steps.push({ k: 'say', by: b, t: R(['Took you long enough. Me too.', 'I was hoping you would say that. I was too scared to.', 'Me too. Since the first night.'], 'c1') },
-      { k: 'beat', t: R(['A first kiss, quick, and then a long one.', `${b} leans in, and that is the answer.`], 'c2') },
+      // (the first kiss is the moment: the two lean in on the stage, the music turns, and somebody sees it)
+      { k: 'beat', kiss: [a, b], bed: 'ss-love', toast: ['A FIRST KISS', '#ff5fa2'], t: R([`${b} leans in. ${a} meets ${P(b).obj || 'them'} halfway.`, `${a} kisses ${b}. Quickly at first, then not quickly at all.`], 'c2') },
+      { k: 'beat', t: R(['For a few seconds, the House of Secrets does not exist.', 'Somewhere behind them, a door opens and closes again, very quietly.'], 'c2b') },
+      ...(act.seenBy ? [{ k: 'beat', t: `From the window, ${act.seenBy} sees all of it.` }, { k: 'dr', by: act.seenBy, t: R([`${a} and ${b}. I knew it. I KNEW it.`, `Well. That's going to change everything in here.`], 'c2c') }] : []),
       { k: 'dr', by: a, t: R(['I said it, and they said it back. I am shaking.', 'I came here to keep a secret. Now I have another one.'], 'c3') },
       { k: 'dr', by: b, t: R([`I didn't come here for love. Then ${a} happened.`, 'I am in so much trouble. The good kind.'], 'c4') });
     else steps.push({ k: 'say', by: b, t: R(["I like you too. I just don't know if I can do this in here. Not yet.", "You're amazing. I need a bit of time. Is that okay?", "Not yet. Give me some time. Please don't take it badly."], 'c1') },

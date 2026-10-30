@@ -219,7 +219,13 @@ export function soundFor(screen, idx) {
   const r = rulesFor(screen, idx);
   if (!screen?.steps?.[idx]) return r;
   // (in the House of Secrets every sting is the show's own, 'ss:<name>', played by ss-sound.js; most cues are silence)
-  if (isSS(screen)) { const c = ssCueFor(r.cue); return { cue: c ? `ss:${c}` : r.cue, bed: ssMomentBed(screen, idx) }; }
+  if (isSS(screen)) {
+    const c = ssCueFor(r.cue);
+    // (the nominations: one piece of music from the first name to the last, and no musical hit on a name: the user,
+    // 2026-10-30, "we have that same random music change when they announcing each nominated... just for 1 line")
+    if (screen.kind === 'noms' || /noms/.test(String(screen.id || ''))) return { cue: c ? null : r.cue, bed: ssBaseFor(screen) };
+    return { cue: c ? `ss:${c}` : r.cue, bed: ssMomentBed(screen, idx) };
+  }
   return { cue: r.cue, bed: momentBed(screen, idx) };
 }
 // The same, in the House of Secrets: its own beds for the same moments (a fight, the wait, a win), and its

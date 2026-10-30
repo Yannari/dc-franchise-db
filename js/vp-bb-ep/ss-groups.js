@@ -10,6 +10,7 @@ const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>>
 const pickBy = (arr, key) => arr[hash(key) % arr.length];
 const listOf = xs => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
 const spread = a => a.map((n, i) => [n, a.length === 1 ? 50 : Math.round(20 + (60 * i) / (a.length - 1))]);
+import { secretAs } from './ss-words.js';
 const at = (plate, room, who, set = 'attic') => ({ set, plate, room, cam: 21, kicker: `Cam 21 · ${room}`, cast: spread(who) });
 
 /** Each space, in words: where it is, what it is like, and the Voice's words on launch night. */
@@ -46,6 +47,15 @@ export function launchToSpaceSteps(group, names, H, key, already = []) {
   ];
 }
 
+// (said by the narrator at the top of every week in the space: the user, 2026-10-29, "how did they even got in that
+// secret box theres no twist announcement so i dont understand whats going on")
+const RECAP = {
+  'secret-box': w => `Since launch night, ${listOf(w)} ${w.length > 1 ? 'have' : 'has'} been living inside the black glass cube in the corner of the living room. ${w.length > 1 ? 'They see' : 'Sees'} everything the house does, and the house has no idea anybody is in there. The only way out: find somebody's secret.`,
+  intruders: w => `Since launch night, ${listOf(w)} ${w.length > 1 ? 'have' : 'has'} been hiding in a second house next door, at the end of a tunnel. The main house does not know they exist.`,
+  'crystal-house': w => `${listOf(w)} ${w.length > 1 ? 'live' : 'lives'} in the glass house in the garden, in full view, waiting for the main house to let them in.`,
+  hotel: w => `${listOf(w)} ${w.length > 1 ? 'are' : 'is'} hiding in the hotel next door, while the house hunts for their faces among two hundred portraits.`,
+  yacht: w => `${listOf(w)} ${w.length > 1 ? 'live' : 'lives'} on the yacht at the pier, watching the House of Secrets from the deck.`,
+};
 /** A week in the space. */
 export function ssGroupWeekScreen(act, ctx, H) {
   const { ssv } = H;
@@ -54,8 +64,17 @@ export function ssGroupWeekScreen(act, ctx, H) {
   const hid = act.hidden || [];
   // (the yacht: the deck one week, a cabin the next; the box seen from inside)
   const space = act.id === 'yacht' ? ['ss-yacht-deck', 'ss-yacht-cabin', 'ss-yacht-cabin-2'][(ctx.week || 0) % 3] : act.space;
-  /** @type {any[]} */ const steps = [{ k: 'beat', scene: at(space, S.room, hid), t: `${S.room}. ${S.look}`, toast: [S.room.toUpperCase(), '#7c5cff'] }];
-  for (const w of (act.watched || []).slice(0, 3)) steps.push({ k: 'dr', by: w.who, t: pickBy([`I've been watching ${w.about} for days. "${w.theory}". I'd bet on it.`, `From in here you see what ${w.about} does when nobody's looking. "${w.theory}", I think.`], `${k}|${w.who}|${w.about}`) });
+  /** @type {any[]} */ const steps = [{ k: 'beat', scene: at(space, S.room, hid), t: (RECAP[act.id] || RECAP['secret-box'])(hid), toast: [S.room.toUpperCase(), '#7c5cff'] },
+    { k: 'beat', t: S.look }];
+  // what they are watching, said to each other (or to the camera, alone): a theory said about its person, never a quote
+  (act.watched || []).slice(0, 2).forEach((w, i) => {
+    const mate = hid.find(n => n !== w.who);
+    const guess = secretAs(w.about, w.theory, H.pronouns?.(w.about));
+    steps.push({ k: 'beat', t: pickBy([`On the other side of the glass, ${w.about} is laughing in the kitchen, with no idea anybody is watching.`, `${w.about} walks right past the glass. Close enough to touch.`, `${w.about} sits down alone on the sofa, a metre away, and goes very quiet.`], `${k}|b|${i}`) });
+    if (mate) steps.push({ k: 'say', by: w.who, t: pickBy([`Look at ${w.about}. I think ${guess}.`, `Watch ${w.about} when nobody is talking. I think ${guess}.`], `${k}|s|${i}`) },
+      { k: 'say', by: mate, t: pickBy(["You said that yesterday. We need more than a feeling.", "Maybe. Write it down.", "If you're right, that's our way out of here.", "Then we tell the Voice. But if we're wrong, we're stuck in here."], `${k}|r|${i}`) });
+    else steps.push({ k: 'dr', by: w.who, t: pickBy([`Nobody in there knows I can see them. And I think ${guess}.`, `Days of watching ${w.about}. I think ${guess}.`], `${k}|s|${i}`) });
+  });
   for (const e of act.events || []) {
     if (e.kind === 'found') steps.push(ssv(`${e.who}, you believe you know ${e.on}'s secret. Tell the Voice.`), { k: 'say', by: e.who, t: `"${e.text || '...'}"` },
       ssv(act.goal === 'secret' ? `${e.who}, that is right. At the prime, you will leave ${S.room}.${e.nominated ? ` And ${e.on} is nominated.` : ''}` : `${e.who}, that is right.${e.nominated ? ` ${e.on} is nominated.` : ` ${e.on}'s secret is no longer safe.`}`, e.nominated ? { nom: [e.on] } : {}));

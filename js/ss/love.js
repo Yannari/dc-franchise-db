@@ -91,7 +91,8 @@ export function loveWeek(state, ctx, { house = [], couples = [], sparks = [] } =
     for (; i < cands.length - 1; i++) { r -= cands[i].w; if (r <= 0) break; }
     const pickd = cands.splice(i, 1)[0];
     const { a, b } = pickd.c;
-    if (busy.has(a) || busy.has(b)) continue;
+    // (one of a kind a week: two confessions by the pool in one evening read as the same scene twice)
+    if (busy.has(a) || busy.has(b) || out.some(x => x.kind === pickd.kind)) continue;
     const ev = story(pickd.kind, pickd.c);
     if (!ev) continue;
     busy.add(a); busy.add(b);

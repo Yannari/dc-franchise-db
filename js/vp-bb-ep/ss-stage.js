@@ -9,7 +9,7 @@
 // arena, a clue lands on the clue table, the final in the studio with its three chairs.
 // Rules are tried in order; the first whose pattern matches the screen id wins.
 
-/** @type {Array<[RegExp, { set: string, plate: string, room: string, x1?: number }]>} */
+/** @type {Array<[RegExp, { set: string, plate: string, room: string, x1?: number, hostX?: number }]>} */
 const RULES = [
   // the secret room: up the hidden stairs on the night, then the desk of nine screens
   [/^bb-ss-secretroom-in-/, { set: 'attic', plate: 'ss-attic-stairs', room: 'The Secret Room' }],
@@ -22,7 +22,8 @@ const RULES = [
   [/^bb-ss-prime-dil-/, { set: 'truths', plate: 'ss-dilemma', room: 'The Dilemma Room' }],
   [/^bb-ss-prime-truths-/, { set: 'truths', plate: 'ss-truths', room: 'The Room of Truths' }],
   // (the guest in the right-hand armchair, opposite the hosts' chair)
-  [/^bb-ss-after-/, { set: 'studio', plate: 'ss-studio-after', room: 'After Secret', x1: 67 }],
+  // (and the host in the left-hand one: the user, 2026-10-29, "why the host dont sit in the chair in the after secret")
+  [/^bb-ss-after-/, { set: 'studio', plate: 'ss-studio-after', room: 'After Secret', x1: 67, hostX: 33 }],
   // the Voice's week
   [/^bb-ss-mission-/, { set: 'truths', plate: 'ss-mission-booth', room: 'The Mission Room' }],
   [/^bb-ss-missionres-/, { set: 'truths', plate: 'ss-switchboard', room: 'The Mission Room' }],
@@ -53,6 +54,7 @@ export function ssPlace(S, has = () => true) {
       if (has(at.plate)) {
         Object.assign(S, { set: at.set, plate: at.plate, room: at.room });
         if (at.x1 && Array.isArray(S.cast) && S.cast.length === 1) S.cast = [[S.cast[0][0], at.x1]];
+        if (at.hostX) S.hostX = at.hostX;
       }
       else if (at.room) S.room = at.room;
     }

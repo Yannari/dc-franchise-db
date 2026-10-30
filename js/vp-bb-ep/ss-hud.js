@@ -160,6 +160,11 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     h += `<div class="ss-sw"><img class="ss-sw-eye" src="${EYE}" alt=""></div>`;
     setTimeout(() => ssSfx('whoosh', 0.5), 380);
   }
+  // the eliminated walks into the studio: the lights sweep the room and the crowd roars, or boos (vp-bb-ep/steps.js ssWalkScreen)
+  if (st.studioIn) {
+    if (fresh) { if (st.studioIn === 'boo') { ssSfx('boo', 1); setTimeout(() => ssSfx('applause', 0.6), 400); } else { ssSfx('applause', 1); setTimeout(() => ssSfx('cheer', 0.8), 250); } }
+    h += `<div class="ss-lights ${st.studioIn === 'boo' ? 'boo' : ''} ${fresh ? 'fresh' : ''}"><i></i><i></i><i></i><i></i></div>`;
+  }
   // a party: the lights, the mirror ball, and everybody on the floor dancing (vp-bb-ep/steps.js ssPartyScreen)
   if (S.party) h += '<div class="ss-party"><i></i><i></i><i></i><b></b></div>';
   // THE BREAK: the Eye and the show's jingle, where the real show cuts to the ads (vp-bb-ep/steps.js ssBreaks)
@@ -185,7 +190,8 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const pos = !xs.length ? '' : gap >= 30 ? `left:${gx.toFixed(1)}%` : 'bottom:25cqw;--sc:.72';
     h += `<div class="ssp ${P.cls} ${fresh ? 'fresh' : ''} ${press ? 'ss-on' : ''}" style="${pos}" ${press ? `onclick="event.stopPropagation();ssPress(this,'${P.snd}')"` : ''}>
       <img src="${PROPS}/${P.src}.webp" alt="">${press && P.cue ? `<span class="ssp-cue">${P.cue}</span>` : ''}</div>`;
-    if (fresh && !st.press && P.snd) setTimeout(() => sfx(P.snd), 60);
+    // (the alarm's siren is the buzz itself: played once, by the alarm above)
+    if (fresh && !st.press && P.snd && !st.alarm) setTimeout(() => sfx(P.snd), 60);
   }
   // (a secret's card has no `kind`: one with a kind is the house's alliance card, drawn by the stage itself; read as a
   // secret it was an empty white card over the alliance's name: the user, 2026-10-28, "what's happening here")
@@ -193,7 +199,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const C = st.card;
     h += `<div class="ssc ${fresh ? 'fresh' : 'shown'} ${esc(C.state || '')}"><div class="ssc-in">
       <div class="ssc-f ssc-front"><img src="${EYE}" alt=""><b>SECRET</b></div>
-      <div class="ssc-f ssc-back"><i>${esc(C.who || '')}</i><b>“${esc(C.text || '')}”</b>${C.state ? `<em>${C.state === 'found' ? 'FOUND' : C.state === 'wrong' ? 'WRONG' : C.state === 'kept' ? 'NEVER FOUND' : ''}</em>` : ''}</div>
+      <div class="ssc-f ssc-back"><i>${esc(C.who || '')}</i><b>“${esc(C.text || '')}”</b>${C.state ? `<em>${C.state === 'found' ? 'FOUND' : C.state === 'wrong' ? 'WRONG' : C.state === 'kept' ? 'NEVER FOUND' : C.state === 'evidence' ? 'EVIDENCE' : C.state === 'clue' ? 'THE CLUE' : ''}</em>` : ''}</div>
     </div></div>`;
   }
   // the kitties: every housemate's money rolls up (or down) from where the week began, coins stacked by size
@@ -237,7 +243,9 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   if (st.magneto) {
     const M = st.magneto;
     h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div><img class="ssmg-eye" src="${EYE}" alt="">
-      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}<b class="ssmg-t">${ssx(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
+      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}
+      ${(M.who || []).length ? `<div class="ssmg-ps">${M.who.slice(0, 3).map((n, i, w) => `${i && M.sym ? `<i class="ssmg-sym">${esc(M.sym)}</i>` : ''}<span class="ssmg-p" style="--c:${H.col(n)};--i:${i};--d:${i === 0 ? -1 : i === w.length - 1 ? 1 : 0}">${H.img(n)}<em>${esc(n)}</em></span>`).join('')}</div>` : ''}
+      <b class="ssmg-t">${ssx(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
   }
   // the call to vote: every nominee under a big number, and how to vote
   if (st.votecall) {
@@ -401,6 +409,13 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .bbx .stage .p-ball img{width:12cqw;animation:ss-float 4s ease-in-out infinite}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
+.ss-lights{position:absolute;inset:0;z-index:23;pointer-events:none;overflow:hidden;mix-blend-mode:screen}
+.ss-lights i{position:absolute;bottom:-20%;width:22%;height:150%;transform-origin:50% 100%;filter:blur(1.6cqw);opacity:.6;background:linear-gradient(0deg,rgba(255,255,255,.95),transparent 75%);animation:ss-beam 1.6s ease-in-out infinite alternate}
+.ss-lights i:nth-child(1){left:2%;animation-delay:-.4s}.ss-lights i:nth-child(2){left:26%;background:linear-gradient(0deg,rgba(255,62,165,.9),transparent 75%);animation-delay:-1.1s}
+.ss-lights i:nth-child(3){left:52%;background:linear-gradient(0deg,rgba(25,211,197,.9),transparent 75%);animation-delay:-.2s}.ss-lights i:nth-child(4){left:76%;animation-delay:-.8s}
+.ss-lights.boo i{background:linear-gradient(0deg,rgba(255,60,60,.8),transparent 75%)}
+.ss-lights.fresh{animation:ssmg-flash .6s ease-out}
+@keyframes ss-beam{from{rotate:-24deg}to{rotate:24deg}}
 .ss-party{position:absolute;inset:0;z-index:22;pointer-events:none;overflow:hidden;mix-blend-mode:screen}
 .ss-party i{position:absolute;top:-30%;width:40%;height:160%;transform-origin:50% 0;filter:blur(2.4cqw);opacity:.55;animation:ss-sweep 3.4s ease-in-out infinite alternate}
 .ss-party i:nth-child(1){left:5%;background:linear-gradient(180deg,rgba(255,62,165,.9),transparent 70%)}
@@ -437,7 +452,7 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssc-back i{font:800 1.1cqw 'SSNunito',sans-serif;letter-spacing:.2em;color:var(--ssm);font-style:normal;text-transform:uppercase}
 .ssc-back b{font:700 2.3cqw/1.25 'SSAachen',sans-serif;color:var(--ssi);margin-top:.6cqw}
 .ssc-back em{position:absolute;right:1.4cqw;bottom:1.2cqw;font:700 2cqw 'SSAachen',sans-serif;font-style:normal;letter-spacing:.12em;padding:.3cqw 1cqw;border:.3cqw solid;border-radius:.6cqw;transform:rotate(-12deg)}
-.ssc.found .ssc-back em{color:#e11d48}.ssc.wrong .ssc-back em{color:#6b7280}.ssc.kept .ssc-back em{color:#0d9488}
+.ssc.evidence .ssc-back em,.ssc.clue .ssc-back em{color:#3bb3ff}.ssc.found .ssc-back em{color:#e11d48}.ssc.wrong .ssc-back em{color:#6b7280}.ssc.kept .ssc-back em{color:#0d9488}
 .ssc.fresh .ssc-back em{animation:ss-stamp .4s 1.5s cubic-bezier(.2,1.6,.4,1) both}
 /* the toast is a ribbon above the action (centred, it sat under the props) */
 .bbx .stage.ss .toast{top:21cqw;height:6.4cqw;transform:translateY(-50%) rotate(-2deg);left:-2cqw;right:-2cqw;box-shadow:0 .6cqw 1.6cqw rgba(0,0,0,.35)}
@@ -563,6 +578,15 @@ export const SS_CSS = `${SS_TYPE_CSS}
   text-shadow:.4cqw .4cqw 0 #c8137a,-.15cqw -.15cqw 0 #19d3c5,0 0 3cqw rgba(255,255,255,.55)}
 .ssmg-s{position:relative;font:800 1.7cqw 'SSNunito',sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#ffe14d}
 .ssmg.fresh .ssmg-t{animation:ssmg-in .9s cubic-bezier(.2,1.3,.4,1) both}
+.ssmg-ps{position:relative;display:flex;align-items:center;gap:2cqw;margin-bottom:.4cqw}
+.ssmg-p{position:relative;width:15cqw;aspect-ratio:4/5;border-radius:1.6cqw;overflow:hidden;background:var(--c);box-shadow:0 0 0 .5cqw #fff,0 1.6cqw 3cqw rgba(60,0,60,.45);rotate:calc(var(--d) * 6deg);animation:ssmg-bob 3s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s)}
+.ssmg-p img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
+.ssmg-p em{position:absolute;left:0;right:0;bottom:0;padding:.4cqw 0 .3cqw;text-align:center;font:1.4cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(0deg,rgba(43,13,63,.9),transparent)}
+.ssmg-sym{font:5cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;-webkit-text-stroke:.2cqw #c8137a;text-shadow:0 0 2cqw #ff3ea5}
+.ssmg.fresh .ssmg-p{animation:ssmg-slide .8s cubic-bezier(.2,1.3,.4,1) both,ssmg-bob 3s .8s ease-in-out infinite;animation-delay:calc(var(--i) * .12s),calc(.8s + var(--i) * -1.1s)}
+.ssmg.fresh .ssmg-sym{animation:ssmg-in .6s .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes ssmg-slide{from{translate:calc(var(--d) * 60cqw) 0;opacity:0}}
+@keyframes ssmg-bob{50%{translate:0 -.8cqw}}
 .ssmg.fresh .ssmg-s,.ssmg.fresh .ssmg-tag{animation:ss-fade .6s .5s both}
 .ssmg.fresh{animation:ssmg-flash .5s ease-out}
 @keyframes ssmg-in{0%{opacity:0;transform:scale(2.4);filter:blur(1cqw)}60%{opacity:1;filter:blur(0)}100%{transform:scale(1)}}

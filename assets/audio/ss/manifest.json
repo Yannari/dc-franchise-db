@@ -590,5 +590,40 @@
   "kind": "sting",
   "gain": 4.9,
   "dur": 8.1
+ },
+ "sfx/voice": {
+  "src": "sfx/jingle.mp3 @0.2s",
+  "kind": "sting",
+  "gain": -0.4,
+  "dur": 2.3,
+  "what": "the 2026 jingle, its opening hit: the Voice speaks"
+ },
+ "sfx/reveal": {
+  "src": "cliff.mp3 @3.7s",
+  "kind": "sting",
+  "gain": 10.7,
+  "dur": 2.6,
+  "what": "\"Ending Suspense\", the hit: a name, a result"
+ },
+ "sfx/twist": {
+  "src": "mission-1.mp3 @7.7s",
+  "kind": "sting",
+  "gain": 5.1,
+  "dur": 2.4,
+  "what": "\"Mission secret sympathique\", the hit: a twist, a card"
+ },
+ "sfx/win": {
+  "src": "winner.mp3 @1.7s",
+  "kind": "sting",
+  "gain": 5.8,
+  "dur": 3.0,
+  "what": "\"Et le gagnant est...\", the hit: a win"
+ },
+ "sfx/out": {
+  "src": "sad-2.mp3 @5.2s",
+  "kind": "sting",
+  "gain": 2.8,
+  "dur": 3.6,
+  "what": "\"Piano Tristesse\", the piano coming in: an elimination"
  }
 }

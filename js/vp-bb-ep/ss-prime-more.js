@@ -33,29 +33,37 @@ export function ssWeekPackageScreen(act, ctx, H) {
   const { listOf, euros } = H;
   const acts = ctx.row?.acts || [];
   const noms = act.nominees || [];
-  /** @type {any[]} */ const steps = [{ k: 'beat', t: 'This week in the House of Secrets.', magneto: { title: 'This Week', sub: 'In the House of Secrets', n: 0 } }];
-  const said = [];
-  const clues = acts.filter(a => a?.type === 'ss-clue').map(a => a.clue).filter(Boolean);
-  if (clues.length) said.push(clues.length === 1 ? `A clue went on the living-room table: ${clues[0]}.` : `${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.`);
+  // every moment of the package on screen, with its people where it happened (the user, 2026-10-29: "same for this
+  // week or recap we need images/visual")
+  const spread = who => who.filter(Boolean).slice(0, 8).map((n, i, w) => [n, w.length === 1 ? 50 : Math.round(12 + 76 * i / (w.length - 1))]);
+  const at = (set, plate, room, who) => ({ set, plate, room, cam: 1, kicker: `This week · ${room}`, cast: spread(who) });
+  const house = (ctx.house || []).slice();
+  /** @type {any[]} */ const steps = [{ k: 'beat', t: 'This week in the House of Secrets.', magneto: { title: 'This Week', sub: 'In the House of Secrets', n: 0 }, scene: at('ceremony', 'living-sofas', 'Living Room', house) }];
+  /** @type {{ t: string, scene: any }[]} */ const said = [];
+  const clueActs = acts.filter(a => a?.type === 'ss-clue' && a.clue);
+  const clues = clueActs.map(a => a.clue);
+  if (clues.length) said.push({ scene: at('ceremony', 'living-sofas', 'Living Room', house.slice(0, 6)), t: clues.length === 1 ? `A clue went on the living-room table: ${clues[0]}.` : `${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.` });
   const breakers = [...new Set(acts.filter(a => a?.type === 'ss-rule' && a.who).map(a => a.who))];
-  if (breakers.length) said.push(breakers.length === 1 ? `${breakers[0]} broke one of the Voice's commandments, and paid for it.` : `${listOf(breakers)} ${breakers.length === 2 ? 'both' : 'all'} broke the Voice's commandments, and paid for it.`);
+  if (breakers.length) said.push({ scene: at('dr', 'confessional-close', 'Confessional', breakers), t: breakers.length === 1 ? `${breakers[0]} broke one of the Voice's commandments, and paid for it.` : `${listOf(breakers)} ${breakers.length === 2 ? 'both' : 'all'} broke the Voice's commandments, and paid for it.` });
   const game = acts.find(a => a?.type === 'ss-game' && a.winner);
-  if (game) said.push(`${game.winner} won the Voice's game.`);
+  if (game) said.push({ scene: at('ceremony', 'living-sofas', 'Living Room', [game.winner]), t: `${game.winner} won the Voice's game.` });
   for (const a of acts) {
     if (a?.type === 'ss-party') {
       const kiss = (a.moments || []).find(m => m.kind === 'kiss');
       const fight = (a.moments || []).find(m => m.kind === 'fight');
-      said.push(`The Voice threw a party: ${String(a.name).replace(/^The /, 'the ')}.${kiss ? ` ${kiss.who[0]} and ${kiss.who[1]} kissed in front of everybody.` : ''}${fight ? ` ${fight.who[0]} and ${fight.who[1]} had it out late in the night.` : ''}`);
-    } else if (a?.type === 'ss-buzz' && a.outcome !== 'withdrawn') said.push(`${a.by} pressed the buzzer on ${a.target}, ${a.outcome === 'right' ? `and found the secret: ${euros(a.took)} changed hands` : 'and was wrong'}.`);
-    else if (a?.type === 'ss-role') said.push(a.role === 'masters' ? `The Masters of the Nominations struck again: ${a.target} was put up.` : 'The House Thieves struck again in the night.');
-    else if (a?.type === 'ss-superette' && a.closed) said.push('The store stayed shut, and the house knew who to blame.');
-    else if (a?.type === 'ss-house-secret') said.push(`${a.finder} found a clue to the secret of the house, and told nobody.`);
+      said.push({ scene: { ...at('yard', 'pool-wide', 'The Garden', [...(kiss?.who || []), ...(fight?.who || [])].length ? [...(kiss?.who || []), ...(fight?.who || [])] : house.slice(0, 6)), party: true },
+        t: `The Voice threw a party: ${String(a.name).replace(/^The /, 'the ')}.${kiss ? ` ${kiss.who[0]} and ${kiss.who[1]} kissed in front of everybody.` : ''}${fight ? ` ${fight.who[0]} and ${fight.who[1]} had it out late in the night.` : ''}` });
+    } else if (a?.type === 'ss-buzz' && a.outcome !== 'withdrawn') said.push({ scene: at('dr', 'confessional-showdown', 'Confessional', [a.by, a.target]), t: `${a.by} pressed the buzzer on ${a.target}, ${a.outcome === 'right' ? `and found the secret: ${euros(a.took)} changed hands` : 'and was wrong'}.` });
+    else if (a?.type === 'ss-love' && a.kind === 'loveroom') said.push({ scene: at('hoh', 'hoh-suite', 'The Love Room', [a.a, a.b]), t: `${a.a} and ${a.b} spent a night in the Love Room.` });
+    else if (a?.type === 'ss-role') said.push({ scene: at('ceremony', 'living-sofas', 'Living Room', a.target ? [a.target] : house.slice(0, 4)), t: a.role === 'masters' ? `The Masters of the Nominations struck again: ${a.target} was put up.` : 'The House Thieves struck again in the night.' });
+    else if (a?.type === 'ss-superette' && a.closed) said.push({ scene: at('storage', 'storage', 'The Store', a.blamed ? [a.blamed] : []), t: 'The store stayed shut, and the house knew who to blame.' });
+    else if (a?.type === 'ss-house-secret') said.push({ scene: at('ceremony', 'living-sofas', 'Living Room', [a.finder]), t: `${a.finder} found a clue to the secret of the house, and told nobody.` });
   }
-  for (const s of said.slice(0, 7)) steps.push({ k: 'beat', t: s });
+  for (const s of said.slice(0, 7)) steps.push({ k: 'beat', t: s.t, scene: s.scene });
   // (no confessional quoted out of its scene: a line lifted alone names nothing, ADDING-A-SHOW §19.4)
-  steps.push({ k: 'beat', t: noms.length ? `And in the confessional, the house put up ${listOf(noms)}. Tonight, the public decides.` : 'Tonight, the public decides.' });
-  return { id: `bb-ss-prime-package-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', set: 'studio-wide', room: 'The Prime Studio', cam: 1,
-    kicker: 'Live · The Prime Studio', title: 'This Week', label: 'This Week', sub: `${said.length} moments`, cast: [], steps };
+  steps.push({ k: 'beat', scene: at('door', 'foyer', 'The Airlock', noms), t: noms.length ? `And in the confessional, the house put up ${listOf(noms)}. Tonight, the public decides.` : 'Tonight, the public decides.' });
+  return { id: `bb-ss-prime-package-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: 1,
+    kicker: 'This week · Living Room', title: 'This Week', label: 'This Week', sub: `${said.length} moments`, cast: spread(house), sceneful: true, steps };
 }
 
 /** Last week's eliminated, on the couch beside the host (S14: on set all night). */

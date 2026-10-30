@@ -15,6 +15,8 @@ const listOf = xs => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', 
 const xs = n => (n <= 1 ? [50] : Array.from({ length: n }, (_, i) => Math.round(24 + (52 * i) / (n - 1))));
 const at = (plate, set, room, who) => ({ set, plate, room, cam: 1, kicker: 'The week, on tape', cast: who.filter(Boolean).map((n, i, a) => [n, xs(a.length)[i]]) });
 const STUDIO = { set: 'studio-wide', plate: 'ss-studio', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio', cast: [] };
+import { tellAfter } from '../ss/tells.js';
+import { secretAs } from './ss-words.js';
 
 /** The week's storylines, as packages: { key, title, sub, lines: [{ t, scene, dr? }], back }. */
 function storylines(row, noms) {
@@ -26,12 +28,26 @@ function storylines(row, noms) {
   if (buzz.length) {
     const b = buzz.find(x => x.outcome === 'right') || buzz[0];
     const right = b.outcome === 'right';
-    out.push({ key: 'hunt', title: right ? `${b.by} cracks ${b.target}` : `${b.by}'s gamble`, sub: 'The hunt',
+    // (the whole hunt, as the week played it: the user, 2026-10-29, "this tape is super short for no reason")
+    const tell = acts.filter(a => a?.type === 'ss-hunt').flatMap(a => a.moments || []).find(m => m.kind === 'tell' && m.who === b.by && m.about === b.target);
+    const clue = acts.find(a => a?.type === 'ss-clue' && (a.holders || []).includes(b.target) && a.clue);
+    const house = (row.houseAtStart || []).filter(n => n !== b.by && n !== b.target);
+    const guess = b.guess ? secretAs(b.target, b.guess) : `${b.target} is hiding something big`;
+    out.push({ key: 'hunt', title: right ? `${b.by} cracks ${b.target}` : `${b.by}'s gamble`, sub: 'The hunt', who: [b.by, b.target], sym: 'VS',
       lines: [
         { t: pickBy([`This week, ${b.by} couldn't stop watching ${b.target}.`, `For days, ${b.by} had only one name in mind: ${b.target}.`], `${week}|mh0`), scene: at('living-sofas', 'ceremony', 'Living Room', [b.by, b.target]) },
-        { dr: b.by, t: `"${b.guess || 'I know what they are hiding'}." I was sure of it. Completely sure.`, scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
-        { t: `So ${b.by} pressed the buzzer.`, scene: at('confessional-showdown', 'dr', 'Confessional', [b.by, b.target]) },
-        { t: right ? `And ${b.by} was right. ${b.target}'s secret was out, and ${money(b.took)} changed hands.` : `And ${b.by} was wrong. Five thousand dollars, gone, and ${b.target} knows exactly who came for them.`, scene: at('confessional-showdown', 'dr', 'Confessional', [b.by, b.target]) },
+        ...(tell ? [{ t: `${b.target} ${tellAfter(tell.tell)}. And ${b.by} saw it.`, scene: at('patio', 'yard', 'The Garden', [b.target, b.by]) },
+          { dr: b.by, t: pickBy([`Every time. Every single time. That's not a habit, that's a secret.`, `Nobody else noticed. I noticed.`], `${week}|mh1`), scene: at('confessional-close', 'dr', 'Confessional', [b.by]) }] : []),
+        ...(clue ? [{ t: `Then the Voice put a clue on the table: ${clue.clue}.`, card: { text: clue.clue, state: 'clue', who: 'The clue' }, scene: at('living-sofas', 'ceremony', 'Living Room', [b.by, b.target, ...house.slice(0, 3)]) },
+          { dr: b.by, t: pickBy([`The second I read that clue, I looked at ${b.target}. And ${b.target} looked away.`, `That clue sealed it for me.`], `${week}|mh2`), scene: at('confessional-close', 'dr', 'Confessional', [b.by]) }] : []),
+        { dr: b.target, t: pickBy([`I could feel ${b.by} watching me. All week.`, `Everywhere I went, ${b.by} was there. Asking questions.`], `${week}|mh3`), scene: at('confessional-close', 'dr', 'Confessional', [b.target]) },
+        { t: `So ${b.by} went to the confessional, alone, and pressed the buzzer.`, alarm: true, scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
+        { dr: b.by, t: `I think ${guess}. I was sure of it. Completely sure.`, scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
+        { t: pickBy([`Face to face on the confessional sofas, ${b.target} denied everything.`, `In the confessional, ${b.target} looked ${b.by} in the eye and said nothing. Nothing that helped.`], `${week}|mh4`), scene: at('confessional-showdown', 'dr', 'Confessional', [b.by, b.target]) },
+        { t: right ? `And ${b.by} was right. ${b.target}'s secret was out, and ${money(b.took)} changed hands.` : `And ${b.by} was wrong. Five thousand dollars, gone, and ${b.target} knows exactly who came for them.`, scene: at('living-sofas', 'ceremony', 'Living Room', [b.by, b.target, ...house.slice(0, 4)]) },
+        right ? { dr: b.target, t: pickBy([`Weeks of keeping it, and ${b.by} takes it in one afternoon. And my money.`, `I'm gutted. But I'll say it: well played, ${b.by}.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.target]) }
+          : { dr: b.by, t: pickBy(['Wrong. In front of everybody. I want the ground to swallow me.', `Five thousand dollars to make ${b.target} my enemy. Great week.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
+        ...(house[0] ? [{ dr: house[0], t: pickBy([`After that, everybody in this house checks who's watching them.`, `That buzz changed the whole house. Nobody trusts anybody now.`], `${week}|mh6`), scene: at('confessional-close', 'dr', 'Confessional', [house[0]]) }] : []),
       ] });
   }
   // love: a kiss at the party
@@ -39,12 +55,19 @@ function storylines(row, noms) {
   const kiss = party && (party.moments || []).find(m => m.kind === 'kiss');
   if (kiss) {
     const [x, y] = kiss.who;
-    out.push({ key: 'love', title: `${x} and ${y}`, sub: 'Love in the House of Secrets',
+    const story = acts.filter(a => a?.type === 'ss-love' && [a.a, a.b].includes(x) && [a.a, a.b].includes(y));
+    const jealous = (party.moments || []).find(m => m.kind === 'jealous');
+    out.push({ key: 'love', title: `${x} and ${y}`, sub: 'Love in the House of Secrets', who: [x, y], sym: '♥',
       lines: [
+        ...story.filter(a => a.kind === 'confession' && a.yes).map(() => ({ t: `One night by the pool, ${x} said it first. And ${y} said it back.`, scene: at('pool-loungers', 'yard', 'The Pool', [x, y]) })),
         { t: pickBy([`It started with a look, across the kitchen.`, `Nobody saw it coming. Except, maybe, the two of them.`], `${week}|ml0`), scene: at('kitchen-room', 'kitchen', 'Kitchen', [x, y]) },
         { t: `Then came ${String(party.name || 'the party').replace(/^The /, 'the ')}.`, scene: at('living-sofas', 'ceremony', 'Living Room', [x, y]) },
         { dr: x, t: pickBy([`I wasn't supposed to fall for anybody in here. That was the plan.`, `I don't know what this is yet. But I know I like it.`], `${week}|ml1`), scene: at('confessional-close', 'dr', 'Confessional', [x]) },
-        { t: `And in front of the whole house, ${x} and ${y} kissed.`, scene: at('living-sofas', 'ceremony', 'Living Room', [x, y]) },
+        { t: `And in front of the whole house, ${x} and ${y} kissed.`, scene: { ...at('pool-wide', 'yard', 'The Garden', [x, y]), party: true } },
+        { dr: y, t: pickBy([`Everybody saw. I don't care. I'd do it again.`, `I've been trying to hide it for a week. Not any more.`], `${week}|ml2`), scene: at('confessional-close', 'dr', 'Confessional', [y]) },
+        ...(jealous ? [{ t: `Not everybody was happy for them. ${jealous.who[0]} went to bed early.`, scene: at('bedroom-wide', 'bedroom', 'Bedroom', [jealous.who[0]]) }] : []),
+        ...(story.some(a => a.kind === 'loveroom') ? [{ t: `And the Voice gave them a night in the Love Room.`, scene: at('hoh-suite', 'hoh', 'The Love Room', [x, y]) }] : []),
+        { t: pickBy([`A new couple in the House of Secrets. And in this game, a couple is a target.`, `Love, in a house full of secrets. What could go wrong?`], `${week}|ml3`), scene: at('living-sofas', 'ceremony', 'Living Room', [x, y]) },
       ] });
   }
   // a clash: a fight at the party, or a sanction from the Voice
@@ -52,11 +75,13 @@ function storylines(row, noms) {
   const rule = acts.find(a => a?.type === 'ss-rule' && a.who);
   if (fight) {
     const [x, y] = fight.who;
-    out.push({ key: 'clash', title: `${x} versus ${y}`, sub: 'The clash',
+    out.push({ key: 'clash', title: `${x} versus ${y}`, sub: 'The clash', who: [x, y], sym: 'VS',
       lines: [
         { t: pickBy([`Between ${x} and ${y}, it had been simmering for days.`, `${x} and ${y} had been avoiding each other all week.`], `${week}|mc0`), scene: at('kitchen-room', 'kitchen', 'Kitchen', [x, y]) },
         { t: `At ${String(party.name || 'the party').replace(/^The /, 'the ')}, it all came out.`, scene: at('living-sofas', 'ceremony', 'Living Room', [x, y]) },
         { dr: y, t: pickBy([`I've been biting my tongue since day one. Not any more.`, `${x} crossed a line. Simple as that.`], `${week}|mc1`), scene: at('confessional-close', 'dr', 'Confessional', [y]) },
+        { dr: x, t: pickBy([`I said what everybody else was thinking. I'm not sorry.`, `Maybe I went too far. Maybe. ${y} still deserved it.`], `${week}|mc2`), scene: at('confessional-close', 'dr', 'Confessional', [x]) },
+        { t: pickBy([`The next morning, ${x} and ${y} made breakfast without a word. The whole kitchen felt it.`, `Since that night, ${x} and ${y} have not been in the same room for more than a minute.`], `${week}|mc3`), scene: at('kitchen-room', 'kitchen', 'Kitchen', [x, y]) },
       ] });
   } else if (rule) {
     out.push({ key: 'clash', title: `${rule.who} and the Voice`, sub: 'The rules of the house',
@@ -68,7 +93,7 @@ function storylines(row, noms) {
   }
   // the nominees' week
   if (noms.length) {
-    out.push({ key: 'noms', title: noms.length === 2 ? `${noms[0]} or ${noms[1]}` : `${noms.length} in danger`, sub: "The nominees' week",
+    out.push({ key: 'noms', title: noms.length === 2 ? `${noms[0]} or ${noms[1]}` : `${noms.length} in danger`, sub: "The nominees' week", who: noms.slice(0, 3), sym: noms.length === 2 ? 'OR' : '',
       lines: [
         { t: `When the Voice read out the names, ${listOf(noms)} knew the week would be long.`, scene: at('living-sofas', 'ceremony', 'Living Room', noms) },
         ...noms.slice(0, 2).map((n, i) => ({ dr: n, t: [`I'm trying to stay myself. That's all I can do now.`, `Every night I go to bed thinking it could be my last one in here.`, `I've got people out there. I hope they've got me too.`,
@@ -92,9 +117,9 @@ export function ssMagnetoScreens(act, ctx, host) {
     const k = `${ctx.week}|mag|${p.key}`;
     /** @type {any[]} */ const steps = [
       { k: 'host', by: host, scene: STUDIO, t: pickBy([`Let's look back at what happened this week. ${p.sub}.`, `Before we go on, a look back at the week. ${p.sub}.`, `Let's take a look at the tape.`], `${k}|in`) },
-      { k: 'beat', t: p.title, magneto: { title: p.title, sub: p.sub, n: i + 1 }, scene: p.lines[0].scene },
+      { k: 'beat', t: p.title, magneto: { title: p.title, sub: p.sub, n: i + 1, who: p.who || [], sym: p.sym || '' }, scene: p.lines[0].scene },
     ];
-    for (const l of p.lines) steps.push(l.dr ? { k: 'dr', by: l.dr, t: l.t, scene: l.scene } : { k: 'beat', t: l.t, scene: l.scene });
+    for (const l of p.lines) steps.push(l.dr ? { k: 'dr', by: l.dr, t: l.t, scene: l.scene } : { k: 'beat', t: l.t, scene: l.scene, ...(l.card ? { card: l.card } : {}), ...(l.alarm ? { alarm: true } : {}) });
     steps.push({ k: 'beat', scene: STUDIO, t: pickBy(['Back in the studio, the crowd is on its feet.', 'The lights come back up on the studio. A long "ooooh" from the crowd.', 'Back live. The couch is shaking its head.'], `${k}|out`) },
       // (the host's word after a tape turns over through the season: one line eight times read as a jingle)
       { k: 'host', by: host, t: ['What a week. And it is not over yet.', "Well. I don't think anybody in that house will forget that one.", "You saw it, at home. And tonight, you'll decide what happens next.",

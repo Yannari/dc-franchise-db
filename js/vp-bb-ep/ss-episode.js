@@ -62,8 +62,11 @@ function asScene(F) {
 // play while a pair walks to the airlock, captioned as such. The magnetos are recorded packages of the week and keep
 // theirs; house life after the prime is not live either, and nor is the final week's last party (taped in the garden).
 const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight|returns)/;
-const CALL = [n => `${n}, you're in the confessional, and we're live. Talk to me.`, (n, h) => `Let's go to the confessional. ${n}, it's ${h}. How are you feeling tonight?`,
-  n => `${n}, you're live in the confessional. What's going through your head right now?`, n => `${n}, the whole country is listening. What do you want to tell them?`];
+// (on a live night they hear the host through the earpiece, wherever they are, and answer out loud: the user, 2026-10-29,
+// "why are they going in the confessional they can talk with the host without being in the confessional through
+// earrings and mic")
+const CALL = [n => `${n}, can you hear me? Talk to me.`, (n, h) => `${n}, it's ${h}, in your ear. What's going through your head right now?`,
+  n => `${n}, quickly. How are you feeling, right now?`, n => `${n}, the whole country is listening. What do you want to tell them?`];
 export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
   for (const s of out) {
     const id = String(s.id || '');
@@ -88,7 +91,8 @@ export function ssLiveConfessionals(out, { host = 'Josh' } = {}) {
         asked.add(st.by);
         steps.push({ k: 'host', by: host, t: pickBy(CALL, `${id}|${st.by}`)(st.by, host), ...(room ? { scene: room } : {}) });
       }
-      steps.push({ ...st, live: true });
+      // (said out loud, on the spot, through the microphone: not from the confessional)
+      steps.push({ ...st, k: 'say', live: true, earpiece: true });
       back = true;
     }
     s.steps = steps;
@@ -223,7 +227,54 @@ function ssPreviouslyScreen(row, o) {
     kicker: 'Secret Story', title: 'Previously', label: 'Previously', sub: 'In Secret Story', cast: [], steps, ss: true };
 }
 
-// ── the end of the days: the narrator, then the Voice asks the public to vote ──
+// The night, before the narrator closes the days (the user, 2026-10-29: "this a rather empty closing section we dont even
+// see anyone or conclusion or pause to any storyline and its badly written"): the week's storylines, each one last time
+// in the dark: the nominees on the sofa, the couple under the covers, the hunter who cannot sleep, the feud that did not
+// end, the one who feels the house closing in. Built from the week's own acts; nobody twice.
+const NIGHT = (set, plate, room, who, cam = 8) => ({ set, plate, room, cam, kicker: `Cam ${String(cam).padStart(2, '0')} · ${room}`,
+  cast: who.map((n, i, w) => [n, w.length === 1 ? 50 : Math.round(20 + 60 * i / (w.length - 1))]) });
+function nightScenes(row, noms, k) {
+  const acts = row.acts || [];
+  const used = new Set();
+  const free = (...ns) => (ns.every(n => n && !used.has(n)) ? (ns.forEach(n => used.add(n)), true) : false);
+  /** @type {any[]} */ const out = [];
+  const R = (pool, s) => pickBy(pool, `${k}|${s}`);
+  // the nominees, up late
+  if (noms.length >= 2 && free(...noms.slice(0, 2))) {
+    const [a, b] = noms;
+    out.push({ k: 'beat', scene: NIGHT('ceremony', 'living-sofas', 'Living Room', noms.slice(0, 3), 4), t: R([`Midnight. ${listOf(noms)} are still up on the sofa. Nobody says the word "prime".`, `The house has gone to bed. ${listOf(noms)} have not.`], 'n0') },
+      ...R([[["Whatever happens tomorrow, I'm glad I met you.", 'Stop it. You are not going anywhere.'], ["I can't sleep. I keep doing the maths.", "Then stop counting. It doesn't help. Trust me."]],
+        [["One of us is gone tomorrow. I hate that.", "Then let's not spend tonight thinking about it."], ['Do you think they like me out there?', 'They love you. Go to sleep.']]], 'n1')[0].map((t, j) => ({ k: 'say', by: j ? b : a, t })));
+  }
+  // the couple, under the covers
+  const love = [...acts].reverse().find(x => x?.type === 'ss-love' && x.a && x.b && x.kind !== 'plot') || null;
+  const kiss = (acts.find(x => x?.type === 'ss-party')?.moments || []).find(m => m.kind === 'kiss');
+  const pair = love ? [love.a, love.b] : kiss ? kiss.who.slice(0, 2) : null;
+  if (pair && free(...pair)) {
+    const [a, b] = pair;
+    out.push({ k: 'beat', scene: NIGHT('bedroom', 'bedroom-beds', 'Bedroom', [a, b]), t: R([`Under the covers, ${a} and ${b} whisper about everything except the game.`, `${a} and ${b} have pushed their beds together. Nobody has said a word about it.`], 'l0') },
+      ...R([['Are you awake?', 'Always, when you are.'], ['Promise me one thing. Whatever happens, we tell each other the truth.', 'Except our secrets.', 'Except our secrets.'], ['Goodnight.', 'Goodnight. Again.']], 'l1').map((t, j) => ({ k: 'say', by: j % 2 ? b : a, t })));
+  }
+  // the hunter who cannot sleep
+  const hunt = (acts.find(x => x?.type === 'ss-hunt')?.moments || []).filter(m => m.who && m.about).sort((x, y) => (y.conf || 0) - (x.conf || 0));
+  const hunter = hunt.find(m => !used.has(m.who) && !used.has(m.about));
+  if (hunter && free(hunter.who)) out.push({ k: 'beat', scene: NIGHT('bedroom', 'bedroom-wide', 'Bedroom', [hunter.who]), t: `${hunter.who} lies awake, staring at the ceiling.` },
+    { k: 'dr', by: hunter.who, t: (hunter.conf || 0) >= 0.55 ? R([`I'm close on ${hunter.about}. I can feel it. One more thing, and I press it.`, `${hunter.about}. I know it. I just need to be sure before I spend five thousand dollars.`], 'h0')
+      : R([`Something about ${hunter.about} doesn't add up. I'll work it out.`, `Everybody is hiding something. ${hunter.about} is hiding it badly.`], 'h0') });
+  // the feud that did not end
+  const fight = (acts.find(x => x?.type === 'ss-party')?.moments || []).find(m => m.kind === 'fight') || acts.find(x => x?.type === 'ss-buzz' && x.outcome === 'wrong');
+  const foes = fight ? (fight.who ? fight.who.slice(0, 2) : [fight.by, fight.target]) : null;
+  if (foes && free(...foes)) out.push({ k: 'beat', scene: NIGHT('kitchen', 'kitchen-wide', 'Kitchen', foes, 2), t: R([`At one in the morning, ${foes[0]} and ${foes[1]} reach for the same glass in the kitchen. Neither of them lets go first.`, `${foes[0]} walks into the kitchen, sees ${foes[1]}, and walks straight back out.`], 'f0'), tense: foes },
+    { k: 'dr', by: foes[0], t: R([`It's not over with ${foes[1]}. Not even close.`, `I'm not apologising to ${foes[1]}. ${foes[1]} can apologise to me.`], 'f1') });
+  // the one the house is circling
+  const counts = {};
+  for (const m of hunt) counts[m.about] = (counts[m.about] || 0) + 1;
+  const hunted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).find(n => !used.has(n));
+  if (hunted && free(hunted)) out.push({ k: 'dr', by: hunted, scene: NIGHT('dr', 'confessional-close', 'Confessional', [hunted], 1), t: R(["They're getting closer. I need a new story by Monday.", "Everybody's looking at me differently this week. I can feel it.", "I'm keeping it. Whatever it costs, I'm keeping it."], 'w0') });
+  return out;
+}
+
+// ── the end of the days: the night, the narrator, then the Voice asks the public to vote ──
 function ssTonightScreen(row, o) {
   const week = row.num || 1;
   const acts = row.acts || [];
@@ -232,19 +283,29 @@ function ssTonightScreen(row, o) {
   const k = `${week}|tonight`;
   // the first week has no nominations and no prime (js/bb/secret-story.js ssNoPrimeWeek): the narrator closes the
   // days on what is coming
-  if (!noms.length && row.ssNoPrime) return { id: `bb-ss-tonight-w${week}`, kind: 'twist', anchor: 'start', day: 1, week, time: '23:30', ...LIVING, plate: 'living-sofas',
-    kicker: 'Secret Story', title: 'Tonight', label: 'Tonight', sub: 'The first week ends', cast: [], ss: true, steps: [
-      { k: 'beat', t: pickBy(['A week ago they were strangers. Tonight, some of them would already trust each other with anything, except their secret.',
-        'One week in the House of Secrets. The friendships are made, the first suspicions too, and not one secret has fallen yet.',
-        'The first week ends. The lights go out, and nobody in the house is asleep.'], `${k}|n`), toast: ['TONIGHT', '#ff3ea5'] },
-      { k: 'beat', t: "And next week, the game gets serious: the Voice will call them to the confessional, one by one, for the first nominations. And at the prime, the public will send the first of them home." },
-      o.ssv('The Voice will see you very soon. That is all for now.', { toast: ['THE VOICE', '#e0b84a'] })] };
+  if (!noms.length && row.ssNoPrime) {
+    const night = nightScenes(row, [], k);
+    const found = acts.filter(a => a?.type === 'ss-buzz' && a.outcome === 'right').length;
+    return { id: `bb-ss-tonight-w${week}`, kind: 'twist', anchor: 'start', day: 1, week, time: '23:30', ...LIVING, plate: 'living-sofas', sceneful: true,
+      kicker: 'Secret Story', title: 'Tonight', label: 'Tonight', sub: 'The first week ends', cast: night.find(s => s.scene)?.scene.cast || [], ss: true, steps: [
+        { k: 'beat', scene: { ...LIVING, cast: [] }, t: pickBy(['A week ago they were strangers. Tonight, some of them would trust each other with anything. Anything except their secret.',
+          `One week in the House of Secrets. The friendships are made, the first suspicions too, and ${found ? `${nw(found)} secret${found > 1 ? 's have' : ' has'} already fallen` : 'not one secret has fallen yet'}.`,
+          'The first week ends. The lights go out, but nobody in the house is asleep.'], `${k}|n`), toast: ['TONIGHT', '#ff3ea5'] },
+        ...night,
+        { k: 'beat', scene: { ...LIVING, cast: [] }, t: pickBy(['Next week, it gets real: the first nominations, one by one, in the confessional. And at the prime, the public sends the first of them home.',
+          'From next week, nobody is safe. The first nominations, the first prime, and the first goodbye.'], `${k}|next`) },
+        o.ssv('The Voice will see you very soon. That is all for now.', { toast: ['THE VOICE', '#e0b84a'] })] };
+  }
   if (!noms.length) return null;
   const party = acts.find(a => a?.type === 'ss-party');
   const love = party && (party.moments || []).find(m => m.kind === 'kiss');
   const segs = (prime?.segments || []).map(s => s.kind);
+  const night = nightScenes(row, noms, k);
+  // (the narrator names the couple the night showed, never a different one)
+  const nightPair = night.find(s => s.scene?.room === 'Bedroom' && (s.scene.cast || []).length === 2)?.scene.cast.map(c => c[0]);
   /** @type {any[]} */ const steps = [
-    { k: 'beat', t: love ? `Whether they're living brand-new feelings, like ${love.who[0]} and ${love.who[1]}, or worrying about tomorrow, one thing is sure: the night will be full of thought for every player.`
+    ...night,
+    { k: 'beat', ...(night.length ? { scene: { ...LIVING, cast: noms.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(20 + 60 * i / (a.length - 1))]) } } : {}), t: (nightPair || love) ? `Whether they're living brand-new feelings, like ${(nightPair || love.who)[0]} and ${(nightPair || love.who)[1]}, or worrying about tomorrow, one thing is sure: the night will be full of thought for every player.`
       : pickBy(["Whether they're counting their friends or their enemies, one thing is sure: the night will be full of thought for every player.",
         'Trust has to be earned in this house, and it can be lost very fast. Tonight, nobody really knows who to rely on.',
         'The lights go out in the House of Secrets. Nobody is asleep yet.'], `${k}|n`), toast: ['TONIGHT', '#ff3ea5'] },
@@ -254,5 +315,5 @@ function ssTonightScreen(row, o) {
     o.ssv('The Voice is counting on you, and will see you tomorrow night, live, for the result of your votes. That is all for now.'),
   ];
   return { id: `bb-ss-tonight-w${week}`, kind: 'twist', anchor: 'start', day: 1, week, time: '23:30', ...LIVING, plate: 'living-sofas',
-    kicker: 'Secret Story', title: 'Tonight', label: 'Tonight', sub: `${nw(noms.length)} nominees`, cast: noms.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(20 + 60 * i / (a.length - 1))]), steps, ss: true };
+    kicker: 'Secret Story', title: 'Tonight', label: 'Tonight', sub: `${nw(noms.length)} nominees`, cast: night.find(s => s.scene)?.scene.cast || noms.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(20 + 60 * i / (a.length - 1))]), sceneful: true, steps, ss: true };
 }

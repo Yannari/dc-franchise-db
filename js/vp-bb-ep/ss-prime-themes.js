@@ -22,7 +22,8 @@ export function ssBridgeScreen(seg, ctx, host, H) {
   (seg.crossings || []).forEach((c, i) => {
     const PRICE = { money: `${money(c.price)} from your own kitty`, clue: 'a clue about your own secret, on the living-room table tonight', nomination: 'your place in next week\'s nominations: you would be nominated directly' }[c.kind];
     const REWARD = c.reward === 'money' ? `${money(5000)} for ${c.friend}'s kitty` : `immunity next week for ${c.friend}`;
-    steps.push({ k: 'beat', scene: BRIDGE([c.who]), t: pickBy([`${c.who} steps onto the bridge. The lights go down to a single beam.`, `${c.who} walks out onto the bridge, slowly.`, `The bridge lights up under ${c.who}'s feet.`], `${k}|${i}|0`) },
+    // (both of them, the one on the bridge and the one waiting on the far side: the user, 2026-10-29)
+    steps.push({ k: 'beat', scene: BRIDGE([c.who, c.friend]), t: pickBy([`${c.who} steps onto the bridge. On the far side, ${c.friend} waits under a single beam.`, `${c.who} walks out onto the bridge, slowly, towards ${c.friend}.`, `The bridge lights up under ${c.who}'s feet. ${c.friend} is waiting at the other end.`], `${k}|${i}|0`) },
       ssv(`${c.who}, on the other side, ${c.friend} is waiting. The Voice offers ${REWARD}. The price: ${PRICE}.`, { ask: { id: `${k}|${i}`, q: `Will ${c.who} sacrifice for ${c.friend}?`, opts: ['Yes', 'No'] } }),
       { k: 'dr', by: c.who, t: c.yes ? pickBy([`${c.friend} would do it for me. I know it. So I'm doing it.`, "It's only money. Friends aren't."], `${k}|${i}|1`) : pickBy(["I love them. But I came here to win.", `${c.friend} will hate me. I'll live with that.`], `${k}|${i}|1`) },
       { k: 'say', by: c.who, push: true, t: c.yes ? pickBy(['Yes. For them.', 'I accept.'], `${k}|${i}|2`) : pickBy(['No. I can\'t.', 'I refuse.'], `${k}|${i}|2`), settle: { id: `${k}|${i}`, answer: c.yes ? 'Yes' : 'No', n: 2 } });

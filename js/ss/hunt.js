@@ -264,7 +264,9 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
     : rec.outcome === 'wrong'
       ? [{ text: `${by} buzzes ${target} — "${rec.guess}" — and is wrong.`, players: [by, target], badgeText: 'WRONG BUZZ', badgeClass: 'red', part: 'wrong' }]
       : [{ text: `${by} buzzes ${target}, hears ${target} out, and withdraws.`, players: [by, target], badgeText: 'WITHDRAWN', badgeClass: 'grey', part: 'withdrawn' }];
-  return { type: 'ss-buzz', ...rec, secretText: secret?.text || null, secretKind: secret?.secretKind || secret?.kind || null, poolId: secret?.poolId || null, holders: [...(secret?.holders || [])],
+  // (the clues about this secret the buzzer saw: their evidence in the confrontation, vp-bb-ep/steps.js)
+  const seenClues = secret ? (state.shownClues || []).filter(c => c.secretId === secret.id && !c.fake && (c.to === 'house' || (Array.isArray(c.to) && c.to.includes(by))) && c.week <= week).map(c => c.clue).slice(-3) : [];
+  return { type: 'ss-buzz', ...rec, clues: seenClues, secretText: secret?.text || null, secretKind: secret?.secretKind || secret?.kind || null, poolId: secret?.poolId || null, holders: [...(secret?.holders || [])],
     kitty: { [by]: balance(state, by), [target]: balance(state, target) }, beats };
 }
 

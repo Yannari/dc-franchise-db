@@ -24,6 +24,7 @@
 import { arenaFor } from '../bb/comp-arenas.js';
 import { pronouns } from '../players.js';
 import { tellAfter } from '../ss/tells.js';
+import { secretAs } from './ss-words.js';
 import { secretExplained } from '../ss/secret-stories.js';
 import { missionById } from '../ss/missions.js';
 import { voiceLine } from '../bb/story/register.js';
@@ -3178,6 +3179,39 @@ const DEFEND = {
     ['Where on earth did you get that from?', 'Confirm it if you want. I will enjoy the five thousand.'],
     ["Honestly, I'd love to know who told you that.", "I've got nothing to hide on that one. Nothing."]],
 };
+// what a buzzer can lay on the table: the clues they saw about this secret, and the tells they watched (the season's hunts)
+const YOU = { sub: 'you', obj: 'you', posAdj: 'your', ref: 'yourself' };
+// a tell said to its person: "goes quiet whenever..." -> "you go quiet whenever..."
+const toYou = phrase => String(phrase || '').replace(/^((?:never|always|still|only|also|just|really) )?(\w+)/, (m0, adv, w) => (adv || '') + ( ({ is: 'are', has: 'have', does: 'do', goes: 'go', was: 'were' }[w]
+  || (/[^aeiou]ies$/.test(w) ? `${w.slice(0, -3)}y` : /(s|sh|ch|x|z|o)es$/.test(w) ? w.slice(0, -2) : /[^s]s$/.test(w) ? w.slice(0, -1) : w))));
+function buzzEvidence(act, ctx, k) {
+  const a = act.by, t = act.target;
+  const clues = (act.clues || []).slice(-2);
+  const rows = /** @type {any[]} */ (/** @type {any} */ (globalThis).gs?.episodeHistory || []).filter(r => r && r.format === 'big-brother' && (r.num || 0) <= (ctx.week || 0));
+  const tells = [...new Set(rows.flatMap(r => (r.acts || []).filter(x => x?.type === 'ss-hunt').flatMap(x => x.moments || []))
+    .filter(m => m.kind === 'tell' && m.who === a && m.about === t && m.tell).map(m => m.tell))].slice(-1);
+  if (!clues.length && !tells.length) return [{ k: 'say', by: a, t: pickBy(BUZZ_WHY, `${k}|why`) }];
+  const ORD = ['one', 'two', 'three'];
+  /** @type {BB.Step[]} */ const out = [];
+  const REBUT = act.right
+    ? ['That could be anybody in this house.', "A clue? The Voice puts clues about everybody on that table.", "That's it? That's what you're spending five thousand dollars on?", 'You see what you want to see.']
+    : ["That's not me. That's not even close to me.", 'You have the wrong person, and you are about to pay for it.', 'Honestly, I have no idea what that has to do with me.', 'That is somebody else entirely.'];
+  let n = 0;
+  for (const c of clues) {
+    out.push({ k: 'say', by: a, push: true, t: `Exhibit ${ORD[n] || n + 1}. The clue the Voice left on the table: ${c}.`, card: { text: c, state: 'evidence', who: `Exhibit ${ORD[n] || n + 1}` }, toast: ['EVIDENCE', '#3bb3ff'] },
+      { k: 'say', by: t, t: pickBy(REBUT, `${k}|rb|${n}`) });
+    n++;
+  }
+  for (const tl of tells) {
+    let p = null; try { p = pronouns(t); } catch { p = null; }
+    void p;
+    out.push({ k: 'say', by: a, push: true, t: `Exhibit ${ORD[n] || n + 1}. I've watched you, ${t}. You ${toYou(tellAfter(tl, YOU))}. Every single time.`, toast: ['EVIDENCE', '#3bb3ff'] },
+      { k: 'say', by: t, t: act.right ? pickBy(['So I have habits. Everybody has habits.', "You've been watching me that closely? That's a bit much.", "That's not a secret. That's just me."], `${k}|rt`) : pickBy(['Because I hate being watched, maybe? Like right now.', "That's just who I am. It doesn't mean anything."], `${k}|rt`) });
+    n++;
+  }
+  out.push({ k: 'say', by: a, t: pickBy([`It all points the same way, ${t}. All of it.`, 'Put it together, and there is only one answer.', 'Every piece fits. You know it does.'], `${k}|sum`) });
+  return out;
+}
 function ssBuzzScreen(act, ctx) {
   const a = act.by, t = act.target;
   const k = `${ctx.week}|ssb|${a}|${t}`;
@@ -3195,7 +3229,7 @@ function ssBuzzScreen(act, ctx) {
     { k: 'dr', by: a, t: pickBy([`I've been watching ${t} for days. I think I know.`, `I'm pressing it. ${t} has been hiding something, and I know what.`, `It's ${t}. I'm sure enough to put money on it.`], k) },
     ssv(`${a}, you are in front of the buzzer.${act.free ? ' This one is free.' : ` If you are wrong, it will cost you ${euros(5000)}.`} Are you sure?`),
     { k: 'say', by: a, t: pickBy(["I'm sure.", "As sure as I'll ever be.", 'Yes. Completely.'], `${k}|sure`) },
-    { k: 'beat', t: `${a} presses the buzzer.`, shake: true, alarm: true, bed: 'none', toast: ['BUZZ', '#ff2244'], prop: 'buzzer', press: true,
+    { k: 'beat', t: `${a} presses the buzzer.`, shake: true, alarm: true, bed: 'none', toast: ['BUZZ', '#ff2244'], prop: 'buzzer',
       ask: { id: `${id}|who`, q: `Who is ${a} about to buzz?`, people: true, opts: callOpts(t, (ctx.house || []).filter(x => x !== a), `${k}|call`) } },
     { k: 'beat', scene: RED, alarm: true, bed: 'none', t: pickBy(['The alarm screams through every room. The whole house turns red, and everybody freezes.', 'Red lights flash in every room, and the siren will not stop. Somebody drops a glass.', 'The house goes red. The siren wails. Every head turns to the confessional door.'], `${k}|red`) },
     ...(shout[0] ? [{ k: 'say', by: shout[0], alarm: true, bed: 'none', t: pickBy(["Somebody's buzzed! Who's in there?", 'Who is it? Who pressed it?', "Oh my god. Oh my god, somebody's buzzed."], `${k}|s1`) }] : []),
@@ -3220,7 +3254,9 @@ function ssBuzzScreen(act, ctx) {
     { k: 'say', by: a, push: true, t: `I think your secret is: "${act.guess}."` },
     { k: 'beat', t: pickBy([`${t} does not blink.`, `${t} looks at the floor, then back up.`, `For a second, nobody breathes.`], `${k}|bl`), tense: [t] },
     ssv(`${a}, why?`),
-    { k: 'say', by: a, t: pickBy(BUZZ_WHY, `${k}|why`) },
+    // THE EVIDENCE (the user, 2026-10-29: "if they had clues they can use it in the debate like in danganronpa"): the
+    // clues the buzzer saw, and what they watched the other do, laid on the table one at a time, and answered
+    ...buzzEvidence(act, ctx, k),
     ssv(`${t}, you may answer. You may not reveal anything.`),
     { k: 'say', by: t, push: true, t: dfd[0] },
     { k: 'say', by: a, t: pickBy(BUZZ_PUSH, `${k}|push`) },
@@ -3474,27 +3510,96 @@ function ssRuleScreen(act, ctx) {
 }
 
 // THE HUNT (§4): what the house noticed this week, and the theories going round.
+// THE HUNT, as the house plays it (the user, 2026-10-29: "the hunt is kinda weird cause all the dialogue are in the
+// confessional and badly written how are we suppose to understand how they find a secret if they dont talk to each
+// other get their clues won exchange info strategize etc", "its super empty"): the week's clue argued over at the
+// kitchen table with its holder sitting right there; a hunter fishing, and the tell happening in front of us; two
+// allies comparing notes in the dark and deciding whether it is worth five thousand dollars. Built from the week's own
+// hunt (js/ss/hunt.js huntDay: who noticed what about whom, who told whom) and its clues; every theory said about the
+// person (vp-bb-ep/ss-words.js), never a quoted secret.
+const HUNT_GUESS = {
+  survived: ['Somebody in here nearly died. That is what that is.', "It's something that happened to somebody. Something big.", 'That is an accident. Or a disaster. Somebody lived through something.'],
+  talent: ['Somebody can do something none of us can.', "It's a skill. Somebody here is secretly very good at something.", 'A gift. Somebody has a gift they are hiding.'],
+  record: ["It's a title. Somebody won something.", 'Somebody here is a champion of something.', "That's a record. Somebody holds a record."],
+  job: ["That's a job. Somebody is lying about what they do.", 'Somebody here has a job they do not talk about.', "It's work. Somebody's real job."],
+  body: ["It's something about somebody's body.", 'Something physical. Something you would never see.', 'That is medical. Somebody went through something.'],
+  family: ["It's a family thing.", "Somebody's family is not what they say it is.", 'Somebody has a family story they are hiding.'],
+  past: ['Somebody had another life before this one.', "It's somebody's past. Something they left behind.", 'That is a past life. Somebody used to be someone else.'],
+  belief: ['Somebody here believes in something strange.', "It's a gift. Or a curse. Somebody sees things.", 'That is somebody who believes in the other side.'],
+  love: ["It's a love story.", 'Somebody here is in love with somebody outside.', "That's about a relationship. Somebody's heart."],
+  money: ["It's money. Somebody here is rich, or was.", 'Somebody is sitting on money.', 'That is about a fortune.'],
+};
+const HUNT_STEER = ['Could be anything, honestly. Half the house could have that.', 'Or it is a decoy. The Voice loves a decoy.', "Why are you all looking at me? I'd say it's somebody quiet.",
+  "I think you're all overthinking it.", 'If you ask me, the Voice is messing with us.'];
+const HUNT_FISH = [['So what did you actually do, before all this?', "Oh, this and that. Nothing exciting. Why?"], ['Where did you grow up, really?', "Here and there. We moved around a lot."],
+  ["What's the craziest thing that has ever happened to you?", "Me? Nothing. I'm the most boring person in this house."], ['Do you ever talk about home? You never do.', 'There is not much to say. Normal family, normal life.'],
+  ['What would you do with the money, if you won?', "Pay off some things. Travel. The usual."], ['Have you ever been on TV before?', 'Never. Why would you think that?']];
 function ssHuntScreen(act, ctx) {
   const ms = act.moments || [];
-  if (!ms.length) return null;
+  const acts = ctx.row?.acts || [];
+  const clues = acts.filter(a => a?.type === 'ss-clue' && a.to === 'house' && a.clue && (a.holders || []).length).slice(0, 2);
+  if (!ms.length && !clues.length) return null;
+  const k = `${ctx.week}|ssh`;
+  const R = (pool, s) => pickBy(pool, `${k}|${s}`);
+  const house = (ctx.house || []).slice();
+  const P = n => { try { return /** @type {any} */ (pronouns(n)) || {}; } catch { return {}; } };
+  const cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
+  const said = (n, theory) => secretAs(n, theory, P(n));
+  const secrets = /** @type {any} */ (globalThis).gs?.bb?.secretStory?.secrets || [];
+  const kindOf = n => { const s = secrets.find(x => (x.holders || []).includes(n)); return s?.secretKind || s?.kind || 'past'; };
+  const spot = (set, plate, room, who) => ({ set, plate, room, cam: CAM[set] || 4, kicker: `Cam ${String(CAM[set] || 4).padStart(2, '0')} · ${room}`, cast: who.filter(Boolean).map((n, i, w) => [n, w.length === 1 ? 50 : Math.round(16 + 68 * i / (w.length - 1))]) });
   /** @type {BB.Step[]} */ const steps = [];
-  // (the same tell seen twice is said once)
-  const seenTell = new Set();
-  // (...and two people comparing notes about the same one, once, whichever of them started it)
-  const keyOf = m => (m.kind === 'tell' ? `t|${m.about}|${m.tell}` : `n|${[m.who, m.to].sort().join('+')}|${m.about}`);
-  ms.filter(m => !seenTell.has(keyOf(m)) && seenTell.add(keyOf(m))).slice(0, 4).forEach((m, i) => {
-    const k = `${ctx.week}|ssh|${i}|${m.who}`;
-    if (m.kind === 'tell') {
-      const pr = (() => { try { return pronouns(m.about); } catch { return null; } })();
-      steps.push({ k: 'beat', t: `${m.about} ${tellAfter(m.tell, pr)}. ${m.who} sees it.` },
-        { k: 'dr', by: m.who, t: pickBy([`${m.about} does this thing whenever it comes up. I'm writing that down.`, `Watch ${m.about}. Just watch. There's something there.`, `I think ${m.about}'s secret is "${m.theory}". Not sure yet. Getting there.`], k) });
-    } else {
-      steps.push({ k: 'beat', t: `${m.who} and ${m.to}, in a corner, comparing notes about ${m.about}.` },
-        { k: 'dr', by: m.to, t: pickBy([`${m.who} thinks ${m.about} is hiding "${m.theory}". Now I can't unsee it.`, `${m.who} told me ${(() => { try { return pronouns(m.who)?.posAdj || 'their'; } catch { return 'their'; } })()} theory about ${m.about}. It makes sense. Too much sense.`], k) });
-    }
+  const seen = new Set();
+  // 1. the clue, at the kitchen table, with its holder sitting right there
+  clues.forEach((c, ci) => {
+    const h = c.holders[0];
+    if (!house.includes(h)) return;
+    const hunters = ms.filter(m => m.about === h).map(m => m.who).filter(n => n !== h && house.includes(n));
+    const table = [...new Set([...hunters, ...house.filter(n => n !== h).sort((a, b) => hash(`${k}|t|${ci}|${a}`) - hash(`${k}|t|${ci}|${b}`))])].slice(0, 3);
+    const [t1, t2, t3] = table;
+    if (!t1 || !t2) return;
+    steps.push({ k: 'beat', scene: spot('kitchen', 'kitchen-wide', 'Kitchen', [t1, h, t2, t3]), card: { text: c.clue, state: 'clue', who: 'The clue' }, t: R([`Around the kitchen table, the house turns the Voice's clue over and over: ${c.clue}.`, `The clue goes round the kitchen table, hand to hand: ${c.clue}.`], `c0|${ci}`) },
+      { k: 'say', by: t1, t: R([`${cap(c.clue)}. What is that supposed to mean?`, `Okay. ${cap(c.clue)}. Whose is it? Think.`, `${cap(c.clue)}. That has to be about somebody at this table.`], `c1|${ci}`) },
+      { k: 'say', by: t2, t: R(HUNT_GUESS[kindOf(h)] || HUNT_GUESS.past, `c2|${ci}`) },
+      { k: 'say', by: h, t: R(HUNT_STEER, `c3|${ci}`) });
+    if (t3) steps.push({ k: 'say', by: t3, push: !!hunters.length, t: hunters.length ? R([`Funny. You answered that very fast, ${h}.`, `You've been very quiet about this one, ${h}.`, `You went a bit red there, ${h}.`], `c4|${ci}`) : R(['Write it down. All of it.', 'Somebody at this table is lying. Probably all of us.'], `c4|${ci}`) });
+    steps.push({ k: 'dr', by: h, t: R(['That clue is mine. I kept my face still. I think I kept my face still.', 'I had to say something. Saying nothing is worse.', `I sent them the wrong way. For now.`], `c5|${ci}`) });
+    seen.add(h);
   });
-  return { id: `bb-ss-hunt-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '14:00',
-    kicker: 'Cam 04 · The house', title: 'The Hunt', label: 'The Hunt', sub: 'Who is watching whom', cast: [], steps };
+  // 2. fishing: a hunter, a question, and the tell, in front of us
+  ms.filter(m => m.kind === 'tell' && house.includes(m.who) && house.includes(m.about)).slice(0, 2).forEach((m, i) => {
+    const [q, a] = R(HUNT_FISH, `f|${m.who}|${m.about}`);
+    const place = i % 2 ? spot('yard', 'pool-loungers', 'The Pool', [m.who, m.about]) : spot('yard', 'patio', 'The Garden', [m.who, m.about]);
+    steps.push({ k: 'beat', scene: place, t: R([`${m.who} sits down next to ${m.about}, very casual.`, `${m.who} finds ${m.about} alone, and starts chatting.`], `f0|${i}`) },
+      { k: 'say', by: m.who, t: q }, { k: 'say', by: m.about, t: a },
+      { k: 'beat', t: `${m.about} ${tellAfter(m.tell, P(m.about))}.`, tense: [m.about] },
+      { k: 'say', by: m.who, t: R(['Interesting.', 'Right. Sure.', 'Okay. Never mind, then.'], `f1|${i}`) },
+      { k: 'dr', by: m.who, t: m.conf >= 0.55 ? R([`Did you see that? I'm almost sure now. I think ${said(m.about, m.theory)}.`, `That's the second time. I think ${said(m.about, m.theory)}. I'd put money on it.`], `f2|${i}`)
+        : R([`It's not proof. But my guess? ${cap(said(m.about, m.theory))}.`, `Something is there. I'm starting to think ${said(m.about, m.theory)}.`], `f2|${i}`) });
+    seen.add(m.about);
+  });
+  // 3. comparing notes, in the dark, and whether it is worth the buzzer
+  ms.filter(m => m.kind === 'talk' && house.includes(m.who) && house.includes(m.to)).slice(0, 2).forEach((m, i) => {
+    const sure = m.conf >= 0.5;
+    steps.push({ k: 'beat', scene: spot('bedroom', 'bedroom-beds', 'Bedroom', [m.who, m.to]), t: R([`Lights out. ${m.who} slides over to ${m.to}'s bed and whispers.`, `In the bedroom, the others asleep, ${m.who} and ${m.to} are still talking.`], `n0|${i}`) },
+      { k: 'say', by: m.who, t: R([`I need to tell you something about ${m.about}.`, `Can I tell you what I think about ${m.about}? Just you.`], `n1|${i}`) },
+      { k: 'say', by: m.to, t: R(['Go on.', `What about ${m.about}?`, "I'm listening."], `n2|${i}`) },
+      { k: 'say', by: m.who, t: `I think ${said(m.about, m.theory)}.` },
+      { k: 'say', by: m.to, t: sure ? R(['That makes sense. That makes so much sense.', 'I thought the same thing after the clue.', 'Oh my god. Yes.'], `n3|${i}`) : R(["No. I don't see it.", 'Based on what?', "Maybe. I'm not convinced."], `n3|${i}`) },
+      ...R([[["We don't buzz yet. Five thousand is a lot to lose on a feeling.", 'Then we need one more thing. One more slip.']],
+        [["If we're right, it's the whole kitty. If we're wrong, it's five thousand gone.", "Let's watch for a few more days. Together."]],
+        [['Whoever buzzes first takes it all. So this stays between us.', 'Between us. Deal.']]], `n4|${i}`)[0].map((t, j) => ({ k: 'say', by: j ? m.to : m.who, t })));
+    seen.add(m.about);
+  });
+  // 4. the one they are all circling
+  const counts = {};
+  for (const m of ms) if (house.includes(m.about)) counts[m.about] = (counts[m.about] || 0) + 1;
+  const hunted = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+  if (hunted) steps.push({ k: 'dr', by: hunted, t: R(["Everybody's looking at me differently this week. I can feel it.", 'I need a new story. Fast.', 'Two people asked me about home today. Two. That is not a coincidence.'], `h|${hunted}`) });
+  if (!steps.length) return null;
+  const first = steps.find(s => s.scene)?.scene || {};
+  return { id: `bb-ss-hunt-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '14:00', set: first.set || 'ceremony', plate: first.plate, room: first.room || ROOM_NAME.ceremony, cam: first.cam || CAM.ceremony,
+    kicker: first.kicker || 'Cam 04 · The house', title: 'The Hunt', label: 'The Hunt', sub: 'Who is watching whom', cast: first.cast || [], sceneful: true, steps };
 }
 
 function ssNomScreen(act, ctx) {
@@ -3542,7 +3647,9 @@ function ssNomScreen(act, ctx) {
   // the nominations happen, so they go one by one")
   const everyone = (ctx.house || []).filter(Boolean);
   steps.push(ssv('Housemates, please gather in the living room.', { scene: { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: everyone.slice(0, 10).map((n, i, a) => [n, Math.round(8 + 84 * i / Math.max(1, a.length - 1))]) }, toast: ['NOMINATIONS', '#e0b84a'] }),
-    ssv(ss.inverted ? 'It is time for the nominations. This week, you will name the two housemates you want to SAVE. When the Voice calls your name, come to the confessional, one at a time.'
+    // (the rule said out loud: the user, 2026-10-29, "if its inverted nominations isnt it supposed to mean then everyone is
+    // nominated except the 2 saved?": no, in the real show the ones saved the LEAST are nominated)
+    ssv(ss.inverted ? 'It is time for the nominations, and this week they are inverted. You will name the two housemates you want to SAVE. The housemates saved the least will be nominated. When the Voice calls your name, come to the confessional, one at a time.'
       : ss.exclusive ? `It is time for the nominations. This week, only ${ss.exclusive} will name the nominees. ${ss.exclusive}, the confessional is waiting for you.`
         : 'It is time for the nominations. When the Voice calls your name, come to the confessional, one at a time.'),
     { k: 'beat', t: pickBy(['Everybody stays on the sofas, very still, waiting for their name.', 'Nobody looks at anybody. Somebody starts biting their nails.'], `${ctx.week}|nomcall`) });
@@ -3592,7 +3699,8 @@ function ssNomScreen(act, ctx) {
   const NW = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
   if (ss.twist?.kind === 'everybody') {
     steps.push(ssv('This week, every one of you faces the public. There is no list to read.', { nom: noms.slice(), toast: ['EVERYBODY IS NOMINATED', '#ff3355'] }));
-  } else steps.push(ssv(`The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: ['NOMINATIONS', '#e0b84a'] }));
+  } else steps.push(ssv(ss.inverted ? `The Voice has the results. The ${NW[read.length] || read.length} housemates you saved the least will face the public this week.`
+    : `The Voice has the results of the nominations. ${NW[read.length] || read.length} housemates will face the public this week.`, { toast: [ss.inverted ? 'SAVED THE LEAST' : 'NOMINATIONS', '#e0b84a'] }));
   const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
   const LIVE_SAY = ["Okay. Okay. It's fine.", 'Me? Seriously?', 'I knew it. I knew it was going to be me.', 'Fine. Let the public decide.', "Wow. Okay. I didn't see that one coming.", "That's the game. It's fine.", 'Of course. Of course it is.', "Great. Love that for me.", "Whoever did that, I see you.", "It's fine. I'm fine. Everything's fine."];
   const FRIEND_SAY = n => ['Hey. Look at me. The public loves you.', `You're staying, ${n}. I know it.`, "Come here. We've got you.", `The public will never let you go, ${n}. Never.`, "Don't cry. Don't you dare cry, you'll make me cry."];
@@ -3690,11 +3798,13 @@ function ssPrimeOpenScreen(act, ctx, host) {
   steps.push(
     { k: 'host', by: host, t: `${listOf(noms)}, you're nominated, and one of you is leaving the house tonight. The public is voting right now.`, tense: noms },
     { k: 'host', by: host, t: "Let's go and say hello to the house!" },
-    { k: 'beat', t: ["On the giant screen, the living room. The housemates are lined up on the sofas, dressed for the night.", "The giant screen cuts to the house. Everybody is on the sofas, holding hands or holding their breath.", "On the screen behind the host, the housemates wave at the camera from the living room.", "The house appears on the giant screen, dressed up and squeezed together on the sofas."][((ctx.week || 0) + 1) % 4] },
+    // (the house, seen: the user, 2026-10-29, "the house appear but we dont see anyone and anything")
+    { k: 'beat', scene: { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Live · The House', cast: (ctx.house || []).slice(0, 12).map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(6 + 88 * i / (a.length - 1))]) },
+      t: ["On the giant screen, the living room. The housemates are lined up on the sofas, dressed for the night.", "The giant screen cuts to the house. Everybody is on the sofas, holding hands or holding their breath.", "On the screen behind the host, the housemates wave at the camera from the living room.", "The house appears on the giant screen, dressed up and squeezed together on the sofas."][((ctx.week || 0) + 1) % 4] },
     { k: 'host', by: host, t: 'Good evening, House of Secrets!' },
     { k: 'beat', t: pickBy([`The whole house shouts back at once: "Good evening, ${host}!"`, `"Good evening!" Everybody waves at the mirror. The nominees wave a little less.`, `The house cheers. ${noms[0] || 'One of the nominees'} manages a smile.`], `${k}|hi`) },
   );
-  return ssLive(ctx, { id: `bb-ss-prime-open-w${ctx.week}`, ...STUDIO, title: 'The Prime', label: 'The Prime', sub: act.name, cast: [],
+  return ssLive(ctx, { id: `bb-ss-prime-open-w${ctx.week}`, ...STUDIO, title: 'The Prime', label: 'The Prime', sub: act.name, cast: [], sceneful: true,
     rules: [['LIVE', 'every week'], ['THE PUBLIC', 'votes all night'], ['ONE', 'leaves tonight']], rulesTitle: 'THE PRIME · HOW IT WORKS', steps });
 }
 
@@ -3918,6 +4028,10 @@ function ssPhoneScreen(seg, ctx, host) {
   const k = `${ctx.week}|ssp-ph`;
   const n = seg.answered;
   /** @type {BB.Step[]} */ const steps = [
+    // (announced before it rings: the user, 2026-10-29, "why is the red phone already activated with no announcement")
+    { k: 'host', by: host, t: "Tonight, there is a red phone in the middle of the living room. When it rings, whoever picks it up gets what's on the other end. A power, or a curse. Nobody knows which until they hear it.", toast: ['THE RED PHONE', '#ff3355'] },
+    ssv('Housemates, the red phone has been placed in the living room. It will ring tonight. Whoever answers it will hear the Voice, and only them.'),
+    { k: 'beat', t: pickBy(['Every head turns to the phone. Nobody wants to sit next to it, and everybody does.', 'The house stares at the red phone like it might bite.'], `${k}|pre`) },
     { k: 'host', by: host, t: 'Housemates, listen carefully...' },
     { k: 'beat', t: 'In the middle of the living room, the red phone rings.', shake: true, toast: ['THE RED PHONE', '#ff3355'], prop: 'phone', press: true,
       ask: { id: `${k}|who`, q: 'Who answers the red phone?', people: !!n, opts: n ? callOpts(n, ctx.house || [], `${k}|call`) : ['Somebody', 'Nobody'] } },
@@ -4016,8 +4130,25 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'ticket') out.push(ssLive(ctx, { ...LIVING, ...ssTicketScreen(seg, ctx, host) }));
   }
   out.push(ssGoldenBuzzScreen(act, ctx, host, MORE));
+  // THE NIGHT'S THEME, all night (the user, 2026-10-29: "its the theme of the prime so it should be all over it not just one
+  // screen"): the host comes back to it at the top of the live segments
+  const NOTE = PRIME_THEME_NOTES[act.theme] || null;
+  if (NOTE) {
+    let n = 0;
+    for (const s of out) {
+      if (!s || !/^bb-ss-prime-(chat|kitties|airlock|goldenbuzz)-|^bb-ss-prime-verdict/.test(String(s.id || ''))) continue;
+      (s.steps ||= []).unshift({ k: 'host', by: host, t: NOTE[n++ % NOTE.length] });
+    }
+  }
   return out.filter(Boolean);
 }
+const PRIME_THEME_NOTES = {
+  bridge: ['On a night of sacrifices, the house has already seen who gives, and who keeps.', "After the Bridge of Sacrifices, nobody in that house looks at anybody the same way.", 'Some of them crossed that bridge alone tonight. Remember that.', 'Sacrifices tonight. And the biggest one is still to come.'],
+  'red-phone': ['And remember: somewhere tonight, the red phone is going to ring.', 'The red phone is still sitting there, in the middle of the living room. Nobody wants to sit next to it.', 'Not one of them takes their eyes off that red phone for long.', 'The red phone has had its say. Now it is the public\'s turn.'],
+  dilemmas: ['A night of dilemmas. Every choice has a price.', 'Some of them have already had to choose tonight. Nobody chose easily.', 'Tonight, the Voice is making them choose, again and again.', 'One more dilemma tonight. And this one is yours, at home.'],
+  truths: ['Tonight, the Room of Truths is open. In there, nobody can lie.', 'Some truths came out tonight that the house will not forget.', 'After the Room of Truths, every friendship in that house has been tested.', 'The truth is out. Now, the verdict.'],
+  rings: ['Four rings, four powers, and the house has been hunting for them all night.', 'Somebody in that house is wearing a power tonight.', 'The rings have found their owners. And they are already using them.', 'Rings or no rings, nobody is safe tonight.'],
+};
 
 // A FAKE VOLUNTARY DEPARTURE (js/ss/hidden.js, S6, S7): the Voice offers the kitty to walk out, on air.
 function ssVoluntaryScreen(seg, ctx, host) {
@@ -4117,11 +4248,15 @@ function ssVerdictSuspense({ noms, saved, ev, pairOut, pc, k, host, ties = undef
   return steps;
 }
 // The house reacts, by what each of them was to the one leaving: tears, anger, a smile they hide, a hug, a turned back.
-function ssVerdictReactions(ctx, { noms, saved, ev, k }) {
-  const house = (ctx.house || []).filter(n => n && n !== ev);
+function ssVerdictReactions(ctx, { noms, saved, ev, k, also = undefined }) {
+  // (a double elimination: the second one is going too, and is not in the living room reacting)
+  const house = (ctx.house || []).filter(n => n && n !== ev && n !== also);
   const by = (f) => house.slice().sort((a, b) => f(b) - f(a));
   const close = by(n => bondNow(ctx, ev, n));
-  /** @type {any[]} */ const steps = [{ k: 'beat', bed: 'ss-sad', t: pickBy([`In the living room, the screen goes quiet on ${ev}'s face.`, `The living room freezes. Then everybody moves at once.`], `${k}|r0`) }];
+  // (the house is seen reacting, in the living room: the user, 2026-10-29, "when they talking we need to see them dont
+  // hesitate to even switch screens")
+  const LIV = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Live · The House', cast: house.slice(0, 8).map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(8 + 84 * i / (a.length - 1))]) };
+  /** @type {any[]} */ const steps = [{ k: 'beat', bed: 'ss-sad', scene: LIV, t: pickBy([`In the living room, the screen goes quiet on ${ev}'s face.`, `The living room freezes. Then everybody moves at once.`], `${k}|r0`) }];
   const used = new Set();
   const take = n => { if (!n || used.has(n)) return null; used.add(n); return n; };
   const cryer = take(close[0]);
@@ -4189,7 +4324,7 @@ function ssVerdictScreen(act, ctx, host) {
   if (mode !== 'save' || power) {
     steps.push({ k: 'beat', bed: 'ss-sad', t: pickBy([`${saved[0] || 'The others'} grabs ${ev} and does not let go.`, `${ev} nods, and smiles, and wipes ${pronouns(ev).posAdj || 'their'} eyes.`, `In the living room, somebody screams. ${ev} laughs through the tears.`], `${k}|r`) });
     if (friend) steps.push({ k: 'say', by: friend, t: pickBy([`${ev}, I love you! I'll see you outside!`, `We'll finish this for you, ${ev}!`, `${ev}! You were the best thing in this house!`], `${k}|f`) });
-  } else steps.push(...ssVerdictReactions(ctx, { noms, saved, ev, k }));
+  } else steps.push(...ssVerdictReactions(ctx, { noms, saved, ev, k, also: pairOut }));
   // a couple separated by the verdict (romance.js: the row's showmanceSeparation): their goodbye through the airlock
   // (the couples in the house on the night: the prime's own record, js/bb/secret-story.js `couples`)
   const sep = ctx.row?.showmanceSeparation;
@@ -4201,12 +4336,12 @@ function ssVerdictScreen(act, ctx, host) {
       { k: 'say', by: ev, t: pickBy([`${p}, I love you. Win it for us.`, `Don't you dare cry. I'll be watching you every night.`, `Look at me. You're going to be fine. I'll be right outside.`], `${k}|cp2`) },
       { k: 'beat', t: pickBy([`They hold on to each other until the Voice asks ${ev} to go.`, `One last kiss through the tears. The whole house goes quiet.`], `${k}|cp3`) });
   }
-  steps.push({ k: 'say', by: ev, push: true, t: pickBy(["Thank you, all of you. Keep your secrets. Play hard.", "I love you guys. Look after each other.", `${ctx.week <= 1 ? 'Seven days' : `${ctx.week} weeks`}, and the best of my life. Win it, one of you.`], `${k}|bye`) },
+  steps.push({ k: 'say', by: ev, push: true, scene: { set: 'door', plate: 'foyer', room: 'The Airlock', cam: 7, kicker: 'Live · The Airlock', cast: [ev, ...(pairOut ? [pairOut] : [])].map((n, i, a) => [n, a.length === 1 ? 50 : 38 + i * 24]) }, t: pickBy(["Thank you, all of you. Keep your secrets. Play hard.", "I love you guys. Look after each other.", `${ctx.week <= 1 ? 'Seven days' : `${ctx.week} weeks`}, and the best of my life. Win it, one of you.`], `${k}|bye`) },
     { k: 'host', by: host, t: pickBy([`${ev}, come and join me on the stage!`, `${ev}, the stage is waiting for you. Come and join me!`], `${k}|stage`) },
-    { k: 'beat', t: `${ev} waves one last time through the glass. The airlock closes.`, exit: ev });
+    { k: 'beat', t: `${ev} waves one last time through the glass. The airlock closes.`, exit: ev, scene: { set: 'door', plate: 'foyer', room: 'The Airlock', cam: 7, kicker: 'Live · The Airlock', cast: [[ev, 50]] } });
   return ssLive(ctx, { id: `bb-ss-prime-verdict-w${ctx.week}`, ...AIRLOCK, title: 'The Verdict', label: 'The Verdict', sub: listOf(noms),
     // side by side in the airlock, holding hands (the real verdict; the user's reference)
-    cast: noms.map((n, i, a) => [n, Math.round(50 + (i - (a.length - 1) / 2) * 12.5)]), hands: true, steps });
+    cast: noms.map((n, i, a) => [n, Math.round(50 + (i - (a.length - 1) / 2) * 12.5)]), hands: true, sceneful: true, steps });
 }
 
 // THE WALK and the INTERVIEW on the set; the secret the house never found.
@@ -4216,8 +4351,14 @@ function ssWalkScreen(act, ctx, host) {
   const rv = act.reveal || {};
   const af = act.after || {};
   const k = `${ctx.week}|ssp-w|${ev}`;
+  // the one the country loved to hate is booed in (the public's read: js/ss/public.js, on the after-prime record)
+  const hated = af.public?.villain?.name === ev && af.public?.villain?.key !== 'villain-loved';
   /** @type {BB.Step[]} */ const steps = [
-    { k: 'beat', t: `A door opens at the back of the airlock. ${ev} walks up the stairs into the studio, and the crowd is on its feet.`, door: true, toast: ['THE STUDIO', '#e0b84a'] },
+    // (the user, 2026-10-29: "where is the thunder of clap for .... ANGELICA with light and all when someone go out sometimes
+    // even booh when the person was super hated")
+    { k: 'host', by: host, t: `Ladies and gentlemen... ${ev.toUpperCase()}!`, studioIn: hated ? 'boo' : 'cheer', toast: [ev.toUpperCase(), hated ? '#ff3355' : '#ff3ea5'], shake: true },
+    { k: 'beat', t: hated ? `A door opens at the back of the airlock. ${ev} walks up the stairs into the studio, and half the crowd boos. The other half claps, louder, to drown them out.`
+      : `A door opens at the back of the airlock. ${ev} walks up the stairs into the studio, the lights sweep the room, and the crowd is on its feet.`, door: true },
     { k: 'host', by: host, t: pickBy([`${ev}! Come here. Welcome to the studio.`, `Welcome, ${ev}! Come and sit with me.`], k) },
     { k: 'host', by: host, t: 'How are you feeling?' },
     { k: 'say', by: ev, t: pickBy(["Honestly? A bit lost. In there it's all you know.", "Sad, but proud. I gave it everything.", "It hasn't sunk in yet. Ask me tomorrow."], `${k}|f`) },
@@ -6222,7 +6363,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       // the Voice's evening games and the black buzzer (vp-bb-ep/ss-evening.js)
       case 'ss-evening': flush(); ceremony(ssEveningScreen(act, ctx, { ssv })); break;
       case 'ss-week-twist': { const scr = ssWeekTwistScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
-      case 'ss-group': { const scr = ssGroupWeekScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
+      case 'ss-group': { const scr = ssGroupWeekScreen(act, ctx, { ssv, pronouns: n => { try { return pronouns(n); } catch { return null; } } }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-room-dilemma': { const scr = ssRoomDilemmaScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-house-event': { const scr = ssHouseEventScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
       case 'ss-production': { const scr = ssProductionScreen(act, ctx, { ssv }); if (scr) { flush(); ceremony(scr); } break; }
@@ -6419,6 +6560,47 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         } else if (rev) { at = after(at, 2) + 1; out.splice(Math.min(at, dailyEnd() >= 0 ? dailyEnd() : out.length), 0, rev); }
       }
     }
+    // THE HOUSE THAT NIGHT, after the prime (the user, 2026-10-29: "angelica is in house life after the after secret so after
+    // her elimination", "the house life after the after secret is more about the elimination"): nothing with the one who
+    // just left, and it opens on the house without them
+    {
+      const vAct = (row.acts || []).find(a => a?.ssPublic && a.evicted);
+      const ev = vAct?.evicted;
+      const gone = [ev, vAct?.ssPublic?.second].filter(Boolean);
+      if (ev) {
+        const afterOnes = out.filter(x => x.ssAfterPrime);
+        for (const s of afterOnes) {
+          const keep = [];
+          let block = [];
+          const flushB = () => { if (!block.some(st => gone.includes(st.by) || (st.scene?.cast || []).some(c => gone.includes(Array.isArray(c) ? c[0] : c)) || gone.some(g => new RegExp(`\\b${g}\\b`).test(String(st.t || ''))))) keep.push(...block); block = []; };
+          for (const st of s.steps || []) { if (st.scene && block.length) flushB(); block.push(st); }
+          flushB();
+          s.steps = keep;
+          if (s.cast) s.cast = s.cast.filter(c => !gone.includes(Array.isArray(c) ? c[0] : c));
+        }
+        const house = (ctx.house || []).filter(n => n && !gone.includes(n));
+        const close = house.slice().sort((a, b) => bondNow(ctx, ev, b) - bondNow(ctx, ev, a));
+        const saved = (vAct.nominees || vAct.ssPublic.saved || []).filter(n => n !== ev && house.includes(n));
+        const k2 = `${ctx.week}|aftp|${ev}`;
+        const LIVa = who => ({ set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: [...new Set(who.filter(Boolean))].map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(14 + 72 * i / (a.length - 1))]) });
+        const [c1, c2] = close;
+        const glad = close.length > 2 ? close[close.length - 1] : null;
+        /** @type {any[]} */ const night = [
+          { k: 'beat', scene: LIVa([c1, c2, ...saved.slice(0, 2)]), t: gone.length > 1 ? `Back in the house after the prime. Two beds are empty tonight: ${listOf(gone)}'s. Nobody can quite believe it.` : pickBy([`Back in the house after the prime. ${ev}'s bed is still unmade, and nobody wants to be the first to sit on it.`, `The house, after the cameras of the prime have gone. One place on the sofa is empty: ${ev}'s.`], `${k2}|0`) },
+          ...(c1 ? [{ k: 'say', by: c1, t: pickBy([`I can't believe ${ev} is gone. This morning we were making breakfast.`, `It doesn't feel real. I keep looking at the door.`, `${ev} was my person in here.`], `${k2}|1`) }] : []),
+          ...(c2 ? [{ k: 'say', by: c2, t: pickBy(['Come here. We play for them now.', `${ev} would want us to keep going. You know that.`, "I know. I know. Come here."], `${k2}|2`) }] : []),
+          ...(saved[0] ? [{ k: 'say', by: saved[0], t: pickBy(["I'm still here. I don't even know how.", 'I thought it was me. I really thought it was me.', "Another week. I'm not wasting it."], `${k2}|3`) }] : []),
+          ...(glad && bondNow(ctx, ev, glad) < 0 ? [{ k: 'dr', by: glad, t: pickBy([`Honestly? I'm not sad. ${ev} was coming for me.`, `Everybody's crying. I'm not going to pretend.`, `One less person looking at me sideways.`], `${k2}|4`) }] : []),
+          { k: 'beat', scene: LIVa(house.slice(0, 5)), t: pickBy(['By the time the lights go down, the conversation has already moved on to next week.', 'Somebody says what everybody is thinking: next week, it could be any of them.'], `${k2}|5`) },
+        ];
+        if (afterOnes.length) afterOnes[0].steps = [...night, ...(afterOnes[0].steps || [])];
+        else {
+          const at = out.findIndex(x => /^bb-ss-after-/.test(String(x.id || '')));
+          if (at >= 0) out.splice(at + 1, 0, { id: `bb-hl-afterprime-w${ctx.week}`, kind: 'houselife', anchor: 'evict', day: ctx.day, time: '01:00', ssAfterPrime: true,
+            title: 'House Life', label: 'House Life', sub: 'After the prime', set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: night[0].scene.cast, steps: night });
+        }
+      }
+    }
     // a small mission's verdict is the day's, not the prime's: it airs before the days end on their cliffhanger
     {
       const judged = out.filter(x => /^bb-ss-missionjudge-/.test(String(x.id || '')));
@@ -6426,6 +6608,26 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       const tonight = out.findIndex(x => /^bb-ss-tonight/.test(String(x.id || '')) && ssPartOf(x) === 'daily');
       const prime = out.findIndex(x => ssPartOf(x) === 'prime');
       out.splice(tonight >= 0 ? tonight : prime >= 0 ? prime : out.length, 0, ...judged);
+    }
+    // WHOEVER TALKS IS SEEN (the user, 2026-10-29: "when they talking we need to see them dont hesitate to even switch
+    // screens dont be afrait to actually put the work"): a line said by somebody not in the shot brings them into it
+    for (const s of out) {
+      if (!s.ss || s.seated) continue;
+      const able = SCENEFUL_KINDS.has(s.kind) || !!s.sceneful || !(s.steps || []).some(st => st.scene);
+      if (!able || /^(studio|dr|door|finale|studio-wide)/.test(String(s.set || '')) && !s.sceneful) continue;
+      let cur = { set: s.set, plate: s.plate, room: s.room, cam: s.cam, kicker: s.kicker, cast: s.cast || [] };
+      let added = false;
+      s.steps = (s.steps || []).map(st => {
+        if (st.scene) { cur = { ...cur, ...st.scene }; return st; }
+        if (st.k !== 'say' || !st.by || /^(studio|dr|finale)/.test(String(cur.set || ''))) return st;
+        const names = (cur.cast || []).map(c => (Array.isArray(c) ? c[0] : c));
+        if (names.includes(st.by)) return st;
+        const who = [...names.filter(n => n !== st.by).slice(-4), st.by];
+        cur = { ...cur, cast: who.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(12 + 76 * i / (a.length - 1))]) };
+        added = true;
+        return { ...st, scene: cur };
+      });
+      if (added && !SCENEFUL_KINDS.has(s.kind)) s.sceneful = true;
     }
     mergeSameLabel(out, ssPartOf);
     ssBreaks(out, { host: ctx.host || 'Josh', partOf: ssPartOf });

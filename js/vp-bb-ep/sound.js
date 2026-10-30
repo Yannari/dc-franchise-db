@@ -14,7 +14,7 @@
 // Reveal all), and a step only ever sounds like something on screen.
 import { BED_CATALOG, CUE_CATALOG } from '../audio.js';
 import { startRoom, stopRoom } from './voices.js';
-import { SS_BEDS, isSS, ssBaseFor, ssVariantOf, ssFromBB, ssMoodBed, ssStepBed, ssSfx } from './ss-sound.js';
+import { SS_BEDS, isSS, ssBaseFor, ssVariantOf, ssFromBB, ssMoodBed, ssStepBed, ssSfx, ssCueFor } from './ss-sound.js';
 
 const dir = 'assets/audio/bb/';
 const BASE_VOL = 0.4;
@@ -218,7 +218,8 @@ function momentBed(screen, idx) {
 export function soundFor(screen, idx) {
   const r = rulesFor(screen, idx);
   if (!screen?.steps?.[idx]) return r;
-  if (isSS(screen)) return { cue: r.cue, bed: ssMomentBed(screen, idx) };
+  // (in the House of Secrets every sting is the show's own, 'ss:<name>', played by ss-sound.js; most cues are silence)
+  if (isSS(screen)) { const c = ssCueFor(r.cue); return { cue: c ? `ss:${c}` : r.cue, bed: ssMomentBed(screen, idx) }; }
   return { cue: r.cue, bed: momentBed(screen, idx) };
 }
 // The same, in the House of Secrets: its own beds for the same moments (a fight, the wait, a win), and its
@@ -308,7 +309,8 @@ export function playStep(screen, idx) {
     for (let i = idx; i >= 0; i--) if (screen.steps[i]?.scene?.set) { roomSet = screen.steps[i].scene.set; break; }
     if (bed === 'none' && typeof a.ambient === 'function') { a.ambient(null); startRoom(roomSet); }
     else if (bed && typeof a.ambient === 'function') { stopRoom(); a.ambient(variantOf(bed, screen)); }
-    if (cue) a.sfx(cue);
+    if (cue && cue.startsWith('ss:')) ssSfx(cue.slice(3));
+    else if (cue) a.sfx(cue);
     // the studio crowd on its feet as a live show opens
     if (isSS(screen) && idx === 0 && /^bb-ss-(prime-open|launch-open|final-open|launch-arr)/.test(screen.id || '')) ssSfx('applause', 0.8);
   } catch { /* sound must never break a screen */ }

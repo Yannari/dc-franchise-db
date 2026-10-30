@@ -181,10 +181,13 @@ function castAt(S, i) {
   for (let j = i; j >= 0; j--) if (S.steps[j]?.at) return S.steps[j].at;
   return S.cast || [];
 }
+// (the screen being drawn is Secret Story's: no Head of Household there, and nobody is "evicted": the user, 2026-10-29,
+// "theres still a memory wall displaying a hoh title that shouldnt be existing")
+let SS_DRAWING = false;
 function chipsFor(n, L) {
   const c = [];
-  if (L.status[n] === 'hoh') c.push('<span class="chipx hoh">HOH</span>');
-  if (L.out.includes(n)) c.push('<span class="chipx out">Evicted</span>');
+  if (L.status[n] === 'hoh' && !SS_DRAWING) c.push('<span class="chipx hoh">HOH</span>');
+  if (L.out.includes(n)) c.push(`<span class="chipx out">${SS_DRAWING ? 'Out' : 'Evicted'}</span>`);
   else if (L.nom.includes(n)) c.push('<span class="chipx nom">Nom</span>');
   if (L.veto === n) c.push('<span class="chipx veto">Veto</span>');
   if (L.plus === n) c.push('<span class="chipx plus">Plus one</span>');
@@ -262,7 +265,7 @@ function wallHtml(S, L, st, fresh) {
     const fr = frames[i]; if (!fr) return '';
     const s = L.status[n] || '';
     const isFresh = fresh && st && (st.out === n || (st.nom || []).includes(n));
-    return `<div class="mf ${s} ${i % 3 === 2 ? 'dark' : ''} ${isFresh ? 'fresh' : ''}" style="left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;--c:${col(n)}"><div class="mfin">${img(n)}</div>${s === 'hoh' ? '<span class="mft">HOH</span>' : ''}</div>`;
+    return `<div class="mf ${s} ${i % 3 === 2 ? 'dark' : ''} ${isFresh ? 'fresh' : ''}" style="left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;--c:${col(n)}"><div class="mfin">${img(n)}</div>${s === 'hoh' && !SS_DRAWING ? '<span class="mft">HOH</span>' : ''}</div>`;
   }).join('')}</div>`;
 }
 function nomScreenHtml(S, L, st, fresh) {
@@ -803,7 +806,7 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   const cast = castAt(S, idx);
   const speaker = st && (st.k === 'say' || st.k === 'host') ? st.by : null;
   // the host on the stage with them (move-in night), not on a screen
-  if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:9%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b data-t="${esc(o.host)}"><span>${esc(o.host)}</span></b><span class="hostlab">HOST</span></div></div>`;
+  if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:${Number(S.hostX) || 9}%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b data-t="${esc(o.host)}"><span>${esc(o.host)}</span></b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
   if ((SCENE_KINDS.has(S.kind) || S.sceneful) && !seated && cast.length > 3) {
     const focus = focusAt(S, idx);
@@ -942,6 +945,7 @@ export function stageHtml(screens, si, idx, fresh, o) {
   setPlateTheme(o?.season);
   // Secret Story wears its own house, lettering and game (vp-bb-ep/ss-hud.js)
   const SSN = o?.season === 'secret-story';
+  SS_DRAWING = SSN;
   // A House Life segment cuts room to room: the latest `scene` marker up to
   // this step says which room, camera and people are on screen.
   const S0 = screens[si];

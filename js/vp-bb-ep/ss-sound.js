@@ -42,6 +42,7 @@ export const SS_BEDS = {
   'ss-anthem':     { files: ['anthem'], what: 'the Hymn of Secrets: a secret told, the list of secrets' },
   'ss-voice':      { files: ['voice'], what: "the Eye of the Net jingle bed: under the Voice's announcements" },
   'ss-mission':    { files: ['mission-1', 'mission-2'], what: 'Mission secret / Mister Secret: a mission given, a mission judged' },
+  'ss-mister':     { files: ['mission-2'], what: 'Mister Secret: the Golden Buzz (the user, 2026-10-29)' },
   'ss-bailiff':    { files: ['bailiff'], what: "the bailiff's call: the envelope of the verdict" },
   'ss-finalists':  { files: ['finalists-2', 'finalists-3'], what: "the finalists' entrance" },
   'ss-winner':     { files: ['winner'], what: '"And the winner is…"' },
@@ -124,7 +125,7 @@ const BY_ID = [
   [/^bb-ss-prime-package/, 'ss-previously'],
   [/^bb-ss-prime-open/, 'ss-prime'],
   [/^bb-ss-prime-(chat|kitties|couch)/, 'ss-fun'],
-  [/^bb-ss-prime-goldenbuzz/, 'ss-quirky'],
+  [/^bb-ss-prime-goldenbuzz/, 'ss-mister'],
   [/^bb-ss-prime-visit/, 'ss-love'],
   // (the user, 2026-10-28: "the prime music doesn't use the suspense at all": the verdict is the tension tracks;
   // the envelope brings the bailiff's call and the name the goodbye, step by step: ssStepBed)
@@ -137,7 +138,8 @@ const BY_ID = [
   [/^bb-ss-prime-ticket/, 'ss-tension'],
   [/^bb-ss-(false-voice|robot)-/, 'ss-quirky'],
   // (the sad music is for the elimination itself; the interview on the set is calm: the user, 2026-10-28)
-  [/^bb-ss-prime-walk/, 'ss-think'],
+  // (the interview, on the set: the show's own theme, I Wanna Chat without its lyrics: the user, 2026-10-29)
+  [/^bb-ss-prime-walk/, 'ss-launch'],
   [/^bb-ss-after/, 'ss-after'],
   [/^bb-ss-final-(v|open)$/, 'ss-finalists'],
   [/^bb-ss-(journeys|final-journey)/, 'ss-sad'],
@@ -189,7 +191,16 @@ export function ssStepBed(screen, st) {
 }
 
 // ── the sound effects (CC0 recordings), with the synth as a fallback when a file is missing ──
-const SFX = { buzz: 'buzz', ring: 'ring', coin: 'coin', open: 'open', whoosh: 'whoosh', applause: 'applause', cheer: 'cheer', jingle: 'jingle' };
+const SFX = { buzz: 'buzz', ring: 'ring', coin: 'coin', open: 'open', whoosh: 'whoosh', applause: 'applause', cheer: 'cheer', jingle: 'jingle',
+  voice: 'voice', reveal: 'reveal', twist: 'twist', win: 'win', out: 'out', boo: 'boo' };
+// Big Brother's MUSICAL stings, in the House of Secrets, are hits cut from the show's own music (the user, 2026-10-29:
+// "keep the sfx royalty free sound the music use the ss ones"): sfx/voice (the 2026 jingle), reveal ("Ending Suspense"),
+// twist ("Mission secret"), win ("Et le gagnant est..."), out ("Piano Tristesse"). A sound effect (a cut, a door, the
+// crowd, a coin) stays Big Brother's.
+const CUE_SS = { 'bb-voice': 'voice', 'bb-twist': 'twist', 'bb-medallion': 'twist', 'bb-result': 'reveal', 'bb-face': 'reveal',
+  'bb-hoh-crown': 'win', 'bb-winner': 'win', 'bb-veto-crown': 'win', 'bb-evicted': 'out' };
+/** The House of Secrets' sting for one of Big Brother's musical cues, or null (the cue plays as it is). */
+export const ssCueFor = cue => (cue ? CUE_SS[cue] || null : null);
 const bufs = {};
 /**
  * Plays one of the House of Secrets' sound effects through the site's audio (its volume and mute).

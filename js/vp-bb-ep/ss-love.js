@@ -79,17 +79,18 @@ export function ssLoveScreen(act, ctx, H) {
   } else if (act.kind === 'confession') {
     title = 'The Confession';
     steps = [
-      { k: 'beat', scene: POOL([a, b]), t: `By the pool, late, ${a} and ${b} are the last two still up.` },
-      { k: 'say', by: a, t: R([`Can I tell you something, ${b}? I like you. Not as a friend.`, `I've been trying not to say this for days. I really like you, ${b}.`, `I think about you all the time, ${b}. There. I said it.`], 'c0') },
-      { k: 'beat', t: `${b} does not answer straight away.` },
+      R([{ k: 'beat', scene: POOL([a, b]), t: `By the pool, late, ${a} and ${b} are the last two still up.` }, { k: 'beat', scene: GARDEN([a, b]), t: `On the swing in the garden, ${a} and ${b} have been talking for two hours.` },
+        { k: 'beat', scene: KIT([a, b]), t: `Three in the morning, the kitchen. ${a} and ${b}, two cups of tea gone cold.` }], 'c00'),
+      { k: 'say', by: a, t: R([`Can I tell you something, ${b}? I like you. Not as a friend.`, `I've been trying not to say this for days. I really like you, ${b}.`, `I think about you all the time, ${b}. There. I said it.`, `I don't know how to say this, so I'll just say it. I like you, ${b}.`], 'c0') },
+      { k: 'beat', t: R([`${b} does not answer straight away.`, `${b} looks at ${a} for a long time.`, `${b} laughs, nervously, then stops.`], 'c01') },
     ];
     if (act.yes) steps.push({ k: 'say', by: b, t: R(['Took you long enough. Me too.', 'I was hoping you would say that. I was too scared to.', 'Me too. Since the first night.'], 'c1') },
       { k: 'beat', t: R(['A first kiss, quick, and then a long one.', `${b} leans in, and that is the answer.`], 'c2') },
       { k: 'dr', by: a, t: R(['I said it, and they said it back. I am shaking.', 'I came here to keep a secret. Now I have another one.'], 'c3') },
       { k: 'dr', by: b, t: R([`I didn't come here for love. Then ${a} happened.`, 'I am in so much trouble. The good kind.'], 'c4') });
     else steps.push({ k: 'say', by: b, t: R(["I like you too. I just don't know if I can do this in here. Not yet.", "You're amazing. I need a bit of time. Is that okay?", "Not yet. Give me some time. Please don't take it badly."], 'c1') },
-      { k: 'say', by: a, t: R(['Okay. Okay. Forget I said anything.', 'Take all the time you need. I meant it, that is all.'], 'c2') },
-      { k: 'dr', by: a, t: R(['That was the most embarrassing minute of my life.', '"Not yet." Not no. I can live with not yet.'], 'c3') });
+      { k: 'say', by: a, t: R(['Okay. Okay. Forget I said anything.', 'Take all the time you need. I meant it, that is all.', "Of course. No pressure. I'm going to bed now, and dying a little."], 'c2') },
+      { k: 'dr', by: a, t: R(['That was the most embarrassing minute of my life.', '"Not yet." Not no. I can live with not yet.', "I put my heart on the table and got a maybe. I'll take a maybe."], 'c3') });
   } else if (act.kind === 'doubt') {
     title = 'A Seed of Doubt';
     steps = [

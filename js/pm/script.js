@@ -517,6 +517,12 @@ export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: ow
       // 2026-10-22: "address the repeats"; 70% of a season's lines were repeats).
       const fresh = weights.map((x, j) => (x > 0 && !usage(state)[w[j].id] ? x : 0));
       if (fresh.some(x => x > 0)) weights = fresh;
+      // …and never the same entry twice in one episode while another fits, for
+      // any pair (2026-10-30: the stretch makes the story kinds the episode,
+      // and 53 lines a season were heard twice in one episode — the same
+      // "where's your head at" for two different couples an hour apart).
+      const notToday = weights.map((x, j) => { const u = usage(state)[w[j].id]; return u && u.eps[u.eps.length - 1] === state.ep ? 0 : x; });
+      if (notToday.some(x => x > 0)) weights = notToday;
       cands = w; ws = weights; break;
     }
   }

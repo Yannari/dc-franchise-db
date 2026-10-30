@@ -60,7 +60,7 @@ export const GROUP_CHAT = build('group-chat', {
     tell: [
       // pulled
       { when: { subj: 'pulled', taken: true }, turns: [
-        ['a', "Okay, so. {x} pulls me, right, and I'm thinking it's just going to be a get-to-know-you chat, because I'm with {pa} and everyone knows that. And {x} just comes straight out with it. Says {x} likes me. Says {x} has liked me since the first day, and {x} wants to see where it goes."],
+        ['a', "Okay, so. {x} pulls me, right, and I'm thinking it's just going to be a get-to-know-you chat, because I'm with {pa} and everyone knows that. And {x} just comes straight out with it. Says {x} likes me. Says {x} has liked me since the first day, and wants to see where it goes."],
         ['b', "Shut up. With {pa} right there in the villa?"],
         ['a', "With {pa} right there in the villa."],
       ] },
@@ -70,7 +70,7 @@ export const GROUP_CHAT = build('group-chat', {
         ['a', "I said I'm with {pa}. But I didn't exactly get up and leave, did I?"],
       ] },
       { when: { subj: 'pulled', taken: true }, turns: [
-        ['a', "So that was awkward. {x} basically told me {x} is going to go for it, whether I'm with {pa} or not. Like, a warning. A nice warning, but a warning."],
+        ['a', "So that was awkward. {x} basically told me it's happening, whether I'm with {pa} or not. Like, a warning. A nice warning, but a warning."],
         ['b', "That's actually quite bold."],
         ['a', "It's very bold. I didn't know where to look."],
       ] },
@@ -89,7 +89,7 @@ export const GROUP_CHAT = build('group-chat', {
       { when: { subj: 'row' }, turns: [
         ['a', "So that went well."],
         ['b', "What happened? We could hear raised voices from the kitchen."],
-        ['a', "I asked {x} a simple question, and {x} made it all about me. Like I'm the problem for asking. I came out of it apologising, and I don't even know what for."],
+        ['a', "I asked {x} a simple question, and got a whole speech about me back. Like I'm the problem for asking. I came out of it apologising, and I don't even know what for."],
       ] },
       { when: { subj: 'row' }, turns: [
         ['a', "I can't even, honestly. I sat down with {x} to have a calm chat, and it just went from nothing to everything. I said one thing, {x} said another, and now we're not speaking."],
@@ -103,7 +103,7 @@ export const GROUP_CHAT = build('group-chat', {
         ['a', "Don't oh-babe me. I'll cry."],
       ] },
       { when: { subj: 'knocked-back' }, turns: [
-        ['a', "I feel like such an idiot. I really thought we were on the same page. I was so sure. And then {x} just looked at me, and I knew before {x} even said anything."],
+        ['a', "I feel like such an idiot. I really thought we were on the same page. I was so sure. And then {x} just looked at me, and I knew before a word came out."],
         ['b', "You're not an idiot. You were honest. That's the opposite of an idiot."],
       ] },
       // shut-down
@@ -119,7 +119,7 @@ export const GROUP_CHAT = build('group-chat', {
       ] },
       // celebrate
       { when: { subj: 'celebrate', of: ['exclusive', 'official'] }, turns: [
-        ['a', "It happened. Me and {x}. We're actually doing this. {x} looked at me, and I swear my heart stopped, and I just said yes before {x} had even finished the question."],
+        ['a', "It happened. Me and {x}. We're actually doing this. {x} looked at me, and I swear my heart stopped, and I just said yes before the question was even finished."],
         ['b', "I'm going to cry. I'm actually going to cry."],
         ['a', "Don't, or I'll start!"],
       ] },
@@ -141,7 +141,7 @@ export const GROUP_CHAT = build('group-chat', {
         ['a', "I said it back before I'd even thought about it. And I meant it."],
       ] },
       { when: { subj: 'celebrate', of: 'love' }, turns: [
-        ['a', "I need to tell you something and you have to promise not to scream. {x} told me {x} loves me. And I said it back."],
+        ['a', "I need to tell you something and you have to promise not to scream. {x} said it. The actual words. I love you. And I said it back."],
         ['b', "I'm screaming. I'm sorry, I'm screaming."],
       ] },
       // progress
@@ -179,7 +179,7 @@ export const GROUP_CHAT = build('group-chat', {
         ['b', "You will. I've seen you."],
       ] },
       { when: { subj: 'row' }, turns: [
-        ['b', "You're allowed to ask questions. That doesn't make you the problem. If {x} can't handle a simple question, that's {x}'s problem."],
+        ['b', "You're allowed to ask questions. That doesn't make you the problem. If {x} can't handle a simple question, that's not my problem."],
         ['a', "Then why do I feel so bad?"],
         ['b', "Because you care. That's all."],
       ] },

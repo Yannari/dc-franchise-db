@@ -79,7 +79,7 @@ export const SECRET_BURDEN_VOLUME = {
         ['a', "That's what I thought."],
       ] },
       { when: { sec: 'pull', hasWith: true }, turns: [
-        ['a', "{c} took {about} up to the terrace earlier. They were up there for ages. And when they came down, {c} went straight to {d} and gave {d} a kiss. Like a cover."],
+        ['a', "{c} took {about} up to the terrace earlier. They were up there for ages. And when they came down, {c} went straight over and gave {d} a kiss. Like a cover."],
         ['b', "A cover kiss. Oh, I hate a cover kiss."],
       ] },
     ],

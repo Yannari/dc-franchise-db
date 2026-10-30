@@ -16,7 +16,7 @@ export const GROUP_CHAT_ENDED = {
         ['a', "Don't be nice to me. If you're nice to me I'll cry, and I've done enough crying."],
       ] },
       { when: { subj: 'ended' }, turns: [
-        ['a', "So that's me and {x} done. {x} sat me down, all calm, like {x} had rehearsed it. Said I deserve someone who looks at me the way I look at {x.obj}. Which is a lovely thing to say to someone while you're dumping them."],
+        ['a', "So that's me and {x} done. {x} sat me down, all calm, like it had been rehearsed. Said I deserve someone who looks at me the way I look at {x.obj}. Which is a lovely thing to say to someone while you're dumping them."],
         ['b', "That's such a line."],
         ['a', "I know it's a line! I could hear it was a line!"],
       ] },

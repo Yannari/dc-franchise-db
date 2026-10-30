@@ -279,7 +279,7 @@ export const PULL = build('pull', {
         ['a', "Two days. I'm very slow. It's one of my best qualities."],
       ] },
       { when: { reg: 'big' }, turns: [
-        ['a', "So I said to myself, today's the day. I'm getting {b} on {b.posAdj} own, and I'm finding out what {b}'s all about, and I'm not leaving until I know."],
+        ['a', "So I said to myself, today's the day. I'm getting {b} on {b.posAdj} own, and I'm finding out what {b.posAdj} story is, and I'm not leaving until I know."],
         ['b', "And here we are."],
         ['a', "Here we are! I'm actually really proud of myself."],
       ] },
@@ -470,7 +470,7 @@ export const PULL = build('pull', {
       ] },
       { when: { bTaken: true, end: 'turned-down' }, turns: [
         ['a', "And you're sure you're not just staying with {pb} because it's easy?"],
-        ['b', "Easy? Nothing about this place is easy. No, I'm with {pb} because I want to be, and because every time something's happened, {pb}'s been there. I know that's not what you want to hear."],
+        ['b', "Easy? Nothing about this place is easy. No, I'm with {pb} because I want to be. Every time something's happened in here, {pb} has been there. I know that's not what you want to hear."],
         ['a', "It's not. But fair play."],
       ] },
       { when: { bTaken: false }, turns: [
@@ -1047,7 +1047,7 @@ export const PULL = build('pull', {
     { when: { end: 'flirt', taken: true }, stage: "{a} slips away from {pa} for a chat with {b}." },
     { when: { end: 'flirt', justMet: true }, stage: "{a} and {b} get to know each other on the daybeds." },
     { when: { end: 'flirt' }, stage: "{a} and {b} have a flirty chat on the terrace." },
-    { when: { end: 'turned-down' }, stage: "{a} pulls {b} for a chat, and {b} lets {a.obj} down gently." },
+    { when: { end: 'turned-down' }, stage: "{a} pulls {b} for a chat, and gets let down gently." },
     { when: { end: 'turned-down' }, stage: "{a} tries {a.posAdj} luck with {b}. It doesn't go {a.posAdj} way." },
     { when: { end: 'kissed' }, stage: "{a} and {b} sneak off for a chat that ends in a kiss." },
     { when: { end: 'promised' }, stage: "{a} and {b} talk about meeting up on the outside." },

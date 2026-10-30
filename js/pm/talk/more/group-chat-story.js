@@ -22,12 +22,12 @@ export const GROUP_CHAT_STORY = {
     ],
     tell: [
       { when: { subj: 'turned', hasWith: true }, turns: [
-        ['a', "{x} wants to get to know {about}. That's it. That's the chat. {x} sat me down on the bed and said {x} has tried to ignore it but can't. Like it's a cold {x} caught. Like {x} had no choice in it."],
+        ['a', "{x} wants to get to know {about}. That's it. That's the chat. {x} sat me down on the bed and said it's been impossible to ignore. Like it's a cold {x} caught. Like {x} had no choice in it."],
         ['b', "{about}? Are you being serious?"],
         ['a', "I couldn't make it up if I tried."],
       ] },
       { when: { subj: 'turned', hasWith: true }, turns: [
-        ['a', "So I'm single, basically. Not officially. But {x} just told me {x}'s head's been turned by {about}, and {x} wants to see where it goes. And I sat there and nodded like an idiot, because what else do you do?"],
+        ['a', "So I'm single, basically. Not officially. But {x} just told me {about} has turned {x.posAdj} head, and that's where it's going. And I sat there and nodded like an idiot, because what else do you do?"],
         ['b', "You don't nod! You don't nod at that!"],
         ['a', "I know that now!"],
       ] },
@@ -39,12 +39,12 @@ export const GROUP_CHAT_STORY = {
         ['a', "It does not make it a bit better."],
       ] },
       { when: { subj: 'honest', story: 'graft', kissed: false, hasWith: true }, turns: [
-        ['a', "I asked {x} about the chat with {about}. And {x} didn't even try to pretend. Just said {x} enjoyed it, and there's something there, and {x} wants to see what it is."],
+        ['a', "I asked {x} about the chat with {about}. And {x} didn't even try to pretend. Just said it was a good chat, and there's something there worth finding out about."],
         ['b', "Wow. Okay. At least {x} was honest?"],
         ['a', "Everyone keeps saying that like honest is a present. It's not a present. It's a slap with a bow on it."],
       ] },
       { when: { subj: 'honest', story: 'doubt' }, turns: [
-        ['a', "I asked {x} where {x.posAdj} head's at. And {x} told me. {x} isn't feeling it like {x} was. Just like that. I'd been worrying for two days that something was off, and it turns out I wasn't mad. I almost wish I was."],
+        ['a', "I asked {x} where {x.posAdj} head's at. And {x} told me. {x} isn't feeling it like before. Just like that. I'd been worrying for two days that something was off, and it turns out I wasn't mad. I almost wish I was."],
         ['b', "Oh, I'm so sorry."],
         ['a', "Don't be nice to me. I'll go."],
       ] },
@@ -55,7 +55,7 @@ export const GROUP_CHAT_STORY = {
         ['b', "It's the oldest move in the villa. You ask a question, they make you feel crazy for asking it."],
       ] },
       { when: { subj: 'dodged' }, turns: [
-        ['a', "I don't even know what that was. I asked {x} if I had anything to worry about, and {x} just said I was reading into things. Didn't say no. Didn't say yes. Just, stop reading into things."],
+        ['a', "I don't even know what that was. I asked {x} if I had anything to worry about, and got told I was reading into things. Didn't say no. Didn't say yes. Just, stop reading into things."],
         ['b', "That's not an answer."],
         ['a', "That's what I said! And then {x} went to get a drink."],
       ] },
@@ -82,12 +82,12 @@ export const GROUP_CHAT_STORY = {
       { when: { subj: 'found-out', sec: 'pull', hasWith: true }, turns: [
         ['a', "Apparently {x} was off with {about} for ages yesterday. Like, heads together, for an hour. And everyone saw it except me."],
         ['b', "An hour?"],
-        ['a', "An hour! I can't get {x} to talk to me for twenty minutes without {x} looking at the pool."],
+        ['a', "An hour! I can't get twenty minutes with {x} without the eyes going to the pool."],
       ] },
     ],
     react: [
       { when: { subj: 'turned' }, turns: [
-        ['b', "Do you know what? Let {x} go. Honestly. If {x} can sit you down and say that to your face after everything, {x} isn't the one. You deserve someone who doesn't need to think about it."],
+        ['b', "Do you know what? Let {x} go. Honestly. Anyone who can sit you down and say that to your face after everything isn't the one. {x} isn't the one. You deserve someone who doesn't need to think about it."],
         ['a', "I know. I know that. It just hurts."],
         ['b', "Of course it hurts. It's meant to hurt. That means it was real for you."],
       ] },
@@ -106,7 +106,7 @@ export const GROUP_CHAT_STORY = {
         ['a', "Thank you. That's what I keep thinking."],
       ] },
       { when: { subj: 'dodged' }, turns: [
-        ['b', "Listen to me. If {x} had nothing to hide, {x} would have just said no. It's one word. No. It's not hard."],
+        ['b', "Listen to me. If {x} had nothing to hide, it would have been a straight no. It's one word. No. It's not hard."],
         ['a', "So you think there's something?"],
         ['b', "I think you need to keep your eyes open."],
       ] },
@@ -129,7 +129,7 @@ export const GROUP_CHAT_STORY = {
     ],
     verdict: [
       { when: { subj: 'turned' }, turns: [
-        ['a', "I'm not going to beg. I'm not that person. If {x} wants to go, {x} can go."],
+        ['a', "I'm not going to beg. I'm not that person. If {x} wants to go, the door's there."],
         ['b', "That's the spirit. And tomorrow you're going to look incredible, and {x} is going to notice."],
       ] },
       { when: { subj: 'honest' }, turns: [

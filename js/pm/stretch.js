@@ -109,7 +109,9 @@ export function planStretch(state, entry, nextExit) {
   const off = moment === 'first-coupling' || moment === 'final' || moment === 'reunion' || !!state.split || !!state._afterFinalRecoupling;
   const old = state.stretch;
   if (off) {
-    state.stretch = { from: state.ep, ceremony: nextExit ?? state.ep, off: true, a: null, b: null, c: null, answers: old?.answers || {} };
+    // (Still one breakdown a stretch, counted up to the next exit night.)
+    state.stretch = { from: state.ep, ceremony: nextExit ?? state.ep, off: true, a: null, b: null, c: null, answers: old?.answers || {},
+      breakdown: old && old.ceremony === (nextExit ?? state.ep) && state.ep <= old.ceremony ? old.breakdown ?? null : null };
     return state.stretch;
   }
   const fresh = !old || old.off || state.ep > old.ceremony;

@@ -80,7 +80,7 @@ export const GRAFT_EYES = build('graft-eyes', {
         ['b', "I might have seen something."],
       ] },
       { when: { theirs: 'no' }, turns: [
-        ['a', "I like {c}. Like, I really like {c.obj}. And I know {c} probably hasn't even noticed me, because {c}'s always wrapped round {d}."],
+        ['a', "I like {c}. Like, I really like {c.obj}. And I know {c} probably hasn't even noticed me. Every time I look over, {d} is wrapped round {c.obj}."],
         ['b', "So what are you going to do about it?"],
         ['a', "I don't know. That's why I'm telling you. Talk me out of it, or talk me into it."],
       ] },
@@ -102,7 +102,7 @@ export const GRAFT_EYES = build('graft-eyes', {
         ['b', "You lost that on day one."],
       ] },
       { when: { of: 'careful' }, turns: [
-        ['b', "I'm not going to tell you what to do. But {d} is my friend, and if you go steaming in, {d} is going to be in pieces, and I'm going to have to pick that up."],
+        ['b', "I'm not going to tell you what to do. But {d} is my friend, and if you go steaming in, I'm the one who's going to be sitting up with {d.obj} all night."],
         ['a', "I'm not trying to hurt anyone."],
         ['b', "I know you're not. Just be careful how you do it. Be honest with {c}, and don't play games."],
       ] },
@@ -148,6 +148,6 @@ export const GRAFT_EYES = build('graft-eyes', {
     ],
   },
   notes: [
-    { stage: "{a} admits to {b} that {a.posAdj} eyes are on {c}, and {c} is with {d}." },
+    { stage: "{a} admits to {b} that {a.posAdj} eyes are on {c}, who is with {d}." },
   ],
 });

@@ -85,6 +85,23 @@ describe('a placeholder only where somebody fills it', () => {
       expect(x, tag(k, s, e)).not.toMatch(/\{[a-z]+\.(sub|Sub)\}/);
     }
   });
+  it('a story scene names somebody once a sentence, not twice ("Josh knew exactly what Josh was doing")', () => {
+    // The renderer has no subject pronoun (a "they" would break the verb), so a
+    // second mention is rewritten, not pronouned: "and got a yes", "{c.obj}".
+    // The storylines and the stretch's kinds carry the episode (pm/stretch.js).
+    const STORY = new Set(['graft-eyes', 'watching', 'where-head', 'group-chat', 'stretch-answer', 'secret-kept', 'hook', 'feels-off', 'secret-burden']);
+    const ALLOW = [/tell \{b\}, tell \{b\}/, /\{pa\}, and I'm going to tell \{pa\}/];
+    const bad = [];
+    for (const [k, s2, e] of ENTRIES) {
+      if (!STORY.has(k)) continue;
+      for (const t of texts(e)) for (const sent of t.split(/(?<=[.?!])\s+/)) {
+        if (ALLOW.some(r => r.test(sent))) continue;
+        const m = sent.match(/\{([a-z]+)\}/g) || [];
+        if (m.some((x, i) => x !== '{a}' && m.indexOf(x) !== i)) bad.push(`${tag(k, s2, e)}: ${sent}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
   it('{c} only in a kind that casts three', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{c[.}]/.test(x))) continue;

@@ -64,7 +64,7 @@ export function breakdowns(state, rng, entry = null) {
   // somebody the last fire pit hurt: a breakdown is the story landing on
   // somebody, not a weather report.
   const st = state.stretch;
-  if (st && !st.off && st.breakdown != null) return [];
+  if (st && st.breakdown != null) return [];
   const hurtLast = n => (state._passedOver?.of || {})[n] != null || (state.vulnerableSince?.[n] ?? -1) >= (state.lastRecouplingEp ?? Infinity);
   const ours = n => !st || st.off || ['a', 'b'].includes(storyRoleOf(state, n)) || hurtLast(n);
   const cands = [];
@@ -92,7 +92,7 @@ export function breakdowns(state, rng, entry = null) {
   const pick = cands.find(c => rng() < c.p);
   if (!pick) return [];
   last[pick.a] = state.ep;
-  if (st && !st.off) st.breakdown = state.ep;
+  if (st) st.breakdown = state.ep;
   return scene(state, rng, pick);
 }
 

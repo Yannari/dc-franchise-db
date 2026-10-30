@@ -59,7 +59,7 @@ export const FEELS_OFF = build('feels-off', {
     ],
     answer: [
       { when: { of: 'told' }, turns: [
-        ['b', "Okay. I really didn't want to be the one to say this. {c} did talk to me. About you. {c} said {c} isn't sure any more. That it's not what it was. I didn't know whether to tell you, and I've felt sick about it all day."],
+        ['b', "Okay. I really didn't want to be the one to say this. {c} did talk to me. About you. {c} said it straight out: not sure any more. That it's not what it was. I didn't know whether to tell you, and I've felt sick about it all day."],
         ['a', "{c} said that? To you?"],
         ['b', "I'm sorry. I'd want to know, if it was me."],
       ] },
@@ -78,7 +78,7 @@ export const FEELS_OFF = build('feels-off', {
         ['b', "Honestly, I think you're overthinking it. Everyone gets a bit flat in here after a few days. I wouldn't read into it."],
         ['a', "You'd tell me, though? If you knew something?"],
         ['b', "Of course I would."],
-      ], beat: "{b} looks away as {b} says it." },
+      ], beat: "{b} looks away while saying it." },
       { when: { of: 'unsure' }, turns: [
         ['b', "{c} hasn't said anything to me. But I'll be honest, I've noticed it too. You're doing all the work. You go over, you start the chats, you sit next to {c.obj}. I can't remember the last time {c} came to find you."],
         ['a', "Thanks. That's really reassuring."],

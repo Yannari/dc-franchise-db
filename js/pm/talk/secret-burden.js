@@ -64,7 +64,7 @@ export const SECRET_BURDEN = build('secret-burden', {
     react: [
       { turns: [
         ['b', "Oh my God. Poor {d}. Does {d} have any idea?"],
-        ['a', "None. {d} was telling me this morning how happy {d} is."],
+        ['a', "None. {d} was telling me this morning how happy everything is."],
         ['b', "Oh, that makes it so much worse."],
       ] },
       { turns: [
@@ -79,7 +79,7 @@ export const SECRET_BURDEN = build('secret-burden', {
     ],
     advice: [
       { when: { of: 'tell' }, turns: [
-        ['b', "You have to tell {d}. You have to. If it was you, you'd want to know. And if {d} finds out later that you knew all along and said nothing, {d} is going to be more upset with you than with {c}."],
+        ['b', "You have to tell {d}. You have to. If it was you, you'd want to know. And if {d} finds out later that you knew all along and said nothing? You'll be the one in trouble, more than {c}."],
         ['a', "I know. I know you're right. I just don't want to be the one who blows it all up."],
         ['b', "You didn't blow it up. {c} did."],
       ] },

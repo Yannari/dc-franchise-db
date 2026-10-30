@@ -102,12 +102,12 @@ export const WHERE_HEAD = build('where-head', {
         ['a', "It is awful."],
       ] },
       { when: { story: 'graft', of: 'honest', kissed: false, chaser: true }, turns: [
-        ['b', "I'm going to be honest, because you deserve that. I went over to {c} because I've been thinking about {c}. I don't know what it means yet. But I wasn't going to lie to you about it."],
+        ['b', "I'm going to be honest, because you deserve that. I went over to {c} because I've been thinking about {c.obj}. I don't know what it means yet. But I wasn't going to lie to you about it."],
         ['a', "So you've been thinking about {c}. While you've been with me."],
         ['b', "I know. I'm sorry."],
       ] },
       { when: { story: 'graft', of: 'reassure', kissed: false, chaser: false }, turns: [
-        ['b', "Okay. Honestly? {c} pulled me, and I went, because I'm not going to be rude to someone. {c} said {c} likes me, and wanted to get to know me. And I said I'm with you, and I'm happy with you, and that's it. That's the whole chat."],
+        ['b', "Okay. Honestly? {c} pulled me, and I went, because I'm not going to be rude to someone. {c} said there was something there, and wanted to get to know me. And I said I'm with you, and I'm happy with you, and that's it. That's the whole chat."],
         ['a', "That's it?"],
         ['b', "That's it. I didn't tell you straight away because I didn't want to make it into a thing. I didn't think it was a thing."],
       ] },

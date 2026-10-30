@@ -19,7 +19,7 @@ export const BED_CHAT_PLANS = {
 export const STORY_MORE = {
   watching: { moves: { advice: [
     { turns: [
-      ['b', "Can I tell you what I'd do? Don't go over there. Don't storm in. Wait for {c} to come back, and see if {c} comes to you first. That tells you everything you need to know."],
+      ['b', "Can I tell you what I'd do? Don't go over there. Don't storm in. Wait for {c} to come back, and see who comes to who first. That tells you everything you need to know."],
       ['a', "And if {c} doesn't?"],
       ['b', "Then you know. And you can be angry then. Not before."],
     ] },
@@ -29,7 +29,7 @@ export const STORY_MORE = {
       ['b', "Exactly. So get it out of there."],
     ] },
     { when: { chaser: false }, turns: [
-      ['b', "Look at it this way. If {c} wanted {d}, {c} has had about a hundred chances by now. {c} keeps coming back to you. That has to count for something."],
+      ['b', "Look at it this way. If {c} wanted {d}, there have been a hundred chances by now. {c} keeps coming back to you. That has to count for something."],
       ['a', "It does. I know it does."],
       ['b', "So hold on to that, not to whatever's happening over there."],
     ] },
@@ -41,7 +41,7 @@ export const STORY_MORE = {
   ] } },
   'feels-off': { moves: { worry: [
     { turns: [
-      ['a', "It's little things. {c} used to come and find me in the morning, and now I wake up and {c}'s already up and gone. {c} used to sit next to me at dinner. Last night {c} sat at the other end. And when I went in for a kiss in bed, I got a cheek. Not a kiss. A cheek."],
+      ['a', "It's little things. {c} used to come and find me in the morning. Now I wake up and {c}'s already up and gone. {c} used to sit next to me at dinner. Last night {c} sat at the other end. And when I went in for a kiss in bed, I got a cheek. Not a kiss. A cheek."],
       ['b', "A cheek."],
       ['a', "Like I'm someone {c} shares a kitchen with."],
     ] },

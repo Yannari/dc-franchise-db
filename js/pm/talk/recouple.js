@@ -284,7 +284,7 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { when: { stoleFrom: false, rung: ['exclusive', 'official'] }, turns: [], beat: "The fire pit cheers before {a} has even finished saying the name." },
       { when: { stoleFrom: false, justMet: true }, turns: [['b', "I wasn't expecting that."], ['a', "Good surprise?"], ['b', "Very good surprise."]] },
       { when: { stoleFrom: true, reclaim: false }, turns: [], beat: "There's a gasp along the benches. {b} looks at {c}, then gets up and goes to {a}. {c} stares straight ahead." },
-      { when: { stoleFrom: true, reclaim: false }, turns: [['c', "Wow. Okay."]], beat: "{b} won't look at {c} as {b} walks over to {a}." },
+      { when: { stoleFrom: true, reclaim: false }, turns: [['c', "Wow. Okay."]], beat: "{b} walks over to {a} without once looking at {c}." },
       { when: { stoleFrom: true, reclaim: false }, turns: [], beat: "The whole fire pit turns to look at {c}. {c} manages a small, tight smile and says nothing." },
       { when: { stoleFrom: true, reclaim: false }, turns: [['c', "You couldn't have told me first?"]], beat: "Nobody answers. {b} sits down next to {a}." },
       { when: { reclaim: true }, turns: [], beat: "{b} practically runs over, and the fire pit erupts." },

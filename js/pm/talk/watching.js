@@ -30,7 +30,7 @@ export const WATCHING = build('watching', {
         ['a', "Don't do that. You saw it. {d} just took {c} off for a chat."],
         ['b', "Okay, I saw it."],
       ] },
-      { when: { of: 'sees' }, stage: "{a} is mid-sentence with {b} when {a} stops talking and looks past {b}'s shoulder.", turns: [
+      { when: { of: 'sees' }, stage: "{a} is mid-sentence with {b}, then stops talking and stares at something over {b.posAdj} shoulder.", turns: [
         ['b', "What? What are you looking at?"],
         ['a', "{c}. With {d}. Over there. Look."],
         ['b', "They're just talking."],
@@ -97,7 +97,7 @@ export const WATCHING = build('watching', {
       ] },
       { when: { chaser: false }, turns: [
         ['b', "{c} wouldn't do anything. Not to you."],
-        ['a', "I don't think {c} would do anything. I just don't trust {d}. {d} knew exactly what {d} was doing, walking over there in front of everyone."],
+        ['a', "I don't think {c} would do anything. I just don't trust {d}. {d} knew exactly how that would look, walking over there in front of everyone."],
         ['b', "That was a bit much, to be fair."],
         ['a', "A bit much? It was a statement."],
       ] },
@@ -146,7 +146,7 @@ export const WATCHING = build('watching', {
         ['a', "Calm-ish."],
       ] },
       { turns: [
-        ['a', "I'm not saying anything tonight. If {c} wants me to know, {c} can tell me."],
+        ['a', "I'm not saying anything tonight. If {c} wants me to know, I'm not hard to find."],
         ['b', "And if {c} doesn't?"],
         ['a', "Then that tells me something as well, doesn't it?"],
       ] },

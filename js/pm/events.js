@@ -9,6 +9,7 @@
 //
 // The words live in pm/lines/* and are picked by pm/script.js AFTER the
 // event has happened, on their own dice: prose renders, it never decides.
+import { storyRoleOf } from './stretch.js';
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension, getRelationshipDimension } from '../relationships.js';
 import { attr, nudgeAttraction, ickHit, compatible } from './chemistry.js';
@@ -1236,6 +1237,8 @@ function changedFeelings(state, now) {
 const NO_HUT = new Set(['final-date', 'journey-open', 'journey-clip', 'journey-react', 'journey-end', 'speech']);
 
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
+const SIDE_STORY = /^(triangle|rival|crush|camp|feud|betray|redeem|grass|parents|exw|enemy)-|^game-(plan|latch|two-faced|suspect|called|fallout|end)$|^(code-call|mugged-low|found-love|villa-happy)$/;
+const SIDE_AIRED = 2;
 export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired = null, major = [] }) {
   const def = KINDS[kind];
   state.seq = (state.seq || 0) + 1;
@@ -1246,6 +1249,18 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   if (kind === 'kiss' && players.length >= 2) {
     const pair = e => e.kind === 'kiss' && e.players.includes(players[0]) && e.players.includes(players[1]);
     if (!(state.history || []).some(pair) && !today(state).some(pair)) extra = { ...extra, firstKiss: true };
+  }
+  // THE EDIT (2026-10-30, the stretch): the villa's side stories — triangles,
+  // rivalries, feuds, enemies, the game players, the arcs — all run every day,
+  // and an episode aired ten of them on top of its own three stories. While a
+  // stretch has a plan, the side stories of people outside its main two air
+  // two an episode; the rest happen (bonds, feelings, secrets) and the edit cuts them,
+  // as it cuts any scene: unaired, read in the transcript, and Movie Night or
+  // the photos can still bring one out.
+  if (aired === true && phase !== 'challenge' && SIDE_STORY.test(kind) && state.stretch && !state.stretch.off && !players.some(n => ['a', 'b'].includes(storyRoleOf(state, n)))) {
+    const n = state._sideAired?.ep === state.ep ? state._sideAired.n : 0;
+    if (n >= SIDE_AIRED) aired = false;
+    else state._sideAired = { ep: state.ep, n: n + 1 };
   }
   const ev = { id: `${state.ep}-${state.seq}`, ep: state.ep, phase, kind, players: [...players],
     aired: aired == null ? rng() < airP : !!aired, major: [...major],

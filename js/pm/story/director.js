@@ -131,8 +131,10 @@ const WORTH = {
 };
 export const FEATURED_AT = 2.5, SHORT_AT = 1.6;
 // An episode's most: about twenty featured conversations and thirty short ones
-// (the user picked the tiers: ~600-900 clicks an episode).
-export const FEATURED_CAP = 24, SHORT_CAP = 34;
+// (the user picked the tiers: ~600-900 clicks an episode). 2026-10-30, the
+// stretch: the user set 300-350 lines an episode. The stretch's stories are
+// whole whatever the cap (below); what the cap trims is the villa around them.
+export const FEATURED_CAP = 12, SHORT_CAP = 16;
 // The storylines' own scenes (pm/threads.js), whole however busy the day.
 const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist', 'stretch-answer', 'secret-kept', 'hook']);
 
@@ -170,6 +172,11 @@ export function tierOf(state, ev, tiered) {
   // design, and the same-pair rule above shrank their bedtime talk to one line
   // (season read 2026-10-25: thirteen story scenes a season aired as notes).
   if (ev.extra?.thread || STORY_KINDS.has(ev.kind)) tier = 'featured';
+  // …the stretch's main and second stories, that is (pm/stretch.js). Its third,
+  // and a thread behind the plan, play short: the episode is about two things
+  // at full length, not ten (2026-10-30: the user set 300-350 lines).
+  const st = state.stretch, id = ev.extra?.thread?.id;
+  if (tier === 'featured' && id && st && !st.off && st.a !== id && st.b !== id && ev.aired) tier = 'short';
   // Raw footage the public never saw is a note, read in the transcript; only
   // a scene that hides something is written out (Movie Night may play it).
   if (!ev.aired) tier = secret || ev.kind === 'pull' ? 'short' : 'note';

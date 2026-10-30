@@ -118,6 +118,8 @@ export function planStretch(state, entry, nextExit) {
   state.stretch = {
     from: fresh ? state.ep : old.from, ceremony: nextExit ?? state.ep, off: false, ...picked,
     answers: fresh ? {} : old.answers || {},
+    // The stretch's one breakdown, once it has had it (pm/breakdown.js).
+    breakdown: fresh ? null : old.breakdown ?? null,
     // Every thread this stretch has had in its plan (one replaced mid-stretch still gets its answer).
     seen: [...new Set([...(fresh ? [] : old.seen || []), ...ROLES.map(r => picked[r]).filter(Boolean)])],
   };

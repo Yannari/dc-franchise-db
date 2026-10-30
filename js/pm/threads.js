@@ -51,7 +51,7 @@ import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
 import { nextPicker } from './recoupling.js';
 import { noteBreakup } from './exes.js';
-import { planStretch, planIds, roleOf, held, closeness } from './stretch.js';
+import { planStretch, planIds, roleOf, held, closeness, storyRoleOf } from './stretch.js';
 
 const MAX = { graft: 3, doubt: 2, secret: 2, progress: 2, spark: 2, rekindle: 1 };
 // A doubt's reason, as the break-up's cause (breakups.js).
@@ -981,6 +981,12 @@ export function queueReaction(state, e) {
   if (!r) return;
   // One group chat per person a day, and per thing that happened.
   if (th.queue.some(q => q.center === r.center) || (th.reacted || []).includes(r.center)) return;
+  // The villa talks about the stretch's stories (pm/stretch.js) and about the
+  // big news — found out, a row, an ending, a couple going official. A pull or
+  // a knock-back outside the stretch happens, and the edit leaves it there
+  // (group chats were the biggest single source of lines, ~26 an episode).
+  const s = state.stretch;
+  if (s && !s.off && !BIG_NEWS.has(r.subj) && !e.extra?.stretch && !storyRoleOf(state, r.center)) return;
   // `src` is the scene it reacts to; `about` stays the third person's name.
   th.queue.push({ ...r, src: e.id, from: e.phase });
 }
@@ -989,6 +995,9 @@ const NEXT = { night: 'morning', morning: 'day', day: 'evening', challenge: 'eve
 /** The reactions that are due in this part of the day, as group chats. */
 // How many group chats about the same kind of news an episode airs.
 const CHAT_CAP = { pulled: 2, 'shut-down': 2, 'knocked-back': 2 };
+const BIG_NEWS = new Set(['found-out', 'row', 'ended', 'turned', 'celebrate']);
+// Group chats aired an episode, all subjects together.
+const CHATS_AIRED = 3;
 export function reactions(state, rng, phase, max = 3) {
   const th = state._th;
   if (!th || th.ep !== state.ep) return [];
@@ -1034,7 +1043,9 @@ export function reactions(state, rng, phase, max = 3) {
     // one episode). Past the cap it still happens — the friends know, and take
     // sides — off camera.
     const n = ((th.subjN ||= {})[subjNow] = (th.subjN[subjNow] || 0) + 1);
-    const aired = n <= (CHAT_CAP[subjNow] ?? 3);
+    const total = (th.chatsAired || 0);
+    const aired = n <= (CHAT_CAP[subjNow] ?? 3) && total < CHATS_AIRED;
+    if (aired) th.chatsAired = total + 1;
     out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj: subjNow, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
       ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
       pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }, { aired }));

@@ -26,7 +26,7 @@ it('season read audit', () => {
     for (const r of villa) for (const p of phaseLines(r)) {
       (byPhase[p.label] ||= []).push(p.lines.length);
       const story = p.events.some(e => e.extra?.thread || e.extra?.stretch);
-      if (p.lines.length < 25 && !story && !['The debrief', 'The dumping'].includes(p.label)) thin.push(`ep${r.num} ${p.label} ${p.lines.length}`);
+      if (p.lines.length < 25 && !story && !['The debrief', 'The dumping', 'Later that night', 'The Hideaway'].includes(p.label)) thin.push(`ep${r.num} ${p.label} ${p.lines.length}`);
     }
     // Stories the screen followed: answered, or just stopped?
     const followed = (state.threads || []).filter(t => state.headlined?.[t.id]);

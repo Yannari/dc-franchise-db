@@ -15,6 +15,7 @@
 //   comfort    [a, b]     a comes and sits with b. `of`: friend · partner ·
 //                         unexpected (a and b were on opposite sides of a feud)
 //   no-show    [a, b]     b's partner a never came. Said later, to a's face.
+import { storyRoleOf } from './stretch.js';
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { makeEvent, partnerOf, apart, tooSoonForWarm } from './events.js';
@@ -57,9 +58,19 @@ function causeOf(state, a) {
 export function breakdowns(state, rng, entry = null) {
   if (entry && (entry.moment === 'final' || entry.moment === 'reunion')) return [];
   const last = state.lastBreakdown ||= {};
+  // ONE a stretch (pm/stretch.js; season read 2026-10-30: "It all gets too
+  // much" closed 17 of 25 episodes, and a breakdown that comes every night
+  // stops meaning anything). And it is one of the stretch's own people, or
+  // somebody the last fire pit hurt: a breakdown is the story landing on
+  // somebody, not a weather report.
+  const st = state.stretch;
+  if (st && !st.off && st.breakdown != null) return [];
+  const hurtLast = n => (state._passedOver?.of || {})[n] != null || (state.vulnerableSince?.[n] ?? -1) >= (state.lastRecouplingEp ?? Infinity);
+  const ours = n => !st || st.off || ['a', 'b'].includes(storyRoleOf(state, n)) || hurtLast(n);
   const cands = [];
   for (const a of state.villa) {
     if (last[a] != null && state.ep - last[a] <= COOLDOWN) continue;
+    if (!ours(a)) continue;
     const e = emo(state, a);
     const [cause, weight] = causeOf(state, a);
     const temper = state.profiles[a]?.stats?.temperament ?? 5;
@@ -81,6 +92,7 @@ export function breakdowns(state, rng, entry = null) {
   const pick = cands.find(c => rng() < c.p);
   if (!pick) return [];
   last[pick.a] = state.ep;
+  if (st && !st.off) st.breakdown = state.ep;
   return scene(state, rng, pick);
 }
 
@@ -92,7 +104,7 @@ function scene(state, rng, { a, cause }) {
   };
   const e = emo(state, a);
   const reason = e.heartbreakFrom || null;
-  ev('breakdown', [a], { of: cause, pop: { [a]: { approval: 1.5, fame: 2.5 } } }, [a]);
+  ev('breakdown', [a], { of: cause, pop: { [a]: { approval: 1.5, fame: 2.5 } }, stretch: storyRoleOf(state, a) }, [a]);
 
   // Who comes: the closest first — by what they feel for a, and whether they
   // are the kind to go (loyalty). A partner comes unless they are the reason.

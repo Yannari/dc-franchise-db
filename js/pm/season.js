@@ -121,7 +121,12 @@ function villaDayEvents(state, rng, entry, seed) {
   // the season's biggest drama (user): its nights keep their temptations.
   const casa = !!state.split;
   // (Measured: at +4 a night, Casa's twists fell from a third of the tempted to a fifth.)
-  const T = { morning: TEXTURE.morning + (casa ? 3 : 0), day: TEXTURE.day + (casa ? 6 : 0), evening: TEXTURE.evening + (entry.moment === 'villa' ? 3 : 0) + (casa ? 7 : 0) };
+  // A night with a ceremony or an arrival is that night's episode: the day
+  // before it is shorter (2026-10-30: ceremony episodes ran ~450 lines against
+  // ~300 for a villa day; the user set 300-350).
+  const big = exitNight(entry) || entry.moment === 'bombshell' || entry.moment === 'photos';
+  const cut = n => (big && !casa ? Math.max(1, n - 2) : n);
+  const T = { morning: cut(TEXTURE.morning) + (casa ? 3 : 0), day: cut(TEXTURE.day) + (casa ? 6 : 0), evening: cut(TEXTURE.evening) + (entry.moment === 'villa' ? 2 : 0) + (casa ? 7 : 0) };
   const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
   if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
@@ -145,12 +150,17 @@ function villaDayEvents(state, rng, entry, seed) {
 // The day's texture: a few light scenes a part of the day around the stories.
 // Pulls stay (a spark is how a story starts) but rare; gossip and the moan
 // about a partner are the stories' own now (threads.js secret and doubt).
-const TEXTURE = { morning: 5, day: 8, evening: 6 };
+// (2026-10-30, the stretch: the user found the season a chore at ~490 lines an
+// episode and set 300-350. The stretch's stories carry the day now; the texture
+// between them was most of the length and most of the repeats.)
+const TEXTURE = { morning: 3, day: 5, evening: 4 };
 const TEXTURE_KINDS = {
   morning: [['chat', 4], ['kiss', 2], ['friendship', 3], ['comedy', 1.5], ['ick', 0.4]],
   // Rows keep their real causes (events.js argumentReasons): a villa has a few.
-  day: [['chat', 2.5], ['deep-chat', 1.5], ['pull', 0.6], ['friendship', 3], ['comedy', 2], ['argument', 0.9], ['ick', 0.6]],
-  evening: [['kiss', 3], ['deep-chat', 2], ['pull', 0.4], ['argument', 1], ['friendship', 1], ['chat', 0.5], ['comedy', 1], ['bed-share', 1.2]],
+  // No pull from nowhere (2026-10-30): a pull is a story's (threads.js graft), and
+  // one outside the stretch was a scene the screen then never followed.
+  day: [['chat', 2.5], ['deep-chat', 1.5], ['friendship', 3], ['comedy', 2], ['argument', 0.9], ['ick', 0.6]],
+  evening: [['kiss', 3], ['deep-chat', 2], ['argument', 1], ['friendship', 1], ['chat', 0.5], ['comedy', 1], ['bed-share', 1.2]],
 };
 /**
  * One part of the day: last part's reactions, then the stories intercut with

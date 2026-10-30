@@ -24,15 +24,15 @@ export const DIALECTS = {
   ca:      { label: 'Canada',        base: 'us' },
   au:      { label: 'Australia',     base: 'uk' },
   nz:      { label: 'New Zealand',   base: 'au' },
-  // English as a second language. Plain words in every slot (base `esl`), the
-  // odd word of their own at the start of a line, fewer contractions — and
+  // English as a second language: plain words in every slot (base `esl`), and
   // never broken grammar, which on a screen reads as mockery, not character.
+  // Their own words come from the slots a writer placed ({~oh-my-days}).
   esl:     { label: 'Second language', esl: true },
-  es:      { label: 'Spain',   base: 'esl', esl: true, own: ['Vale,', 'Bueno,', 'Madre mía,'] },
-  it:      { label: 'Italy',   base: 'esl', esl: true, own: ['Allora,', 'Dai,', 'Mamma mia,'] },
-  fr:      { label: 'France',  base: 'esl', esl: true, own: ['Bon,', 'Enfin,', 'Oh là là,'] },
-  br:      { label: 'Brazil',  base: 'esl', esl: true, own: ['Nossa,', 'Então,', 'Gente,'] },
-  de:      { label: 'Germany', base: 'esl', esl: true, own: ['Mensch,', 'Na ja,', 'Ach,'] },
+  es:      { label: 'Spain',   base: 'esl', esl: true },
+  it:      { label: 'Italy',   base: 'esl', esl: true },
+  fr:      { label: 'France',  base: 'esl', esl: true },
+  br:      { label: 'Brazil',  base: 'esl', esl: true },
+  de:      { label: 'Germany', base: 'esl', esl: true },
 };
 
 export const SLOTS = {
@@ -88,9 +88,6 @@ export const US_SPELLING = {
 };
 export const US_SPELLERS = ['us'];   // Canada keeps "colour" and "favourite"
 
-// What a second-language speaker says in full more often than not.
-export const ESL_EXPANSIONS = { "I'm": 'I am', "you're": 'you are', "it's": 'it is', "that's": 'that is',
-  "don't": 'do not', "can't": 'cannot', "I've": 'I have', "I'd": 'I would', "we're": 'we are', "isn't": 'is not' };
 
 // Words that belong to one country and must go through a slot (or a dialect
 // variant) rather than sit in a line where everyone would say them.

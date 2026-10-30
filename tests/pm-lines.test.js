@@ -207,16 +207,10 @@ describe('every islander talks like where they are from', () => {
   it('a second-language speaker gets plain words and their own, never broken English', () => {
     expect(speak("{~Mate}, I'm {~knackered}.", 'es')).toMatch(/my friend|My friend/);
     expect(speak('{~Oh-my-days}.', 'it')).toBe('Mamma mia.');
-    // The shaping is decided by the line, so it never changes between renders.
-    const lines = ["I'm not going anywhere, and I mean it.", "That's not what I said to you last night.",
-      "Honestly, I don't know what I want right now.", "You're the only one I talk to like this."];
-    for (const x of lines) expect(speak(x, 'fr')).toBe(speak(x, 'fr'));
-    // Across many lines some get their own word, and none loses a word it needs.
-    const sample = Array.from({ length: 200 }, (_, i) => `I think this is line number ${i} and it is fine.`);
-    const opened = sample.map(x => speak(x, 'fr')).filter(x => /^(Bon|Enfin|Oh là là),/.test(x));
-    expect(opened.length).toBeGreaterThan(5);
-    expect(opened.length).toBeLessThan(80);
-    for (const x of opened) expect(x).toMatch(/ I think this is line number \d+ and it is fine\.$/);
+    // Contractions stay, and no word is glued to the front of a line (2026-10-30:
+    // "It is an important question", "Gente, it is not the best").
+    expect(speak("I'm not going anywhere, and that's that.", 'fr')).toBe("I'm not going anywhere, and that's that.");
+    for (let i = 0; i < 200; i++) expect(speak(`I think this is line number ${i} and it's fine.`, 'br')).toBe(`I think this is line number ${i} and it's fine.`);
   });
 });
 

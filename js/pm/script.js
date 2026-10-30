@@ -35,7 +35,7 @@ import { NARRATOR } from './lines/narrator.js';
 import { NARRATOR_STORY } from './lines/narrator-story.js';
 import { STEAMY_NARRATOR } from './lines/steamy.js';
 import { ICEBREAKER_CARDS } from './lines/kiss-games.js';
-import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS, ESL_EXPANSIONS } from './lines/dialect.js';
+import { DIALECTS, slotWord, US_SPELLING, US_SPELLERS } from './lines/dialect.js';
 import { TALK } from './talk/index.js';
 import { afterOf, tierOf, registerOf } from './story/director.js';
 
@@ -595,10 +595,8 @@ export function dialectOf(state, name) {
 const HOST_DIALECT = () => SHOWS['perfect-match'].words.hostDialect || 'us';
 const NARRATOR_DIALECT = () => SHOWS['perfect-match'].words.narratorDialect || 'uk';
 
-/** Fill `{~slot}` for this speaker's dialect, then spelling and second-language shaping. */
-const hashOf = s => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+/** Fill `{~slot}` for this speaker's dialect, then spelling. */
 export function speak(text, dialect) {
-  const info = DIALECTS[dialect] || DIALECTS.uk;
   let out = text.replace(/\{~([A-Za-z-]+)\}/g, (m, key) => {
     const word = slotWord(key.toLowerCase(), dialect);
     if (word == null) return m;
@@ -608,20 +606,12 @@ export function speak(text, dialect) {
     const us = US_SPELLING[w.toLowerCase()];
     return us ? (w[0] === w[0].toUpperCase() ? us[0].toUpperCase() + us.slice(1) : us) : w;
   });
-  if (info.esl) {
-    // Decided by the line itself, so the same line always comes out the same.
-    const h = hashOf(text);
-    if (h % 10 < 5) out = out.replace(/\b(I'm|you're|it's|that's|don't|can't|I've|I'd|we're|isn't)\b/gi,
-      w => { const x = ESL_EXPANSIONS[w] ?? ESL_EXPANSIONS[w[0].toLowerCase() + w.slice(1)];
-        return x ? (w[0] === w[0].toUpperCase() ? x[0].toUpperCase() + x.slice(1) : x) : w; });
-    const own = info.own || [];
-    if (own.length && Math.floor(h / 10) % 7 === 0 && out.split(' ').length >= 4 && /^[A-Z]/.test(out)) {
-      // A name keeps its capital after the opener ("Allora, valentina asked me" read in a season, 2026-10-26).
-      const named = (players || []).some(p => p?.name && new RegExp(`^${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(out));
-      const rest = /^I\b/.test(out) || named ? out : out[0].toLowerCase() + out.slice(1);
-      out = `${own[Math.floor(h / 70) % own.length]} ${rest}`;
-    }
-  }
+  // A second-language speaker used to lose half their contractions ("It is an
+  // important question") and get a word of their own glued to the front of one
+  // line in seven ("Gente, it is not the best"). Read in a season, 2026-10-30,
+  // the user: "why aren't they talking like real human beings". Fluent
+  // islanders contract like everyone else; their own words come only where a
+  // writer put a slot ({~oh-my-days}, {~girl}), at a line that wants one.
   return out;
 }
 

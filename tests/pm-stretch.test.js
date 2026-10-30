@@ -101,6 +101,24 @@ describe('pm stretch', () => {
     }
   });
 
+  it("plays the stretch's main story in the day's game", () => {
+    const cast = t => [t.c, t.t, t.p, t.a, t.b, t.w, t.x].filter(Boolean);
+    let games = 0, inIt = 0;
+    for (const seed of SEEDS) {
+      const { log, rows, state } = seasons[seed];
+      for (const x of log) {
+        const r = rows.find(z => z.num === x.ep);
+        const game = (r?.pm?.events || []).filter(e => e.phase === 'challenge' && e.aired);
+        const A = x.a && state.threads.find(t => t.id === x.a);
+        if (!game.length || !A || x.off) continue;
+        games++;
+        if (game.some(e => e.players.some(n => cast(A).includes(n)))) inIt++;
+      }
+    }
+    expect(games).toBeGreaterThan(10);
+    expect(inIt / games).toBeGreaterThan(0.7);
+  });
+
   it('scores a story by what it puts at stake, proportionally', () => {
     const state = { ep: 5, villa: ['A', 'B', 'C'], couples: [['B', 'C']], profiles: {} };
     const graft = { type: 'graft', ep: 3, heat: 1, c: 'A', t: 'B', p: 'C' };

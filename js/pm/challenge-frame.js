@@ -31,6 +31,7 @@ import { attr, nudgeAttraction } from './chemistry.js';
 import { romance } from './feelings.js';
 import { emo, feel, attachment } from './emotions.js';
 import { seedGraft } from './threads.js';
+import { storyRoleOf } from './stretch.js';
 
 const STEAMY = new Set(['snogger', 'lip-service', 'suck-blow', 'girls-course', 'lads-course', 'truth-dare', 'receipts']);
 const QUIZ = new Set(['knowing-me', 'tower', 'lie-detector', 'couple-goals', 'look-who', 'headlines', 'couple-of-sorts', 'grafties']);
@@ -66,6 +67,12 @@ function buzz(state, rng, id) {
     else if (QUIZ.has(id) && p && romance(a, p) - romance(p, a) > 1.5) cands.push({ a, of: 'dread', x: p, w: 1 });
     else if (!STEAMY.has(id) && !QUIZ.has(id) && st(state, a, 'boldness') >= 0.7) cands.push({ a, of: 'fired-up', x: null, w: 1 });
   }
+  // The stretch's main story is what today's game could do (pm/stretch.js): a
+  // partner whose other half is being chased, before a kissing game, says so.
+  const s = state.stretch;
+  const A = s && !s.off && s.a ? (state.threads || []).find(t => t.id === s.a && !t.over) : null;
+  if (A?.type === 'graft' && STEAMY.has(id) && villa.includes(A.p) && villa.includes(A.c) && !cands.some(c => c.a === A.p)) cands.push({ a: A.p, of: 'worried', x: A.c, w: 9 });
+  for (const c of cands) if (['a', 'b'].includes(storyRoleOf(state, c.a))) c.w += 2;
   for (const c of cands.sort((x, y) => y.w - x.w + (rng() - 0.5)).slice(0, 2)) {
     if (used.has(c.a)) continue;
     const f = friendOf(c.a, c.x);
@@ -126,11 +133,13 @@ function prize(state, rng, id, events) {
 /** The evening: what the game left behind. Played first in the evening (season.js). */
 function fallout(state, rng, id, pending) {
   const out = [];
-  for (const x of pending.slice(0, 2)) {
+  const ours = x => (['a', 'b'].includes(storyRoleOf(state, x.p)) || ['a', 'b'].includes(storyRoleOf(state, x.k)) ? 1 : 0);
+  for (const x of [...pending].sort((a, b) => ours(b) - ours(a)).slice(0, 2)) {
     const { p, k, o, of, heat } = x;
     if (!state.villa.includes(p) || !state.villa.includes(k) || heartOf(state, p) !== k) continue;
-    // "I'm fine" is the one that comes back at night; a laugh only when it was a real kiss.
-    const rowP = of === 'fine' ? 0.75 : of === 'fuming' ? 0.9 : 0.15 + 0.4 * heat;
+    // "I'm fine" is the one that comes back at night; a laugh only when it was a
+    // real kiss. A kiss in the stretch's own story comes back more often.
+    const rowP = Math.min(0.95, (of === 'fine' ? 0.75 : of === 'fuming' ? 0.9 : 0.15 + 0.4 * heat) + 0.15 * ours(x));
     if (rng() < rowP) {
       const S2 = S(state, k);
       const r = rng();

@@ -25,6 +25,7 @@ import { romance, friendship, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, compatible } from './chemistry.js';
 import { feel, jealousyHit } from './emotions.js';
 import { closedness } from './ladder.js';
+import { storyRoleOf } from './stretch.js';
 
 const S = (state, n) => state.profiles[n]?.stats || {};
 const pop = (...rows) => Object.fromEntries(rows.filter(r => r[0]).map(([n, approval, fame]) => [n, { approval, fame }]));
@@ -96,6 +97,11 @@ function choose(state, rng, a, targets) {
 export function kissRound(state, rng, { kissers, targets, n = 4, game, scene }) {
   const out = [];
   const done = new Set();
+  // The stretch's people take their turns first (pm/stretch.js): the game is
+  // where its story gets a kiss on screen, before the round runs out. Who they
+  // kiss is still their own choice below.
+  const rank = n => ({ a: 0, b: 1 }[storyRoleOf(state, n)] ?? 2);
+  kissers = kissers.map((n, i) => [n, i]).sort((x, y) => rank(x[0]) - rank(y[0]) || x[1] - y[1]).map(([n]) => n);
   for (const a of kissers) {
     if (out.length >= n) break;
     const got = choose(state, rng, a, targets.filter(t => !done.has([a, t].sort().join('|'))));

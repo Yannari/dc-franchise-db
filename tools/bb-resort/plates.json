@@ -301,5 +301,9 @@
  "ss-studio-final": {"room": "living-room", "sets": ["finale"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
  "ss-studio-bench": {"room": "living-room", "sets": ["finale-jury"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
  "ss-clue-room": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "clue room|the board", "only": "secret-story"},
- "ss-clue-board": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"}
+ "ss-clue-board": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "only": "secret-story"},
+ "ss-crystal-ball": {"room": "backyard", "sets": ["ceremony"], "use": [], "indoor": false, "nonight": true, "words": "crystal ball", "only": "secret-story"},
+ "ss-jungle": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": false, "nonight": true, "words": "jungle", "only": "secret-story"},
+ "ss-lie-detector": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "lie detector|polygraph", "only": "secret-story"},
+ "ss-shields": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "shield", "only": "secret-story"}
 }

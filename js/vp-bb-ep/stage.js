@@ -126,7 +126,9 @@ export function ledgerAt(screens, si, idx) {
       if (s === si && st.why) L.why = st.why;
       if (st.stance && s === si) L.stances[st.stance[0]] = st.stance;
       if (st.votes && s === si) L.votes = st.votes;
-      if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); }
+      // the week's badges end with the eviction: on a double eviction the second week starts clean (the user,
+      // 2026-10-30: "double eviction badge from the previous eviction should disappear to let the place for new ones")
+      if (st.out) { L.out.push(st.out); L.status[st.out] = 'out'; L.nom.forEach(n => { if (n !== st.out) L.status[n] = ''; }); L.nom = []; L.veto = null; L.safe = []; L.plus = null; L.leftover = []; }
       // back in the game (a Battle Back, a Camp Comeback): back in colour on the wall from the moment it is said
       const back = st.bkBack || st.campBack;
       if (back) { L.out = L.out.filter(n => n !== back); if (L.status[back] === 'out') L.status[back] = ''; }

@@ -153,6 +153,9 @@ const hash = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCo
 const pickBy = (list, key) => list[hash(key) % list.length];
 // who is in the house at this point of the week: nobody evicted or walked out tonight, nobody not yet arrived
 const houseNow = ctx => (ctx.house || []).filter(n => !ctx.gone?.has(n) && !ctx.hidden?.has(n));
+// who is still in the house tonight: a double eviction's first evictee is not at the second nomination table
+// (the user, 2026-10-30: "i saw the previous evicted still at the nomination ceremony table with the badge evicted")
+const stillIn = ctx => (ctx.house || []).filter(n => !ctx.gone?.has(n));
 // what the ported screens (steps-ports.js) borrow from this file
 const KIT = { scriptSteps: (...a) => scriptSteps(...a), seatLiving: (...a) => seatLiving(...a), proseSteps: (...a) => proseSteps(...a), ROOM_NAME, CAM, ACT_TIME, listOf, word, titleCase, houseNow };
 
@@ -416,7 +419,7 @@ function hohRoomScreen(act, ctx, beats) {
 function nomScreen(act, ctx) {
   const hoh = act.hoh || ctx.hoh;
   const noms = (act.nominees || []).filter(Boolean);
-  const others = ctx.house.filter(n => n !== hoh && !noms.includes(n));
+  const others = stillIn(ctx).filter(n => n !== hoh && !noms.includes(n));
   const seated = { [hoh]: 'head' };
   const sitting = [...noms, ...others].slice(0, DINING_SEATS.length);
   // nominees take seats in the middle of the order, not side by side at the front
@@ -569,7 +572,7 @@ function duoNomScreen(act, ctx, hoh, noms, seated, duo) {
 // Brother reads the keys, and the house is left to guess.
 function anonNomScreen(act, ctx, hoh, noms, seated) {
   delete seated[hoh];
-  const others = ctx.house.filter(n => !Object.keys(seated).includes(n) && n !== hoh).slice(0, 1);
+  const others = stillIn(ctx).filter(n => !Object.keys(seated).includes(n) && n !== hoh).slice(0, 1);
   others.forEach(n => { seated[n] = 'S0'; });
   seated[hoh] ||= 'S7';
   /** @type {BB.Step[]} */ const steps = [
@@ -651,7 +654,7 @@ function drawScreen(act, ctx) {
   steps.push(...drawTwistSteps(act.drawTwist, KIT));
   const players = new Set(steps.flatMap(s => s.vetoPlay || []));
   for (const s of steps) for (const n of s.vetoOut || []) players.delete(n);
-  const others = ctx.house.filter(n => !players.has(n) && n !== hoh && !block.includes(n));
+  const others = stillIn(ctx).filter(n => !players.has(n) && n !== hoh && !block.includes(n));
   // the draw ends on the field, not on the last chip (the user, 2026-10-06: "the draw ends abruptly")
   const field = [...players];
   steps.push({ k: 'say', by: hoh, t: pickBy([`That's our ${word(field.length)}. Good luck, everybody.`, `So that's the field. ${listOf(field)}. Good luck.`, `${titleCase(word(field.length))} players. May the best one win.`], `${ctx.week}|drawend`) });
@@ -732,7 +735,7 @@ function vetoMeetingScreen(act, ctx) {
   // (the replacement already reacted in the renomination scene: the engine's own version would be a second, different reaction)
   steps.push(...momentSteps(act, act.script?.renom?.length ? new RegExp(VETO_MOMENT.source.replace('|veto-replacement-shock', '').replace('|power-replacement-fallout', '')) : VETO_MOMENT));
   steps.push({ k: 'say', by: holder, t: 'This veto meeting is adjourned.' });
-  const others = ctx.house.filter(n => !before.includes(n) && n !== holder);
+  const others = stillIn(ctx).filter(n => !before.includes(n) && n !== holder);
   return { id: 'bb-cer-v', kind: 'cer', anchor: 'cer', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony,
     title: 'Veto Ceremony', kicker: 'Cam 04 · Living room', sub: act.diamond ? `${holder} holds the DIAMOND VETO` : `${holder} holds the Power of Veto`, day: ctx.day, time: ACT_TIME['veto-ceremony'],
     seated: seatLiving(before, others, holder), medalOn: holder, steps };
@@ -1043,7 +1046,7 @@ function evictionScreen(act, ctx, host) {
       }
     }
   }
-  const rest = ctx.house.filter(n => !noms.includes(n));
+  const rest = stillIn(ctx).filter(n => !noms.includes(n));
   return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: inSanctum ? 'The Sanctum' : ROOM_NAME.ceremony, cam: 1, sanctum: sanct, ...(inSanctum ? { nv: true } : {}),
     title: sanct ? 'The Sanctum' : 'Eviction Night', kicker: inSanctum ? 'The Sanctum · Mid-week' : 'Live · Eviction night', sub: `${listOf(noms)} on the block`, day: ctx.day, time: inSanctum ? 'MID-WEEK' : 'LIVE',
     // everybody who speaks on the night gets a seat before anybody who stays silent: the sofas hold
@@ -1507,7 +1510,7 @@ const PRICE = { slop: 'A WEEK ON SLOP', costume: 'THE COSTUME', solitary: 'A NIG
 function suiteScreens(act, ctx) {
   const sc = act.script?.suite || {};
   const hoh = act.hoh || ctx.hoh || null;
-  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const house = stillIn(ctx).filter(n => !ctx.hidden.has(n));
   const entrants = (act.entrants || []).filter(n => house.includes(n));
   const preSpent = (act.exhausted || []).filter(n => !entrants.includes(n));
   const rail = { names: house, hoh, spent: preSpent };
@@ -1621,7 +1624,7 @@ const CHAIN_RULES = {
 function chainScreens(act, ctx) {
   const quebec = act.style === 'quebec';
   const runs = act.script?.chain || [];
-  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const house = stillIn(ctx).filter(n => !ctx.hidden.has(n));
   const out = [];
   const base = (id, extra) => ({ id, kind: 'chain', anchor: ctx.anchor, day: ctx.day, chainStyle: quebec ? 'quebec' : 'canada', ...extra });
   const beatsOf = run => (act.beats || []).filter(b => (b.run === 1 ? 1 : 0) === run);
@@ -1729,7 +1732,7 @@ export const HUNT_SPOTS = [['pantry', 'Pantry'], ['have-not', 'Have-not room'], 
 const HUNT_SAID = { pantry: 'the pantry', 'have-not': 'the have-not room', diary: 'the Diary Room chair', 'hoh-bath': 'the HOH bathroom',
   storage: 'the storage room', yard: 'the hammock', laundry: 'the laundry room', memory: 'the memory wall' };
 function huntScreens(act, ctx) {
-  const house = ctx.house.filter(n => !ctx.hidden.has(n));
+  const house = stillIn(ctx).filter(n => !ctx.hidden.has(n));
   const power = act.power || 'a power';
   const linesOf = b => (b && b.lines?.length ? scriptSteps(b.lines) : []);
   const base = (id, extra) => ({ id, kind: 'hunt', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4,
@@ -1847,7 +1850,7 @@ function duoWeekScreens(act, ctx) {
     }
     return [base(`bb-duo-open-w${ctx.week}`, {
       time: '11:00', title: 'You Go, They Go', label: 'You Go, They Go', sub: 'One week, in pairs',
-      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh), duo: { ...ctx.duoWeek, reveal: true },
+      seated: seatLiving([], stillIn(ctx).filter(n => n !== ctx.hoh), ctx.hoh), duo: { ...ctx.duoWeek, reveal: true },
       rules: [['IN PAIRS', 'everyone but the HOH is chained to a partner'], ['TWO PAIRS UP', 'the HOH nominates two pairs — four on the block'],
         ['ONE VOTE EACH', 'the most votes is evicted'], ['THEY GO TOO', 'and their partner leaves with them, votes or not']],
       rulesTitle: 'YOU GO, THEY GO · HOW IT WORKS', steps,
@@ -1994,7 +1997,7 @@ function wildcardScreens(act, ctx) {
   return [{
     id: `bb-wild-w${ctx.week}`, kind: 'wild', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '12:15',
     kicker: 'Cam 04 · Living room', title: 'The Wildcard', label: 'The Wildcard', sub: byTeam ? 'One player a team, one offer' : 'Three names, one offer',
-    seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+    seated: seatLiving([], stillIn(ctx).filter(n => n !== ctx.hoh), ctx.hoh),
     wild: { n: drawnN, price: act.punishmentLabel, houseWide: !!act.houseWide },
     rules: [byTeam ? ['THE TEAMS', 'each team that is not safe sends one'] : ['THE HAT', `${word(drawnN)} names are drawn — nobody chooses to play`], ['ONE PUZZLE', 'the best score wins'],
       ['THE OFFER', 'the winner is offered safety this week'], ['THE PRICE', 'take it and pay a punishment, or turn it down']],
@@ -2290,7 +2293,7 @@ function coinScreens(act, ctx) {
   return [{
     id: `bb-coin-w${ctx.week}`, kind: 'coin', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '12:30',
     kicker: 'Cam 04 · Living room', title: 'The Coin of Destiny', label: 'The Coin of Destiny', sub: 'Pay in, play, call it in private',
-    seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh), coin: { buyers, short: [...(act.short || [])] },
+    seated: seatLiving([], stillIn(ctx).filter(n => n !== ctx.hoh), ctx.hoh), coin: { buyers, short: [...(act.short || [])] },
     rules: [['BUY IN', `anybody but the HOH, in public${act.price > 0 ? ` · ${act.price} BB Bucks` : ''}`], ['THE GAME', 'buyers play alone; the best score wins the coin'],
       ['CALL IT', 'one coin toss, called in private'], ['RIGHT', 'the winner makes the nominations, and nobody is told who']],
     rulesTitle: 'THE COIN OF DESTINY · HOW IT WORKS', steps,
@@ -2348,7 +2351,7 @@ function secondVetoScreens(act, ctx) {
     id: `bb-veto2-w${ctx.week}`, kind: 'veto2', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: ACT_TIME['veto-ceremony'],
     kicker: 'Cam 04 · Living room', title: act.kind === 'americas' ? "America's Veto" : act.kind === 'jankie' ? 'The JANKIE Veto' : act.kind === 'secret' ? 'The Secret Veto' : found ? 'The Found Veto' : 'The Second Veto',
     label: act.kind === 'americas' ? "America's Veto" : act.kind === 'jankie' ? 'JANKIE Veto' : act.kind === 'secret' ? 'Secret Veto' : 'Second Veto', sub: 'The meeting ends twice',
-    seated: seatLiving(before, ctx.house.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before, holder: anon ? null : act.holder },
+    seated: seatLiving(before, stillIn(ctx).filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before, holder: anon ? null : act.holder },
     rules: [['A SECOND VETO', found ? 'found hidden in the house' : anon ? 'held anonymously' : 'won in the competition'], ['AFTER THE MEETING', 'used once the first ceremony is over'],
       ['ONE MORE CHAIR', 'whoever comes down is replaced']],
     rulesTitle: 'THE SECOND VETO · HOW IT WORKS', steps,
@@ -4563,7 +4566,7 @@ function nightmareScreens(act, ctx) {
   return [{
     id: `bb-nightmare-w${ctx.week}`, kind: 'nightmare', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '03:10',
     kicker: 'Cam 04 · Living room', title: 'The Nightmare Power', label: 'The Nightmare Power', sub: 'The nominations, undone',
-    seated: seatLiving([o1, o2].filter(Boolean), ctx.house.filter(n => n !== act.hoh && n !== o1 && n !== o2), act.hoh), nv: true,
+    seated: seatLiving([o1, o2].filter(Boolean), stillIn(ctx).filter(n => n !== act.hoh && n !== o1 && n !== o2), act.hoh), nv: true,
     veto2: { before: [o1, o2].filter(Boolean) }, nightmare: { voided: [o1, o2], named: [n1, n2] },
     rules: [['NIGHTMARE', 'a secret power voids the nominations'], ['SAFE', `${o1} and ${o2} come off and cannot go back up`],
       ['NOW', `${act.hoh} names two new nominees on the spot`], ['SECRET', 'nobody is told who used it']],
@@ -4715,7 +4718,7 @@ function mysteryScreens(act, ctx) {
     return [{
       id: `bb-mysterycomp-w${ctx.week}`, kind: 'mystery', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '11:40',
       kicker: 'Cam 04 · Living room', title: 'The Mystery Competitor', label: 'The Mystery Competitor', sub: `${g} walks back in`,
-      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+      seated: seatLiving([], stillIn(ctx).filter(n => n !== ctx.hoh), ctx.hoh),
       rules: [['A SECRET POWER', 'somebody summons a former houseguest'], ['ONE SPOT', 'the guest takes a drawn veto spot'], ['FOR THE HOLDER', 'win, and the veto is theirs']],
       rulesTitle: 'THE MYSTERY COMPETITOR · HOW IT WORKS', steps,
     }];
@@ -4759,7 +4762,7 @@ function mysteryScreens(act, ctx) {
   return [{
     id: `bb-veto2b-w${ctx.week}`, kind: 'veto2', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '23:30',
     kicker: 'Cam 04 · Living room', title: 'The Mystery Veto Ceremony', label: 'The Mystery Veto Ceremony', sub: 'The meeting ends twice',
-    seated: seatLiving(before, ctx.house.filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before },
+    seated: seatLiving(before, stillIn(ctx).filter(n => !before.includes(n) && n !== ctx.hoh), ctx.hoh), veto2: { before },
     rules: [['A SECOND VETO', 'won in secret, used after the meeting']], rulesTitle: 'THE MYSTERY VETO · CALLED BACK', steps,
   }];
 }
@@ -4953,7 +4956,7 @@ function quietScreens(act, ctx) {
     return [{
       id: `bb-noevict-w${ctx.week}`, kind: 'quiet', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: 'Living Room', cam: 4, time: '13:00',
       kicker: 'Cam 04 · Living room', title: 'No Eviction', label: 'No Eviction', sub: 'Nobody goes home this week',
-      seated: seatLiving([], ctx.house.filter(n => n !== ctx.hoh), ctx.hoh),
+      seated: seatLiving([], stillIn(ctx).filter(n => n !== ctx.hoh), ctx.hoh),
       rules: [['NO EVICTION', 'nobody goes home this week'], ['NO CEREMONIES', 'no nominations, no veto, no vote']], rulesTitle: 'THIS WEEK', steps,
     }];
   }
@@ -5571,7 +5574,7 @@ function twistAnnounceScreen(act, ctx, host) {
     // and then the room answers (the user, 2026-10-29: "theres a lack of a reaction when the mastermind announce
     // something important"), unless the week's own scenes already did
     if (!(act.socialBeats || []).some(b => b.lines?.length)) {
-      steps.push(...houseReacts({ names: ctx.house.filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann[0].twist || ann[0].name}`,
+      steps.push(...houseReacts({ names: stillIn(ctx).filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann[0].twist || ann[0].name}`,
         about: ann[0].name || null, hostile: ctx.row?.themeMood === 'hostile', count: 3 }));
     }
     const vc = voiceOf(ctx.row?.themeId, ctx.row?.themeMood).color;
@@ -5579,7 +5582,7 @@ function twistAnnounceScreen(act, ctx, host) {
     for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
     return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: `${ann[0].name || 'Twist'}: Announcement`,
       set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann[0].name || '',
-      day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], ctx.house.filter(n => !ctx.hidden?.has?.(n))),
+      day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], stillIn(ctx).filter(n => !ctx.hidden?.has?.(n))),
       rules, rulesTitle: `${String(ann[0].name || 'THE TWIST').toUpperCase()} · HOW IT WORKS`, steps };
   }
   const sentences = t => String(t || '').split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
@@ -5596,13 +5599,13 @@ function twistAnnounceScreen(act, ctx, host) {
   }
   steps.push({ k: 'beat', t: 'The screen goes dark. Nobody moves.' });
   if (!(act.socialBeats || []).some(b => b.lines?.length)) {
-    steps.push(...houseReacts({ names: ctx.house.filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann.map(a => a.twist || a.name).join('+')}`,
+    steps.push(...houseReacts({ names: stillIn(ctx).filter(n => !ctx.hidden?.has?.(n)), seed: `${ctx.week}|twist|${ann.map(a => a.twist || a.name).join('+')}`,
       about: ann.length === 1 ? ann[0].name || null : null, count: 3 }));
   }
   for (const b of act.socialBeats || []) steps.push(...(b.lines?.length ? scriptSteps(b.lines) : [{ k: 'beat', t: stripTags(b.text) }]));
   return { id: act.secondCall ? 'bb-twist-2-v' : 'bb-twist-v', kind: 'twist', anchor: ctx.anchor || 'start', label: ann.length === 1 ? `${ann[0].name || 'Twist'}: Announcement` : 'The Announcement',
     set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Announcement', sub: ann.map(a => a.name).filter(Boolean).join(' · '),
-    day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], ctx.house.filter(n => !ctx.hidden?.has?.(n))),
+    day: ctx.day, time: '9:00 PM', tvObj: true, seated: seatLiving([], stillIn(ctx).filter(n => !ctx.hidden?.has?.(n))),
     rules, rulesTitle: `${ann.map(a => (a.name || 'THE TWIST').toUpperCase()).join(' · ')} · HOW IT WORKS`, steps };
 }
 
@@ -6270,6 +6273,10 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         if (act.ssPublic) { ceremony(ssVerdictScreen(act, ctx, host)); if (act.evicted) (ctx.gone ||= new Set()).add(act.evicted); ctx.anchor = 'evict'; beatsOf(act); break; }
         ceremony(evictionScreen(act, ctx, host));
         for (const n of [act.evicted, act.secondEvicted]) if (n && !ctx.hexed) (ctx.gone ||= new Set()).add(n);
+        // the week is over: the next cycle reads out only its own Block Buster, if it played one (the first one's
+        // winner was read out again on a double eviction's second night; the user, 2026-10-30: "there were no blockbuster anymore during the
+        // double eviction")
+        { const acts = row.acts || []; ctx.safety = acts.slice(acts.indexOf(act) + 1).find(x => x && x.type === 'safety' && x.winner) || null; }
         // the evictee's interview, straight after the door closes (the user, 2026-10-06)
         const iv = [row.evictionInterview, row.secondEvictionInterview, row.thirdEvictionInterview].find(x => x && x.evictee === act.evicted);
         const ivs = iv ? interviewScreen(iv, ctx, host, row) : null;

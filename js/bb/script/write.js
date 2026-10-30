@@ -147,6 +147,22 @@ function noPast(key) {
   return out;
 }
 
+// A double eviction's second cycle is played live, in one night: nobody on it has "four days to undo a plan" (the
+// user, 2026-10-30: "its double eviction he has like a few minutes at most"). A line that counts days or the week is
+// held back while one that does not still fits.
+const DAYS = new RegExp(String.raw`(^|[^a-z])((one|two|three|four|five|six|seven|a few|\d+) (more )?days|all week|this week|next week|the week|tomorrow|for days)([^a-z]|$)`, "i");
+const liveCycle = ctx => !!ctx.week?.compressed;
+function noDays(key, pools) {
+  const out = { ...pools };
+  for (const k of [].concat(key)) {
+    const pool = pools[k] || [];
+    const kept = pool.filter(e => !(e.turns || []).some(t => DAYS.test(textOfTurn(t))));
+    out[k] = kept.length ? kept : pool;
+  }
+  return out;
+}
+const textOfTurn = t => [t.say || t.dr || t.beat || '', ...Object.values(t.v || {})].join(' ');
+
 // ── a line spent only if it airs ──
 // The engine writes an event's scene the moment it fires, and the picker notes the line as used then; the director
 // airs a subset of the week's events (bb/story/director.js), and the rest never reach a screen. Their lines stayed
@@ -185,7 +201,8 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
   const who = scene.who || {};
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
-  const entry = pickEntry(ledger(), firstNight(ctx) ? noPast(key) : POOLS, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
+  const base = firstNight(ctx) ? noPast(key) : POOLS;
+  const entry = pickEntry(ledger(), liveCycle(ctx) ? noDays(key, base) : base, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
   if (!entry) throw new Error(`no lines for ${key}`);
   let lineToken = null;
   if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey, book: gs.bb?.lineLedger || null }); }

@@ -73,7 +73,7 @@ import { WHERE_HEAD_MORE, WHERE_HEAD_PLANS } from './more/where-head-more.js';
 import { STORY_MORE, WATCHING_PLANS, FEELS_OFF_PLANS, BED_CHAT_PLANS } from './more/story-more.js';
 import { GROUP_CHAT_ENDED } from './more/group-chat-ended.js';
 import { DOUBT_END } from './doubt-end.js';
-import { STRETCH_ANSWER, SECRET_KEPT, HOOK } from './stretch.js';
+import { STRETCH_ANSWER, SECRET_KEPT, HOOK, PICK_PLAN } from './stretch.js';
 import { GRAFT_EYES_VOLUME, WATCHING_VOLUME, WHERE_HEAD_VOLUME, GROUP_CHAT_STRETCH } from './more/stretch-volume.js';
 import { JUST_FRIENDS } from './just-friends.js';
 import { REKINDLE } from './rekindle.js';
@@ -200,6 +200,7 @@ TALK['doubt-end'] = DOUBT_END;
 TALK['stretch-answer'] = STRETCH_ANSWER;
 TALK['secret-kept'] = SECRET_KEPT;
 TALK.hook = HOOK;
+TALK['pick-plan'] = PICK_PLAN;
 // The story kinds carry the stretch, so they are drawn more (more/stretch-volume.js).
 extend(GRAFT_EYES, GRAFT_EYES_VOLUME); extend(WATCHING, WATCHING_VOLUME); extend(WHERE_HEAD, WHERE_HEAD_VOLUME); extend(GROUP_CHAT, GROUP_CHAT_STRETCH);
 TALK['just-friends'] = JUST_FRIENDS;

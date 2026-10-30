@@ -69,6 +69,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'mates', 'took', 'exPick',
   // the fire pit: a partner picked from under {c}; one's own taken back from {c}
   'tookFrom', 'reclaimFrom', 'leftFrom', 'afterNo', 'cites',
+  // a plan for tonight's pick that leaves {a}'s own partner (talk/stretch.js PICK_PLAN)
+  'mine',
   // how long a's and b's couples have stood; whether b was in the villa before a walked in
   'newCouple', 'bNewCouple', 'bFirst',
   // a couple that broke up and got back together; and did it in the last few days

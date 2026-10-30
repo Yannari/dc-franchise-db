@@ -136,7 +136,7 @@ export const FEATURED_AT = 2.5, SHORT_AT = 1.6;
 // whole whatever the cap (below); what the cap trims is the villa around them.
 export const FEATURED_CAP = 12, SHORT_CAP = 16;
 // The storylines' own scenes (pm/threads.js), whole however busy the day.
-const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist', 'stretch-answer', 'secret-kept', 'hook']);
+const STORY_KINDS = new Set(['graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'pick-chat', 'vote-worry', 'stick-twist', 'stretch-answer', 'secret-kept', 'hook', 'pick-plan']);
 
 /** featured · short · note for a tiered kind, or null for a kind always written whole. */
 export function tierOf(state, ev, tiered) {

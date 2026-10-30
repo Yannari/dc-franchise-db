@@ -115,6 +115,31 @@ export const RECOUPLE_PICK = build('recouple-pick', {
         ['a', "This person makes me feel safe. Every night, no matter what's gone on in the day, I get to go to bed next to them, and everything's okay again. I'm not giving that up for anyone."],
       ] },
       // What the pick answers, from the stretch's stories (moments.js `cites`).
+      // A plan said out loud today (threads.js pick-plan), and how it went.
+      { when: { cites: 'plannedSteal' }, turns: [
+        ['a', "I said earlier I'd do this, and I'm doing it. I know who I'm upsetting. I'd rather be honest about why than stand here pretending I fell head over heels since lunch."],
+      ] },
+      { when: { cites: 'plannedSteal' }, turns: [
+        ['a', "I'm not going to dress this up. I've thought about it all day, and this is the pick that makes sense for me. Some people won't like it. That's fine."],
+      ] },
+      { when: { cites: 'plannedSafe' }, turns: [
+        ['a', "I'm going to be honest about this pick, because everyone will work it out anyway. I'm picking someone I trust, and I'm picking them so I'm still here next week."],
+      ] },
+      { when: { cites: 'plannedSafe' }, turns: [
+        ['a', "This isn't a fairytale. I know that, and so does the person I'm picking. We get on, we look after each other, and right now that's what I need."],
+      ] },
+      { when: { cites: 'plannedHeart' }, turns: [
+        ['a', "I told one person today what I was going to do up here, and I've been shaking ever since. I've had my mind made up for days. I just needed to say it in front of everyone."],
+      ] },
+      { when: { cites: 'plannedHeart' }, turns: [
+        ['a', "I've sat on this all day. I went over it with a friend this afternoon, and I came out of that chat knowing exactly who I'm standing up for. So here it is."],
+      ] },
+      { when: { cites: 'planChanged' }, turns: [
+        ['a', "I came down here tonight meaning to do something completely different. I had it all worked out. Then I sat on that bench and looked across, and I couldn't do it."],
+      ] },
+      { when: { cites: 'planChanged' }, turns: [
+        ['a', "Somebody on that bench knows what I said I was going to do today. I'm not doing it. Turns out I'm worse at playing this than I thought."],
+      ] },
       // {b} said no to somebody else tonight, for {a}.
       { when: { cites: 'refusedFor' }, turns: [
         ['a', "Ten minutes ago, somebody stood up and asked for this person. In front of everyone. And they said no. For me. I've had a hard few days, and I'm not going to pretend I haven't. But I know where I stand now."],

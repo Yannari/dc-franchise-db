@@ -76,6 +76,22 @@ function desire(state, p, c, { rng, taken }) {
 }
 
 /**
+ * Who `p` would pick tonight if it were down to the feelings alone: desire()
+ * with no dice and nobody chosen yet. The day before a recoupling, a player
+ * talks this through (threads.js pick-plan); the real pick, with its dice and
+ * whoever chose first, may differ — and then the fire pit shows the change of mind.
+ */
+export function forecastPick(state, p, pickerGender) {
+  const room = state.villa.filter(n => !(state.split && state.casa?.includes(n)));
+  const ctx = { rng: () => 0.5, taken: new Map() };
+  const g = n => state.profiles[n]?.gender;
+  const options = room.filter(c => c !== p && g(c) !== pickerGender && attr(state, p, c) != null);
+  if (!options.length) return null;
+  const best = options.map(c => [c, desire(state, p, c, ctx)]).sort((x, y) => y[1] - x[1])[0][0];
+  return { picked: best, reason: pickReason(state, p, best) };
+}
+
+/**
  * Which of those terms carried the pick — so the speech at the fire pit says
  * the real reason (a strategy pick never claims a spark). Reads the same
  * inputs as desire(), draws no dice.

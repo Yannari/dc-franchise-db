@@ -510,6 +510,9 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // answers close them. The pick itself is desire()'s, as ever.
   const followed = (state.threads || []).filter(t => !t.over && state.planned?.[t.id]);
   const cites = (pk, i) => {
+    // A plan said out loud today (threads.js pick-plan): it held, or it didn't.
+    const plan = state.pickPlans?.[pk.picker];
+    if (plan?.ep === state.ep) return plan.target === pk.picked ? ({ steal: 'plannedSteal', safe: 'plannedSafe', heart: 'plannedHeart' }[plan.of]) : 'planChanged';
     if ((r.refusals || []).some(f => f.partner === pk.picker && f.picked === pk.picked && f.at <= i)) return 'refusedFor';
     for (const t of followed) {
       if (t.type === 'graft' && pk.picker === t.c && pk.picked === t.t) return 'graftWon';

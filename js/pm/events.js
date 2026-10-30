@@ -904,7 +904,7 @@ export const KINDS = {
     // the storylines and what the villa makes of them (pm/threads.js)
     'graft-eyes', 'watching', 'where-head', 'graft-turn', 'graft-shut', 'feels-off', 'secret-burden', 'group-chat', 'bed-chat', 'doubt-end', 'rekindle',
     // the stretch's stories, answered after its fire pit (pm/stretch.js)
-    'stretch-answer', 'secret-kept', 'hook',
+    'stretch-answer', 'secret-kept', 'hook', 'pick-plan',
     // the day before the night (pm/threads.js tonightBeats)
     'pick-chat', 'vote-worry', 'stick-twist']
     .map(k => [k, { salience: 1, cast: () => null,

@@ -250,3 +250,117 @@ export const HOOK = build('hook', {
     ],
   },
 });
+
+// ── the plan: the day of a recoupling (threads.js tonightBeats) ──────
+//   pick-plan [a, b, c, (d)]  {a} tells friend {b} who {a} is picking tonight: {c}.
+//   `of` steal: {c} is {d}'s, and {a} is taking {c} anyway.
+//   `of` safe: {a} is picking {c} to stay; `mine`: {a} is leaving partner {d} to do it.
+export const PICK_PLAN = build('pick-plan', {
+  tiered: false,
+  facts: (state, ev) => ({ mine: !!ev.extra?.mine }),
+  stages: [
+    { stage: "{a} and {b} are on the roof terrace, as far from everyone as the villa gets." },
+  ],
+  plans: { featured: ['open', 'plan', 'push', 'close'], short: ['plan', 'close'] },
+  moves: {
+    open: [
+      { stage: "{a} pulls {b} into the dressing room and checks the door twice.", turns: [
+        ['b', "What? What's happened?"],
+        ['a', "Nothing yet. I need to tell you what I'm doing tonight, so somebody knows."],
+      ] },
+      { stage: "{a} and {b} are on the swing seat, and {a} keeps looking over at the fire pit.", turns: [
+        ['b', "You've been weird all day."],
+        ['a', "I've been thinking all day. It's different."],
+      ] },
+      { stage: "{a} finds {b} in the kitchen and takes the knife out of {b.posAdj} hand.", turns: [
+        ['b', "I was using that."],
+        ['a', "You'll want to sit down for this. Not holding a knife."],
+      ] },
+    ],
+    plan: [
+      { when: { of: 'steal' }, turns: [
+        ['a', "Tonight, I'm picking {c}."],
+        ['b', "{c} is with {d}."],
+        ['a', "I know who {c} is with. If I pick anyone else, I'm the one left standing next time, and {c} is the only one in here I actually get on with."],
+      ] },
+      { when: { of: 'steal' }, turns: [
+        ['a', "I'm going to stand up and say {c}'s name."],
+        ['b', "With {d} sitting right there?"],
+        ['a', "{d} has had a week. If it was solid, I wouldn't be thinking about it, would I?"],
+      ] },
+      { when: { of: 'steal' }, turns: [
+        ['a', "Can I be honest with you about something that makes me look bad?"],
+        ['b', "That's how all the best chats start."],
+        ['a', "I'm going to take {c} off {d} tonight. Not because I'm in love. Because I want to stay, and that's the move that keeps me here."],
+      ] },
+      { when: { of: 'safe', mine: true }, turns: [
+        ['a', "I'm not picking {d} tonight."],
+        ['b', "What? Why?"],
+        ['a', "Because it's not working, and everyone can see it isn't. {c} is somebody I trust. If I stay with {d}, we're the bottom couple next time, and I'm going home with someone I don't even want."],
+      ] },
+      { when: { of: 'safe', mine: true }, turns: [
+        ['a', "I've done the maths. Me and {d} aren't going anywhere. Me and {c} might."],
+        ['b', "You've done the maths? On a person?"],
+        ['a', "On a recoupling. It's different."],
+      ] },
+      { when: { of: 'heart' }, turns: [
+        ['a', "I'm picking {c} tonight. I've known for days. I just haven't said it out loud until now."],
+        ['b', "Out loud to me."],
+        ['a', "You're the only one I'm saying it to. I want the next person to hear it to be {c}."],
+      ] },
+      { when: { of: 'heart' }, turns: [
+        ['a', "I keep trying to talk myself out of it, and I can't. It's {c}. Tonight, it's {c}."],
+        ['b', "Are you sure? Like, sure sure?"],
+        ['a', "I've never been more sure about anything in here."],
+      ] },
+      { when: { of: 'heart', mine: true }, turns: [
+        ['a', "I'm not picking {d} tonight. I'm picking {c}."],
+        ['b', "Does {d} know?"],
+        ['a', "No. And I hate that. But if I tell {d} before the fire pit, it all blows up before anyone's even stood up."],
+      ] },
+      { when: { of: 'safe', mine: false }, turns: [
+        ['a', "I'm going to pick {c}."],
+        ['b', "Do you even like {c}?"],
+        ['a', "I like {c} enough. And I like being here. I'm not walking up those steps because I waited for a spark."],
+      ] },
+      { when: { of: 'safe', mine: false }, turns: [
+        ['a', "Nobody's going to pick me, so I'm going to do the picking. {c}. We get on, we have a laugh, and it keeps me in."],
+        ['b', "Does {c} know that's why?"],
+        ['a', "{c} will work it out. Everyone works everything out in here."],
+      ] },
+    ],
+    push: [
+      { when: { of: 'heart' }, turns: [
+        ['b', "What if {c} doesn't feel the same?"],
+        ['a', "Then at least I'll know. I can't keep sitting next to someone and thinking about someone else."],
+      ] },
+      { when: { of: 'heart', mine: true }, turns: [
+        ['b', "{d} is going to be heartbroken."],
+        ['a', "I know. That's the only reason I haven't done it already."],
+      ] },
+      { when: { of: 'steal' }, turns: [
+        ['b', "That's cold."],
+        ['a', "It's not cold. It's the game. Everyone in here is doing it, I'm just saying it out loud."],
+      ] },
+      { when: { of: 'steal' }, turns: [
+        ['b', "And if {c} doesn't come over? If {c} just sits there?"],
+        ['a', "Then I've lost nothing I had."],
+      ] },
+      { when: { of: 'safe' }, turns: [
+        ['b', "I'm not going to tell you what to do. I just think you'll regret picking with your head."],
+        ['a', "I'll regret going home a lot more."],
+      ] },
+      { when: { of: 'safe', mine: true }, turns: [
+        ['b', "Are you going to tell {d} first?"],
+        ['a', "If I tell {d}, it turns into a whole thing before the fire pit. I'd rather it happened once."],
+      ] },
+    ],
+    close: [
+      { turns: [['b', "I'm not saying a word."], ['a', "I know you're not. That's why it's you."]] },
+      { turns: [['b', "I hope you know what you're doing."], ['a', "Nobody in here knows what they're doing."]] },
+      { turns: [], beat: "{b} looks at {a} for a long time, then just nods." },
+      { when: { of: 'steal' }, turns: [['b', "{d} is going to hate you."], ['a', "{d} will get over it. {d} will have to."]] },
+      { when: { of: 'safe', mine: true }, turns: [], beat: "Across the garden, {d} waves at them. {a} waves back." },
+    ],
+  },
+});

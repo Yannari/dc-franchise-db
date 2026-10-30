@@ -49,7 +49,7 @@ import { romance, friendship, schemeEligible, revealTruth } from './feelings.js'
 import { stepOf, setStep, tellStep, closedness } from './ladder.js';
 import { feel, jealousyHit, emo, attachment, breakHeart } from './emotions.js';
 import { judgement } from './circle.js';
-import { nextPicker } from './recoupling.js';
+import { nextPicker, forecastPick } from './recoupling.js';
 import { noteBreakup } from './exes.js';
 import { planStretch, planIds, roleOf, held, closeness, storyRoleOf } from './stretch.js';
 
@@ -870,6 +870,36 @@ export function tonightBeats(state, rng, phase, entry, max = 2) {
     // Whose choice it is tonight: a pick-chat is a chooser's or a waiter's
     // (season read 2026-10-25: told "whatever you decide" on a night she didn't).
     const picks = nextPicker(state);
+    // THE PLAN (2026-10-30, the user: how much game "depends on how many
+    // strategists are cast"). A picker tonight whose feelings point somewhere
+    // other than their partner, and who thinks about the game, says it out loud
+    // to a friend first: a steal (only those the franchise lets scheme), or
+    // picking safe over a partner who isn't working. In proportion to how
+    // strategic and how little loyal they are; the fire pit says if it held
+    // (moments.js cites: plannedSteal · plannedSafe · planChanged).
+    if (!done.length && phase === 'day') for (const p of state.villa.filter(n => free(n) && state.profiles[n]?.gender === picks)) {
+      if (out.length >= 1) break;
+      const fc = forecastPick(state, p, picks);
+      const mine = partnerOf(state, p);
+      if (!fc || fc.picked === mine) continue;
+      const theirs = partnerOf(state, fc.picked);
+      // A steal is a move only those the franchise lets scheme make on purpose;
+      // anyone may simply have made up their mind (`heart`), and says so to a friend first.
+      const taking = !!theirs && theirs !== p;
+      const of = taking && schemeEligible(state.profiles[p]) ? 'steal' : fc.reason === 'safety' ? 'safe' : 'heart';
+      const chance = of === 'heart' ? 0.25 + 0.5 * st(state, p, 'boldness')
+        : (of === 'steal' ? 0.15 : 0.1) + 0.7 * st(state, p, 'strategic') * (1 - st(state, p, 'loyalty'));
+      if (rng() >= chance) continue;
+      const f = friendsOf(state, p, [fc.picked, theirs, mine].filter(Boolean), 1)[0];
+      if (!f || !together(state, p, fc.picked)) continue;
+      done.push(p);
+      addBond(p, f, 0.3);
+      feel(state, p, 'stress', 0.3);
+      (state.pickPlans ||= {})[p] = { target: fc.picked, of, ep: state.ep, f };
+      const d = of === 'steal' ? theirs : mine;
+      out.push(scene(state, rng, phase, 'pick-plan', [p, f, fc.picked, ...(d ? [d] : [])],
+        { of, mine: !!mine && of !== 'steal', pop: pop([p, of === 'steal' ? -0.4 : of === 'safe' ? -0.1 : 0.1, 1]) }));
+    }
     // The ones it's a real question for: singles, and anybody in a story about their couple.
     const cands = state.villa.filter(free).map(a => {
       const p = partnerOf(state, a);

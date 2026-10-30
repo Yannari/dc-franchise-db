@@ -43,6 +43,7 @@ import { ssProductionScreen } from './ss-production.js';
 import { ssSplitScreens } from './ss-split.js';
 import { ssDuoScreen } from './ss-couples.js';
 import { ssLoveScreen } from './ss-love.js';
+import { ssClueRoomScreens, ssDealScreens, ssPactSteps } from './ss-clue-room.js';
 import { ssDeceptionWeekScreen, ssFalseVoiceRevealScreen, ssRobotUnmaskScreen, ssTicketScreen } from './ss-deceptions.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
@@ -3370,7 +3371,7 @@ function ssClueScreen(act, ctx) {
 // THE CLUE IN THE CONFESSIONAL (js/ss/hunt.js handClue; the user, 2026-10-29: "they get their clue in the
 // confessional and get out of it with it", "its the choice of the one getting the clue to share it with some people
 // all of them 2/3 1 of them or none"): the Voice gives it to one housemate, who walks out with the card and decides.
-function ssHandedClueScreen(act, ctx) {
+function ssHandedClueScreen(act, ctx, opts = {}) {
   const got = act.got;
   const h = (act.holders || [])[0];
   const sh = (act.shared || []).filter(Boolean);
@@ -3418,7 +3419,9 @@ function ssHandedClueScreen(act, ctx) {
       : R(["You're my people in here. Don't make me regret it.", 'And if anybody asks, the Voice just told me off about the microphones.'], 9) });
   } else {
     const ask = house.filter(n => n !== got && n !== h).sort((a, b) => hash(`${k}|a|${a}`) - hash(`${k}|a|${b}`))[0];
-    if (ask && act.how === 'game') steps.push({ k: 'say', by: ask, scene: at('ceremony', 'living-sofas', 'Living Room', [got, ask]), t: R(["Come on, we all saw you win it. What does it say?", 'So? The clue. Show us.'], 6), settle: { id, answer: ANS.none, n: 2 } },
+    // (a clue the house SAW won, found, solved or bought: no lying about it, only refusing)
+    const seen = ['game', 'room', 'box', 'auction'].includes(act.how);
+    if (ask && seen) steps.push({ k: 'say', by: ask, scene: at('ceremony', 'living-sofas', 'Living Room', [got, ask]), t: act.how === 'game' ? R(["Come on, we all saw you win it. What does it say?", 'So? The clue. Show us.'], 6) : R(['Come on. We all saw you get it. What does it say?', 'So? Show us.'], 6), settle: { id, answer: ANS.none, n: 2 } },
       { k: 'say', by: got, carry: { by: got, mode: 'hold' }, t: R(['I won it. I keep it.', "Nope. You'll have to win the next one.", "It says mind your own business."], 7) },
       { k: 'say', by: ask, t: R(["Wow. Okay. I'll remember that.", "Fine. Keep it, then.", 'Unbelievable.'], 8), tense: [ask, got] });
     else if (ask) steps.push({ k: 'say', by: ask, scene: at('ceremony', 'living-sofas', 'Living Room', [got, ask]), t: R(['What did the Voice want?', "You were in there a long time. What was it?", 'Well? What did they give you?'], 6), settle: { id, answer: ANS.none, n: 2 } },
@@ -3427,6 +3430,9 @@ function ssHandedClueScreen(act, ctx) {
     else steps.push({ k: 'beat', t: `Nobody asks ${got} what the Voice wanted. ${cap(p.sub || 'they')} doesn't say.`, settle: { id, answer: ANS.none, n: 2 } });
     steps.push({ k: 'beat', carry: { by: got, mode: 'pocket' }, t: `The card goes into ${got}'s pocket, and stays there.` });
   }
+  // (in the clue room, js/vp-bb-ep/ss-clue-room.js: the room's screen has already shown how they got it; from their
+  // first word on, without the walk back from the confessional)
+  if (/** @type {any} */ (opts).inRoom) return steps.filter((_, i) => i >= 4 && i !== 7);
   return { id: `bb-ss-clue-w${ctx.week}-${(act.holders || []).join('-')}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '18:00', ...DR, sceneful: true,
     title: 'A Clue', label: 'The Clue', sub: `${got}: ${ANS[act.share] || 'Nobody'}`, steps };
 }
@@ -3626,9 +3632,9 @@ function ssHuntScreen(act, ctx) {
     const table = [...new Set([...(c.got && pool.includes(c.got) ? [c.got] : []), ...hunters, ...pool.filter(n => n !== h).sort((a, b) => hash(`${k}|t|${ci}|${a}`) - hash(`${k}|t|${ci}|${b}`))])].slice(0, 3);
     const [t1, t2, t3] = table;
     if (!t1 || !t2) return;
-    const where = open ? spot('kitchen', 'kitchen-wide', 'Kitchen', [t1, h, t2, t3]) : spot('bedroom', 'bedroom-beds', 'Bedroom', [t1, t2, t3]);
-    const lead = !c.got ? [`Around the kitchen table, the house turns the Voice's clue over and over: ${c.clue}.`, `The clue goes round the kitchen table, hand to hand: ${c.clue}.`]
-      : open ? [`Around the kitchen table, the house goes over the clue ${c.got} brought out of the confessional: ${c.clue}.`, `The clue ${c.got} read out goes round the kitchen table, hand to hand: ${c.clue}.`]
+    const where = open ? { ...spot('ceremony', 'ss-clue-room', 'The Clue Room', [t1, h, t2, t3]), cam: 12, kicker: 'Cam 12 · The Clue Room' } : spot('bedroom', 'bedroom-beds', 'Bedroom', [t1, t2, t3]);
+    const lead = !c.got ? [`In the clue room, the house stands in front of the board and goes over the Voice's clue again: ${c.clue}.`, `The newest card on the clue room's board: ${c.clue}. Everybody has a theory.`]
+      : open ? [`In the clue room, ${c.got}'s card is already pinned to the board: ${c.clue}.`, `The clue ${c.got} read out goes up on the clue room's board: ${c.clue}.`]
         : [`Behind the bedroom door, ${c.got} gets the card out again for ${listOf(table.filter(n => n !== c.got))}: ${c.clue}.`, `In the bedroom, the ones ${c.got} trusted with the clue go over it again: ${c.clue}.`];
     steps.push({ k: 'beat', scene: where, card: { text: c.clue, state: 'clue', who: 'The clue' }, t: R(lead, `c0|${ci}`) },
       { k: 'say', by: t1, t: R([`${cap(c.clue)}. What is that supposed to mean?`, `Okay. ${cap(c.clue)}. Whose is it? Think.`, open ? `${cap(c.clue)}. That has to be about somebody at this table.` : `${cap(c.clue)}. It's somebody out there. Not us.`], `c1|${ci}`) },
@@ -6414,10 +6420,19 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'americas-coup': flush(); ceremony(americasCoupScreen(act, ctx)); beatsOf(act); break;
       case 'ss-secrets': flush(); for (const scr of ssSecretsScreen(act, ctx, host)) ceremony(scr); break;
       case 'ss-role': flush(); ceremony(ssRoleScreen(act, ctx)); beatsOf(act); break;
-      case 'ss-buzz': flush(); for (const scr of ssBuzzScreen(act, ctx)) ceremony(scr); beatsOf(act); break;
+      case 'ss-buzz': {
+        flush();
+        const scrs = ssBuzzScreen(act, ctx);
+        // (a secret the clue room's pact worked out together, buzzed alone: js/vp-bb-ep/ss-clue-room.js)
+        if (act.pactBroken?.length && scrs.length) scrs.at(-1).steps.push(...ssPactSteps(act, ctx, { pickBy, listOf }));
+        for (const scr of scrs) ceremony(scr);
+        beatsOf(act); break;
+      }
+      case 'ss-clue-room': flush(); for (const scr of ssClueRoomScreens(act, { ...ctx }, { ssv, pickBy, listOf, callOpts, pronouns, handed: (a, o) => ssHandedClueScreen(a, ctx, o) })) ceremony(scr); beatsOf(act); break;
       case 'ss-party': flush(); ceremony(ssPartyScreen(act, ctx)); beatsOf(act); break;
       case 'ss-superette': flush(); ceremony(ssStoreScreen(act, ctx)); beatsOf(act); break;
-      case 'ss-clue': flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
+      // (a clue found, solved or bought in the clue room is drawn inside the room's screen)
+      case 'ss-clue': if (act.inRoom) break; flush(); ceremony(ssClueScreen(act, ctx)); beatsOf(act); break;
       case 'ss-rule': flush(); ceremony(ssRuleScreen(act, ctx)); beatsOf(act); break;
       case 'ss-game': flush(); ceremony(ssGameScreen(act, ctx)); beatsOf(act); break;
       case 'ss-mission': flush(); ceremony(ssMissionScreen(act, ctx)); beatsOf(act); break;
@@ -6703,6 +6718,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         return { ...st, scene: cur };
       });
       if (added && !SCENEFUL_KINDS.has(s.kind)) s.sceneful = true;
+    }
+    // THE CLUE ROOM'S PROMISES, kept or broken, right after the nominations (js/ss/clue-room.js settleDeals)
+    {
+      const deals = (row.acts || []).find(a => a?.secretStory)?.secretStory?.deals || [];
+      const at = out.findIndex(x => x.id === 'bb-noms-v');
+      const placed = x => { x.plate = fall(x.plate); for (const st of x.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; return { ...x, ss: true }; };
+      if (deals.length && at >= 0) out.splice(at + 1, 0, ...ssDealScreens(deals, ctx, { pickBy }).map(placed));
     }
     mergeSameLabel(out, ssPartOf);
     ssBreaks(out, { host: ctx.host || 'Josh', partOf: ssPartOf });

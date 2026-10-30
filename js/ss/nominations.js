@@ -60,6 +60,8 @@ export function nominationWish(state, ctx, voter, cand) {
   const plot = state.love?.plots?.[week];
   if (plot && plot.by.includes(voter) && plot.couple.includes(cand)) parts.push([3.2, 'the-couple']);
   else if ((state.love?.couples || []).some(c => c.includes(cand) && !c.includes(voter)) && st(ctx, voter, 'strategic') >= 6) parts.push([0.6 + st(ctx, voter, 'strategic') * 0.08, 'the-couple']);
+  // 7. A promise bought with a clue in the clue room (js/ss/clue-room.js): "not this week". Most keep it.
+  if ((state.clueRoom?.deals?.[week] || []).some(d => d.promised === voter && d.spare === cand)) parts.push([-(3 + st(ctx, voter, 'loyalty') * 0.35), 'promise']);
   // The public's favourite is a wasted vote, and the house learns that as the
   // weeks go by.
   const pop = Number(ctx.pop?.(cand)) || 0;

@@ -32,6 +32,7 @@ import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } fro
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
+import { pinPublic, clueRoomWeek, settleDeals, pactBetrayed } from '../ss/clue-room.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -456,6 +457,16 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const clue = handClue(state, ctx, { holder, how: 'voice', house: room });
     if (clue) { applyFx(clue.effects); acts.push(clue); }
   }
+  // THE CLUE ROOM (js/ss/clue-room.js): the week's public clues go up on the board; allies brainstorm over it,
+  // and pin, trade or keep the clues they were shown; about every other week the Voice puts something in the room
+  pinPublic(state, ctx.week);
+  {
+    const cr = clueRoomWeek(state, ctx, { house: room });
+    applyFx(cr.effects);
+    if (cr.act) acts.push(cr.act);
+    for (const c of cr.clueActs) { applyFx(/** @type {any} */ (c).effects); acts.push(c); }
+    pinPublic(state, ctx.week);
+  }
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
   // the secret room (js/ss/hidden.js): whoever is upstairs watches every screen, and hears what the house says
@@ -712,6 +723,13 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
       if (MOVING.includes(sk?.secretKind)) for (const h of b.holders) { pub(h, 'pity', 0.35, 'told the story behind the secret'); pub(h, 'warmth', 0.2, 'told the story behind the secret'); }
       if (sk?.kind === 'voice-pair') for (const h of b.holders) pub(h, 'arc', 0.35, 'was found out as a fake couple');
       try { addBond(b.target, b.by, -2); for (const h of b.holders) if (h !== b.target) addBond(h, b.by, -1.2); } catch { /* no bond */ }
+      // a secret the clue room's pact worked out together, buzzed alone: the others were used (js/ss/clue-room.js)
+      const used = pactBetrayed(state, b, ctx.week);
+      if (used.length) {
+        for (const x of used) { try { addBond(x, b.by, -1.8); } catch { /* no bond */ } }
+        pub(b.by, 'heat', 0.25, 'buzzed alone on a secret the pact worked out together');
+        /** @type {any} */ (b).pactBroken = used;
+      }
     } else if (b.outcome === 'wrong') {
       // a wrong buzz is funny to watch, and a bit embarrassing
       pub(b.by, 'fun', 0.15, `buzzed ${b.target}, wrongly`); pub(b.by, 'warmth', -0.12, `buzzed ${b.target}, wrongly`);
@@ -1041,6 +1059,9 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   const cast = seatsNow && !everybody ? castNominations(state || {}, huntCtx(week, rng), { voters, pool, extraVotes: extra, double, seats: seatsNow,
     invert: nt?.kind === 'inverted', picksPer: exclusive ? seatsNow : 2 }) : { nominees: [], ballots: [], tally: {}, secondRound: null };
   let before = everybody ? room.slice() : [...dOffice, ...cast.nominees];
+  // THE CLUE ROOM'S PROMISES (js/ss/clue-room.js): a clue bought "not this week"; kept, or named anyway
+  const deals = state ? settleDeals(state, wk, cast.ballots) : [];
+  for (const d of deals) { try { addBond(d.spare, d.promised, d.broken ? -2 : 0.6); } catch { /* no bond */ } }
   // THE CARDS, after the result (js/ss/powers.js): the secret immunity, the Switch, the Joker; one a night
   const post = state && !everybody ? cardsAfterNominations(state, cardCtx, { house: room, nominees: before, immune, week: wk, tally: cast.tally, locked: lifer ? [lifer] : [] }) : { nominees: before, played: [] };
   // linked destinies: a nominee's partner goes up too (unless immune)
@@ -1079,7 +1100,7 @@ export function secretStoryNominations({ week = undefined, house = [], immune = 
   }
   return { nominees, before, cards: [...pre.played, ...post.played], twist: nt ? { kind: nt.kind, who: nt.who || null, dragged: nt.dragged || null, pairs: nt.pairs || null,
     immuneHouse: nt.immuneHouse || null, nominationHouse: nt.nominationHouse || null } : null, lifer, linked, inverted: !!cast.inverted, exclusive, ballots: cast.ballots, tally: cast.tally, rule, blocked, double, voiceTie: !!cast.secondRound?.stillTied, secondRound: cast.secondRound,
-    dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)) };
+    dOffice, extraVotes: extra, immune: immune.filter(n => room.includes(n)), deals };
 }
 
 // How the country splits its vote: popularity sets the order, but nobody who made it this far is

@@ -95,7 +95,7 @@ const ROOM_OF_PLATE = [[/^bedroom2-/, "Boys' Bedroom"], [/^bedroom-/, "Girls' Be
   [/^foyer$/, 'The Airlock'], [/^ss-attic/, 'The Secret Room'], [/^hoh-suite$/, 'The Love Room'], [/^library-/, 'The Library'], [/^gym-/, 'The Gym'],
   [/^(pool-|patio$)/, 'The Pool'], [/^lawn-/, 'The Garden'], [/^(front|balcony)$/, 'The Garden'], [/^nom-table$/, 'Living Room'], [/^confessional/, 'Confessional']];
 // (a hidden space keeps its own name, whatever room stands in for it until its plate exists: vp-bb-ep/ss-groups.js)
-const SPACE_ROOMS = /^(The Control Tower|The Secret Box|The Intruders' House|The Crystal House|The Hotel of Secrets|The Yacht of Secrets|The Portrait Gallery|The Tunnel|The Red Room)$/;
+const SPACE_ROOMS = /^(The Control Tower|The Secret Box|The Intruders' House|The Crystal House|The Hotel of Secrets|The Yacht of Secrets|The Portrait Gallery|The Tunnel|The Red Room|The Clue Room)$/;
 const roomOf = S => { if (SPACE_ROOMS.test(S.room || '')) return S.room; const p = S.plate || ''; for (const [re, n] of ROOM_OF_PLATE) if (re.test(p)) return n; return S.room || ''; };
 
 /** The top of the screen: the show's bug, the room, the day, the viewer's kitty. */
@@ -239,6 +239,19 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
         <span class="ssk-n" style="--from:${Math.round(r.from)};--to:${Math.round(r.to)}" data-v="${money(r.to)}"></span>${up ? `<em class="${up > 0 ? 'up' : 'down'}">${up > 0 ? '+' : '−'}${money(Math.abs(up)).slice(1)}</em>` : ''}
         <span class="ssk-f" style="--c:${H.col(r.n)}">${H.img(r.n)}</span><b>${esc(r.n)}</b>${st.kittyStamp ? `<i class="ssk-v" style="--i:${i}">${esc(st.kittyStamp)}</i>` : ''}</div>`;
     }).join('')}</div></div>`;
+  }
+  // THE CLUE ROOM'S BOARD (vp-bb-ep/ss-clue-room.js): the cork board, the cards pinned to it, and the faces the group
+  // has strung to them; the card being talked about lit up, a new one popping in
+  if (st.clueBoard && (st.clueBoard.cards || []).length) {
+    const B = st.clueBoard;
+    const cards = B.cards.slice(-8);
+    const pins = (B.pins || []).filter(p => cards.some(c => c.clue === p.clue)).slice(0, 5);
+    const cx = i => 12.5 + 25 * (i % 4), cy = i => (cards.length > 4 ? 40 : 58) + 36 * Math.floor(i / 4);
+    const fx = j => ((j + 1) * 100) / (pins.length + 1);
+    const lines = pins.map((p, j) => { const i = cards.findIndex(c => c.clue === p.clue); return `<line x1="${fx(j)}" y1="13" x2="${cx(i)}" y2="${cy(i) - 12}"/>`; }).join('');
+    h += `<div class="ss-board ${fresh ? 'fresh' : ''}"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+      ${pins.map((p, j) => `<span class="sbf ${B.add === p.face && fresh ? 'pop' : ''}" style="left:${fx(j)}%;--c:${H.col(p.face)}"><i>${esc(String(p.face)[0])}</i>${H.img(p.face)}</span>`).join('')}
+      ${cards.map((c, i) => `<b class="sbc ${B.focus === c.clue ? 'on' : ''} ${B.fresh === c.clue && fresh ? 'pop' : ''}" style="left:${cx(i)}%;top:${cy(i)}%;--r:${((i * 37) % 9) - 4}deg">${esc(c.clue)}</b>`).join('')}</div>`;
   }
   // THE CLUE IN HAND (vp-bb-ep/steps.js ssHandedClueScreen; the user, 2026-10-29: "the clue screen needs the card
   // animated when they walk out"): it flies out of the confessional into their hand, then is held up, passed to
@@ -453,6 +466,23 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
 /* the rig over the studio: six spots sweeping down on the stairs, the room flashing white on the name */
+.ss-board{position:absolute;left:50%;top:7.5cqw;width:56cqw;height:20cqw;translate:-50% 0;z-index:21;border-radius:.8cqw;pointer-events:none;
+  background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0 .3cqw,transparent .4cqw) 0 0/2.2cqw 2.2cqw,linear-gradient(160deg,#9a6a3f,#7b4f2b);
+  box-shadow:0 0 0 .5cqw #e0b84a,0 0 0 .75cqw #8a5a12,0 1.6cqw 3cqw rgba(30,0,30,.55)}
+.ss-board.fresh{animation:ss-board-in .5s cubic-bezier(.2,.9,.3,1.2) both}
+.ss-board svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ss-board line{stroke:#d61f3c;stroke-width:.35;vector-effect:non-scaling-stroke;stroke-width:2.2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.sbc{position:absolute;width:21%;min-height:28%;translate:-50% -50%;rotate:var(--r);display:grid;place-items:center;padding:.5cqw .7cqw;box-sizing:border-box;
+  background:#fff8e4;border-radius:.25cqw;box-shadow:0 .4cqw .8cqw rgba(0,0,0,.35);font:600 .95cqw/1.15 Archivo,sans-serif;color:#3a2340;text-align:center;transition:scale .3s,box-shadow .3s}
+.sbc::before{content:'';position:absolute;top:-.45cqw;left:50%;width:.9cqw;height:.9cqw;translate:-50% 0;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff8aa0,#c2185b)}
+.sbc.on{scale:1.18;z-index:2;box-shadow:0 0 0 .25cqw #ffd54a,0 0 2cqw rgba(255,213,74,.8)}
+.sbc.pop{animation:ss-card-pin .7s cubic-bezier(.2,1.6,.4,1) both}
+.sbf{position:absolute;top:13%;width:3.6cqw;aspect-ratio:1;translate:-50% -50%;border-radius:50%;overflow:hidden;background:var(--c);box-shadow:0 0 0 .25cqw #fff,0 .4cqw .8cqw rgba(0,0,0,.4);z-index:3}
+.sbf i{position:absolute;inset:0;display:grid;place-items:center;font:700 1.6cqw 'SSAachen',sans-serif;font-style:normal;color:#fff}
+.sbf img{position:relative;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.sbf.pop{animation:ss-card-pin .7s .2s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes ss-board-in{from{opacity:0;translate:-50% -2cqw}to{opacity:1;translate:-50% 0}}
+@keyframes ss-card-pin{0%{scale:2.2;opacity:0;rotate:-25deg}100%{scale:1;opacity:1}}
 .ss-carry{position:absolute;width:5.2cqw;aspect-ratio:5/7;z-index:24;pointer-events:none}
 .ss-carry:not([data-placed]){visibility:hidden}
 .ss-carry .cc{width:100%;height:100%;box-sizing:border-box;border-radius:.6cqw;background:linear-gradient(160deg,#fffdf6,#f7ecd2);border:.32cqw solid #e0b84a;

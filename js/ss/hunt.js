@@ -125,7 +125,7 @@ export function showClue(state, ctx, { holder = undefined, clue = null, how = 'g
   // (2026-10-29: 0.34 once a tell could no longer find a secret on its own, so half are still found by a buzz)
   const strength = (/cassette|song|sound|video/i.test(shown || '') ? 0.42 : 0.34) * boost;
   for (const v of viewers) addEvidence(state, ctx, v, holder, { strength, how: fake ? 'fake-clue' : `clue:${how}`, toward: ftxt });
-  const rec = { week: ctx.week ?? 0, secretId: secret.id, holders: [...secret.holders], clue: shown || 'a clue', how, fake, to: to === 'house' ? 'house' : viewers, by };
+  const rec = { week: ctx.week ?? 0, secretId: secret.id, holders: [...secret.holders], clue: shown || 'a clue', how, fake, to: to === 'house' ? 'house' : viewers, by, ...(fake ? { fakeText: ftxt } : {}) };
   state.shownClues.push(rec);
   return { type: 'ss-clue', ...rec, beats: [{ text: `${to === 'house' ? 'The house' : viewers.join(' and ')} ${to === 'house' ? 'sees' : 'see'} a clue about ${secret.holders.join(' and ')}'s secret: ${shown || 'a clue'}.`,
     players: [...secret.holders, ...(by ? [by] : [])].slice(0, 4), badgeText: fake ? 'A CLUE?' : 'CLUE', badgeClass: 'gold', part: 'clue' }] };
@@ -168,6 +168,9 @@ export function handClue(state, ctx, { holder = undefined, how = 'voice', house 
   // 2026-10-29, back to half the secrets found once the clues stopped going to the whole house)
   const act = showClue(state, ctx, { holder, how, house, by, to: [got, ...shared.filter(n => !holders.includes(n))], boost: share === 'all' ? 1 : BOOST });
   if (!act) return null;
+  // (the record remembers who holds it and how far it went: the clue room's board and trades read it)
+  const rec = state.shownClues.at(-1);
+  if (rec) { rec.got = got; rec.share = share; }
   const close = share === 'few' || share === 'one' ? 0.6 : share === 'all' ? 0.12 : 0;
   const effects = { bond: close ? shared.filter(n => !holders.includes(n)).map(n => [got, n, close]) : [] };
   const told = share === 'all' ? 'reads it out to the whole house' : share === 'none' ? 'keeps it to themselves' : `shows it to ${shared.join(' and ')}`;

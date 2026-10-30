@@ -3397,12 +3397,12 @@ function ssHandedClueScreen(act, ctx) {
       : act.share === 'few' ? R(['My people see it. Nobody else.', `${listOf(sh)}. That's my team. They get it, the rest of the house doesn't.`], 4)
         : act.share === 'one' ? R([`${sh[0]}. Only ${sh[0]}. I need a second brain on this, not a third.`, `One person. ${sh[0]}. If it gets out, I'll know exactly who talked.`], 4)
           : R(["Nobody's seeing this. If I work it out alone, the kitty is mine alone.", "I'm keeping it. Every person I show it to is one more person who could buzz before me."], 4) },
-    { k: 'beat', scene: at('ceremony', 'living-sofas', 'Living Room', [got]), t: R([`${got} walks out of the confessional with the card folded in ${p.posAdj || 'their'} hand.`, `The door opens. ${got} comes out, the card already in ${p.posAdj || 'their'} pocket.`], 5) },
+    { k: 'beat', scene: at('ceremony', 'living-sofas', 'Living Room', [got]), carry: { by: got, mode: 'out' }, t: R([`${got} comes back in from the confessional with the card in ${p.posAdj || 'their'} hand.`, `The confessional door opens and ${got} comes in, holding the card close to ${p.posAdj || 'their'} chest.`], 5) },
   ];
   if (act.share === 'all') {
     const room = [got, ...house.filter(n => n !== got)].slice(0, 9);
     const [r1, r2] = room.filter(n => n !== got && n !== h);
-    steps.push({ k: 'say', by: got, scene: at('ceremony', 'living-sofas', 'Living Room', room), t: R(["Everybody! Living room. I've got a clue.", "Okay, everyone, sit down. The Voice gave me a clue, and I'm sharing it."], 6), settle: { id, answer: ANS.all, n: 2 } },
+    steps.push({ k: 'say', by: got, scene: at('ceremony', 'living-sofas', 'Living Room', room), t: R(["Everybody! Living room. I've got a clue.", "Okay, everyone, sit down. The Voice gave me a clue, and I'm sharing it."], 6), settle: { id, answer: ANS.all, n: 2 }, carry: { by: got, mode: 'hold' } },
       { k: 'beat', card: { text: act.clue, state: 'clue', who: 'The clue' }, t: `${got} reads it out loud: ${act.clue}.` },
       ...(r1 ? [{ k: 'say', by: r1, t: R([`${cap(act.clue)}? That could be anybody.`, 'Read it again.', "Why would you tell us? I'd have kept it."], 7) }] : []),
       ...(r2 ? [{ k: 'say', by: r2, t: R(["That's generous. Suspiciously generous.", 'Okay. Everybody think.', 'Thank you. Seriously.'], 8) }] : []));
@@ -3410,22 +3410,22 @@ function ssHandedClueScreen(act, ctx) {
   } else if (act.share === 'few' || act.share === 'one') {
     const grp = [got, ...sh];
     steps.push({ k: 'beat', scene: act.share === 'one' ? at('yard', 'patio', 'The Garden', grp) : at('bedroom', 'bedroom-beds', 'Bedroom', grp),
-      t: act.share === 'one' ? `In the garden, away from the others, ${got} slips the card to ${sh[0]}.` : `In the bedroom, ${got} closes the door and pulls ${listOf(sh)} close.`, settle: { id, answer: ANS[act.share], n: 2 } },
+      t: act.share === 'one' ? `In the garden, away from the others, ${got} slips the card to ${sh[0]}.` : `In the bedroom, ${got} closes the door and pulls ${listOf(sh)} close.`, settle: { id, answer: ANS[act.share], n: 2 }, carry: { by: got, mode: 'hold' } },
     { k: 'say', by: got, t: act.share === 'one' ? R(['Only you. Read it, then forget you saw it.', 'Not a word to anybody. Look.'], 6) : R(["This doesn't leave this room. Read it.", 'Not a word to anybody. Look.', 'Come here, both of you. Read this.'], 6) },
-    { k: 'say', by: sh[0], t: act.share === 'one' ? R([`${cap(act.clue)}... I've got an idea already.`, `${cap(act.clue)}? Okay. Give me a day.`, 'Why me?'], 7) : R([`${cap(act.clue)}... I've got an idea already.`, `${cap(act.clue)}? Okay. Give us a day.`, `${cap(act.clue)}. Huh.`], 7) },
+    { k: 'say', by: sh[0], carry: { by: got, to: sh[0], mode: 'pass' }, t: act.share === 'one' ? R([`${cap(act.clue)}... I've got an idea already.`, `${cap(act.clue)}? Okay. Give me a day.`, 'Why me?'], 7) : R([`${cap(act.clue)}... I've got an idea already.`, `${cap(act.clue)}? Okay. Give us a day.`, `${cap(act.clue)}. Huh.`], 7) },
     ...(sh[1] ? [{ k: 'say', by: sh[1], t: R(["Then we work it out together. Nobody buzzes without the others.", 'Whoever it is, they are not in this room.'], 8) }] : []),
     { k: 'say', by: got, t: act.share === 'one' ? R(["Because I trust you. Don't make me regret it.", 'And if anybody asks, the Voice just told me off about the microphones.'], 9)
       : R(["You're my people in here. Don't make me regret it.", 'And if anybody asks, the Voice just told me off about the microphones.'], 9) });
   } else {
     const ask = house.filter(n => n !== got && n !== h).sort((a, b) => hash(`${k}|a|${a}`) - hash(`${k}|a|${b}`))[0];
     if (ask && act.how === 'game') steps.push({ k: 'say', by: ask, scene: at('ceremony', 'living-sofas', 'Living Room', [got, ask]), t: R(["Come on, we all saw you win it. What does it say?", 'So? The clue. Show us.'], 6), settle: { id, answer: ANS.none, n: 2 } },
-      { k: 'say', by: got, t: R(['I won it. I keep it.', "Nope. You'll have to win the next one.", "It says mind your own business."], 7) },
+      { k: 'say', by: got, carry: { by: got, mode: 'hold' }, t: R(['I won it. I keep it.', "Nope. You'll have to win the next one.", "It says mind your own business."], 7) },
       { k: 'say', by: ask, t: R(["Wow. Okay. I'll remember that.", "Fine. Keep it, then.", 'Unbelievable.'], 8), tense: [ask, got] });
     else if (ask) steps.push({ k: 'say', by: ask, scene: at('ceremony', 'living-sofas', 'Living Room', [got, ask]), t: R(['What did the Voice want?', "You were in there a long time. What was it?", 'Well? What did they give you?'], 6), settle: { id, answer: ANS.none, n: 2 } },
       { k: 'say', by: got, t: R(['Nothing. A warning about the microphones.', 'Just a talk. Nothing important.', "Nothing. They wanted to know how I'm feeling."], 7) },
       { k: 'say', by: ask, t: R(['Right.', "Okay. If you say so.", 'Sure.'], 8), tense: [ask, got] });
     else steps.push({ k: 'beat', t: `Nobody asks ${got} what the Voice wanted. ${cap(p.sub || 'they')} doesn't say.`, settle: { id, answer: ANS.none, n: 2 } });
-    steps.push({ k: 'beat', t: `The card stays in ${got}'s pocket.` });
+    steps.push({ k: 'beat', carry: { by: got, mode: 'pocket' }, t: `The card goes into ${got}'s pocket, and stays there.` });
   }
   return { id: `bb-ss-clue-w${ctx.week}-${(act.holders || []).join('-')}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: '18:00', ...DR, sceneful: true,
     title: 'A Clue', label: 'The Clue', sub: `${got}: ${ANS[act.share] || 'Nobody'}`, steps };

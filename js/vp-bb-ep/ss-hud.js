@@ -150,6 +150,34 @@ const PROP = {
   portrait: { src: 'portrait', cls: 'p-portrait', cue: '', snd: '' },
 };
 
+/** Puts each new clue card in its housemate's hand: beside their tile, in the same (zoomed) layer as the tiles,
+ * measured in layout pixels so the camera moves it with them. A pass flies from the giver's hand to the taker's. */
+function placeCarry() {
+  if (typeof document === 'undefined') return;
+  for (const c of /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.ss-carry:not([data-placed])'))) {
+    c.dataset.placed = '1';
+    const root = c.closest('[id^="bbx-st-"]') || document;
+    const tile = n => n ? /** @type {HTMLElement|null} */ ([...root.querySelectorAll('.gt:not(.host) .plate b[data-t]')].find(b => /** @type {HTMLElement} */ (b).dataset.t === n)?.closest('.gt') || null) : null;
+    const from = tile(c.dataset.by), to = tile(c.dataset.to);
+    const home = to || from;
+    if (!home || !home.parentElement) { c.remove(); continue; }
+    // (a tile's box is centred on its offsetLeft: .gt is drawn translateX(-50%))
+    // (beside the tile, on the side with room: a housemate at the right edge holds it on the left)
+    const W = home.parentElement.offsetWidth || 1, cw = c.offsetWidth || W * 0.052;
+    const hand = g => { const t = /** @type {HTMLElement} */ (g.querySelector('.tile')) || g; const right = g.offsetLeft + g.offsetWidth * 0.42 + cw < W;
+      return { x: right ? g.offsetLeft + g.offsetWidth * 0.42 : g.offsetLeft - g.offsetWidth * 0.42 - cw, y: g.offsetTop + t.offsetTop + t.offsetHeight * 0.38 }; };
+    const at = hand(home);
+    c.style.left = `${at.x.toFixed(1)}px`;
+    c.style.top = `${at.y.toFixed(1)}px`;
+    if (from && to) {
+      const a = hand(from);
+      c.style.setProperty('--dx', `${(a.x - at.x).toFixed(1)}px`);
+      c.style.setProperty('--dy', `${(a.y - at.y).toFixed(1)}px`);
+    }
+    home.parentElement.appendChild(c);
+  }
+}
+
 /** Props, the secret card, the call and its payoff, for step `st` (`o` = the stage's options). */
 export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   if (!st) return '';
@@ -211,6 +239,21 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
         <span class="ssk-n" style="--from:${Math.round(r.from)};--to:${Math.round(r.to)}" data-v="${money(r.to)}"></span>${up ? `<em class="${up > 0 ? 'up' : 'down'}">${up > 0 ? '+' : '−'}${money(Math.abs(up)).slice(1)}</em>` : ''}
         <span class="ssk-f" style="--c:${H.col(r.n)}">${H.img(r.n)}</span><b>${esc(r.n)}</b>${st.kittyStamp ? `<i class="ssk-v" style="--i:${i}">${esc(st.kittyStamp)}</i>` : ''}</div>`;
     }).join('')}</div></div>`;
+  }
+  // THE CLUE IN HAND (vp-bb-ep/steps.js ssHandedClueScreen; the user, 2026-10-29: "the clue screen needs the card
+  // animated when they walk out"): it flies out of the confessional into their hand, then is held up, passed to
+  // somebody, or slipped into a pocket
+  // (drawn loose, then moved into the housemate's own tile once the stage is up: the stage arranges and zooms a
+  // crowd, so the card follows the person, not a guessed position)
+  if (st.carry) {
+    const C = st.carry;
+    const mode = C.mode || 'hold';
+    if (fresh && (mode === 'out' || mode === 'pass')) setTimeout(() => ssSfx('whoosh', 0.35), mode === 'out' ? 60 : 200);
+    if (fresh || mode !== 'pocket') {
+      h += `<div class="ss-carry m-${esc(mode)} ${fresh ? 'fresh' : ''}" data-by="${esc(C.by)}" data-to="${esc(mode === 'pass' ? C.to || '' : '')}">
+        <div class="cc"><img src="${EYE}" alt=""><i>THE CLUE</i></div></div>`;
+      setTimeout(placeCarry, 0);
+    }
   }
   // money changing hands: coins fly from one housemate to the other
   if (st.coins && fresh) {
@@ -410,6 +453,24 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
 /* the rig over the studio: six spots sweeping down on the stairs, the room flashing white on the name */
+.ss-carry{position:absolute;width:5.2cqw;aspect-ratio:5/7;z-index:24;pointer-events:none}
+.ss-carry:not([data-placed]){visibility:hidden}
+.ss-carry .cc{width:100%;height:100%;box-sizing:border-box;border-radius:.6cqw;background:linear-gradient(160deg,#fffdf6,#f7ecd2);border:.32cqw solid #e0b84a;
+  box-shadow:0 .8cqw 1.6cqw rgba(40,0,40,.45),0 0 1.4cqw rgba(255,214,80,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4cqw;
+  animation:ss-carry-bob 2.4s ease-in-out infinite;position:relative;overflow:hidden}
+.ss-carry .cc::after{content:'';position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%);animation:ss-carry-shine 2.6s ease-in-out infinite}
+.ss-carry .cc img{width:62%}
+.ss-carry .cc i{font:700 .78cqw/1 'SSAachen',sans-serif;font-style:normal;letter-spacing:.08em;color:#c2185b}
+.ss-carry.fresh.m-out{animation:ss-carry-in 1.15s cubic-bezier(.2,.8,.25,1) both}
+.ss-carry.fresh.m-pass{animation:ss-carry-pass 1.2s cubic-bezier(.45,0,.2,1) .25s both}
+.ss-carry.fresh.m-pocket{animation:ss-carry-pocket 1.3s ease-in .3s both}
+.ss-carry.m-hold .cc{animation:ss-carry-wave .9s ease-in-out infinite alternate}
+@keyframes ss-carry-in{0%{translate:-34cqw -22cqw;rotate:-40deg;scale:.35;opacity:0}35%{opacity:1}70%{rotate:12deg;scale:1.15}100%{translate:0 0;rotate:-6deg;scale:1}}
+@keyframes ss-carry-pass{0%{translate:var(--dx,0) var(--dy,0);rotate:-6deg}50%{translate:calc(var(--dx,0px) / 2) calc(var(--dy,0px) / 2 - 6cqw);rotate:180deg;scale:1.15}100%{translate:0 0;rotate:366deg;scale:1}}
+@keyframes ss-carry-pocket{0%{opacity:1}40%{scale:1.08;rotate:-8deg}100%{translate:0 4cqw;scale:.2;rotate:20deg;opacity:0}}
+@keyframes ss-carry-bob{0%,100%{translate:0 0}50%{translate:0 -.6cqw}}
+@keyframes ss-carry-wave{from{rotate:-10deg;translate:0 -.4cqw}to{rotate:10deg;translate:0 -1.6cqw}}
+@keyframes ss-carry-shine{0%,55%{translate:-60% 0}100%{translate:60% 0}}
 .ss-lights{position:absolute;inset:0;z-index:23;pointer-events:none;overflow:hidden}
 .ss-lights i{position:absolute;top:-6%;width:9%;height:118%;transform-origin:50% 0;clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);filter:blur(.5cqw);
   background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 95%);opacity:.75;animation:ss-beam 1.4s ease-in-out infinite alternate}

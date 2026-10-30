@@ -4118,7 +4118,13 @@ const sayChoice = l => SAY_CHOICE[l] || (/^give it to /.test(l || '') ? `I give 
 const DIL_THINK = {
   greedy: ['That is a lot of money. I came here to win.', 'I have to think about my game first.', 'Nobody in here would turn that down. Would they?'],
   heart: ["I couldn't look at myself if I did that.", "Some things aren't for sale.", 'I know what the right thing is. It just hurts.'],
+  // (the dilemmas about people: js/ss/dilemmas.js 'betray-friend', 'take-their-place', 'choose-a-friend')
+  peopleGreedy: ["It's a game. They would do exactly the same to me.", 'I have to think about myself in here. Nobody else will.', "I'm going to hate myself for this. Then I'm going to win."],
+  peopleHeart: ["I won't do that to them. Not for anything.", 'If I do that, I lose more than a week.', "I'd rather go home than be that person."],
+  watch: ["I need to know. Whatever it is, I need to know.", "If I don't watch it, I'll wonder forever."],
+  letgo: ['Some things you are better off not knowing.', "Whatever it is, I don't want to carry it around this house."],
 };
+const PEOPLE_DIL = new Set(['betray-friend', 'take-their-place', 'choose-a-friend']);
 
 function ssDilemmaScreen(seg, ctx, host) {
   const n = seg.to;
@@ -4129,13 +4135,29 @@ function ssDilemmaScreen(seg, ctx, host) {
     ssv(`${n}. ${seg.offer}`),
     { k: 'beat', t: pickBy([`The whole house turns to look at ${n}.`, `Nobody on the sofas says a word. ${n} has both hands over ${pronouns(n).posAdj || 'their'} mouth.`, `${n} looks at the mirror, then at the house, then back at the mirror.`], `${k}|b`), tense: [n] },
     ssv('You have sixty seconds.', { ask: { id: `${k}|dil`, q: `What will ${n} choose?`, opts: (seg.options || []).map(o => o.charAt(0).toUpperCase() + o.slice(1)) } }),
-    { k: 'dr', by: n, t: pickBy(DIL_THINK[HEART.has(seg.chose) ? 'heart' : 'greedy'], `${k}|t`) },
+    { k: 'dr', by: n, t: pickBy(DIL_THINK[seg.dilemmaId === 'the-recording' ? (seg.chose === 'watch it' ? 'watch' : 'letgo')
+      : PEOPLE_DIL.has(seg.dilemmaId) ? ((seg.heart ?? HEART.has(seg.chose)) ? 'peopleHeart' : 'peopleGreedy') : ((seg.heart ?? HEART.has(seg.chose)) ? 'heart' : 'greedy')], `${k}|t`) },
     { k: 'host', by: host, t: `${n}, the Voice needs your answer.` },
     { k: 'say', by: n, push: true, t: sayChoice(seg.chose), settle: { id: `${k}|dil`, answer: String(seg.chose || '').charAt(0).toUpperCase() + String(seg.chose || '').slice(1), n: (seg.options || []).length || 2 } },
     ssv(seg.result || ''),
     ...fxSteps(seg.effects, k),
     { k: 'host', by: host, t: tookFirst ? pickBy([`A brave choice, ${n}. We'll see what it costs you.`, `Well. The public saw that, ${n}.`], `${k}|h`) : pickBy([`Thank you, ${n}.`, `The house will remember that one, ${n}.`], `${k}|h`) },
   ];
+  // (whoever the choice was about answers it, live: a friendship broken, or one made)
+  const P = x => /** @type {any} */ (pronouns(x)) || {};
+  if (seg.dilemmaId === 'the-recording' && seg.others?.[0]) {
+    const f = seg.others[0].n;
+    if (seg.heard === 'bad') steps.push({ k: 'beat', t: `On the screen in the confessional, ${f}'s face: "${n}? Honestly, I don't trust ${P(n).obj || 'them'}. I'm only close to ${P(n).obj || 'them'} for the game."` },
+      { k: 'say', by: n, t: pickBy([`I heard what you said, ${f}. All of it.`, `"Only close to me for the game." Is that right, ${f}?`], `${k}|rb0`), tense: [n, f] },
+      { k: 'say', by: f, t: pickBy(["It's not what it sounds like.", "I was angry that day. I didn't mean it.", 'You were never meant to hear that.'], `${k}|rb1`) },
+      { k: 'say', by: n, t: pickBy(["Don't. Just don't.", 'You meant every word.', "We're done, you and me."], `${k}|rb2`) });
+    else if (seg.heard === 'good') steps.push({ k: 'beat', t: `On the screen in the confessional, ${f}'s face: "${n} is the one person in this house I would trust with anything."` },
+      { k: 'beat', t: `${n} walks straight to ${f} and hugs ${P(f).obj || 'them'} without a word.` },
+      { k: 'say', by: f, t: pickBy(['What did I say? What did they show you?', "Okay, now I'm worried. What was on that tape?"], `${k}|rg`) });
+  } else for (const o of (seg.others || []).slice(0, 2)) {
+    steps.push(o.d < 0 ? { k: 'say', by: o.n, tense: [o.n, n], t: pickBy([`After everything? ${n}, after everything?`, 'Wow. Okay. Now I know where I stand.', `I would never have done that to you, ${n}.`], `${k}|o|${o.n}`) }
+      : { k: 'say', by: o.n, t: pickBy([`${n}... thank you. I mean it.`, "I don't know what to say. Thank you.", `I owe you one, ${n}. A big one.`], `${k}|o|${o.n}`) });
+  }
   if (seg.clue) steps.push(ssv(`The clue goes on the table: ${seg.clue}.`, { toast: ['A CLUE', '#e0b84a'] }));
   if (seg.visit) steps.push({ k: 'beat', t: `${seg.visit} is taken to the airlock. On the other side of the glass, somebody from home is waiting.`, toast: ['A VISIT', '#ff8fb1'] });
   return ssLive(ctx, { id: `bb-ss-prime-dil-${seg.dilemmaId}-w${ctx.week}`, ...LIVING, title: 'The Dilemma', label: 'Dilemma', sub: n, cast: [[n, 50]],
@@ -4169,7 +4191,9 @@ function ssPhoneScreen(seg, ctx, host) {
     steps.push(...fxSteps(seg.effects, k),
       { k: 'host', by: host, t: pickBy([`The red phone always costs somebody something.`, `Answering the red phone is never free, ${n}.`, 'That is why nobody in there trusts the red phone.'], `${k}|h`) });
   }
-  return ssLive(ctx, { id: `bb-ss-prime-phone-w${ctx.week}`, ...LIVING, title: 'The Red Phone', label: 'Red Phone', sub: n ? `${n} answers` : 'Nobody answers', cast: n ? [[n, 50]] : [],
+  // (on the Night of the Red Phone it rings more than once: the announcement is the first ring's)
+  if (Number(seg.ring) > 1) steps.splice(0, 3, { k: 'host', by: host, t: pickBy(['And the red phone is ringing again...', 'Listen. The red phone. Again.'], `${k}|again${seg.ring}`), toast: ['THE RED PHONE', '#ff3355'] });
+  return ssLive(ctx, { id: `bb-ss-prime-phone-w${ctx.week}${seg.ring ? `-r${seg.ring}` : ''}`, ...LIVING, title: 'The Red Phone', label: 'Red Phone', sub: n ? `${n} answers` : 'Nobody answers', cast: n ? [[n, 50]] : [],
     rules: [['IT RINGS', 'on the prime, or any day'], ['FIRST', 'to answer gets the message'], ['NO', 'way to know what it says']], rulesTitle: 'THE RED PHONE · HOW IT WORKS', steps });
 }
 
@@ -4196,7 +4220,7 @@ function ssTruthsScreen(seg, ctx, host) {
     { k: 'say', by: s, t: `${seg.talkers[0]}, I need to talk to you.` },
     ...fxSteps(seg.effects, k),
     { k: 'host', by: host, t: `The room of truths. Some things are better not to know, ${s}.` });
-  return ssLive(ctx, { id: `bb-ss-prime-truths-w${ctx.week}`, set: 'dr', room: 'The Room of Truths', cam: CAM.dr, kicker: 'Live · The Room of Truths',
+  return ssLive(ctx, { id: `bb-ss-prime-truths-w${ctx.week}${seg.subject ? `-${seg.subject}` : ''}`, set: 'dr', room: 'The Room of Truths', cam: CAM.dr, kicker: 'Live · The Room of Truths',
     title: 'The Room of Truths', label: 'Room of Truths', sub: s, cast: [[s, 50]], steps });
 }
 
@@ -4246,6 +4270,37 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'false-voice') out.push(ssLive(ctx, { ...LIVING, ...ssFalseVoiceRevealScreen(seg, ctx, host, { ssv }) }));
     else if (seg.kind === 'robot') out.push(ssLive(ctx, { ...LIVING, ...ssRobotUnmaskScreen(seg, ctx, host) }));
     else if (seg.kind === 'ticket') out.push(ssLive(ctx, { ...LIVING, ...ssTicketScreen(seg, ctx, host) }));
+  }
+  // THE THEME RUNS THROUGH THE NIGHT (the user, 2026-10-30: "its thorough the prime not just in one screens like the
+  // bridge of sacrifice fix all those theme prime"): the night's own segments go between the live moments, one after
+  // the opening, one after the live chat, one after the airlock, one after the kitties; the bridge one crossing at a time
+  {
+    const THEME_KIND = { dilemmas: 'dilemma', 'red-phone': 'phone', truths: 'truths', bridge: 'bridge', rings: 'rings' };
+    const tk = THEME_KIND[act.theme];
+    if (tk) {
+      let themed = out.filter(s => s && String(s.id || '').startsWith(`bb-ss-prime-${{ dilemma: 'dil-', phone: 'phone', truths: 'truths', bridge: 'bridge', rings: 'rings' }[tk]}`));
+      // the bridge, crossing by crossing: the first opens the bridge, the last closes it
+      const bSeg = tk === 'bridge' ? (act.segments || []).find(s => s.kind === 'bridge') : null;
+      if (bSeg && (bSeg.crossings || []).length > 1) {
+        const cs = bSeg.crossings;
+        themed = cs.map((c, j) => {
+          const scr = ssBridgeScreen({ ...bSeg, crossings: [c], offset: j }, ctx, host, { ssv });
+          if (j > 0) scr.steps.splice(0, 2, { k: 'host', by: host, t: pickBy([`Back to the Bridge of Sacrifices. ${c.who}, it's your turn.`, `The bridge is waiting. Next to cross: ${c.who}.`], `${ctx.week}|brn|${j}`), toast: ['THE BRIDGE OF SACRIFICES', '#ff3ea5'] });
+          if (j < cs.length - 1) scr.steps.pop();
+          return { ...scr, id: `${scr.id}-c${j}`, sub: `${c.who} crosses` };
+        });
+        const old = out.findIndex(s => s && String(s.id || '').startsWith('bb-ss-prime-bridge'));
+        if (old >= 0) out.splice(old, 1);
+      } else for (const s of themed) out.splice(out.indexOf(s), 1);
+      const after = ['bb-ss-prime-open', 'bb-ss-prime-chat', 'bb-ss-prime-airlock', 'bb-ss-prime-kitties'];
+      let placed = 0;
+      for (const pre of after) {
+        if (placed >= themed.length) break;
+        const at = out.findIndex(s => s && String(s.id || '').startsWith(pre));
+        if (at >= 0) out.splice(at + 1, 0, themed[placed++]);
+      }
+      out.push(...themed.slice(placed));
+    }
   }
   out.push(ssGoldenBuzzScreen(act, ctx, host, MORE));
   // THE NIGHT'S THEME, all night (the user, 2026-10-29: "its the theme of the prime so it should be all over it not just one

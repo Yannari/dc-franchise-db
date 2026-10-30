@@ -19,7 +19,9 @@ export function ssBridgeScreen(seg, ctx, host, H) {
     { k: 'host', by: host, t: "Tonight, the Bridge of Sacrifices is open. One by one, some of you will cross it. And on the bridge, the Voice will ask each of you for a sacrifice.", toast: ['THE BRIDGE OF SACRIFICES', '#ff3ea5'], scene: BRIDGE([]) },
     { k: 'host', by: host, t: 'Say yes, and someone you love crosses with a reward. Say no, and they cross with nothing, and they will know why.' },
   ];
-  (seg.crossings || []).forEach((c, i) => {
+  // (a crossing's keys carry its place in the night: the bridge is played one crossing at a time, js/vp-bb-ep/steps.js)
+  (seg.crossings || []).forEach((c, i0) => {
+    const i = i0 + (Number(seg.offset) || 0);
     const PRICE = { money: `${money(c.price)} from your own kitty`, clue: 'a clue about your own secret, on the living-room table tonight', nomination: 'your place in next week\'s nominations: you would be nominated directly' }[c.kind];
     const REWARD = c.reward === 'money' ? `${money(5000)} for ${c.friend}'s kitty` : `immunity next week for ${c.friend}`;
     // (both of them, the one on the bridge and the one waiting on the far side: the user, 2026-10-29)

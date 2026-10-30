@@ -169,9 +169,11 @@ describe('the themed primes', () => {
     const { prime, screens } = run('bridge');
     const b = prime.segments.find(s => s.kind === 'bridge');
     expect(b?.crossings?.length).toBeGreaterThan(0);
-    const scr = screens.find(s => /^bb-ss-prime-bridge/.test(s.id));
-    expect(scr.steps.filter(st => st.ask).length).toBe(b.crossings.length);
-    expect(scr.steps.filter(st => st.settle).length).toBe(b.crossings.length);
+    // (the bridge is played one crossing at a time through the night: every crossing its own screen)
+    const scr = screens.filter(s => /^bb-ss-prime-bridge/.test(s.id));
+    expect(scr.length).toBe(b.crossings.length);
+    expect(scr.flatMap(s => s.steps).filter(st => st.ask).length).toBe(b.crossings.length);
+    expect(scr.flatMap(s => s.steps).filter(st => st.settle).length).toBe(b.crossings.length);
     expect(clean(screens)).toEqual([]);
   });
   it('the Rings: four powers handed out, the bank exchange spent tonight', () => {

@@ -24,7 +24,8 @@ const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.i
 const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
 const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
 /** The options the country reads as the heart over the deal. */
-export const HEART_LABELS = new Set(['the visit', 'save the friend', 'refuse', 'keep it', 'give up the immunity', 'keep the secret safe']);
+export const HEART_LABELS = new Set(['the visit', 'save the friend', 'refuse', 'keep it', 'give up the immunity', 'keep the secret safe',
+  'protect the friend', 'take their place', 'let it go', 'take the nomination myself']);
 
 /** Somebody the chooser is close to, and somebody they are not. */
 const bestFriend = (ctx, n, house) => house.filter(x => x !== n).sort((a, b) => (ctx.bond?.(n, b) ?? 0) - (ctx.bond?.(n, a) ?? 0))[0] || null;
@@ -131,6 +132,53 @@ export const DILEMMAS = [
           } },
         no: { label: 'refuse', value: 0.45 + (ctx.bond?.(n, richest) ?? 0) / 15, apply: () => ({ text: `${n} leaves ${richest}'s money alone.` }) } };
     } },
+  // ── DILEMMAS ABOUT PEOPLE (the user, 2026-10-30: "we need real dilemma that break relationship or form one not just
+  // about money"). Each one costs or wins a relationship; `w` makes them come up more often than the money ones.
+  { id: 'betray-friend', w: 2, from: 'S8 and S12 (immunity, for putting a friend up)',
+    build(state, ctx, n, house) {
+      const f = bestFriend(ctx, n, house);
+      if (!f || (ctx.bond?.(n, f) ?? 0) < 1) return null;
+      return { text: `You are immune next week, if ${f} is nominated directly in your place. Or refuse, and nothing changes.`,
+        yes: { label: `put ${f} up`, value: 0.15 + greed(ctx, n) * 0.9 - (NICE.includes(ctx.archetype?.(n)) ? 0.4 : 0) - (ctx.bond?.(n, f) ?? 0) / 25,
+          apply: () => { immuneNext(state, ctx, n); nominateNext(state, ctx, f); return { bond: [[f, n, -4]], pop: [[n, -0.4]], betrayed: f, text: `${n} takes the immunity. ${f} will be nominated next week, and knows exactly why.` }; } },
+        no: { label: 'protect the friend', value: 0.35 + (ctx.bond?.(n, f) ?? 0) / 20 + st(ctx, n, 'loyalty') * 0.03,
+          apply: () => ({ bond: [[f, n, 1.5]], pop: [[n, 0.2]], text: `${n} refuses. ${f} hears about it later, and does not forget it.` }) } };
+    } },
+  { id: 'take-their-place', w: 2, from: 'S7, S10 (a sacrifice for a housemate the chooser does not even like)',
+    build(state, ctx, n, house) {
+      const r = rival(ctx, n, house);
+      if (!r || (ctx.bond?.(n, r) ?? 0) > 0) return null;
+      return { text: `${r} will be nominated directly next week. Unless you take ${r}'s place.`,
+        yes: { label: 'take their place', value: 0.2 + st(ctx, n, 'loyalty') * 0.03 + (NICE.includes(ctx.archetype?.(n)) ? 0.25 : 0) + (ctx.pop?.(n) ?? 0) * 0.05,
+          apply: () => { nominateNext(state, ctx, n); return { bond: [[r, n, 3.5]], pop: [[n, 0.5]], peace: r, text: `${n} takes ${r}'s place on next week's list. ${r} cannot believe it.` }; } },
+        no: { label: `leave ${r} on it`, value: 0.5 + greed(ctx, n) * 0.3 - (ctx.bond?.(n, r) ?? 0) / 20,
+          apply: () => { nominateNext(state, ctx, r); return { bond: [[r, n, -0.8]], text: `${n} leaves ${r} on the list.` }; } } };
+    } },
+  { id: 'the-recording', w: 2, from: 'S4, S9 (confessionals played to the person they were about)',
+    build(state, ctx, n, house) {
+      const f = bestFriend(ctx, n, house);
+      if (!f) return null;
+      // what the friend really thinks, behind the smile: the bond from the friend's side, and how much they gossip
+      const honest = (ctx.bond?.(f, n) ?? 0) - (10 - st(ctx, f, 'loyalty')) * 0.25;
+      const bad = honest < 2;
+      return { text: `The Voice has a recording of what ${f} said about you in the confessional this week. Watch it, or let it go, and never know.`,
+        yes: { label: 'watch it', value: 0.35 + st(ctx, n, 'boldness') * 0.03 + (10 - st(ctx, n, 'temperament')) * 0.02,
+          apply: () => (bad ? { bond: [[n, f, -3]], heard: 'bad', text: `${n} watches it. ${f} was not kind. ${n} walks back into the house without a word.` }
+            : { bond: [[n, f, 2]], heard: 'good', text: `${n} watches it. ${f} said ${n} is the one person in here worth trusting.` }) },
+        no: { label: 'let it go', value: 0.4 + (ctx.bond?.(n, f) ?? 0) / 15,
+          apply: () => ({ bond: [[n, f, 0.6]], text: `${n} lets it go. Whatever ${f} said stays in the confessional.` }) } };
+    } },
+  { id: 'choose-a-friend', w: 2, from: 'S11 (one friend protected, the other exposed)',
+    build(state, ctx, n, house) {
+      const fr = house.filter(x => x !== n && (ctx.bond?.(n, x) ?? 0) >= 1).sort((a, b) => (ctx.bond?.(n, b) ?? 0) - (ctx.bond?.(n, a) ?? 0)).slice(0, 2);
+      if (fr.length < 2) return null;
+      const [a, b] = fr;
+      return { text: `${a} and ${b}: one of them is immune next week, and the other is nominated directly. You choose which. Or take the nomination yourself, and both are safe.`,
+        yes: { label: `save ${a}`, value: 0.35 + greed(ctx, n) * 0.4,
+          apply: () => { immuneNext(state, ctx, a); nominateNext(state, ctx, b); return { bond: [[a, n, 2], [b, n, -3]], chosen: a, dropped: b, text: `${n} saves ${a}. ${b} is nominated next week, and looks at ${n} for a long time.` }; } },
+        no: { label: 'take the nomination myself', value: 0.25 + st(ctx, n, 'loyalty') * 0.04 + (NICE.includes(ctx.archetype?.(n)) ? 0.2 : 0),
+          apply: () => { nominateNext(state, ctx, n); return { bond: [[a, n, 1.5], [b, n, 1.5]], pop: [[n, 0.45]], text: `${n} takes the nomination. ${a} and ${b} are both safe.` }; } } };
+    } },
   { id: 'message-or-friend', from: 'S6 (Fanny deprived Julien of his girlfriend\'s message)',
     build(state, ctx, n, house) {
       const f = bestFriend(ctx, n, house);
@@ -164,7 +212,11 @@ export function runDilemma(state, ctx, { to, house = [], exclude = [] } = {}) {
   const used = new Set([...(state.dilemmasUsed || []), ...exclude]);
   const options = DILEMMAS.filter(d => !used.has(d.id));
   for (let tries = 0; tries < 6 && options.length; tries++) {
-    const d = options.splice(Math.floor(rng() * options.length), 1)[0];
+    // (the ones about people come up twice as often as the ones about money)
+    const tot = options.reduce((t, d) => t + (/** @type {any} */ (d).w || 1), 0);
+    let r = rng() * tot, at = 0;
+    for (; at < options.length - 1; at++) { r -= /** @type {any} */ (options[at]).w || 1; if (r < 0) break; }
+    const d = options.splice(at, 1)[0];
     const built = d.build(state, ctx, to, house);
     if (!built) continue;
     // a housemate who knows the country is watching leans toward how it will look (js/ss/public.js)
@@ -178,6 +230,8 @@ export function runDilemma(state, ctx, { to, house = [], exclude = [] } = {}) {
     return { type: 'ss-dilemma', week: ctx.week ?? 0, to, dilemmaId: d.id, from: d.from, offer: built.text,
       options: [built.yes.label, built.no.label], chose: chose.label, heart: HEART_LABELS.has(chose.label), result: fx.text, clue: fx.clue?.clue || null,
       visit: fx.visit || null, effects: { bond: fx.bond || [], pop: fx.pop || [] },
+      // (who else it touched, and how: the viewer shows them react)
+      others: (fx.bond || []).map(([x, y, d]) => ({ n: x === to ? y : x, d })).filter(o => o.n && o.n !== to), heard: fx.heard || null,
       beats: [{ text: `${to}'s dilemma: ${built.text} ${fx.text}`, players: [to], badgeText: 'DILEMMA', badgeClass: 'gold', part: 'dilemma' }] };
   }
   return null;

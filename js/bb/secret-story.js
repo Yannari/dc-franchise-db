@@ -135,7 +135,8 @@ const SS_SCHEDULE = {
   'ss-house-decides': ['forceVoteMode', 'house-decides'], 'ss-vote-to-evict': ['forceVoteMode', 'evict'], 'ss-ticket': ['forceTicket', true],
 };
 export function readSchedule(state, wk) {
-  const all = (seasonConfig?.twistSchedule || []).filter(Boolean);
+  // (a card the show wrote after airing the week is its record, not an order: a re-run of the week draws again)
+  const all = (seasonConfig?.twistSchedule || []).filter(x => x && !x.auto);
   for (const t of all.filter(x => Number(x.episode) === Number(wk))) {
     const m = SS_SCHEDULE[t.type];
     if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
@@ -158,14 +159,25 @@ export function readSchedule(state, wk) {
 // THE TIMELINE FILLS ITSELF (the user, 2026-10-30: "it should be cool that after an episode is simulated it fills the
 // season timeline with all the twist that have been schedule for the episode"): every twist a week played goes on
 // the timeline, on its episode, as a card the show drew (`auto`; cleared when a new season starts).
+// (the user, 2026-10-30: "the scheduler season timeline dont add the twist": it is written after every week, launch
+// night's too, and carries the twists that have no card of their own: the season's signature, the clan war, Miss and
+// Mister Secret, a secret room found, the black buzzer, a fake elimination; `aired` below)
 export function fillTimeline(state, wk) {
-  if (!seasonConfig || !wk || !state?.surprises?.[wk]) return;
+  if (!seasonConfig || !wk || !state) return;
   const sched = (seasonConfig.twistSchedule ||= []);
-  for (const id of state.surprises[wk]) {
-    if (!SS_CARD_IDS.has(id)) continue;
-    if (sched.some(x => x && Number(x.episode) === wk && x.type === id)) continue;
-    sched.push({ id: `tw-auto-${wk}-${id}`, episode: wk, type: id, auto: true });
+  const items = [...(state.surprises?.[wk] || []).filter(id => SS_CARD_IDS.has(id)).map(id => ({ type: id })), ...(state.aired?.[wk] || [])];
+  // (a re-run of the week: its old record goes, the new one is written)
+  seasonConfig.twistSchedule = sched.filter(x => !(x && x.auto && Number(x.episode) === wk && !items.some(i => i.type === x.type)));
+  for (const it of items) {
+    if (seasonConfig.twistSchedule.some(x => x && Number(x.episode) === wk && x.type === it.type)) continue;
+    seasonConfig.twistSchedule.push({ id: `tw-auto-${wk}-${it.type}`, episode: wk, type: it.type, auto: true, ...(it.label ? { label: it.label, emoji: it.emoji || '🎭' } : {}) });
   }
+}
+/** A twist with no timeline card of its own aired this week: for the timeline only (it counts toward nothing). */
+function aired(state, wk, type, label, emoji) {
+  if (!state || !wk) return;
+  const l = ((state.aired ||= {})[wk] ||= []);
+  if (!l.some(x => x.type === type)) l.push({ type, label, emoji });
 }
 
 /** The season's secret-story state, created on first touch. Plain JSON. */
@@ -604,7 +616,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
         if (e.kind === 'identified') pub(e.by, 'game', 0.15, 'picked out a hidden face among the portraits');
       }
       for (const n of gw.hidden) pub(n, 'arc', 0.12, `lived in ${gw.name}`);
-      acts.push({ type: 'ss-group', week: ctx.week, ...gw,
+      acts.push({ type: 'ss-group', week: ctx.week, ...gw, main: room.slice(),
         beats: [{ text: `${gw.name}: ${gw.hidden.join(', ')} ${gw.hidden.length > 1 ? 'are' : 'is'} still hidden.${gw.entering.length ? ` ${gw.entering.map(e => e.name).join(' and ')} will come in at the prime.` : ''}`,
           players: gw.hidden.slice(0, 4), badgeText: 'HIDDEN', badgeClass: 'purple', part: 'group' }] });
     }
@@ -671,6 +683,9 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const he = houseEvent(state, ctx, { house: room });
     if (he) {
       if (he.kind === 'clans') markSurprise(state, ctx.week, 'clans-event');
+      if (he.kind === 'clans') aired(state, ctx.week, 'clans-event', 'The Clan War', '⚔️');
+      else if (he.kind === 'pageant') aired(state, ctx.week, 'pageant', 'Miss and Mister Secret', '👑');
+      else if (he.kind === 'room') aired(state, ctx.week, 'found-room', 'A Secret Room Found', '🚪');
       applyFx(he.effects);
       const { effects, ...rest } = he;
       void effects;
@@ -734,6 +749,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   if (!state.huntClosed && ctx.week >= 2 && rng() < (RATE.blackBuzzer?.[state.tools?.blackBuzzer] ?? 0.15)) {
     const bz = blackBuzzer(state, ctx, { house: room });
     if (bz) {
+      aired(state, ctx.week, 'black-buzzer', 'The Black Buzzer', '⚫');
       applyFx(bz.effects);
       acts.push({ type: 'ss-black-buzzer', week: ctx.week, finder: bz.finder, named: bz.named, why: bz.why,
         beats: [{ text: `${bz.finder} finds the black buzzer: immune this week, and ${bz.named} is nominated by ${bz.finder}'s hand.`, players: [bz.finder, bz.named], badgeText: 'BLACK BUZZER', badgeClass: 'red', part: 'black-buzzer' }] });
@@ -777,6 +793,9 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     if (b.held) { pub(b.target, 'game', 0.4, `kept a secret with ${b.by} closing in`); pub(b.target, 'fun', 0.1, `kept a secret with ${b.by} closing in`); }
     acts.push(b);
   }
+  // the season's signature, on the week it began (launch night)
+  if (ctx.week === 1 && state.draw?.signature && state.draw.signature !== 'none') aired(state, 1, `sig-${state.draw.signature}`, signatureOf(state.draw.signature)?.name || state.draw.signature, '🎭');
+  fillTimeline(state, ctx.week);
   return acts;
 }
 
@@ -1164,6 +1183,7 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
   // A double sends the two lowest up together; an elimination power hands the choice to one housemate.
   const plan = state ? fakePlanFor(state, Number(week?.num) || 0, houseSize) : null;
   const fake = !!plan && plan.kind !== 'voluntary';
+  if (fake && state) aired(state, Number(week?.num) || 0, 'fake-elimination', plan.kind === 'double' ? 'A Fake Double Elimination' : 'A Fake Elimination', '🕵️');
   // THE NIGHT THE PUBLIC DECIDES DIFFERENTLY (js/ss/public-votes.js): to eliminate, or the house picks from the
   // public's bottom two. Never on a fake elimination's night.
   const mode = state && !fake ? voteMode(state, huntCtx(week, rng), { nominees }) : 'save';

@@ -52,9 +52,17 @@ export function launchToSpaceSteps(group, names, H, key, already = []) {
 const RECAP = {
   'secret-box': w => `Since launch night, ${listOf(w)} ${w.length > 1 ? 'have' : 'has'} been living inside the black glass cube in the corner of the living room. ${w.length > 1 ? 'They see' : 'Sees'} everything the house does, and the house has no idea anybody is in there. The only way out: find somebody's secret.`,
   intruders: w => `Since launch night, ${listOf(w)} ${w.length > 1 ? 'have' : 'has'} been hiding in a second house next door, at the end of a tunnel. The main house does not know they exist.`,
-  'crystal-house': w => `${listOf(w)} ${w.length > 1 ? 'live' : 'lives'} in the glass house in the garden, in full view, waiting for the main house to let them in.`,
+  'crystal-house': w => `Since launch night, ${listOf(w)} ${w.length > 1 ? 'have' : 'has'} been living in the glass house in the garden, in full view, waiting for the main house to let them in.`,
   hotel: w => `${listOf(w)} ${w.length > 1 ? 'are' : 'is'} hiding in the hotel next door, while the house hunts for their faces among two hundred portraits.`,
   yacht: w => `${listOf(w)} ${w.length > 1 ? 'live' : 'lives'} on the yacht at the pier, watching the House of Secrets from the deck.`,
+};
+// the way out, in the narrator's words, said again every week (said once on launch night, it is forgotten by week three)
+const RULE = {
+  'secret-box': 'The only way out of the box: find the secret of one housemate. Whoever is last out comes in nominated.',
+  intruders: 'They come in one a week, as new housemates. If the house finds the tunnel first, they all come in, and one of them is nominated.',
+  'crystal-house': 'Every prime, the main house votes to let one of them in. The last one out of the glass house comes in nominated.',
+  hotel: 'The house hunts for their faces among two hundred portraits. The first one found walks in nominated.',
+  yacht: 'Every secret they get right from the deck puts its holder up. After two weeks, they come aboard the house.',
 };
 /** A week in the space. */
 export function ssGroupWeekScreen(act, ctx, H) {
@@ -64,8 +72,29 @@ export function ssGroupWeekScreen(act, ctx, H) {
   const hid = act.hidden || [];
   // (the yacht: the deck one week, a cabin the next; the box seen from inside)
   const space = act.id === 'yacht' ? ['ss-yacht-deck', 'ss-yacht-cabin', 'ss-yacht-cabin-2'][(ctx.week || 0) % 3] : act.space;
-  /** @type {any[]} */ const steps = [{ k: 'beat', scene: at(space, S.room, hid), t: (RECAP[act.id] || RECAP['secret-box'])(hid), toast: [S.room.toUpperCase(), '#7c5cff'] },
-    { k: 'beat', t: S.look }];
+  /** @type {any[]} */ const steps = [];
+  // THE GLASS HOUSE IS NO SECRET (the user, 2026-10-30: "where did the twist get announced its just starting
+  // randomly"): the main house can see it from the garden, so on the first week the Voice tells them who is in there
+  // and how they get out. (The other spaces are hidden from the house: launch night told the ones inside, and the
+  // recap below says it again.)
+  const main = (act.main || []).filter(n => !hid.includes(n));
+  if (act.id === 'crystal-house' && (ctx.week || 0) <= 1 && main.length >= 2) {
+    const LIV = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: 4, kicker: 'Cam 04 · Living room', cast: spread(main) };
+    const [a, b] = main;
+    steps.push(ssv('Housemates, please gather in the living room.', { scene: LIV }),
+      { k: 'beat', t: pickBy(['Everybody piles onto the sofas, still half asleep.', 'The house drops what it is doing and crowds onto the sofas.'], `${k}|g`) },
+      ssv(`Look out at the garden. In the glass house, ${listOf(hid)} ${hid.length > 1 ? 'have' : 'has'} been living since launch night. ${hid.length > 1 ? 'They are' : `${hid[0]} is`} playing the game, like you, but not inside the house. Not yet.`, { toast: [S.room.toUpperCase(), '#7c5cff'], shake: true }),
+      ssv(`Every prime, you will vote to let one of them in. The last one to come in will be nominated.`),
+      { k: 'beat', t: pickBy([`The whole house runs to the window. On the other side of the glass, ${hid[0]} waves.`, `Every face in the house turns to the garden. ${listOf(hid)} wave${hid.length > 1 ? '' : 's'} back through the glass.`], `${k}|w`) },
+      { k: 'say', by: a, t: pickBy(["They've been there the whole time? They've watched everything?", "Wait. They can see us. They've seen everything we've done.", 'So we choose who comes in. That changes everything.'], `${k}|a`) },
+      { k: 'dr', by: b, t: pickBy([`Whoever I vote in owes me. That is the first thing I thought.`, `${hid.length > 1 ? 'People who have' : 'Somebody who has'} watched us for days, and we know nothing about ${hid.length > 1 ? 'them' : 'who it is'}.`, `I want to know what they saw before I let anybody in.`], `${k}|b`) });
+  }
+  // (the week the Voice has just told the house, the recap would say it twice: the glass house, and its look)
+  if (steps.length) steps.push({ k: 'beat', scene: at(space, S.room, hid), t: S.look });
+  else steps.push({ k: 'beat', scene: at(space, S.room, hid), t: (RECAP[act.id] || RECAP['secret-box'])(hid), toast: [S.room.toUpperCase(), '#7c5cff'] },
+    { k: 'beat', t: S.look });
+  // (the way out, said every week it can still change: the house cannot follow a twist it was told once, on launch night)
+  if ((ctx.week || 0) > 1 && RULE[act.id]) steps.push({ k: 'beat', t: RULE[act.id] });
   // what they are watching, said to each other (or to the camera, alone): a theory said about its person, never a quote
   (act.watched || []).slice(0, 2).forEach((w, i) => {
     const mate = hid.find(n => n !== w.who);

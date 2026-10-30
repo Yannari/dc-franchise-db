@@ -6881,6 +6881,22 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         }
         if (touched && !SCENEFUL_KINDS.has(s.kind)) s.sceneful = true;
       }
+      // THE VOICE SPEAKS TO THE HOUSE (the user, 2026-10-30: "announcement with every houseguest in the living room
+      // listening to the voice"): any "Housemates, ..." outside the prime is heard by the whole house, on the sofas
+      const LIVE = { set: 'ceremony', plate: 'living-sofas', room: 'Living Room', cam: 4, kicker: 'Cam 04 · Living room' };
+      for (const s of out) {
+        // (a party's announcements are heard on the dance floor, where the party is)
+        if (ssPartOf(s) === 'prime' || /^bb-ss-(launch|final|party)/.test(String(s.id || ''))) continue;
+        let touched = false;
+        for (const st of s.steps || []) {
+          if (st.k !== 'voice' || !/^Housemates[,.]/.test(String(st.t || '')) || house.length < 2) continue;
+          const have = (st.scene?.cast || []).map(c => (Array.isArray(c) ? c[0] : c)).filter(n => house.includes(n));
+          const all = [...new Set([...have, ...house])].slice(0, 14);
+          st.scene = { ...LIVE, cast: all.map((n, i, a) => [n, Math.round(6 + 88 * i / (a.length - 1))]) };
+          touched = true;
+        }
+        if (touched && !SCENEFUL_KINDS.has(s.kind)) s.sceneful = true;
+      }
     }
     // THE CLUE ROOM'S PROMISES, kept or broken, right after the nominations (js/ss/clue-room.js settleDeals)
     {

@@ -30,13 +30,15 @@ export function clueRoomOf(state) {
   return state.clueRoom;
 }
 
-/** The week's clues that went to the whole house go up on the board. */
+/** Every clue that went to the whole house goes up on the board: this week's, and the ones that came out after the
+ * room's last session (a mission, a slip, a dilemma, the prime), which go up the next time. (Only this week's used to
+ * be pinned, so a clue read out after the clue room never reached the board: the user, 2026-10-30.) */
 export function pinPublic(state, week) {
   const R = clueRoomOf(state);
   for (const c of huntOf(state).shownClues) {
-    if (c.week !== week || !(c.to === 'house' || c.share === 'all')) continue;
+    if (!(c.to === 'house' || c.share === 'all') || (c.week ?? week) > week) continue;
     if (R.board.some(b => b.clue === c.clue && b.secretId === c.secretId)) continue;
-    R.board.push({ clue: c.clue, secretId: c.secretId, holders: [...(c.holders || [])], week, fake: !!c.fake, fakeText: c.fakeText || null });
+    R.board.push({ clue: c.clue, secretId: c.secretId, holders: [...(c.holders || [])], week: c.week ?? week, fake: !!c.fake, fakeText: c.fakeText || null });
   }
   return R.board;
 }
@@ -176,7 +178,9 @@ export function clueRoomWeek(state, ctx, { house = [] } = {}) {
   for (const s of sessions) beats.push({ text: `In the clue room, ${s.group.join(', ')} go over the board together.${s.pooled.length ? ` ${s.pooled[0].by} pins up a clue the others had never seen.` : ''}${s.deals.length ? ` ${s.deals[0].by} shows ${s.deals[0].to} a clue, in exchange for a promise.` : ''}`,
     players: s.group, badgeText: 'CLUE ROOM', badgeClass: 'gold', part: 'clue-room' });
   if (event) beats.push({ text: EVENT_BEAT[event.kind]?.(event) || 'Something new in the clue room.', players: [event.finder, ...(event.pair || [])].filter(Boolean), badgeText: 'CLUE ROOM', badgeClass: 'gold', part: 'clue-room' });
-  return { act: { type: 'ss-clue-room', week, sessions, event, board: R.board.slice(-8).map(b => ({ clue: b.clue, about: b.holders[0], fake: b.fake })), beats }, clueActs, effects };
+  // (the board shows eight cards: a card comes down once its secret is found, so the open ones stay up)
+  const open = R.board.filter(b => b.fake || !b.holders.every(h => secretOf(state, h)?.found));
+  return { act: { type: 'ss-clue-room', week, sessions, event, board: open.slice(-8).map(b => ({ clue: b.clue, about: b.holders[0], fake: b.fake })), beats }, clueActs, effects };
 }
 
 const EVENT_BEAT = {

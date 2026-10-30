@@ -34,6 +34,16 @@ describe('the board', () => {
     for (const c of shown.filter(x => Array.isArray(x.to) && x.share !== 'all')) expect(board.some(b => b.clue === c.clue && b.secretId === c.secretId)).toBe(false);
     expect(board.some(b => b.holders[0] === 'Ana')).toBe(true);
   });
+  it("a clue the house saw after the room's session goes up the next week", () => {
+    const state = fresh();
+    const rng = seededRandom(5);
+    pinPublic(state, 2);
+    // (a mission's clue, read out on Thursday: after the clue room's session)
+    const late = showClue(state, ctx(2, rng), { holder: 'Di', how: 'mission', house: names });
+    expect(clueRoomOf(state).board.some(b => b.clue === late.clue)).toBe(false);
+    pinPublic(state, 3);
+    expect(clueRoomOf(state).board.some(b => b.clue === late.clue && b.week === 2)).toBe(true);
+  });
 });
 
 describe('a season in the clue room', () => {

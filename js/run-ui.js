@@ -908,6 +908,13 @@ export function renderRunTab() {
   if (isTraitorsSeason() || _isDragSeason()) {
     try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
   }
+  // SECRET STORY writes the twists each week aired onto the timeline (js/bb/secret-story.js fillTimeline; the user,
+  // 2026-10-30: "the season timeline dont add the twist so i can see which one got added after i simulated"): redrawn
+  // after every episode, and the config saved so the record survives a reload
+  if (seasonFormat(seasonConfig) === 'secret-story') {
+    try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch { /* storage full or blocked */ }
+    try { renderTimeline(); } catch (e) { /* timeline is optional chrome */ }
+  }
 }
 
 // A CASTLE'S SEASON ENDS WITH THE REUNION (the user, 2026-10-03: "i cant
@@ -4906,6 +4913,9 @@ export function renderTimeline() {
         const phaseTag = cat?.phase === 'pre-merge' ? 'Pre-merge challenge' : cat?.phase === 'post-merge' ? 'Post-merge challenge' : 'Challenge';
         return `<span class="fd-ep-twist-tag" style="font-style:italic;opacity:0.7" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">🔒 ${phaseTag} ×</span>`;
       }
+      // (a Secret Story week the show drew itself: written on the timeline after the week aired, js/bb/secret-story.js
+      // fillTimeline; dashed, so it reads as what happened rather than what was booked)
+      if (t.auto) return `<span class="fd-ep-twist-tag" title="Aired: the show drew this twist itself" style="border-style:dashed;opacity:.85" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : (t.emoji || '🔀')} ${cat ? cat.name : (t.label || t.type)} ×</span>`;
       return `<span class="fd-ep-twist-tag" onclick="event.stopPropagation();removeTwistFromEpisode(${ep},'${t.id}')">${cat ? cat.emoji : '🔀'} ${cat ? cat.name : t.type} ×</span>`;
     }).map((html, k) => _fdThemeMark(tagTwists[k], html)).join('');
 

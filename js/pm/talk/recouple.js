@@ -124,6 +124,71 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { when: { reclaim: true }, turns: [
         ['a', "Someone tried to take the person I'm with away from me tonight. I'm not having that. I'm not losing them over one recoupling, so I'm taking them back."],
       ] },
+      // {b}'s partner {c} is on the bench, still to choose (moments.js tookFrom):
+      // said to the fire pit for what it is. {c} can still take {b} back.
+      { when: { tookFrom: true, reason: ['connection', 'attraction'] }, turns: [
+        ['a', "I know this is going to hurt someone sitting on that bench, and I'm sorry. I've thought about it all day. But I've had a connection with this person since I walked in, and if I sit down tonight and say nothing, I'll be lying to myself and to everyone else."],
+      ] },
+      { when: { tookFrom: true, reason: ['connection', 'attraction'] }, turns: [
+        ['a', "Everybody here knows this person is already coupled up. I know it too. I'm picking them anyway, because every time we talk I forget there's anyone else in the villa, and I don't think that happens by accident."],
+      ] },
+      { when: { tookFrom: true, reason: ['connection', 'attraction'], known: true }, turns: [
+        ['a', "We've had a few chats now, me and this person, and everybody's seen them. I'm not going to pretend tonight that they meant nothing. They meant a lot. So I'm doing something about it, even though I know who I'm upsetting."],
+      ] },
+      { when: { tookFrom: true, reason: 'safety' }, turns: [
+        ['a', "I'm going to be honest about why I'm doing this. If I don't stand here and pick somebody tonight, I'm going home. The person I'm picking is coupled up, and I'm sorry to the person they're with. But I'd rather go home for trying than for sitting still."],
+      ] },
+      { when: { tookFrom: true, reason: 'safety' }, turns: [
+        ['a', "My couple's over, and everybody knows it. So I've had to look at this room and think about who I actually get on with. It's someone who's already with somebody. I know that. I'm still picking them."],
+      ] },
+      { when: { tookFrom: true, reason: 'loyalty' }, turns: [
+        ['a', "I'm not going to dress this up. The person I want is coupled up, and I've wanted them for days. I'm sorry to whoever this hurts, but I came in here to be honest, and this is me being honest."],
+      ] },
+      // Leaving one's own partner {c}, who is sitting right there.
+      { when: { leftFrom: true }, turns: [
+        ['a', "{c}, I need to say this to you first, before anyone else. You've been good to me in here. But I haven't felt it the way I should, and I think you know that. So tonight I'm going to follow what I do feel."],
+      ] },
+      { when: { leftFrom: true }, turns: [
+        ['a', "This is the hardest thing I've had to do in here, because the person I'm coupled up with is sitting right there. I've tried. I really have. But there's someone else I can't stop thinking about, and it isn't fair on anyone if I pretend there isn't."],
+      ] },
+      { when: { leftFrom: true, reason: 'safety' }, turns: [
+        ['a', "My couple hasn't worked. I'm not going to stand here and blame anyone for it, it just hasn't. So I'm picking someone I trust, and I'm sorry, {c}. I hope you understand why."],
+      ] },
+      { when: { leftFrom: true, reason: 'attraction' }, turns: [
+        ['a', "I'm going to get some looks for this. I know I am. But since the last recoupling, someone else has turned my head, and I can't sit next to {c} tonight and act like they haven't."],
+      ] },
+      { when: { leftFrom: true, feels: 'strong' }, turns: [
+        ['a', "Everybody's been asking me for days where my head's at, and I kept saying I didn't know. I do know. I've known for a while. I just didn't want to hurt {c}."],
+      ] },
+      // Turned down a minute ago by {c}, and choosing again.
+      { when: { afterNo: true }, turns: [
+        ['a', "Okay. That wasn't how I wanted tonight to go. I'm not going to pretend it was. But I'm still standing, and there's someone in here who has been good to me since day one."],
+      ] },
+      { when: { afterNo: true }, turns: [
+        ['a', "Right. I'm a bit embarrassed, if I'm honest. But I'd rather have asked and heard no than sat down wondering. So I'm going to pick someone who's actually been there for me."],
+      ] },
+      { when: { afterNo: true, reason: 'loyalty' }, turns: [
+        ['a', "I know what everyone's thinking. I went for someone else, and they said no, and now I'm turning back to my partner. I know how that looks. I'm still asking."],
+      ] },
+      { when: { afterNo: true, reason: 'safety' }, turns: [
+        ['a', "I'm not going to lie to anyone. That hurt. But I'm not going home tonight because of it. There's someone in here I get on with, and I'm going to pick them."],
+      ] },
+      // Taking one's own partner back from {c}, who picked them earlier tonight.
+      { when: { reclaimFrom: true }, turns: [
+        ['a', "{c} has just stood up and said my partner's name like I wasn't even sitting here. Like we weren't a couple. So I'm going to say it straight back."],
+      ] },
+      { when: { reclaimFrom: true }, turns: [
+        ['a', "I've watched one person stand up tonight and take the person I'm with. I'm not sitting down and letting that be the end of it. Whatever's been going on, we're a couple, and I'm taking them back."],
+      ] },
+      { when: { reclaimFrom: true }, turns: [
+        ['a', "{c}, I like you. You know I like you. But you knew exactly who you were picking when you stood up, and so do I."],
+      ] },
+      { when: { reclaimFrom: true, feels: 'little' }, turns: [
+        ['a', "I'm not going to stand here and say everything's perfect between us, because it isn't. But it's ours to sort out, not anyone else's. So I'm picking my partner back."],
+      ] },
+      { when: { reclaimFrom: true, feels: 'strong' }, turns: [
+        ['a', "My heart's going so fast right now. Ten minutes ago I had someone, and then I watched somebody else stand up and take them. I'm not losing them like that."],
+      ] },
       // just met
       { when: { justMet: true, stoleFrom: false }, turns: [
         ['a', "I've only been in this villa for a few hours, so I won't pretend I know everyone. But I had one chat today that made me want to know more. I don't know where it'll go. I just know I want to find out."],
@@ -146,6 +211,16 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { when: { reg: 'big' }, turns: [['a', "It's {b}! Obviously it's {b}! Come here!"]] },
       { when: { reg: 'nervy' }, turns: [['a', "It's... it's {b}. Sorry. It's {b}."]] },
       { turns: [['a', "{b}, would you come and join me?"]] },
+      { when: { tookFrom: true }, turns: [['a', "The person I want to couple up with tonight is {b}. I'm sorry, {c}."]] },
+      { when: { tookFrom: true }, turns: [['a', "And that person is {b}."]], beat: "{c} looks straight at {b}." },
+      { when: { tookFrom: true, reason: 'safety' }, turns: [['a', "So I'm picking {b}. {c}, it's not about you."]] },
+      { when: { leftFrom: true }, turns: [['a', "So the person I want to couple up with tonight is {b}. I'm sorry, {c}."]] },
+      { when: { leftFrom: true }, turns: [['a', "It's {b}."]], beat: "{c} looks down at {c.posAdj} hands." },
+      { when: { afterNo: true }, turns: [['a', "So I'm going to couple up with {b}."]] },
+      { when: { afterNo: true }, turns: [['a', "{b}. Would you come and stand with me?"]] },
+      { when: { reclaimFrom: true }, turns: [['a', "So I'm picking {b}. Again."]] },
+      { when: { reclaimFrom: true }, turns: [['a', "{b}. Come back over here."]] },
+      { when: { reclaimFrom: true }, turns: [['a', "It's {b}. It was always {b}."]] },
     ],
 
     react: [
@@ -162,6 +237,26 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { when: { stoleFrom: true, reclaim: false }, turns: [['c', "You couldn't have told me first?"]], beat: "Nobody answers. {b} sits down next to {a}." },
       { when: { reclaim: true }, turns: [], beat: "{b} practically runs over, and the fire pit erupts." },
       { when: { reclaim: true }, turns: [['b', "I knew you'd come back for me."], ['a', "Always."]] },
+      // {c} is on the bench, watching their partner walk to somebody else.
+      { when: { tookFrom: true }, turns: [['c', "Are you serious?"]], beat: "{b} gets up slowly and walks over to {a}, and doesn't look at {c} on the way past." },
+      { when: { tookFrom: true }, turns: [], beat: "The whole fire pit turns to look at {c}. {c} keeps very still and stares at the fire." },
+      { when: { tookFrom: true }, turns: [['c', "Wow. Okay. I've still got to stand up, haven't I."]], beat: "{b} sits down next to {a} and looks at the floor." },
+      { when: { tookFrom: true }, turns: [['b', "I didn't know you were going to do that."], ['a', "I know. Sorry."]], beat: "{c} watches them sit down together and doesn't say a word." },
+      { when: { tookFrom: true, feels: 'strong' }, turns: [], beat: "{b} hesitates for a long second, looking at {c}, before walking over to {a}. Somebody on the bench breathes out." },
+      // {c} has just been left, in front of everyone.
+      { when: { leftFrom: true }, turns: [['c', "Fair enough."]], beat: "{b} walks over to {a}. {c} nods once and keeps looking at the fire." },
+      { when: { leftFrom: true }, turns: [], beat: "{b} goes over to {a}. Nobody on the bench quite knows where to look, so most of them look at {c}." },
+      { when: { leftFrom: true }, turns: [['c', "Good luck. I mean it."]], beat: "{a} can't look at {c} as {b} sits down." },
+      { when: { leftFrom: true, feels: 'strong' }, turns: [], beat: "{b} gets up and goes to {a}. {c} watches {b} go, then wipes {c.posAdj} eyes before anyone can see." },
+      // Turned down, then picked second: {b} knows it.
+      { when: { afterNo: true }, turns: [], beat: "{b} gets up and walks over, a little slower than usual, and gives {a} a hug." },
+      { when: { afterNo: true }, turns: [['b', "Come here."]], beat: "{b} hugs {a}, and doesn't look at {c} once." },
+      { when: { afterNo: true, reason: 'loyalty' }, turns: [['b', "We'll talk later."], ['a', "I know."]], beat: "They sit down together, not touching." },
+      // {c}, who picked {b} earlier tonight, watches them go back.
+      { when: { reclaimFrom: true }, turns: [['c', "Well. It was worth a try."]], beat: "{b} walks back across to {a} and sits down." },
+      { when: { reclaimFrom: true }, turns: [], beat: "{b} gets up from next to {c} and walks back to {a}. {c} is left on the end of the bench on {c.posAdj} own." },
+      { when: { reclaimFrom: true }, turns: [['b', "Sorry."], ['c', "Don't be. I knew."]], beat: "{b} goes back to {a}, and this time {a} takes {b.posAdj} hand." },
+      { when: { reclaimFrom: true }, turns: [['c', "Fair enough."]], beat: "The fire pit claps, but not loudly. Everyone is looking at {c}." },
     ],
   },
   notes: [],

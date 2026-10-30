@@ -67,6 +67,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',
   // a couple who are only friends now, at the final (pm/just-friends.js); how a break-up was taken
   'mates', 'took', 'exPick',
+  // the fire pit: a partner picked from under {c}; one's own taken back from {c}
+  'tookFrom', 'reclaimFrom', 'leftFrom', 'afterNo',
   // how long a's and b's couples have stood; whether b was in the villa before a walked in
   'newCouple', 'bNewCouple', 'bFirst',
   // a couple that broke up and got back together; and did it in the last few days
@@ -197,6 +199,13 @@ export function factsFor(state, ev) {
   f.reclaim = !!ev.extra?.reclaim;
   // A steal at the recoupling: {c} is the one who loses {b}.
   f.stoleFrom = !!ev.extra?.stole;
+  // Picked with the partner still on the bench to choose: {c} is that partner (moments.js).
+  f.tookFrom = !!ev.extra?.tookFrom;
+  // Taking one's own partner back from {c}, who picked them earlier tonight.
+  f.reclaimFrom = !!(ev.extra?.reclaim && ev.extra?.stole);
+  // Picking somebody new with one's own partner {c} sitting there; choosing again after {c} said no.
+  f.leftFrom = !!ev.extra?.leftFrom;
+  f.afterNo = !!ev.extra?.afterNo;
   // Night one's ranking: the pair at the top, or anybody below it.
   f.rank = ev.extra?.rank == null ? null : ev.extra.rank === 1 ? 'top' : 'lower';
   f.split = !!state.split;             // Casa Amor is on

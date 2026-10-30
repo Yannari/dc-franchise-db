@@ -468,11 +468,48 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     if (romance(pk.picker, pk.picked) >= 5.5 && romance(pk.picked, pk.picker) >= 5.5) return 'rekindled';
     return rec.holder === pk.picker && rec.mood !== 'friends' ? 'hoping' : 'friend';
   };
-  const pickEvents = r.picks.map(pk => makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
-    players: [pk.picker, pk.picked, ...(pk.stole ? [pk.stole] : [])], aired: true,
+  // Picking somebody whose partner is still on the bench, still to choose
+  // (season read 2026-10-30: Keisha stood up and said Dan's name with Mia
+  // sitting there; Leah took Liam with Tasha still to stand). Not a steal in
+  // the engine's sense — nobody had chosen him tonight — but the fire pit sees
+  // it as one, and the partner can take them back. Said, with the partner as {c}.
+  const pickAt = new Map(r.picks.map((pk, i) => [pk.picker, i]));
+  const tookFrom = (pk, i) => {
+    if (pk.stole) return null;
+    const c = partnerOf(state, pk.picked);
+    if (!c || c === pk.picker || !state.villa.includes(c) || broken(state, pk.picked, c)) return null;
+    const theirs = pickAt.get(c);
+    const onBench = state.profiles[c]?.gender === state.profiles[pk.picker]?.gender;
+    return onBench && (theirs == null || theirs > i) ? c : null;
+  };
+  // Picking somebody new over one's own partner, who is sitting there
+  // (season read: Ellie chose Josh with "I'm not even sorry to everyone else",
+  // and Elliot was never mentioned). Not when the partner was already taken
+  // tonight, and not a couple who had called it off.
+  const leftFrom = (pk, i) => {
+    const old = partnerOf(state, pk.picker);
+    if (!old || old === pk.picked || !state.villa.includes(old) || broken(state, pk.picker, old)) return null;
+    return r.picks.slice(0, i).some(x => x.picked === old) ? null : old;
+  };
+  // Turned down a minute ago (recoupling.js refusals), and now choosing again
+  // (season read: Sophie, refused by Jordan, then "I've been picking my person since day one").
+  const afterNo = (pk, i) => (r.refusals || []).find(f => f.at === i && f.picker === pk.picker)?.picked || null;
+  // One {c} a pick: the steal, the partner on the bench, the partner left, the one who said no.
+  const thirdOf = (pk, i) => {
+    if (pk.stole) return { c: pk.stole };
+    const took = tookFrom(pk, i);
+    if (took) return { c: took, tookFrom: took };
+    const left = leftFrom(pk, i);
+    if (left) return { c: left, leftFrom: left };
+    const no = afterNo(pk, i);
+    return no ? { c: no, afterNo: no } : {};
+  };
+  const pickEvents = r.picks.map((pk, i) => { const third = thirdOf(pk, i); return makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
+    players: [pk.picker, pk.picked, ...(third.c ? [third.c] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, reclaim: reclaim(pk), mates: mates(pk), exPick: exPick(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
-      ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }));
+    extra: { stole: pk.stole, tookFrom: third.tookFrom || null, leftFrom: third.leftFrom || null, afterNo: third.afterNo || null,
+      reclaim: reclaim(pk), mates: mates(pk), exPick: exPick(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
+      ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }); });
   // Said no (recoupling.js refusals): in front of everyone, for the partner
   // still to choose. The one turned down feels it; the partner hears it.
   const refused = (r.refusals || []).map(f => {

@@ -213,7 +213,7 @@ DOUBT_END.leads = [...(DOUBT_END.leads || []), 'why', 'took'];
 DOUBT_END.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
 extend(VENT, VENT_REASONS);
 extend(RECOUPLE_PICK, RECOUPLE_EX);
-RECOUPLE_PICK.leads = [...(RECOUPLE_PICK.leads || []), 'exPick'];
+RECOUPLE_PICK.leads = [...(RECOUPLE_PICK.leads || []), 'exPick', 'reclaimFrom', 'stoleFrom', 'tookFrom', 'leftFrom', 'afterNo'];
 extend(CASA_REACT, CASA_REACT_STUNG);
 CASA_REACT.leads = [...(CASA_REACT.leads || []), 'of'];
 TALK['ex-sting'] = build('ex-sting', EX_STING);

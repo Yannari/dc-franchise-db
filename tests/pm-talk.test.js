@@ -88,8 +88,10 @@ describe('a placeholder only where somebody fills it', () => {
   it('{c} only in a kind that casts three', () => {
     for (const [k, s, e] of ENTRIES) {
       if (!texts(e).some(x => /\{c[.}]/.test(x))) continue;
-      // A recoupling names a third only when it is a steal: {c} lost {b}.
-      if (k === 'recouple-pick') { expect(e.when?.stoleFrom, tag(k, s, e)).toBe(true); continue; }
+      // A recoupling names a third only when moments.js casts one: {c} lost {b} (a steal),
+      // {c} is {b}'s partner on the bench, {c} is the partner {a} is leaving, {c} took {b}
+      // earlier tonight and {a} is taking {b} back, or {c} has just turned {a} down.
+      if (k === 'recouple-pick') { expect(['stoleFrom', 'tookFrom', 'leftFrom', 'reclaimFrom', 'afterNo'].some(f => e.when?.[f] === true), tag(k, s, e)).toBe(true); continue; }
       // "Back on?" casts a third only when a friend saw it (threads.js rekindleBeat).
       if (k === 'rekindle') { expect(e.when?.of, tag(k, s, e)).toBe('noticed'); continue; }
       // An ex's sting casts a third only when a friend is there (events.js 'ex-sting').

@@ -19,6 +19,7 @@
 import { mint, burn, balance, transfer } from './kitty.js';
 import { showClue, secretOf } from './hunt.js';
 import { grantPower } from './powers.js';
+import { surpriseOk, markSurprise, earliestOf } from './schedule.js';
 
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 export const PRIME_THEMES = { 'red-phone': 'The Red Phone', dilemmas: 'The Night of Dilemmas', bridge: 'The Bridge of Sacrifices', truths: 'Truths Revealed', rings: 'The Night of the Rings' };
@@ -32,11 +33,12 @@ export function primeTheme(state, ctx, { house = [], tools = {} } = {}) {
   if (forced === 'none') return null;
   const past = (state.primeThemes ||= {});
   const recent = [past[wk - 1], past[wk - 2]].filter(Boolean);
-  if (!forced && rng() > 0.55) return null;
-  const can = Object.keys(PRIME_THEMES).filter(k => !recent.includes(k) && (k !== 'red-phone' || tools.phone !== 'none') && (k !== 'truths' || tools.truths !== 'none'));
+  if (!forced && (!surpriseOk(state, wk) || rng() > 0.55)) return null;
+  const can = Object.keys(PRIME_THEMES).filter(k => !recent.includes(k) && wk >= earliestOf(`ss-${k}`) && (k !== 'red-phone' || tools.phone !== 'none') && (k !== 'truths' || tools.truths !== 'none'));
   const theme = forced || can[Math.floor(rng() * can.length) % Math.max(1, can.length)];
   if (!theme) return null;
   past[wk] = theme;
+  markSurprise(state, wk, `ss-${theme}`);
   return theme;
 }
 

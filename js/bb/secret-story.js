@@ -33,6 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { pinPublic, clueRoomWeek, settleDeals, pactBetrayed } from '../ss/clue-room.js';
+import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS } from '../ss/schedule.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -137,6 +138,7 @@ export function readSchedule(state, wk) {
   for (const t of all.filter(x => Number(x.episode) === Number(wk))) {
     const m = SS_SCHEDULE[t.type];
     if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
+    if (m && m[1] !== 'none') markSurprise(state, wk, t.type);
   }
   // A season the timeline's Randomize drew (js/ss/schedule.js) plays exactly its cards: a week the draw left empty
   // has no twist of its own on top. Cards placed by hand pin their week and leave the rest to the engine, unless
@@ -149,6 +151,19 @@ export function readSchedule(state, wk) {
       if (key === 'forceSplit' && state.houseTheme === 'arena') continue;
       if ((state[key] ||= {})[wk] == null) state[key][wk] = none;
     }
+  }
+}
+
+// THE TIMELINE FILLS ITSELF (the user, 2026-10-30: "it should be cool that after an episode is simulated it fills the
+// season timeline with all the twist that have been schedule for the episode"): every twist a week played goes on
+// the timeline, on its episode, as a card the show drew (`auto`; cleared when a new season starts).
+export function fillTimeline(state, wk) {
+  if (!seasonConfig || !wk || !state?.surprises?.[wk]) return;
+  const sched = (seasonConfig.twistSchedule ||= []);
+  for (const id of state.surprises[wk]) {
+    if (!SS_CARD_IDS.has(id)) continue;
+    if (sched.some(x => x && Number(x.episode) === wk && x.type === id)) continue;
+    sched.push({ id: `tw-auto-${wk}-${id}`, episode: wk, type: id, auto: true });
   }
 }
 
@@ -307,6 +322,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     if (!s.secretKind) s.secretKind = KIND_KIT[KIT_FOR[s.kind]] ? KIT_FOR[s.kind] : 'past';
   }
   gs.bb ||= {};
+  // (the timeline's cards a past season wrote for itself are not this season's: js/bb/secret-story.js fillTimeline)
+  if (seasonConfig && Array.isArray(seasonConfig.twistSchedule)) seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(x => !x?.auto);
   gs.bb.secretStory = {
     secrets: secrets.map(s => ({ ...s, found: false, foundBy: null, week: null })),
     kitty: {},
@@ -598,12 +615,14 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   {
     const forced = state.forceSplit?.[ctx.week];
     const wk = ctx.week || 0;
+    // (an Arena house is built split, from week two; any other split waits for week four: js/ss/schedule.js SS_EARLIEST)
     const due = forced ? forced !== 'none'
-      : !state.split && wk >= 2 && wk <= 6 && room.length >= 9 && (state.houseTheme === 'arena' || rng() < 0.1);
+      : !state.split && wk <= 7 && room.length >= 9 && (state.houseTheme === 'arena' ? wk >= 2 : surpriseOk(state, wk, 'ss-second-house') && rng() < 0.1);
     if (due && !splitActive(state, wk)) {
       const kind = forced && SPLIT_KINDS.includes(forced) ? forced
-        : room.length >= 10 && rng() < 0.25 ? 'bears' : rng() < 0.55 ? 'second-house' : 'clans';
+        : room.length >= 10 && wk >= earliestOf('ss-bears') && rng() < 0.25 ? 'bears' : rng() < 0.55 ? 'second-house' : 'clans';
       const s = startSplit(state, ctx, { house: room, kind });
+      markSurprise(state, wk, `ss-${s.kind}`);
       started = { kind: s.kind, names: s.names.slice(), sides: s.sides.map(x => x.slice()), apart: s.apart, captains: s.captains, parted: s.parted.map(p => p.slice()), until: s.until };
     }
     if (splitActive(state, wk)) {
@@ -650,6 +669,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   {
     const he = houseEvent(state, ctx, { house: room });
     if (he) {
+      if (he.kind === 'clans') markSurprise(state, ctx.week, 'clans-event');
       applyFx(he.effects);
       const { effects, ...rest } = he;
       void effects;
@@ -703,6 +723,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   {
     const gone = (gs.eliminated || []).filter(n => !room.includes(n));
     const kind = deceptionDue(state, ctx, { house: room, gone });
+    if (kind) markSurprise(state, ctx.week, `ss-${kind}`);
     const ev = kind === 'false-voice' ? falseVoiceWeek(state, ctx, { house: room }) : kind === 'robot' ? robotWeek(state, ctx, { house: room, gone }) : null;
     if (ev) acts.push({ type: 'ss-deception', week: ctx.week, ...ev,
       beats: [{ text: ev.kind === 'false-voice' ? `A new Voice takes over the house. ${ev.doubters.length} of the house do not trust it.` : `Monsieur Robot moves in. ${ev.robot} is inside.`,
@@ -866,7 +887,7 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   if (rbSeg) /** @type {any[]} */ (night.segments).push(rbSeg);
   if (ticketDue(state, ctx, { house: room })) {
     const tk = ticketVote(state, ctx, { house: room });
-    if (tk.winner) { /** @type {any[]} */ (night.segments).push(tk); pub(tk.winner, 'game', 0.25, 'was voted straight through by the house'); }
+    if (tk.winner) { /** @type {any[]} */ (night.segments).push(tk); pub(tk.winner, 'game', 0.25, 'was voted straight through by the house'); markSurprise(state, Number(week?.num) || 0, 'ss-ticket'); }
   }
   for (const s of /** @type {any[]} */ (night.segments)) {
     for (const [a, b, d] of s.effects?.bond || []) { try { addBond(a, b, d); } catch { /* no bond */ } }
@@ -1141,6 +1162,9 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
   // public's bottom two. Never on a fake elimination's night.
   const mode = state && !fake ? voteMode(state, huntCtx(week, rng), { nominees }) : 'save';
   if (state) (state.voteModes ||= {})[Number(week?.num) || 0] = mode;
+  if (state && mode !== 'save') markSurprise(state, Number(week?.num) || 0, mode === 'evict' ? 'ss-vote-to-evict' : 'ss-house-decides');
+  // the night is over: the week's twists go on the timeline
+  if (state) fillTimeline(state, Number(week?.num) || 0);
   if (mode === 'evict' && nominees.length >= 2) {
     const against = evictShares(state, nominees, rng, 0.2);
     const out = nominees.slice().sort((a, b) => against[b] - against[a])[0];

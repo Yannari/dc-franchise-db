@@ -10,6 +10,7 @@
 // Pure: decisions for the adapter (js/bb/secret-story.js) to read.
 
 import { fileOf } from './public.js';
+import { surpriseOk } from './schedule.js';
 
 export const VOTE_MODES = ['save', 'evict', 'house-decides'];
 
@@ -21,6 +22,7 @@ export function voteMode(state, ctx, { nominees = [] } = {}) {
   const rng = ctx.rng || Math.random;
   const used = state.voteModes || {};
   const r = rng();
+  if (!surpriseOk(state, wk)) return 'save';
   if (wk >= 3 && nominees.length >= 3 && !Object.values(used).includes('house-decides') && r < 0.1) return 'house-decides';
   if (wk >= 4 && !Object.values(used).includes('evict') && r >= 0.1 && r < 0.2) return 'evict';
   return 'save';
@@ -59,7 +61,7 @@ export function ticketDue(state, ctx, { house = [] } = {}) {
   const forced = state.forceTicket?.[wk];
   if (forced === 'none') return false;
   if (forced) return true;
-  if (state.ticket || house.length > 8 || house.length < 5) return false;
+  if (state.ticket || house.length > 8 || house.length < 5 || !surpriseOk(state, wk, 'ss-ticket')) return false;
   return (ctx.rng || Math.random)() < 0.2;
 }
 export function ticketVote(state, ctx, { house = [] } = {}) {

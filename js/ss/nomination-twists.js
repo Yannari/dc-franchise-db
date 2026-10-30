@@ -15,6 +15,8 @@
 //
 // Pure: decides and records on state.weekTwists[week]; the nominations (js/bb/secret-story.js) read it.
 
+import { surpriseOk, markSurprise, earliestOf } from './schedule.js';
+
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 export const WEEK_TWISTS = ['linked', 'for-life', 'inverted', 'houses', 'red-room', 'exclusive', 'everybody'];
 export const WEEK_TWIST_NAMES = { linked: 'Linked Destinies', 'for-life': 'Nominated for Life', inverted: 'The Inverted Nominations', houses: 'Immunity House against Nomination House', 'red-room': 'The Red Room', exclusive: 'One Name for Everybody', everybody: 'Everybody Is Nominated' };
@@ -46,11 +48,14 @@ export function weekTwist(state, ctx, { house = [], winner = null } = {}) {
   if (forced === 'none') return lifeNews ? { kind: null, life: lifeNews } : null;
   if (!forced && (wk < 2 || house.length < 7)) return lifeNews ? { kind: null, life: lifeNews } : null;
   const last = state.weekTwists[wk - 1]?.kind;
-  if (!forced && rng() > 0.33) return lifeNews ? { kind: null, life: lifeNews } : null;
-  // (the whole house in front of the public is rare: never before week three, and half as likely as the rest)
-  const can = WEEK_TWISTS.filter(k => k !== last && (k !== 'for-life' || !life || life.over) && (k !== 'houses' || house.length >= 8)
-    && (k !== 'everybody' || (wk >= 3 && house.length >= 8 && Object.values(state.weekTwists).every(x => x?.kind !== 'everybody') && rng() < 0.5)));
+  if (!forced && (!surpriseOk(state, wk) || rng() > 0.33)) return lifeNews ? { kind: null, life: lifeNews } : null;
+  // (the whole house in front of the public is rare and late, and half as likely as the rest; every twist has its
+  // earliest week: js/ss/schedule.js SS_EARLIEST)
+  const can = WEEK_TWISTS.filter(k => k !== last && wk >= earliestOf(`ss-${k}`) && (k !== 'for-life' || !life || life.over) && (k !== 'houses' || house.length >= 8)
+    && (k !== 'everybody' || (house.length >= 8 && Object.values(state.weekTwists).every(x => x?.kind !== 'everybody') && rng() < 0.5)));
+  if (!forced && !can.length) return lifeNews ? { kind: null, life: lifeNews } : null;
   const kind = forced || can[Math.floor(rng() * can.length) % can.length];
+  markSurprise(state, wk, `ss-${kind}`);
   const t = { kind, week: wk };
   if (kind === 'linked') {
     // the Voice pairs them by chance, as the show did (sometimes the worst of enemies)

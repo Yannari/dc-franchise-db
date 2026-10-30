@@ -14,6 +14,7 @@
 
 import { mint } from './kitty.js';
 import { secretOf, showClue } from './hunt.js';
+import { surpriseOk, earliestOf } from './schedule.js';
 
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 export const DECEPTIONS = ['false-voice', 'robot'];
@@ -26,8 +27,8 @@ export function deceptionDue(state, ctx, { house = [], gone = [] } = {}) {
   const forced = state.forceDeception?.[wk];
   if (forced) return forced === 'none' ? null : forced;
   if (done.some(d => d.week === wk) || house.length < 7) return null;
-  const can = DECEPTIONS.filter(k => !done.some(d => d.kind === k) && (k !== 'robot' || gone.length) && wk >= 3 && wk <= 8);
-  if (!can.length || rng() > 0.09) return null;
+  const can = DECEPTIONS.filter(k => !done.some(d => d.kind === k) && (k !== 'robot' || gone.length) && wk >= earliestOf(`ss-${k}`) && wk <= 8);
+  if (!can.length || !surpriseOk(state, wk) || rng() > 0.09) return null;
   return can[Math.floor(rng() * can.length) % can.length];
 }
 

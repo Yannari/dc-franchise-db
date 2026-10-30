@@ -22,6 +22,7 @@
 
 import { mint } from './kitty.js';
 import { addEvidence, secretOf } from './hunt.js';
+import { surpriseOk } from './schedule.js';
 
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 const pick = (l, rng) => l[Math.floor(rng() * l.length) % Math.max(1, l.length)];
@@ -64,7 +65,7 @@ export function houseEvent(state, ctx, { house = [] } = {}) {
     ['housework', 0.25, count('housework') < 2],
     ['pageant', 0.55, count('pageant') < 1 && wk >= 3 && room.length >= 6],
     // (the Clan War splits the house: never a surprise when Surprise twists is off)
-    ['clans', 0.5, count('clans') < 1 && wk >= 2 && room.length >= 8 && !state.surpriseOff],
+    ['clans', 0.5, count('clans') < 1 && room.length >= 8 && !state.surpriseOff && surpriseOk(state, wk, 'clans-event')],
     ['room', 0.35, count('room') < 2 && wk >= 2],
   ].filter(([k, , ok]) => ok && k !== last?.kind);
   const total = can.reduce((t, [, w]) => t + w, 0);

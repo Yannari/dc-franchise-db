@@ -233,10 +233,17 @@ function ssMomentBed(screen, idx) {
   // (a scene with no mood of its own keeps its screen's music: the arrivals moved studio, airlock, house in silence)
   const base = held || (cut >= 0 && steps[cut].scene.mood ? ssMoodBed(steps[cut].scene.mood) : ssBaseFor(screen));
   if (base === 'ss-winner' || base === 'ss-epic' || base === 'ss-sad' || base === 'ss-bailiff') return base;
-  for (let i = idx; i > Math.max(cut, idx - 3); i--) if (HEAT(steps[i])) return 'ss-drama';
-  const st = steps[idx];
-  if (st && (st.suspense || (st.tense && screen.kind !== 'houselife')) && base !== 'ss-wait') return 'ss-tension';
-  return base;
+  // (the nominations keep one piece of music from the first name to the last: the user, 2026-10-29, "the music changing
+  // with each nomination announcement is annoying keep the same music instead of changing for 1s moment")
+  if (screen.kind === 'noms' || /noms/.test(String(screen.id || ''))) return base;
+  // a turn into a fight or into suspense holds until the next scene, never one click and back
+  let turn = null;
+  for (let i = Math.max(0, cut); i <= idx; i++) {
+    const st = steps[i];
+    if (HEAT(st)) turn = 'ss-drama';
+    else if (!turn && st && (st.suspense || (st.tense && screen.kind !== 'houselife')) && base !== 'ss-wait') turn = 'ss-tension';
+  }
+  return turn || base;
 }
 function rulesFor(screen, idx) {
   const st = screen?.steps?.[idx];

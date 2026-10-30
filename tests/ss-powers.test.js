@@ -69,7 +69,7 @@ describe('a card in a season', () => {
   it('the house\'s names are read, the card is played live, and the public votes on the new list', () => {
     seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
     Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
-    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off' });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', twistSchedule: [], themeArcStamped: '', bbSecretStory: undefined, ssSignature: 'none', ssSecretRoom: 'off', ssSurprise: 'off' });
     let played = null;
     withSeededRandom(4, () => {
       simulateBBEpisode();

@@ -40,7 +40,9 @@ export function ssWeekPackageScreen(act, ctx, H) {
   const house = (ctx.house || []).slice();
   /** @type {any[]} */ const steps = [{ k: 'beat', t: 'This week in the House of Secrets.', magneto: { title: 'This Week', sub: 'In the House of Secrets', n: 0 }, scene: at('ceremony', 'living-sofas', 'Living Room', house) }];
   /** @type {{ t: string, scene: any }[]} */ const said = [];
-  const clueActs = acts.filter(a => a?.type === 'ss-clue' && a.clue);
+  const handed = acts.filter(a => a?.type === 'ss-clue' && a.clue && a.got);
+  for (const a of handed.slice(0, 2)) said.push({ scene: at('dr', 'confessional-close', 'Confessional', [a.got]), t: `In the confessional, the Voice gave ${a.got} a clue: ${a.clue}. ${a.share === 'all' ? `${a.got} read it out to the whole house.` : a.share === 'none' ? `${a.got} has shown it to nobody.` : `${a.got} showed it to ${listOf(a.shared || [])}, and nobody else.`}` });
+  const clueActs = acts.filter(a => a?.type === 'ss-clue' && a.clue && !a.got);
   const clues = clueActs.map(a => a.clue);
   if (clues.length) said.push({ scene: at('ceremony', 'living-sofas', 'Living Room', house.slice(0, 6)), t: clues.length === 1 ? `A clue went on the living-room table: ${clues[0]}.` : `${clues.length === 2 ? 'Two' : clues.length === 3 ? 'Three' : 'Four'} clues went on the living-room table: ${listOf(clues.slice(0, 4))}.` });
   const breakers = [...new Set(acts.filter(a => a?.type === 'ss-rule' && a.who).map(a => a.who))];

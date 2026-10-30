@@ -31,7 +31,7 @@ import { canonSecretsOf, pushCanonSecrets } from '../ss/canon.js';
 import { castSecrets, recognitions, resolveNominationRule, SS_HOUSE_THEMES } from '../ss/casting.js';
 import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
-import { huntOf, huntDay, showClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
+import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -436,7 +436,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const g = settleWeeklyGame(state, ctx, { winner: gameWinner, house: room, noNoms: ssNoPrimeWeek(ctx.week) });
     week._ssImmune = g.immune; week._ssMaster = g.masterPick;
     if (g.act) acts.push(g.act);
-    if (g.clueAct) acts.push(g.clueAct);
+    if (g.clueAct) { applyFx(g.clueAct.effects); acts.push(g.clueAct); }
     pub(gameWinner, 'fun', 0.12, "won the Voice's game"); pub(gameWinner, 'game', 0.1, "won the Voice's game");
   } else if (week) { week._ssImmune = []; week._ssMaster = null; }
   // Monday: the Voice's missions (§7), played through the week.
@@ -446,6 +446,16 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     const party = throwParty(state, ctx, { house: room });
     if (party) { applyFx(party.effects); acts.push(party); if (week) week._ssParty = true; }
   } else if (week) week._ssParty = false;
+  // The Voice's clues of the week: each one to one housemate, in the confessional, who decides who else sees it
+  // (hunt.js handClue). Two a week, and a third in the back half of the season when the Voice wants the hunt to
+  // finish. They come before the days of hunting, which argue over them.
+  for (let c = 0; c < (room.length <= 9 ? 3 : 2); c++) {
+    const hidden = room.filter(n => secretOf(state, n) && !secretOf(state, n).found);
+    if (!hidden.length) break;
+    const holder = hidden[Math.floor(rng() * hidden.length)];
+    const clue = handClue(state, ctx, { holder, how: 'voice', house: room });
+    if (clue) { applyFx(clue.effects); acts.push(clue); }
+  }
   const moments = [];
   for (let day = 0; day < 4; day++) moments.push(...huntDay(state, ctx, { house: room }));
   // the secret room (js/ss/hidden.js): whoever is upstairs watches every screen, and hears what the house says
@@ -472,15 +482,6 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
         ? `${m.who} notices something about ${m.about}: ${m.about} ${m.tell}.`
         : `${m.who} tells ${m.to} what they think ${m.about} is hiding.`,
       players: [m.who, m.to || m.about].filter(Boolean), badgeText: m.kind === 'tell' ? 'NOTICED' : 'THEORY', badgeClass: 'blue', part: 'hunt' })) });
-  }
-  // The Voice's clue of the week (until the weekly game hands them out, M3).
-  // two a week, and a third in the back half of the season when the Voice wants the hunt to finish
-  for (let c = 0; c < (room.length <= 9 ? 3 : 2); c++) {
-    const hidden = room.filter(n => secretOf(state, n) && !secretOf(state, n).found);
-    if (!hidden.length) break;
-    const holder = hidden[Math.floor(rng() * hidden.length)];
-    const clue = showClue(state, ctx, { holder, how: 'voice', house: room });
-    if (clue) acts.push(clue);
   }
   // THE SECRET OF THE HOUSE (js/ss/final.js): a clue most weeks; in the semi-final week, somebody may solve it.
   const semi = room.length <= (Number(seasonConfig?.finaleSize) || 3) + 1;

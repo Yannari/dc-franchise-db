@@ -110,7 +110,7 @@ export function addEvidence(state, ctx, knower, target, { strength = 0.2, how = 
  * housemate in `house`). A FAKE clue points at `fakeText` instead of the truth.
  * Returns the act for the viewer.
  */
-export function showClue(state, ctx, { holder = undefined, clue = null, how = 'game', to = 'house', house = [], fake = false, fakeText = null, by = null } = {}) {
+export function showClue(state, ctx, { holder = undefined, clue = null, how = 'game', to = 'house', house = [], fake = false, fakeText = null, by = null, boost = 1 } = {}) {
   huntOf(state);
   const secret = secretOf(state, holder);
   if (!secret || secret.found) return null;
@@ -123,12 +123,57 @@ export function showClue(state, ctx, { holder = undefined, clue = null, how = 'g
   const ftxt = fake ? (fakeText || pick(nearMisses(secret), rng)) : null;
   // (calibrated by the ss-spec audit, 2026-10-27: 0.24 found 30% of the secrets; the real show finds half or more)
   // (2026-10-29: 0.34 once a tell could no longer find a secret on its own, so half are still found by a buzz)
-  const strength = /cassette|song|sound|video/i.test(shown || '') ? 0.42 : 0.34;
+  const strength = (/cassette|song|sound|video/i.test(shown || '') ? 0.42 : 0.34) * boost;
   for (const v of viewers) addEvidence(state, ctx, v, holder, { strength, how: fake ? 'fake-clue' : `clue:${how}`, toward: ftxt });
   const rec = { week: ctx.week ?? 0, secretId: secret.id, holders: [...secret.holders], clue: shown || 'a clue', how, fake, to: to === 'house' ? 'house' : viewers, by };
   state.shownClues.push(rec);
   return { type: 'ss-clue', ...rec, beats: [{ text: `${to === 'house' ? 'The house' : viewers.join(' and ')} ${to === 'house' ? 'sees' : 'see'} a clue about ${secret.holders.join(' and ')}'s secret: ${shown || 'a clue'}.`,
     players: [...secret.holders, ...(by ? [by] : [])].slice(0, 4), badgeText: fake ? 'A CLUE?' : 'CLUE', badgeClass: 'gold', part: 'clue' }] };
+}
+
+/**
+ * THE CLUE IN THE CONFESSIONAL (the user, 2026-10-29: "they get their clue in the confessional and get out of it with
+ * it", "its the choice of the one getting the clue to share it with some people all of them 2/3 1 of them or none").
+ * The Voice gives ONE housemate the clue, alone (`to`: the game's winner; otherwise somebody without that secret).
+ * They walk out with it and choose who else sees it: the whole house ('all'), two or three allies ('few'), one
+ * ('one') or nobody ('none'). Only the ones who saw it gain the evidence. The choice is weighed from the stats, never
+ * a threshold: the sociable and the loyal share, the strategic keep it, and a few people need friends to share with.
+ * Sharing pays a bond; the act carries it as `effects` (the adapter applies them).
+ */
+const BOOST = 2.1;
+export function handClue(state, ctx, { holder = undefined, how = 'voice', house = [], to = null, by = null } = {}) {
+  huntOf(state);
+  const secret = secretOf(state, holder);
+  if (!secret || secret.found) return null;
+  const rng = ctx.rng || Math.random;
+  const holders = secret.holders || [];
+  const others = house.filter(n => !holders.includes(n));
+  const got = to && others.includes(to) ? to : others.length ? others[Math.floor(rng() * others.length)] : null;
+  if (!got) return null;
+  const S = k => Number(ctx.stat?.(got, k)) || 5;
+  const B = n => Number(ctx.bond?.(got, n)) || 0;
+  const friends = house.filter(n => n !== got && B(n) > 0).sort((a, b) => B(b) - B(a));
+  const w = {
+    all: 0.3 + S('social') * 0.1 + S('loyalty') * 0.05 + (10 - S('strategic')) * 0.08,
+    few: friends.length >= 2 ? 0.3 + S('loyalty') * 0.1 + S('social') * 0.04 : 0,
+    one: friends.length ? 0.3 + S('strategic') * 0.05 + S('loyalty') * 0.06 : 0,
+    none: 0.2 + S('strategic') * 0.1 + S('boldness') * 0.03 + (10 - S('loyalty')) * 0.08,
+  };
+  const tot = Object.values(w).reduce((a, b) => a + b, 0);
+  let r = rng() * tot, share = 'none';
+  for (const [k, v] of Object.entries(w)) { if ((r -= v) < 0) { share = k; break; } }
+  const shared = share === 'all' ? house.filter(n => n !== got) : share === 'few' ? friends.slice(0, 2 + (friends.length > 2 && rng() < 0.5 ? 1 : 0)) : share === 'one' ? friends.slice(0, 1) : [];
+  // (the holder, told along with everybody, learns the house has a clue about them: no evidence about their own secret)
+  // (a clue in your own hands is studied harder than one read out to twenty people: calibrated by the ss-spec audit,
+  // 2026-10-29, back to half the secrets found once the clues stopped going to the whole house)
+  const act = showClue(state, ctx, { holder, how, house, by, to: [got, ...shared.filter(n => !holders.includes(n))], boost: share === 'all' ? 1 : BOOST });
+  if (!act) return null;
+  const close = share === 'few' || share === 'one' ? 0.6 : share === 'all' ? 0.12 : 0;
+  const effects = { bond: close ? shared.filter(n => !holders.includes(n)).map(n => [got, n, close]) : [] };
+  const told = share === 'all' ? 'reads it out to the whole house' : share === 'none' ? 'keeps it to themselves' : `shows it to ${shared.join(' and ')}`;
+  return { ...act, got, share, shared, effects,
+    beats: [{ text: `In the confessional, the Voice gives ${got} a clue about somebody's secret: ${act.clue}. ${got} ${told}.`,
+      players: [got, ...shared.slice(0, 3)], badgeText: 'CLUE', badgeClass: 'gold', part: 'clue' }] };
 }
 
 /**

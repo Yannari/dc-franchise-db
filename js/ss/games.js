@@ -13,7 +13,7 @@
 // screens); this file decides what winning it MEANS.
 
 import { mint } from './kitty.js';
-import { secretOf, showClue, theoryOf } from './hunt.js';
+import { secretOf, handClue, theoryOf } from './hunt.js';
 import { grantPower } from './powers.js';
 
 /** Prize weights in a classic season (the real games' rewards, roughly). */
@@ -77,7 +77,8 @@ export function settleWeeklyGame(state, ctx, { winner = undefined, house = [], n
   let clueAct = null, amount = 0, target = null;
   if (prize === 'clue') {
     target = clueTarget(state, winner, house, rng);
-    if (target) clueAct = showClue(state, ctx, { holder: target, how: 'game', house, by: winner });
+    // (the winner gets it alone, in the confessional, and decides who else sees it: hunt.js handClue)
+    if (target) clueAct = handClue(state, ctx, { holder: target, how: 'game', house, to: winner, by: winner });
   } else if (prize === 'money') {
     amount = mint(state, winner, 2000 + Math.round(rng() * 6) * 500, "won the Voice's game", week);
   } else if (prize === 'free-buzz') {

@@ -38,7 +38,8 @@ export const SS_PART_LABEL = { launch: 'Launch Night', daily: 'The Days', prime:
 
 // ── folding the Voice's little moments into house life ──
 // (a sanction, a clue, a mission given, the store, the masters' pick: 3 to 7 clicks each, a screen of their own)
-const FOLD = /^bb-ss-(rule|clue|houseclue|mission|role|store|houseend|vm|prod|duo)-/;
+// (a clue is a screen of its own: the confessional, the walk out with the card, and who it is shown to)
+const FOLD = /^bb-ss-(rule|houseclue|mission|role|store|houseend|vm|prod|duo)-/;
 const GATHER = /\b(everybody|everyone|housemates)\b[^.?!]*\bliving room\b/i;
 const MOOD_OF = id => (/^bb-ss-vm-(birthday|letter)-/.test(id) ? 'love' : /^bb-ss-vm-/.test(id) ? 'fun' : /^bb-ss-rule-/.test(id) ? 'ceremony' : /^bb-ss-(clue|houseclue)-/.test(id) ? 'secret' : /^bb-ss-(mission|role)-/.test(id) ? 'mission' : /^bb-ss-store-/.test(id) ? 'store' : 'house');
 function asScene(F) {

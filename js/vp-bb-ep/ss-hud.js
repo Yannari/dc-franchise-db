@@ -224,6 +224,8 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     if (fresh) { if (st.studioIn === 'boo') { ssSfx('boo', 1); setTimeout(() => ssSfx('applause', 0.6), 400); } else { ssSfx('applause', 1); setTimeout(() => ssSfx('cheer', 0.8), 250); } }
     h += `<div class="ss-lights ${st.studioIn === 'boo' ? 'boo' : ''} ${fresh ? 'fresh' : ''}"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></div>`;
   }
+  // the thermal camera (vp-bb-ep/ss-prime-nights.js): the shot in false colour, with its scale
+  if (S.thermal) h += '<div class="ss-thermal"><i></i><b>THERMAL</b></div>';
   // a party: the lights, the mirror ball, and everybody on the floor dancing (vp-bb-ep/steps.js ssPartyScreen)
   if (S.party) h += '<div class="ss-party"><i></i><i></i><i></i><b></b></div>';
   // THE BREAK: the Eye and the show's jingle, where the real show cuts to the ads (vp-bb-ep/steps.js ssBreaks)
@@ -545,6 +547,9 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .sbf.pop{animation:ss-card-pin .7s .2s cubic-bezier(.2,1.6,.4,1) both}
 @keyframes ss-board-in{from{opacity:0;translate:-50% -2cqw}to{opacity:1;translate:-50% 0}}
 @keyframes ss-card-pin{0%{scale:2.2;opacity:0;rotate:-25deg}100%{scale:1;opacity:1}}
+.ss-thermal{position:absolute;inset:0;z-index:19;pointer-events:none;background:linear-gradient(180deg,rgba(40,0,160,.55),rgba(0,170,200,.4) 35%,rgba(120,230,60,.35) 55%,rgba(255,200,0,.4) 75%,rgba(255,40,20,.5));mix-blend-mode:hard-light}
+.ss-thermal i{position:absolute;right:2cqw;top:14cqw;width:1.2cqw;height:22cqw;border-radius:.6cqw;background:linear-gradient(0deg,#2800a0,#00aac8,#78e63c,#ffc800,#ff2814);box-shadow:0 0 0 .2cqw #fff}
+.ss-thermal b{position:absolute;right:1.2cqw;top:11.4cqw;font:700 1cqw 'Chakra Petch',sans-serif;letter-spacing:.2cqw;color:#fff}
 .ss-carry{position:absolute;width:5.2cqw;aspect-ratio:5/7;z-index:24;pointer-events:none}
 .ss-carry:not([data-placed]){visibility:hidden}
 .ss-carry .cc{width:100%;height:100%;box-sizing:border-box;border-radius:.6cqw;background:linear-gradient(160deg,#fffdf6,#f7ecd2);border:.32cqw solid #e0b84a;

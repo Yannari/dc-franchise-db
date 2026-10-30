@@ -44,6 +44,7 @@ import { ssSplitScreens } from './ss-split.js';
 import { ssDuoScreen } from './ss-couples.js';
 import { ssLoveScreen } from './ss-love.js';
 import { ssClueRoomScreens, ssDealScreens, ssPactSteps } from './ss-clue-room.js';
+import { ssNightScreen, NIGHT_INTRO, NIGHT_NOTES } from './ss-prime-nights.js';
 import { ssDeceptionWeekScreen, ssFalseVoiceRevealScreen, ssRobotUnmaskScreen, ssTicketScreen } from './ss-deceptions.js';
 import { ssRoomDilemmaScreen } from './ss-room-dilemma.js';
 import { ssGroupWeekScreen, ssGroupEntryScreen, SPACE_FALLBACK } from './ss-groups.js';
@@ -3904,7 +3905,7 @@ function ssPrimeOpenScreen(act, ctx, host) {
     ...(act.theme ? [{ k: 'beat', t: act.name, magneto: { title: act.name, sub: 'Tonight, live', n: 0 } },
       { k: 'host', by: host, t: ({ 'red-phone': "Tonight the red phone will ring, and ring, and ring. Whoever answers... good luck.", dilemmas: 'Tonight, the Voice has prepared not one, not two, but three dilemmas.',
         bridge: 'Tonight, the Bridge of Sacrifices is open. Friendships will be tested, live.', truths: 'Tonight, the truth comes out. Some of you are going to hear things you would rather not.',
-        rings: 'Tonight, four rings are hidden in the house, and each one holds a power.' })[act.theme] || '' }] : []),
+        rings: 'Tonight, four rings are hidden in the house, and each one holds a power.' })[act.theme] || NIGHT_INTRO[act.theme] || '' }] : []),
     ...ssCouchSteps(act, ctx, host, { ssv, pickBy, listOf, euros, ROOM_NAME, CAM, bondNow }),
   ];
   // (the week itself is told by the package before the studio opens: vp-bb-ep/ss-prime-more.js)
@@ -4264,6 +4265,8 @@ function ssPrimeScreens(act, ctx, host) {
     else if (seg.kind === 'unveil') out.push(ssUnveilScreen(seg, ctx, host));
     else if (seg.kind === 'dilemma') out.push(ssDilemmaScreen(seg, ctx, host));
     else if (seg.kind === 'phone') out.push(ssPhoneScreen(seg, ctx, host));
+    // the sixteen more nights (vp-bb-ep/ss-prime-nights.js)
+    else if (seg.kind === 'night') out.push(ssLive(ctx, ssNightScreen(seg, ctx, host, { ssv, pickBy, listOf, euros, pronouns })));
     else if (seg.kind === 'truths') out.push(ssTruthsScreen(seg, ctx, host));
     else if (seg.kind === 'visit') out.push(ssVisitScreen(seg, ctx, host));
     // twist family 5: the false Voice revealed, the robot unmasked, the ticket (vp-bb-ep/ss-deceptions.js)
@@ -4276,9 +4279,10 @@ function ssPrimeScreens(act, ctx, host) {
   // the opening, one after the live chat, one after the airlock, one after the kitties; the bridge one crossing at a time
   {
     const THEME_KIND = { dilemmas: 'dilemma', 'red-phone': 'phone', truths: 'truths', bridge: 'bridge', rings: 'rings' };
-    const tk = THEME_KIND[act.theme];
+    const tk = THEME_KIND[act.theme] || (act.theme in NIGHT_INTRO ? 'night' : null);
     if (tk) {
-      let themed = out.filter(s => s && String(s.id || '').startsWith(`bb-ss-prime-${{ dilemma: 'dil-', phone: 'phone', truths: 'truths', bridge: 'bridge', rings: 'rings' }[tk]}`));
+      const pre = tk === 'night' ? `night-${act.theme}-` : { dilemma: 'dil-', phone: 'phone', truths: 'truths', bridge: 'bridge', rings: 'rings' }[tk];
+      let themed = out.filter(s => s && String(s.id || '').startsWith(`bb-ss-prime-${pre}`));
       // the bridge, crossing by crossing: the first opens the bridge, the last closes it
       const bSeg = tk === 'bridge' ? (act.segments || []).find(s => s.kind === 'bridge') : null;
       if (bSeg && (bSeg.crossings || []).length > 1) {
@@ -4305,7 +4309,7 @@ function ssPrimeScreens(act, ctx, host) {
   out.push(ssGoldenBuzzScreen(act, ctx, host, MORE));
   // THE NIGHT'S THEME, all night (the user, 2026-10-29: "its the theme of the prime so it should be all over it not just one
   // screen"): the host comes back to it at the top of the live segments
-  const NOTE = PRIME_THEME_NOTES[act.theme] || null;
+  const NOTE = PRIME_THEME_NOTES[act.theme] || NIGHT_NOTES[act.theme] || null;
   if (NOTE) {
     let n = 0;
     for (const s of out) {

@@ -26,6 +26,7 @@ import { runDilemma, nominateNext, immuneNext } from './dilemmas.js';
 import { RATE } from './twists.js';
 import { grantPower } from './powers.js';
 import { primeTheme, bridgeOfSacrifices, handOutRings, PRIME_THEMES } from './prime-themes.js';
+import { NIGHT_THEMES, playNight } from './prime-nights.js';
 
 const st = (ctx, n, k) => { const v = Number(ctx?.stat?.(n, k)); return Number.isFinite(v) ? v : 5; };
 const bondOf = (ctx, a, b) => Number(ctx?.bond?.(a, b)) || 0;
@@ -204,16 +205,18 @@ export function primeName(segments) {
  * Returns `{ name, segments }`; every segment carries `effects` for the
  * engine to apply (bonds, the public).
  */
-export function playPrime(state, ctx, { house = [], nominees = [], missions = [], tools = {} } = {}) {
+export function playPrime(state, ctx, { house = [], nominees = [], missions = [], tools = {}, gone = [], ballots = [], gender = undefined, couples = [] } = {}) {
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
   const segs = [];
   // the night's theme, if it has one (js/ss/prime-themes.js): it decides what the prime is made of
-  const theme = primeTheme(state, ctx, { house, tools });
+  const theme = primeTheme(state, ctx, { house, tools, gone, ballots, gender });
+  // one of the sixteen more nights (js/ss/prime-nights.js): its own segments, through the whole prime
+  const night = theme && theme in NIGHT_THEMES;
   if (missions.length) segs.push({ kind: 'mission', results: missions, effects: { bond: [], pop: [] } });
   // the dilemmas: one most weeks, two some weeks, three on the Night of Dilemmas, never on a nominee's last night
   const free = house.filter(n => !nominees.includes(n));
-  const nDil = theme === 'dilemmas' ? 3 : theme === 'bridge' || theme === 'rings' ? 0 : week <= 1 ? 1 : rng() < (RATE.dilemmas[tools.dilemmas] ?? 0.35) ? 2 : 1;
+  const nDil = theme === 'dilemmas' ? 3 : theme === 'bridge' || theme === 'rings' ? 0 : night ? (rng() < 0.4 ? 1 : 0) : week <= 1 ? 1 : rng() < (RATE.dilemmas[tools.dilemmas] ?? 0.35) ? 2 : 1;
   const used = [];
   for (let i = 0; i < nDil && free.length; i++) {
     const to = free.filter(n => !segs.some(s => s.to === n))[Math.floor(rng() * free.length)] || free[0];
@@ -229,10 +232,11 @@ export function playPrime(state, ctx, { house = [], nominees = [], missions = []
   else if (week >= 3 && rng() < (RATE.truths[tools.truths] ?? 0.28)) { const t = roomOfTruths(state, ctx, { house }); if (t) segs.push(t); }
   if (theme === 'bridge') { const b = bridgeOfSacrifices(state, ctx, { house, nominees }); if (b) segs.push(b); }
   if (theme === 'rings') { const r = handOutRings(state, ctx, { house, nominees }); if (r) segs.push(r); }
+  if (night) segs.push(...playNight(state, ctx, theme, { house, nominees, gone, ballots, gender: gender || (() => null), couples }));
   const visited = segs.find(s => s.kind === 'dilemma' && s.visit);
   if (!visited && week >= 2 && rng() < (RATE.visits[tools.visits] ?? 0.3)) { const v = familyVisit(state, ctx, { house, nominees }); if (v) segs.push(v); }
   // the order on the night: missions early, the phone in the middle, the heart near the verdict
-  const ORDER = { mission: 1, dilemma: 2, rings: 2.5, phone: 3, bridge: 3.5, truths: 4, visit: 5 };
+  const ORDER = { mission: 1, dilemma: 2, rings: 2.5, night: 2.8, phone: 3, bridge: 3.5, truths: 4, visit: 5 };
   segs.sort((a, b) => ORDER[a.kind] - ORDER[b.kind]);
   return { name: theme ? PRIME_THEMES[theme] : primeName(segs), theme, segments: segs };
 }

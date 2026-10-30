@@ -129,6 +129,7 @@ const SS_SCHEDULE = {
   'ss-linked': ['forceWeekTwist', 'linked'], 'ss-for-life': ['forceWeekTwist', 'for-life'], 'ss-inverted': ['forceWeekTwist', 'inverted'], 'ss-houses': ['forceWeekTwist', 'houses'],
   'ss-red-room': ['forceWeekTwist', 'red-room'], 'ss-exclusive': ['forceWeekTwist', 'exclusive'], 'ss-everybody': ['forceWeekTwist', 'everybody'],
   'ss-red-phone': ['forcePrimeTheme', 'red-phone'], 'ss-dilemmas': ['forcePrimeTheme', 'dilemmas'], 'ss-bridge': ['forcePrimeTheme', 'bridge'], 'ss-truths': ['forcePrimeTheme', 'truths'], 'ss-rings': ['forcePrimeTheme', 'rings'],
+  'ss-lie-detector': ['forcePrimeTheme', 'lie-detector'], 'ss-thermal': ['forcePrimeTheme', 'thermal'], 'ss-library': ['forcePrimeTheme', 'library'], 'ss-black-phone': ['forcePrimeTheme', 'black-phone'], 'ss-families': ['forcePrimeTheme', 'families'], 'ss-masks': ['forcePrimeTheme', 'masks'], 'ss-fire': ['forcePrimeTheme', 'fire'], 'ss-back-in-time': ['forcePrimeTheme', 'back-in-time'], 'ss-returns': ['forcePrimeTheme', 'returns'], 'ss-temptations': ['forcePrimeTheme', 'temptations'], 'ss-gender-war': ['forcePrimeTheme', 'gender-war'], 'ss-shields': ['forcePrimeTheme', 'shields'], 'ss-safe': ['forcePrimeTheme', 'safe'], 'ss-crystal-ball': ['forcePrimeTheme', 'crystal-ball'], 'ss-jungle': ['forcePrimeTheme', 'jungle'], 'ss-hearts': ['forcePrimeTheme', 'hearts'],
   'ss-second-house': ['forceSplit', 'second-house'], 'ss-clans': ['forceSplit', 'clans'], 'ss-bears': ['forceSplit', 'bears'],
   'ss-false-voice': ['forceDeception', 'false-voice'], 'ss-robot': ['forceDeception', 'robot'],
   'ss-house-decides': ['forceVoteMode', 'house-decides'], 'ss-vote-to-evict': ['forceVoteMode', 'evict'], 'ss-ticket': ['forceTicket', true],
@@ -819,7 +820,10 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
   }
   // The night's segments (js/ss/prime.js): every one has consequences, applied
   // here, BEFORE the lines close, so the public votes on what it just watched.
-  const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {} });
+  // (what the sixteen more nights need: the season's eliminated, the old ballots, who is a man or a woman, the couples)
+  const gone = (gs.eliminated || []).filter(n => n && !room.includes(n));
+  const ballots = (gs.episodeHistory || []).filter(r => r && r.num < ctx.week).flatMap(r => ((r.acts || []).find(a => a?.secretStory)?.secretStory?.ballots || []).map(b => ({ week: r.num, voter: b.voter, picks: b.picks })));
+  const night = playPrime(state, ctx, { house: room, nominees, missions, tools: state.tools || {}, gone, ballots, gender: genderOf, couples: state.love?.couples || [] });
   // THE FAKE VOLUNTARY DEPARTURE (js/ss/hidden.js, S6, S7): the Voice offers a housemate their kitty to walk out of
   // the game, on air. They take it, say goodbye, walk out the door, and climb the stairs. The verdict stays real.
   {
@@ -1023,7 +1027,9 @@ function afterPrimeCore({ week = undefined, evicted = null, house = [], rng = Ma
 export function secretStoryNominations({ week = undefined, house = [], immune = [], direct = null, rng = Math.random } = {}) {
   const room = house.filter(Boolean);
   const wk = Number(week?.num) || 1;
-  const nominateMen = wk % 2 === 1;
+  // (the Gender War's losing side faces the nominations: js/ss/prime-nights.js)
+  const war = ssState()?.genderWar?.[wk];
+  const nominateMen = war ? war === 'm' : wk % 2 === 1;
   const g = genderOf;
   let voters, pool, rule;
   const men = room.filter(n => g(n) === 'm'), women = room.filter(n => g(n) === 'f');

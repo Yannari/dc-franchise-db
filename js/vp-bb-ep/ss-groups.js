@@ -119,4 +119,6 @@ export const SPACE_FALLBACK = { 'ss-box': 'living-sofas', 'ss-box-inside': 'ss-a
   // (twist families 2 to 4, until the user's plate jobs are done: Downloads/SecretStory-plates/to-edit-family4)
   // (the clue room, until the plate jobs in Downloads/SecretStory-plates/to-edit-family5 are done)
   'ss-clue-room': 'library-wide', 'ss-clue-board': 'library-desk',
+  // (the new themed primes, until to-edit-family6 is done)
+  'ss-lie-detector': 'ss-truths', 'ss-shields': 'purple-hall', 'ss-crystal-ball': 'front', 'ss-jungle': 'lawn-pool',
   'ss-other-house': 'ss-crystal', 'ss-other-house-bed': 'bedroom2-wide', 'ss-glass-wall': 'ss-crystal', 'ss-red-room': 'ss-truths', 'ss-bridge': 'ss-dilemma' };

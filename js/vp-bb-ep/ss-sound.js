@@ -127,6 +127,12 @@ const BY_ID = [
   [/^bb-ss-prime-open/, 'ss-prime'],
   [/^bb-ss-prime-(chat|kitties|couch)/, 'ss-fun'],
   [/^bb-ss-prime-goldenbuzz/, 'ss-mister'],
+  // the sixteen more nights (vp-bb-ep/ss-prime-nights.js)
+  [/^bb-ss-prime-night-(hearts|families)-/, 'ss-love'],
+  [/^bb-ss-prime-night-gender-war-/, 'ss-epic'],
+  [/^bb-ss-prime-night-(library|safe|jungle|shields|crystal-ball)-/, 'ss-mission'],
+  [/^bb-ss-prime-night-(fire|temptations|returns)-/, 'ss-plot'],
+  [/^bb-ss-prime-night-/, 'ss-tension'],
   [/^bb-ss-prime-visit/, 'ss-love'],
   // (the user, 2026-10-28: "the prime music doesn't use the suspense at all": the verdict is the tension tracks;
   // the envelope brings the bailiff's call and the name the goodbye, step by step: ssStepBed)

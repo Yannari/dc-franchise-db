@@ -20,12 +20,15 @@ import { mint, burn, balance, transfer } from './kitty.js';
 import { showClue, secretOf } from './hunt.js';
 import { grantPower } from './powers.js';
 import { surpriseOk, markSurprise, earliestOf } from './schedule.js';
+import { NIGHT_THEMES, nightPossible } from './prime-nights.js';
 
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-export const PRIME_THEMES = { 'red-phone': 'The Red Phone', dilemmas: 'The Night of Dilemmas', bridge: 'The Bridge of Sacrifices', truths: 'Truths Revealed', rings: 'The Night of the Rings' };
+export const PRIME_THEMES = { 'red-phone': 'The Red Phone', dilemmas: 'The Night of Dilemmas', bridge: 'The Bridge of Sacrifices', truths: 'Truths Revealed', rings: 'The Night of the Rings',
+  // (and sixteen more nights the real show ran: js/ss/prime-nights.js)
+  ...NIGHT_THEMES };
 
 /** This week's theme, or null (week one has the launch; the final has its own night). */
-export function primeTheme(state, ctx, { house = [], tools = {} } = {}) {
+export function primeTheme(state, ctx, { house = [], tools = {}, gone = [], ballots = [], gender = undefined } = {}) {
   const rng = ctx.rng || Math.random;
   const wk = ctx.week ?? 0;
   if (wk < 2 || house.length < 6) return null;
@@ -34,7 +37,9 @@ export function primeTheme(state, ctx, { house = [], tools = {} } = {}) {
   const past = (state.primeThemes ||= {});
   const recent = [past[wk - 1], past[wk - 2]].filter(Boolean);
   if (!forced && (!surpriseOk(state, wk) || rng() > 0.55)) return null;
-  const can = Object.keys(PRIME_THEMES).filter(k => !recent.includes(k) && wk >= earliestOf(`ss-${k}`) && (k !== 'red-phone' || tools.phone !== 'none') && (k !== 'truths' || tools.truths !== 'none'));
+  const can = Object.keys(PRIME_THEMES).filter(k => !recent.includes(k) && wk >= earliestOf(`ss-${k}`) && (k !== 'red-phone' || tools.phone !== 'none') && (k !== 'truths' || tools.truths !== 'none')
+    // (a night that needs something the week has not got: the eliminated, a past ballot, both genders, a couple)
+    && (!(k in NIGHT_THEMES) || nightPossible(k, { house, gone, ballots, gender: gender || (() => null), bond: (a, b) => Number(ctx.bond?.(a, b)) || 0 })));
   const theme = forced || can[Math.floor(rng() * can.length) % Math.max(1, can.length)];
   if (!theme) return null;
   past[wk] = theme;

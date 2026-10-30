@@ -13,7 +13,8 @@
 /** The card ids, by what they force (js/bb/secret-story.js SS_SCHEDULE). */
 export const SS_CARDS = {
   noms: ['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'],
-  prime: ['ss-red-phone', 'ss-dilemmas', 'ss-bridge', 'ss-truths', 'ss-rings'],
+  prime: ['ss-red-phone', 'ss-dilemmas', 'ss-bridge', 'ss-truths', 'ss-rings',
+    'ss-lie-detector', 'ss-thermal', 'ss-library', 'ss-black-phone', 'ss-families', 'ss-masks', 'ss-fire', 'ss-back-in-time', 'ss-returns', 'ss-temptations', 'ss-gender-war', 'ss-shields', 'ss-safe', 'ss-crystal-ball', 'ss-jungle', 'ss-hearts'],
   split: ['ss-second-house', 'ss-clans', 'ss-bears'],
   deception: ['ss-false-voice', 'ss-robot'],
   vote: ['ss-house-decides', 'ss-vote-to-evict'],
@@ -28,6 +29,7 @@ export const SS_CARD_IDS = new Set(Object.values(SS_CARDS).flat());
 export const SS_EARLIEST = {
   'ss-linked': 2, 'ss-inverted': 3, 'ss-exclusive': 3, 'ss-houses': 4, 'ss-red-room': 4, 'ss-for-life': 4, 'ss-everybody': 5,
   'ss-red-phone': 2, 'ss-dilemmas': 2, 'ss-bridge': 3, 'ss-rings': 3, 'ss-truths': 4,
+  'ss-lie-detector': 3, 'ss-thermal': 3, 'ss-library': 2, 'ss-black-phone': 3, 'ss-families': 4, 'ss-masks': 3, 'ss-fire': 3, 'ss-back-in-time': 4, 'ss-returns': 4, 'ss-temptations': 2, 'ss-gender-war': 3, 'ss-shields': 3, 'ss-safe': 3, 'ss-crystal-ball': 4, 'ss-jungle': 3, 'ss-hearts': 3,
   'ss-second-house': 4, 'ss-clans': 4, 'ss-bears': 5, 'clans-event': 4,
   'ss-false-voice': 4, 'ss-robot': 5, 'ss-house-decides': 3, 'ss-vote-to-evict': 4, 'ss-ticket': 4,
 };

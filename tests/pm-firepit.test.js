@@ -42,7 +42,8 @@ describe('pm fire pit', () => {
 
   it('names the third person in every pick that has one', () => {
     for (const p of picks) {
-      const c = p.e.extra.tookFrom || p.e.extra.leftFrom || p.e.extra.stole || p.e.extra.afterNo;
+      // (A pick after a no follows the refusal scene, which names who said it.)
+      const c = p.e.extra.tookFrom || p.e.extra.leftFrom || p.e.extra.stole;
       if (c) expect(said(p.e), tag(p)).toContain(c);
     }
   });

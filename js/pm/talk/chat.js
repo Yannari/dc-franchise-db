@@ -23,7 +23,8 @@ export const CHAT = build('chat', {
   // A couple who rowed today make up first (tests/pm-script.test.js).
   leads: ['rowedToday'],
   plans: {
-    featured: ['open', 'catch', 'topic', 'tangent?', 'feel', 'close'],
+    // No tangent (2026-10-30): a couple quiz between "what are we" and how they feel read as two scenes.
+    featured: ['open', 'catch', 'topic', 'feel', 'close'],
     short: ['open', 'feel', 'close'],
   },
   moves: {

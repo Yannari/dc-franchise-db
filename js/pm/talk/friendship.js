@@ -28,7 +28,10 @@ export const FRIENDSHIP = build('friendship', {
   plans: {
     featured: [
       { when: { friction: true }, plan: ['open', 'spat', 'sour'] },
-      { plan: ['open', 'topic', 'other?', 'banter?', 'close'] },
+      // No banter piece any more (season read 2026-10-30, the user: "less trying
+      // to be clever, just talk with their feelings"): a quiz in the middle of a
+      // talk about how somebody is doing broke the talk in two.
+      { plan: ['open', 'topic', 'other?', 'close'] },
     ],
     short: [
       { when: { friction: true }, plan: ['spat', 'sour'] },

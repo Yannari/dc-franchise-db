@@ -30,7 +30,7 @@ export const PULL = build('pull', {
     // A chat that ends in a no has no games in it.
     featured: [
       { when: { end: 'turned-down' }, plan: ['open', 'why', 'answer', 'probe?', 'turn', 'close'] },
-      { plan: ['open', 'why', 'answer', 'probe?', 'tangent?', 'turn', 'close'] },
+      { plan: ['open', 'why', 'answer', 'probe?', 'turn', 'close'] },
     ],
     short: ['open', 'turn', 'close'],
   },

@@ -29,6 +29,9 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { turns: [], beat: "{a} gets up, and the whole fire pit goes quiet." },
       { turns: [['a', "Right. Okay. Here goes."]], beat: "{a} stands up, hands shaking a little." },
       { turns: [], beat: "{a} stands, looks along the benches, and smiles at someone." },
+      // Still on {a.posAdj} feet from the no a minute ago (afterNo): nobody stands up twice.
+      { when: { afterNo: true }, turns: [], beat: "{a} is still standing. {a} takes a breath and looks along the benches again." },
+      { when: { afterNo: true }, turns: [['a', "Give me a second."]], beat: "Nobody on the benches says a word." },
     ],
 
     speech: [
@@ -110,6 +113,55 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       ] },
       { when: { reason: 'loyalty', reg: 'soft' }, turns: [
         ['a', "This person makes me feel safe. Every night, no matter what's gone on in the day, I get to go to bed next to them, and everything's okay again. I'm not giving that up for anyone."],
+      ] },
+      // What the pick answers, from the stretch's stories (moments.js `cites`).
+      // {b} said no to somebody else tonight, for {a}.
+      { when: { cites: 'refusedFor' }, turns: [
+        ['a', "Ten minutes ago, somebody stood up and asked for this person. In front of everyone. And they said no. For me. I've had a hard few days, and I'm not going to pretend I haven't. But I know where I stand now."],
+      ] },
+      { when: { cites: 'refusedFor' }, turns: [
+        ['a', "I'll be honest, I wasn't sure about tonight. This week has been a lot. Then I watched this person say no to someone else, with the whole fire pit looking, and I didn't need to think any more."],
+      ] },
+      { when: { cites: 'refusedFor', feels: 'strong' }, turns: [
+        ['a', "My hands are still shaking from what just happened. Somebody asked for the person I'm with, and they didn't even think about it. They just said no. So I'm not going to make them wait."],
+      ] },
+      // {b} was chased all stretch, and {a} is picking them
+      { when: { cites: 'stoodBy' }, turns: [
+        ['a', "Everyone in here has watched someone try it on with my partner this week. I've watched it too. It hasn't been easy. But I've also watched my partner come back to me every single time."],
+      ] },
+      { when: { cites: 'stoodBy' }, turns: [
+        ['a', "It's been a hard few days. Somebody made it very clear what they wanted, and it wasn't me. But the person I'm with never once made me feel second. So I'm not going to make them feel second tonight."],
+      ] },
+      { when: { cites: 'stoodBy', feels: ['some', 'little'] }, turns: [
+        ['a', "I'm not going to lie, I've wondered this week. I've watched somebody else go after my partner, and I've wondered if I was in the way. But I'm still here, and I'm going to find out properly."],
+      ] },
+      // {a} was chased all stretch, and is staying with {b}
+      { when: { cites: 'heldOn' }, turns: [
+        ['a', "I've had my head turned this week. I'm not going to stand here and lie about that. Somebody made their feelings very clear, and I listened. But I've thought about it every day, and every day I came back to the same person."],
+      ] },
+      { when: { cites: 'heldOn' }, turns: [
+        ['a', "There's been a lot of noise around me this week. Chats I didn't ask for, people telling me what I should do. I'm going to ignore all of it and pick the person who's been sitting next to me through it."],
+      ] },
+      // {a} chased {b} all stretch
+      { when: { cites: 'graftWon' }, turns: [
+        ['a', "I've been chasing this person for days. Everyone's seen it. Some of you have told me to give up. I didn't, and I'm not starting tonight."],
+      ] },
+      { when: { cites: 'graftWon' }, turns: [
+        ['a', "I said at the start of the week I was going to go for it, and I have. Every chat, every time I pulled them for five minutes. Tonight's the bit where I find out if it was worth it."],
+      ] },
+      // {a} has been going off {b}, and is picking them anyway
+      { when: { cites: 'doubtStay' }, turns: [
+        ['a', "I know I've been distant this week. Everyone's noticed, and the person I'm with has noticed most of all. I've done a lot of thinking, and I'm still choosing them, because I don't want to be the one who gives up."],
+      ] },
+      { when: { cites: 'doubtStay' }, turns: [
+        ['a', "This week I haven't been the best partner. I went quiet, and I didn't explain why. That's not fair. So I'm standing up here to say it in front of everyone: I want to try again, properly."],
+      ] },
+      // {a} found out something about {b} this stretch, and is still picking them
+      { when: { cites: 'told' }, turns: [
+        ['a', "This week I found out something about this person that I didn't want to know. I've been angry. I'm still angry, a bit. But I'm not ready to throw it all away over one thing, so I'm giving them one more chance."],
+      ] },
+      { when: { cites: 'told' }, turns: [
+        ['a', "I could stand up here and pick somebody else to make a point. Everyone knows what happened this week. But I don't want to make a point. I want to sort it out."],
       ] },
       // a steal
       { when: { stoleFrom: true, reclaim: false }, turns: [

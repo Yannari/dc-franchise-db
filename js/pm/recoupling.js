@@ -15,6 +15,7 @@ import { kinFor, onYourSide } from './kin.js';
 import { getBond } from '../bonds.js';
 import { splitOf } from './just-friends.js';
 import { closedness } from './ladder.js';
+import { storyRoleOf } from './stretch.js';
 
 /**
  * Whose choice the next recoupling is, without taking the turn: the smaller
@@ -106,7 +107,13 @@ export function runRecoupling(state, { rng, pickerGender, repick = false }) {
   const last = state.lastRecoupleEp;
   const fresh = last == null ? [] : shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender
     && ((state.ledger.firstEp?.[n] ?? 0) > last || (state.returnedEp?.[n] ?? 0) > last)));
-  const regular = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender && !fresh.includes(n)));
+  // THE ORDER (pm/stretch.js): the show holds back the answer the villa is
+  // waiting for. Whoever is in the stretch's main story picks last, the second
+  // story before them; everyone else keeps the draw. Who picks is the rules';
+  // only when they stand up moves.
+  const tier = n => { const r = storyRoleOf(state, n); return r === 'a' ? 2 : r === 'b' ? 1 : 0; };
+  const regular = shuffle(rng, room.filter(n => state.profiles[n].gender === pickerGender && !fresh.includes(n)))
+    .map((n, i) => [n, i]).sort((x, y) => tier(x[0]) - tier(y[0]) || x[1] - y[1]).map(([n]) => n);
   const pickers = [...fresh, ...regular];
   const isPicker = new Set(pickers);
   const taken = new Map();            // candidate -> picker

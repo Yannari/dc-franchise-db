@@ -67,6 +67,16 @@ export function roleOf(state, id) {
   return ROLES.find(r => s[r] === id) || null;
 }
 
+/** The highest role ('a' first) of any plan story `n` is in, else null. */
+export function storyRoleOf(state, n) {
+  for (const r of ROLES) {
+    const id = state.stretch && !state.stretch.off ? state.stretch[r] : null;
+    const t = id && byId(state, id);
+    if (t && !t.over && castOf(t).includes(n)) return r;
+  }
+  return null;
+}
+
 // Two stories about exactly the same people are one story.
 const sameCast = (x, y) => { const a = castOf(x), b = castOf(y); return a.length === b.length && a.every(n => b.includes(n)); };
 

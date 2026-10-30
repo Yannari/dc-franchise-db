@@ -69,6 +69,21 @@ describe('pm stretch', () => {
     }
   });
 
+  it("holds the main story's picks back: whoever is in it stands up last", () => {
+    const tier = r => (r === 'a' ? 2 : r === 'b' ? 1 : 0);
+    let seen = 0;
+    for (const seed of SEEDS) for (const r of seasons[seed].rows) {
+      const ps = (r.pm?.events || []).filter(e => e.kind === 'recouple-pick' && !e.extra.first);
+      for (let i = 1; i < ps.length; i++) {
+        // A refused picker picks again in place, and a final-recoupling repick goes to the end.
+        if (r.pm.finalRecoupling) continue;
+        expect(tier(ps[i].extra.storyRole), `seed ${seed} ep${r.num} pick ${i}`).toBeGreaterThanOrEqual(tier(ps[i - 1].extra.storyRole));
+        if (ps[i].extra.storyRole === 'a') seen++;
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
   it('scores a story by what it puts at stake, proportionally', () => {
     const state = { ep: 5, villa: ['A', 'B', 'C'], couples: [['B', 'C']], profiles: {} };
     const graft = { type: 'graft', ep: 3, heat: 1, c: 'A', t: 'B', p: 'C' };

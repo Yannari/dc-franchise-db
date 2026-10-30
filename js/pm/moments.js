@@ -6,6 +6,7 @@
 // (with the villa's ballots revealed), reaction, goodbye, fallout — each
 // carrying as many events as the night produces. Every beat moves bonds, and
 // a partner left behind can be heartbroken enough to walk out with them.
+import { storyRoleOf } from './stretch.js';
 import { addBond, getBond } from '../bonds.js';
 import { makeEvent, partnerOf, roomMates, airLater, today } from './events.js';
 import { revealExchange, sourOf } from './script.js';
@@ -504,10 +505,25 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     const no = afterNo(pk, i);
     return no ? { c: no, afterNo: no } : {};
   };
+  // What the pick answers, from the stories the screen followed (pm/stretch.js):
+  // the speech says it (talk/recouple.js `cites`). Read before the night's
+  // answers close them. The pick itself is desire()'s, as ever.
+  const followed = (state.threads || []).filter(t => !t.over && state.planned?.[t.id]);
+  const cites = (pk, i) => {
+    if ((r.refusals || []).some(f => f.partner === pk.picker && f.picked === pk.picked && f.at <= i)) return 'refusedFor';
+    for (const t of followed) {
+      if (t.type === 'graft' && pk.picker === t.c && pk.picked === t.t) return 'graftWon';
+      if (t.type === 'graft' && pk.picker === t.p && pk.picked === t.t) return 'stoodBy';
+      if (t.type === 'graft' && pk.picker === t.t && pk.picked === t.p) return 'heldOn';
+      if (t.type === 'doubt' && pk.picker === t.a && pk.picked === t.p) return 'doubtStay';
+    }
+    const from = (state.stretch?.from ?? state.ep) - 3;
+    return (state.secrets || []).some(z => z.known && z.partner === pk.picker && z.who === pk.picked && z.ep >= from) ? 'told' : null;
+  };
   const pickEvents = r.picks.map((pk, i) => { const third = thirdOf(pk, i); return makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(third.c ? [third.c] : [])], aired: true,
     major: pk.stole ? [pk.picker, pk.stole] : [],
-    extra: { stole: pk.stole, tookFrom: third.tookFrom || null, leftFrom: third.leftFrom || null, afterNo: third.afterNo || null,
+    extra: { stole: pk.stole, tookFrom: third.tookFrom || null, leftFrom: third.leftFrom || null, afterNo: third.afterNo || null, cites: cites(pk, i), first: !!pk.first, storyRole: storyRoleOf(state, pk.picker),
       reclaim: reclaim(pk), mates: mates(pk), exPick: exPick(pk), reason: pk.reason, pop: { [pk.picker]: { approval: pk.stole && !reclaim(pk) && !mates(pk) ? -BETRAYAL.steal : 0.2, fame: 1 },
       ...(pk.stole ? { [pk.stole]: { approval: mates(pk) ? 0.3 : 1.5, fame: 2 } } : {}) } } }); });
   // Said no (recoupling.js refusals): in front of everyone, for the partner

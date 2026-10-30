@@ -234,13 +234,16 @@ read it, then hand the user an episode stretch to read beside the test rewrite.
 1. **Episode length: 300–350 lines.** In their words: "try 300/350, I don't want
    short and not thought phase like game". The audit target is 300–350 lines per
    villa episode (the old ~500 minus the filler, with the stretch scenes kept
-   long). Read as: no part of an episode may be short and thrown away. **That
-   includes the games (challenges):** today a game is a text, two quick worries,
-   rules and fragments (seed 7 ep 14, The Headlines). A game in the stretch has a
-   set-up from the stretch's stories, moments that play them (who throws the
-   drink at whom, and why), and an aftermath that one of A/B/C picks up (G8).
-   *This reading of the answer is the builder's; confirm it with the user on the
-   first read.*
+   long). Confirmed by the user: "not just game, every phase". **No phase of an
+   episode may be short and thrown away**: morning, day, game, evening, fire
+   pit and debrief each have a purpose in the stretch, a set-up from what came
+   before, and something the next phase picks up. The games are the worst case
+   today: a text, two quick worries, rules and fragments (seed 7 ep 14, The
+   Headlines). A game in the stretch has a set-up from the stretch's stories,
+   moments that play them (who throws the drink at whom, and why), and an
+   aftermath that one of A/B/C picks up (G8). The audit prints lines per phase,
+   and a phase with fewer than ~25 aired lines and no stretch story in it is a
+   finding.
 2. **Game layer: proportional to the cast.** "Depends on how many strategists
    are cast." No fixed count: each islander's style comes from their own intent,
    archetype and stats (5.4), so a cast with no strategists plays a season with no

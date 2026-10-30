@@ -216,6 +216,48 @@ export const WATCHING_VOLUME = {
         ['a', "I'm not. I just hate this bit."],
       ] },
     ],
+    advice: [
+      { turns: [
+        ['b', "Don't go and sit near them. I know you want to. Don't."],
+        ['a', "I wasn't going to."],
+        ['b', "You've moved two sunbeds closer since we started talking."],
+      ] },
+      { turns: [
+        ['b', "When {c} comes back, ask one question. What was that about. Then listen. Don't fill the gap."],
+        ['a', "I always fill the gap."],
+        ['b', "I know. That's why I'm telling you."],
+      ] },
+      { turns: [
+        ['b', "Whatever you feel right now, sleep on it before you say it. It'll come out better tomorrow."],
+        ['a', "It'll come out angrier tomorrow."],
+        ['b', "Then say it today, but say it quietly."],
+      ] },
+      { turns: [
+        ['b', "You've got two choices. Make it a thing, or let {c} come to you. Making it a thing never works in here."],
+        ['a', "Letting {c} come to me might not work either."],
+        ['b', "No. But at least you'll know which one {c} picked."],
+      ] },
+      { when: { chaser: true }, turns: [
+        ['b', "Don't go after {d}. {d} didn't do anything. {c} did the walking."],
+        ['a', "I know. I just want someone to be angry at who isn't {c}."],
+        ['b', "Be angry at {c}, then. That's allowed."],
+      ] },
+      { when: { chaser: false }, turns: [
+        ['b', "You can't control {d}. You can only watch what {c} does next. That's the bit that matters."],
+        ['a', "And if what {c} does next is go back for more?"],
+        ['b', "Then you'll have your answer, and we'll deal with it."],
+      ] },
+      { when: { chaser: false }, turns: [
+        ['b', "I'd say something to {c}, not to {d}. {d} doesn't owe you anything. {c} does."],
+        ['a', "That's a horrible way of putting it."],
+        ['b', "It's the right way, though."],
+      ] },
+      { turns: [
+        ['b', "Ask yourself one thing. If {c} came back and said it was nothing, would you believe it?"],
+        ['a', "…I don't know."],
+        ['b', "Then that's the chat you need to have. Not this one."],
+      ] },
+    ],
     close: [
       { turns: [['a', "I'm going inside. If {c} asks where I am, tell {c.obj} you don't know."], ['b', "I'll tell {c.obj} you're in the dressing room."], ['a', "That's the opposite of what I said."]] },
       { turns: [['b', "Come on. Let's go and sit somewhere you can't see them."], ['a', "There's nowhere in this villa I can't see them."]], beat: "They move anyway, to the far end of the garden." },

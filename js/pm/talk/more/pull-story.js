@@ -80,6 +80,27 @@ export const PULL_STORY = {
         ['b', "I'm not going to pretend I haven't thought about it. But you've got {pa}. If we do this, it's not just {pb} who gets hurt. It's {pa} as well."],
         ['a', "I know. I've thought about nothing else."],
       ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "We're both coupled up. You know that, right? You've got {pa}, I've got {pb}, and we're sitting here like neither of them exists."],
+        ['a', "I know they exist. That's why I've waited this long."],
+        ['b', "And now?"],
+        ['a', "Now I'd rather say it than spend another week pretending I'm not thinking it."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "What would {pa} say if {pa} could hear this?"],
+        ['a', "Probably the same as {pb}. That's what scares me."],
+        ['b', "Then why are we still sitting here?"],
+        ['a', "Because neither of us has got up."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "I like talking to you. I'll say that much. I'm not saying anything else while {pb} is fifty feet away."],
+        ['a', "That's more than I thought I'd get."],
+      ] },
+      { when: { story: 'graft', bTaken: true, taken: true, end: ['flirt', 'kissed', 'promised'] }, turns: [
+        ['b', "This is a mess. You know that? Two couples, and we're the ones sat here making it a mess."],
+        ['a', "I didn't plan it."],
+        ['b', "Nobody plans it. That's how it ends up a mess."],
+      ] },
       { when: { story: 'graft', bTaken: true, taken: true, end: 'turned-down' }, turns: [
         ['b', "Go back to {pa}. Honestly. You've got someone who likes you, and you're sitting here with me. That's not fair on {pa}, and it's not fair on me."],
         ['a', "Okay. That's fair."],

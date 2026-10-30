@@ -2,6 +2,7 @@
 import { gs } from '../core.js';
 import { band, beatsInvolving, spotlightOrder, bond, memoriesOf, memoryWeek, pStats, remembers } from './_read.js';
 import { makeScene } from '../bb/script/scene.js';
+import { pronouns } from '../players.js';
 
 /** Least-seen first, weighted toward whoever this week is about. */
 const quiet = pool => spotlightOrder(pool);
@@ -15,12 +16,13 @@ const quiet = pool => spotlightOrder(pool);
  * recent. Two weeks: the week it happened and the week after.
  */
 const RECENT_WEEKS = 2;
-const pairFromMemory=(house,types,done,ctx)=>{
+const pairFromMemory=(house,types,done,ctx,ok=null)=>{
   const now=ctx?.week?.num??(gs.episode||0)+1;
   for(const a of quiet(house)) for(const m of memoriesOf(a)) {
     const b=m?.subject;
     if(!b||!house.includes(b)||b===a) continue;
     if(!types.includes(m.type)||remembers(a,b,done)) continue;
+    if(ok&&!ok(m)) continue;
     const when=memoryWeek(m);
     if(when&&now-when>RECENT_WEEKS) continue;
     return {a,b,m};
@@ -56,13 +58,33 @@ const overheardConfrontation={
   },
 };
 
+// What was found out, said before the scene: its lines are written for any lie ("Not until you tell me the
+// truth"), and without this the viewer never learned what the truth was about (the user, 2026-10-30). A memory
+// that does not say (one saved before it was recorded, or the two-deals note, which the doubled player keeps
+// about their partners and so points the wrong way round) has no scene.
+const listOf=xs=>xs.length>1?`${xs.slice(0,-1).join(', ')} and ${xs[xs.length-1]}`:xs[0];
+function lieOf(m,finder,liar,house){
+  const d=m?.details||m?.detail||{};
+  const with_=[].concat(d.with||[]).filter(n=>n&&n!==finder&&n!==liar&&house.includes(n));
+  const P=finder?pronouns(finder):{obj:"them"};
+  if(m?.type==='deceit'&&d.about&&d.about!==finder&&house.includes(d.about))
+    return `${liar} told ${finder} that ${d.about} was coming after ${P.obj}. It wasn't true, and ${finder} has worked that out.`;
+  if(m?.type==='endgame-deal-discovered'&&with_.length)
+    return `${finder} has found out about ${liar}'s ${d.tier==='final-three'?'final three':'final two'} with ${listOf(with_)}, which ${liar} never mentioned.`;
+  if(m?.type==='overcommitted'&&with_.length)
+    return `${finder} has found out that ${liar} promised ${with_[0]} the same final two ${liar} promised ${P.obj}.`;
+  return null;
+}
+const LIES=['deceit','endgame-deal-discovered','overcommitted'];
+const lieFromMemory=(h,c)=>{const p=pairFromMemory(h,LIES,'damage-control-seen',c,m=>!!lieOf(m,null,m.subject,h));return p?{...p,setup:lieOf(p.m,p.a,p.b,h)}:null;};
+
 const lieDamageControl={
   id:'followup-lie-damage-control',category:'deals',location:'pantry',
-  weight(h,c){return pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen',c)?fit(c,3.8):0;},
+  weight(h,c){const p=lieFromMemory(h,c);return p?.setup?fit(c,3.8):0;},
   fire(h,c,api){
-    const {a:finder,b:liar}=pairFromMemory(h,['deceit','endgame-deal-discovered','overcommitted'],'damage-control-seen',c);
+    const {a:finder,b:liar,setup}=lieFromMemory(h,c);
     const works=pStats(liar).social+pStats(liar).strategic>pStats(finder).intuition+7;
-    const scene=makeScene('followup.damage',{a:finder,b:liar},{ending:works?'owns':'digs'},[],'pantry');
+    const scene=makeScene('followup.damage',{a:finder,b:liar},{ending:works?'owns':'digs',setup},[],'pantry');
     api.addBond(finder,liar,works?.6:-1); api.suspicion(finder,liar,works?-.3:1.2); api.remember(finder,liar,'damage-control-seen',1,{worked:works});
     return result(scene,[finder,liar],works?'OWNS PART OF IT':'DIGS DEEPER',works?'blue':'red');
   },

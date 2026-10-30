@@ -305,7 +305,7 @@ const rumour = {
     } else {
       api.suspicion(mark, liar, 2.4);
       api.addBond(mark, liar, -1.2);
-      api.remember(mark, liar, 'deceit', 2, { caught: true });
+      api.remember(mark, liar, 'deceit', 2, { caught: true, about: victim });
     }
     // The victim is talked ABOUT; only the two of them are in the room.
     const scene = makeScene('social.rumour', { a: liar, b: mark, c: victim }, { ending: lands ? 'lands' : 'caught' }, [],

@@ -378,6 +378,10 @@ const hohPressuresVeto = {
   category: 'phases',
   weight(house, ctx) {
     if (!ctx?.vetoWinner || !ctx?.hoh || ctx.vetoWinner === ctx.hoh) return 0;
+    // a nominee who wins the veto uses it on themselves: there is nothing to lean on (the user, 2026-10-30, of
+    // the HOH telling Angelica what using it would cost: "but angelica is on the block")
+    const held = [...(ctx.nominees || []), ...(ctx.week?.initialNominees || [])];
+    if (held.includes(ctx.vetoWinner)) return 0;
     return at('post-veto', ctx, 12);
   },
   fire(house, ctx, api) {

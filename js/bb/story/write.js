@@ -562,6 +562,8 @@ const nameIn = (n, text) => new RegExp(`(^|\\W)${String(n).replace(/[.*+?^${}()|
 // is around (the user, 2026-10-06: "all one-on-one with no one in the background"), and a row
 // in a shared room gets a reaction from them.
 const SHARED = new Set(['kitchen', 'living-room', 'backyard', 'bedroom']);
+// how often a private scene in a shared room shows who else is around
+const BG_CHANCE = 0.65;
 function background(lines, sc, ctx, salt, loud) {
   // nobody in the background is the person the scene is talking about (Priya doing a puzzle at
   // the table while somebody says Priya still needs to go)
@@ -572,10 +574,13 @@ function background(lines, sc, ctx, salt, loud) {
   const who = { x: others[0], y: others[1] };
   const rng = stableRng(gs.bb?.seasonSalt || 0, 'story-bg', salt);
   const out = lines.slice();
-  if (rng() < 0.7) {
-    // the people around a scene keep the house full, so the room's background rotates once spent;
-    // a spoken reaction (bg.react) is left out instead of heard twice
-    const e = pick([`bg.${sc.room}`], who, {}, ctx, sc.room, `${salt}|bg`);
+  // Each of the room's pictures airs once a season: at 0.7 and rotated once spent, about three hundred a season
+  // came out of sixty-four, and the cereal box was read out loud six to nine times a season (zz probe, 2026-10-30;
+  // the user: "this too"). Spent, the room shows ordinary life (bg.<room>.plain), which can come round again
+  // without being remembered. A spoken reaction (bg.react) is left out instead of heard twice.
+  if (rng() < BG_CHANCE) {
+    const e = pick([`bg.${sc.room}`], who, {}, ctx, sc.room, `${salt}|bg`, true)
+      || pick([`bg.${sc.room}.plain`], who, {}, ctx, sc.room, `${salt}|bg`);
     // after the scene's own opening stage direction, or at the very top
     // marked, so the viewer still names the people talking before it shows who else is around
     if (e) out.splice(out[0]?.kind === 'beat' ? 1 : 0, 0, ...render(e, who, ctx, {}).map(l => ({ ...l, bg: true })));
@@ -1039,7 +1044,11 @@ function writeSetPiece0(type, ctx, inside, { gone = null, at = 0 } = {}) {
     else glad = null;
   }
   const who = Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f'].map((r, i) => [r, order[i]]).filter(([, n]) => n));
-  const data = gone ? { gone, ...(glad && who.d === glad ? { result: 'glad' } : {}) } : {};
+  // a unanimous vote has nobody to find out about: "somebody lied to me about how they were voting" and "who voted
+  // which way" are for a split one (the user, 2026-10-30: "it was a unanimous vote u dont have to find out anything")
+  const ballots = Array.isArray(ctx.week?.ballots) ? ctx.week.ballots.filter(b => b?.evict) : [];
+  const split = ballots.some(b => b.evict !== gone);
+  const data = gone ? { gone, intent: split ? 'split' : 'unanimous', ...(glad && who.d === glad ? { result: 'glad' } : {}) } : {};
   const sctx = { ...ctx, inSet: true };
   const open = pick([`set.${type}.open`], who, data, sctx, room, `${salt}|open`);
   if (!open) return null;

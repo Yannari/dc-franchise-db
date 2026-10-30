@@ -25,7 +25,7 @@ export default {
       { by: 'b', say: "I know. I still didn't want you gone." },
       { by: 'a', dr: "{b} kept me. {b}, of all people. I've spent all week thinking {b} was against me, and I was wrong." }] },
     { id: 'fk.t2', turns: [
-      { beat: '{b} waits until the kitchen is empty.' },
+      { beat: '{b} waits until the two of them are alone.' },
       { by: 'b', say: "For what it's worth, I voted {gone} out. Not you." },
       { by: 'a', say: "Why would you do that for me?" },
       { by: 'b', say: "Because I'd rather play against you than against {gone}." },
@@ -51,7 +51,7 @@ export default {
       { by: 'a', say: "I had you down as a vote against me all week." },
       { by: 'a', dr: "I got {b} completely wrong. I'm going to have to rethink a lot of what I thought I knew about this house." }] },
     { id: 'fk.t6', turns: [
-      { beat: "{a} sits down next to {b} on the backyard couch for the first time all season." },
+      { beat: "{a} sits down next to {b} for the first time all season." },
       { by: 'a', say: "I worked out the votes. You were one of mine." },
       { by: 'b', say: "I was." },
       { by: 'a', say: "Then I should probably stop talking about you behind your back." },
@@ -110,7 +110,7 @@ export default {
       { by: 'b', say: "I'm always calm." },
       { by: 'a', dr: "{b} flipped. I can feel it, and the count agrees with me. {b} is the next name I want on the block." }] },
     { id: 'ff.c5', turns: [
-      { beat: "{a} doesn't wait for privacy. It happens in the living room, with everyone there." },
+      { beat: "{a} doesn't wait for privacy. It happens right there, in front of everyone." },
       { by: 'a', say: "You want to tell them, or should I?" },
       { by: 'b', say: "Tell them what?" },
       { by: 'a', say: "That you told us {stated} all week and voted {gone} out last night." },

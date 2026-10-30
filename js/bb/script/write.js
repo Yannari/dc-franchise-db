@@ -194,6 +194,9 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
     return { kind, by, text: said(kind, fill(variantOf(t, by, `${entry.id}|${pairKey}|${ctx.week?.num || 0}`) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
   });
+  // what the scene is about, when its pool is written for any cause: one plain sentence before it (the user,
+  // 2026-10-30, of "Not until you tell me the truth": "truth about what theres no setup or reasoning")
+  if (typeof scene.data?.setup === 'string' && scene.data.setup) lines.unshift({ kind: 'beat', by: null, text: scene.data.setup });
   return { lines, text: transcript(lines), lineId: entry.id, lineToken };
 }
 

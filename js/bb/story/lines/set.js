@@ -488,13 +488,13 @@ export default {
   ],
   'set.evictnight.close': [
     { id: 'en.c1', turns: [{ beat: 'The lights go down. Nobody sleeps much.' }, { by: 'b', dr: "I keep thinking about {gone}'s face when the votes were read out." }] },
-    { id: 'en.c2', turns: [{ beat: 'People go to bed in twos, talking quietly about the vote.' }, { by: 'a', dr: "Somebody lied to me tonight about how they were voting. I'm going to find out who." }] },
+    { id: 'en.c2', when: { intent: 'split' }, turns: [{ beat: 'People go to bed in twos, talking quietly about the vote.' }, { by: 'a', dr: "Somebody lied to me tonight about how they were voting. I'm going to find out who." }] },
     { id: 'en.c3', turns: [{ beat: "The house goes quiet. {gone}'s mug is still on the draining board." }, { by: 'c', dr: "I'll miss {gone}. This house got a lot lonelier for me tonight." }] },
     { id: 'en.c7', when: { result: 'glad' }, turns: [{ beat: 'One by one, the lights go off.' }, { by: 'd', dr: "I wanted {gone} out, and {gone} is out. I'm going to sleep well tonight." }] },
     { id: 'en.c8', when: { result: 'glad' }, turns: [{ beat: 'The house goes to bed. {d} is the last one still smiling.' }, { by: 'd', dr: "Everybody's sad about {gone}. I'm not. One less person in here coming after me." }] },
-    { id: 'en.c4', turns: [{ beat: 'One by one, the lights go off.' }, { by: 'd', dr: "That vote told me a lot about who's working with who. I'm going to sleep on it." }] },
+    { id: 'en.c4', when: { intent: 'split' }, turns: [{ beat: 'One by one, the lights go off.' }, { by: 'd', dr: "That vote told me a lot about who's working with who. I'm going to sleep on it." }] },
     { id: 'en.c5', turns: [{ beat: "Somebody turns off the living room lights. {gone}'s spot on the sofa stays empty." }, { by: 'a', dr: "That vote changed things. I'm just not sure yet who it changed them for." }] },
-    { id: 'en.c6', turns: [{ beat: 'The house finally goes to bed, still talking in whispers about the vote.' }, { by: 'e', dr: "Everybody's whispering about who voted which way. By breakfast it'll be a fight." }] },
+    { id: 'en.c6', when: { intent: 'split' }, turns: [{ beat: 'The house finally goes to bed, still talking in whispers about the vote.' }, { by: 'e', dr: "Everybody's whispering about who voted which way. By breakfast it'll be a fight." }] },
   ],
 
   // ── an ordinary evening ─────────────────────────────────────────────
@@ -795,5 +795,45 @@ export default {
     { id: 'br.6', turns: [{ by: 'x', say: "Can we not do this here? In front of everybody?" }, { beat: 'They do it right there anyway.' }] },
     { id: 'br.7', turns: [{ beat: '{y} catches {x}’s eye across the room. Neither of them says a word.' }] },
     { id: 'br.8', turns: [{ by: 'x', say: "Somebody turn the music up." }, { by: 'y', say: "No, leave it. Let them." }] },
+  ],
+  // Ordinary life in the room, once its pictures above have aired (each of those airs once a season). Plain on
+  // purpose: a picture is remembered, so the cereal box read out loud six times a season was the thing the viewer
+  // saw (the user, 2026-10-30: "this too"). Somebody making a coffee can be seen again without anybody noticing.
+  'bg.kitchen.plain': [
+    { id: 'bkp.1', turns: [{ beat: '{x} is making a sandwich at the counter.' }] },
+    { id: 'bkp.2', turns: [{ beat: '{x} and {y} are doing the washing-up.' }] },
+    { id: 'bkp.3', turns: [{ beat: '{x} is making a coffee.' }] },
+    { id: 'bkp.4', turns: [{ beat: '{x} and {y} are eating at the table.' }] },
+    { id: 'bkp.5', turns: [{ beat: '{y} is wiping down the counter.' }] },
+    { id: 'bkp.6', turns: [{ beat: '{x} and {y} are cooking.' }] },
+    { id: 'bkp.7', turns: [{ beat: '{x} gets a drink from the fridge and sits down at the island.' }] },
+    { id: 'bkp.8', turns: [{ beat: '{y} is emptying the dishwasher.' }] },
+  ],
+  'bg.living-room.plain': [
+    { id: 'blp.1', turns: [{ beat: '{x} is lying on the other sofa.' }] },
+    { id: 'blp.2', turns: [{ beat: '{x} and {y} are on the other sofa, talking about home.' }] },
+    { id: 'blp.3', turns: [{ beat: '{x} is asleep on the sofa.' }] },
+    { id: 'blp.4', turns: [{ beat: '{y} is sitting on the floor, stretching.' }] },
+    { id: 'blp.5', turns: [{ beat: '{x} and {y} are sitting together, not saying much.' }] },
+    { id: 'blp.6', turns: [{ beat: '{y} walks through on the way to the kitchen.' }] },
+    { id: 'blp.7', turns: [{ beat: '{x} is tidying up the cushions.' }] },
+  ],
+  'bg.backyard.plain': [
+    { id: 'byp.1', turns: [{ beat: '{x} is lying on a sun lounger.' }] },
+    { id: 'byp.2', turns: [{ beat: '{x} and {y} are in the pool.' }] },
+    { id: 'byp.3', turns: [{ beat: '{x} is on the hammock.' }] },
+    { id: 'byp.4', turns: [{ beat: '{x} and {y} are shooting hoops.' }] },
+    { id: 'byp.5', turns: [{ beat: '{y} is doing push-ups by the fence.' }] },
+    { id: 'byp.6', turns: [{ beat: '{x} and {y} are sitting on the grass.' }] },
+    { id: 'byp.7', turns: [{ beat: '{y} is sitting on the edge of the pool with {y.posAdj} feet in the water.' }] },
+  ],
+  'bg.bedroom.plain': [
+    { id: 'bdp.1', turns: [{ beat: '{x} is asleep on one of the beds.' }] },
+    { id: 'bdp.2', turns: [{ beat: '{x} is making {x.posAdj} bed.' }] },
+    { id: 'bdp.3', turns: [{ beat: '{x} and {y} are putting their clothes away.' }] },
+    { id: 'bdp.4', turns: [{ beat: '{y} is lying on a bed, staring at the ceiling.' }] },
+    { id: 'bdp.5', turns: [{ beat: '{x} is looking for something in {x.posAdj} suitcase.' }] },
+    { id: 'bdp.6', turns: [{ beat: '{x} and {y} are talking on the far bed.' }] },
+    { id: 'bdp.7', turns: [{ beat: '{y} is changing out of {y.posAdj} competition clothes.' }] },
   ],
 };

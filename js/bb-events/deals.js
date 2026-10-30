@@ -691,7 +691,8 @@ const dealExposed = {
     const told = _others(house, finder, ...members).slice(0, 3);
     api.exposeDeal?.(deal, [finder, ...told]);
     members.forEach(m => {
-      api.remember(finder, m, 'endgame-deal-discovered', 2, { tier: tierOf(deal) });
+      // who the deal is with: the follow-up where they try to explain it says so (story-followups.js)
+      api.remember(finder, m, 'endgame-deal-discovered', 2, { tier: tierOf(deal), with: members.filter(o => o !== m) });
       api.setTarget(finder, m, `found out about the ${tier}`);
       api.addBond(finder, m, -0.7);
     });

@@ -10,16 +10,15 @@
 export default {
   'set.hohroom.open': [
     { id: 'msh.1', room: 'hoh-room', turns: [
-      { beat: 'HOH room. {a} opens the door and everyone pushes past to look.' },
-      { by: 'b', say: "Is that a mini fridge?" },
-      { by: 'c', say: "It's a mini fridge!" },
-      { by: 'a', say: "Don't open the mini fridge." },
-      { by: 'b', say: "I'm just looking at the mini fridge." },
-      { by: 'd', say: "There's cake in the mini fridge." },
-      { by: 'a', say: "How do you know there's— did you open it?" },
-      { by: 'd', say: "It was very slightly open." },
-      { beat: 'Everybody stands round a fridge looking at a cake that belongs to one of them.' },
-      { by: 'c', dr: "Nobody ate the cake. We all wanted to, but nobody wanted to be the person who ate the new HOH's cake. Not the week they're picking nominations." },
+      { beat: 'HOH room. {a} opens the door and everyone pushes in to look.' },
+      { by: 'b', say: "Oh my God, you've got your own fridge." },
+      { by: 'c', say: "What's in it?" },
+      { by: 'a', say: "Don't touch it! It's mine for a week, let me have this." },
+      { by: 'd', say: "There's a cake in there. I saw it." },
+      { by: 'a', say: "You opened my fridge already?" },
+      { by: 'd', say: "It was open, I swear." },
+      { beat: 'Everybody laughs. Nobody touches the cake.' },
+      { by: 'c', dr: "Nobody ate the cake. We all wanted some, but nobody wants to be the one who eats the HOH's cake the week they're picking nominations." },
     ] },
     { id: 'msh.2', room: 'hoh-room', turns: [
       { beat: 'HOH room. {a} is reading the letter from home out loud, voice cracking. Everyone is squeezed onto the bed to listen.' },

@@ -214,8 +214,8 @@ export default {
     { id: 'sz.l6', when: { third: true }, turns: [{ by: 'a', say: "Just ask {target} about final-two deals." }, { by: 'b', say: "I will." }, { by: 'c', dr: "{a} is very keen for us to turn on {target}. I'd like to know why." }] },
   ],
   'scheme.accuse.flat': [
-    { id: 'sz.f1', turns: [{ by: 'a', say: "{target} has final-two deals with loads of people." }, { by: 'b', say: "Name one." }, { by: 'a', say: "Well..." }, { by: 'b', say: "Name one." }] },
-    { id: 'sz.f2', turns: [{ by: 'a', say: "How many people has {target} promised?" }, { by: 'b', say: "You brought it up. You tell us." }] },
+    { id: 'sz.f1', turns: [{ by: 'a', say: "{target} has final-two deals with a lot of people." }, { by: 'b', say: "With who?" }, { by: 'a', say: "I don't know exactly. I just keep hearing it." }, { by: 'b', say: "If you can't tell me who, I'm not going to worry about it." }] },
+    { id: 'sz.f2', turns: [{ by: 'a', say: "How many people has {target} promised?" }, { by: 'b', say: "You brought it up. You tell me." }] },
     { id: 'sz.f3', turns: [{ by: 'b', dr: "{a} said {target} is double-dealing. {a} couldn't name a single deal." }] },
     { id: 'sz.f4', turns: [{ by: 'a', dr: "Nobody believed me about {target}. I should have had a better story ready." }] },
     { id: 'sz.f5', turns: [{ by: 'b', say: "Where's this coming from?" }, { by: 'a', say: "I just think people should know." }, { by: 'b', say: "Know what? You haven't said anything." }] },

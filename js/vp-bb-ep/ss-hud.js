@@ -163,7 +163,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   // the eliminated walks into the studio: the lights sweep the room and the crowd roars, or boos (vp-bb-ep/steps.js ssWalkScreen)
   if (st.studioIn) {
     if (fresh) { if (st.studioIn === 'boo') { ssSfx('boo', 1); setTimeout(() => ssSfx('applause', 0.6), 400); } else { ssSfx('applause', 1); setTimeout(() => ssSfx('cheer', 0.8), 250); } }
-    h += `<div class="ss-lights ${st.studioIn === 'boo' ? 'boo' : ''} ${fresh ? 'fresh' : ''}"><i></i><i></i><i></i><i></i></div>`;
+    h += `<div class="ss-lights ${st.studioIn === 'boo' ? 'boo' : ''} ${fresh ? 'fresh' : ''}"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></div>`;
   }
   // a party: the lights, the mirror ball, and everybody on the floor dancing (vp-bb-ep/steps.js ssPartyScreen)
   if (S.party) h += '<div class="ss-party"><i></i><i></i><i></i><b></b></div>';
@@ -244,7 +244,7 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
     const M = st.magneto;
     h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div><img class="ssmg-eye" src="${EYE}" alt="">
       ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}
-      ${(M.who || []).length ? `<div class="ssmg-ps">${M.who.slice(0, 3).map((n, i, w) => `${i && M.sym ? `<i class="ssmg-sym">${esc(M.sym)}</i>` : ''}<span class="ssmg-p" style="--c:${H.col(n)};--i:${i};--d:${i === 0 ? -1 : i === w.length - 1 ? 1 : 0}">${H.img(n)}<em>${esc(n)}</em></span>`).join('')}</div>` : ''}
+      ${(M.who || []).length ? `<div class="ssmg-ps ${M.who.length > 3 ? 'n4' : ''}">${M.who.slice(0, 4).map((n, i, w) => `${i && M.sym ? `<i class="ssmg-sym">${esc(M.sym)}</i>` : ''}<span class="ssmg-p" style="--c:${H.col(n)};--i:${i};--d:${i === 0 ? -1 : i === w.length - 1 ? 1 : 0}">${H.img(n)}<em>${esc(n)}</em></span>`).join('')}</div>` : ''}
       <b class="ssmg-t">${ssx(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
   }
   // the call to vote: every nominee under a big number, and how to vote
@@ -409,13 +409,18 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .bbx .stage .p-ball img{width:12cqw;animation:ss-float 4s ease-in-out infinite}
 .stage.ss-alarm::after{content:"";position:absolute;inset:0;z-index:60;pointer-events:none;background:rgba(255,20,60,.45);animation:ss-strobe .18s steps(2) 5}
 .stage.ss-alarm .cam{animation:bbx-shake .5s}
-.ss-lights{position:absolute;inset:0;z-index:23;pointer-events:none;overflow:hidden;mix-blend-mode:screen}
-.ss-lights i{position:absolute;bottom:-20%;width:22%;height:150%;transform-origin:50% 100%;filter:blur(1.6cqw);opacity:.6;background:linear-gradient(0deg,rgba(255,255,255,.95),transparent 75%);animation:ss-beam 1.6s ease-in-out infinite alternate}
-.ss-lights i:nth-child(1){left:2%;animation-delay:-.4s}.ss-lights i:nth-child(2){left:26%;background:linear-gradient(0deg,rgba(255,62,165,.9),transparent 75%);animation-delay:-1.1s}
-.ss-lights i:nth-child(3){left:52%;background:linear-gradient(0deg,rgba(25,211,197,.9),transparent 75%);animation-delay:-.2s}.ss-lights i:nth-child(4){left:76%;animation-delay:-.8s}
-.ss-lights.boo i{background:linear-gradient(0deg,rgba(255,60,60,.8),transparent 75%)}
-.ss-lights.fresh{animation:ssmg-flash .6s ease-out}
-@keyframes ss-beam{from{rotate:-24deg}to{rotate:24deg}}
+/* the rig over the studio: six spots sweeping down on the stairs, the room flashing white on the name */
+.ss-lights{position:absolute;inset:0;z-index:23;pointer-events:none;overflow:hidden}
+.ss-lights i{position:absolute;top:-6%;width:9%;height:118%;transform-origin:50% 0;clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);filter:blur(.5cqw);
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.55) 40%,rgba(255,255,255,0) 95%);opacity:.75;animation:ss-beam 1.4s ease-in-out infinite alternate}
+.ss-lights i:nth-child(1){left:4%;animation-delay:-.3s}.ss-lights i:nth-child(2){left:20%;animation-delay:-1s;background:linear-gradient(180deg,#ff3ea5,rgba(255,62,165,.5) 40%,transparent 95%)}
+.ss-lights i:nth-child(3){left:37%;animation-delay:-.6s}.ss-lights i:nth-child(4){left:54%;animation-delay:-1.3s;background:linear-gradient(180deg,#19d3c5,rgba(25,211,197,.5) 40%,transparent 95%)}
+.ss-lights i:nth-child(5){left:71%;animation-delay:-.1s}.ss-lights i:nth-child(6){left:87%;animation-delay:-.9s;background:linear-gradient(180deg,#ffd43b,rgba(255,212,59,.5) 40%,transparent 95%)}
+.ss-lights.boo i{background:linear-gradient(180deg,#ff3355,rgba(255,51,85,.45) 40%,transparent 95%)}
+.ss-lights b{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 70%,rgba(255,255,255,.55),transparent 60%);animation:ss-strobe .5s steps(2) 6}
+.ss-lights.boo b{background:radial-gradient(ellipse at 50% 70%,rgba(255,40,60,.35),transparent 60%)}
+@keyframes ss-beam{from{rotate:-28deg}to{rotate:28deg}}
+@keyframes ss-strobe{0%{opacity:1}100%{opacity:0}}
 .ss-party{position:absolute;inset:0;z-index:22;pointer-events:none;overflow:hidden;mix-blend-mode:screen}
 .ss-party i{position:absolute;top:-30%;width:40%;height:160%;transform-origin:50% 0;filter:blur(2.4cqw);opacity:.55;animation:ss-sweep 3.4s ease-in-out infinite alternate}
 .ss-party i:nth-child(1){left:5%;background:linear-gradient(180deg,rgba(255,62,165,.9),transparent 70%)}
@@ -580,6 +585,7 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssmg.fresh .ssmg-t{animation:ssmg-in .9s cubic-bezier(.2,1.3,.4,1) both}
 .ssmg-ps{position:relative;display:flex;align-items:center;gap:2cqw;margin-bottom:.4cqw}
 .ssmg-p{position:relative;width:15cqw;aspect-ratio:4/5;border-radius:1.6cqw;overflow:hidden;background:var(--c);box-shadow:0 0 0 .5cqw #fff,0 1.6cqw 3cqw rgba(60,0,60,.45);rotate:calc(var(--d) * 6deg);animation:ssmg-bob 3s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s)}
+.ssmg-ps.n4 .ssmg-p{width:12cqw}
 .ssmg-p img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
 .ssmg-p em{position:absolute;left:0;right:0;bottom:0;padding:.4cqw 0 .3cqw;text-align:center;font:1.4cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(0deg,rgba(43,13,63,.9),transparent)}
 .ssmg-sym{font:5cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;-webkit-text-stroke:.2cqw #c8137a;text-shadow:0 0 2cqw #ff3ea5}

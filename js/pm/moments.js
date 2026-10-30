@@ -508,7 +508,10 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
   // What the pick answers, from the stories the screen followed (pm/stretch.js):
   // the speech says it (talk/recouple.js `cites`). Read before the night's
   // answers close them. The pick itself is desire()'s, as ever.
-  const followed = (state.threads || []).filter(t => !t.over && state.planned?.[t.id]);
+  // …and the ones this stretch already closed on the way (shut down on Tuesday,
+  // still the week everyone watched).
+  const from = state.stretch?.from ?? state.ep;
+  const followed = (state.threads || []).filter(t => state.planned?.[t.id] && (!t.over || (t.endEp ?? 0) >= from));
   const cites = (pk, i) => {
     // A plan said out loud today (threads.js pick-plan): it held, or it didn't.
     const plan = state.pickPlans?.[pk.picker];
@@ -517,11 +520,12 @@ function recoupleNight(state, rng, { dumpSingles, pace = 1.5, votesAhead = 0, al
     for (const t of followed) {
       if (t.type === 'graft' && pk.picker === t.c && pk.picked === t.t) return 'graftWon';
       if (t.type === 'graft' && pk.picker === t.p && pk.picked === t.t) return 'stoodBy';
+      // The chaser goes back to the partner they had all along.
+      if (t.type === 'graft' && pk.picker === t.c && pk.picked !== t.t && partnerOf(state, pk.picker) === pk.picked) return 'cameBack';
       if (t.type === 'graft' && pk.picker === t.t && pk.picked === t.p) return 'heldOn';
       if (t.type === 'doubt' && pk.picker === t.a && pk.picked === t.p) return 'doubtStay';
     }
-    const from = (state.stretch?.from ?? state.ep) - 3;
-    return (state.secrets || []).some(z => z.known && z.partner === pk.picker && z.who === pk.picked && z.ep >= from) ? 'told' : null;
+    return (state.secrets || []).some(z => z.known && z.partner === pk.picker && z.who === pk.picked && z.ep >= from - 3) ? 'told' : null;
   };
   const pickEvents = r.picks.map((pk, i) => { const third = thirdOf(pk, i); return makeEvent(state, rng, { phase: 'firepit', kind: 'recouple-pick',
     players: [pk.picker, pk.picked, ...(third.c ? [third.c] : [])], aired: true,

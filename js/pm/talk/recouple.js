@@ -174,6 +174,16 @@ export const RECOUPLE_PICK = build('recouple-pick', {
       { when: { cites: 'graftWon' }, turns: [
         ['a', "I said at the start of the week I was going to go for it, and I have. Every chat, every time I pulled them for five minutes. Tonight's the bit where I find out if it was worth it."],
       ] },
+      // {a} went after somebody else this stretch, and is going back to {b}
+      { when: { cites: 'cameBack' }, turns: [
+        ['a', "I know what this week has looked like. I'm not going to stand here and pretend everyone didn't see it. I went looking, and I found out what I had was already sitting next to me."],
+      ] },
+      { when: { cites: 'cameBack' }, turns: [
+        ['a', "I owe the person I'm picking an apology, and I'm going to make it in front of everyone. I let my head get turned. It's not turned any more."],
+      ] },
+      { when: { cites: 'cameBack' }, turns: [
+        ['a', "This is probably the least romantic speech anyone's made at this fire pit. I messed about this week. I know I did. And I'm still asking this person to have me back."],
+      ] },
       // {a} has been going off {b}, and is picking them anyway
       { when: { cites: 'doubtStay' }, turns: [
         ['a', "I know I've been distant this week. Everyone's noticed, and the person I'm with has noticed most of all. I've done a lot of thinking, and I'm still choosing them, because I don't want to be the one who gives up."],

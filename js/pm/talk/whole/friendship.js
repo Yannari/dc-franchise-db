@@ -168,7 +168,7 @@ export const FRIENDSHIP_WHOLE = { moves: { whole: [
     ['b', "I'm so happy for you. You deserve it."],
     ['a', "Thank you. That means a lot, coming from you."],
   ] },
-  { when: { ...CALM, taken: true, myRung: SERIOUS }, stage: "{a} and {b} are sitting on the terrace as the sun goes down.", turns: [
+  { when: { phase: 'evening', ...CALM, taken: true, myRung: SERIOUS }, stage: "{a} and {b} are sitting on the terrace as the sun goes down.", turns: [
     ['a', "Can I tell you something? I think I could see myself with {pa} on the outside."],
     ['b', "Really? That's big."],
     say('a', "I know. It's scary. But when I think about leaving here, I think about {pa} being there.", {

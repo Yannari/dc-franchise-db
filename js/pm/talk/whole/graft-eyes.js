@@ -145,7 +145,7 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
     ['b', "Then don't do anything until you know what you want."],
   ], beat: "{a} nods, and doesn't say anything for a long time." },
 
-  { when: { taken: true, fresh: false, of: 'go-for-it' }, stage: "{a} and {b} are in the kitchen, the last two up.", turns: [
+  { when: { phase: 'evening', taken: true, fresh: false, of: 'go-for-it' }, stage: "{a} and {b} are in the kitchen, the last two up.", turns: [
     say('a', "Don't judge me. I think I'm falling for {c}.", {
       lad: "Don't look at me like that, {~bro}. I think I'm falling for {c}.",
       bestie: "Promise you won't judge me. I think I'm falling for {c}.",

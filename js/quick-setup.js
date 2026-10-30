@@ -1289,6 +1289,7 @@ const CONFIG_SCOPE = {
     'cfg-ss-nominees':       ['secret-story'],
     'cfg-ss-percents':       ['secret-story'],
     'cfg-ss-weekly':         ['secret-story'],
+    'cfg-ss-surprise':       ['secret-story'],
     'cfg-bb-departures':     ['big-brother'],
     'f-tribe':               ['total-drama', 'the-circle'],  // a house has no tribes to join; the Circle's are its categories
     // The cast form's castle-only field, which says so on its own label —

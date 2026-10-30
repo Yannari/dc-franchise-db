@@ -1614,6 +1614,7 @@ export function saveConfig() {
     ssNomineeCount: g('cfg-ss-nominees')?.value || seasonConfig.ssNomineeCount || 'auto',
     ssPercents: g('cfg-ss-percents')?.value || seasonConfig.ssPercents || 'end',
     ssWeekly: g('cfg-ss-weekly')?.value || seasonConfig.ssWeekly || 'random',
+    ssSurprise: g('cfg-ss-surprise')?.value || seasonConfig.ssSurprise || 'on',
     ssSecrets: seasonConfig.ssSecrets || {},
     ssRecognitions: seasonConfig.ssRecognitions || null,
     ssRecognitionsCast: seasonConfig.ssRecognitionsCast || '',
@@ -1848,6 +1849,7 @@ export function renderConfig() {
   set('cfg-ss-noms', seasonConfig.ssNominations || 'random');
   set('cfg-ss-nominees', seasonConfig.ssNomineeCount || 'auto');
   set('cfg-ss-percents', seasonConfig.ssPercents || 'end');
+  set('cfg-ss-surprise', seasonConfig.ssSurprise || 'on');
   set('cfg-ss-weekly', seasonConfig.ssWeekly || 'random');
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();

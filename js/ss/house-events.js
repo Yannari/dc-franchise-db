@@ -63,7 +63,8 @@ export function houseEvent(state, ctx, { house = [] } = {}) {
     ['mission', 0.5, count('mission') < 4],
     ['housework', 0.25, count('housework') < 2],
     ['pageant', 0.55, count('pageant') < 1 && wk >= 3 && room.length >= 6],
-    ['clans', 0.5, count('clans') < 1 && wk >= 2 && room.length >= 8],
+    // (the Clan War splits the house: never a surprise when Surprise twists is off)
+    ['clans', 0.5, count('clans') < 1 && wk >= 2 && room.length >= 8 && !state.surpriseOff],
     ['room', 0.35, count('room') < 2 && wk >= 2],
   ].filter(([k, , ok]) => ok && k !== last?.kind);
   const total = can.reduce((t, [, w]) => t + w, 0);

@@ -138,8 +138,11 @@ export function readSchedule(state, wk) {
     if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
   }
   // A season the timeline's Randomize drew (js/ss/schedule.js) plays exactly its cards: a week the draw left empty
-  // has no twist of its own on top. Cards placed by hand pin their week and leave the rest to the engine.
-  if (all.some(x => x.random && SS_SCHEDULE[x.type])) {
+  // has no twist of its own on top. Cards placed by hand pin their week and leave the rest to the engine, unless
+  // Surprise twists is Off (the user, 2026-10-29: "yes add an on/off"), when only the timeline's cards happen.
+  const noSurprise = seasonConfig?.ssSurprise === 'off';
+  if (noSurprise) state.surpriseOff = true;
+  if (noSurprise || all.some(x => x.random && SS_SCHEDULE[x.type])) {
     for (const [key, none] of [['forceWeekTwist', 'none'], ['forcePrimeTheme', 'none'], ['forceSplit', 'none'], ['forceDeception', 'none'], ['forceVoteMode', 'save'], ['forceTicket', 'none']]) {
       // (an Arena house is split from week two whatever the cards say: js/ss/split.js)
       if (key === 'forceSplit' && state.houseTheme === 'arena') continue;
@@ -314,7 +317,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     weekly: resolveWeekly(seasonConfig?.ssWeekly, rng),
     // The season's house (a pick, or the draw made now) and its name.
     houseTheme: SS_HOUSE_THEMES.some(h => h.id === seasonConfig?.ssHouseTheme)
-      ? seasonConfig.ssHouseTheme : SS_HOUSE_THEMES[Math.floor(rng() * SS_HOUSE_THEMES.length)].id,
+      // (with Surprise twists off, a drawn house is never the Arena: its wall splits the house from week two)
+      ? seasonConfig.ssHouseTheme : (H => H[Math.floor(rng() * H.length)].id)(SS_HOUSE_THEMES.filter(h => seasonConfig?.ssSurprise !== 'off' || h.id !== 'arena')),
     // (the season's own title, Season Basics; an old save's Secret Story-only name if it has no title)
     name: String(seasonConfig?.name || seasonConfig?.ssName || '').trim() || null,
     recognitions: recog.filter(r => room.includes(r.who) && room.includes(r.whom)),
@@ -327,8 +331,10 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     const st0 = gs.bb.secretStory;
     let past = [];
     try { past = Object.values(activeSeasons() || {}).map(r => r?.ssDraw).filter(Boolean); } catch { past = []; }
-    const locks = { signature: seasonConfig?.ssSignature || undefined,
-      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : undefined };
+    // (Surprise twists off: no signature twist and no fake elimination the user did not choose)
+    const off = seasonConfig?.ssSurprise === 'off';
+    const locks = { signature: seasonConfig?.ssSignature || (off ? 'none' : undefined),
+      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : (off ? 'off' : undefined) };
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
     // the season's fake eliminations: how many, which kind, how long, and what they do up there (js/ss/hidden.js)

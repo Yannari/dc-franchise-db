@@ -605,6 +605,12 @@ function fillLine(tpl, ctx) {
   if (tpl.includes('{hoh}') && !inHouse(ctx.hoh, roster)) return null;
   if (tpl.includes('{veto}') && !inHouse(ctx.veto, roster)) return null;
   if (tpl.includes('{cursed}') && !inHouse(ctx.cursed, roster)) return null;
+  // the veto meeting's outcome: who came down and who went up, or the block it left alone (the user, 2026-10-31, of
+  // "{veto} saved somebody. The Mastermind is counting to three": "that doesnt mean anything")
+  if (tpl.includes('{saved}') && !inHouse(ctx.saved, roster)) return null;
+  if (tpl.includes('{renom}') && !inHouse(ctx.renom, roster)) return null;
+  const kept = (ctx.kept || []).filter(Boolean);
+  if (tpl.includes('{kept}') && (!kept.length || kept.some(n => !inHouse(n, roster)))) return null;
   if (tpl.includes('{nominees}') && (!noms.length || noms.some(n => !inHouse(n, roster)))) return null;
   if (tpl.includes('{evicted}') && !ctx.evicted) return null;
   // The last night names people who are still there and one who has just won,
@@ -624,6 +630,9 @@ function fillLine(tpl, ctx) {
     .replace(/\{hoh\}/g, ctx.hoh || '')
     .replace(/\{veto\}/g, ctx.veto || '')
     .replace(/\{cursed\}/g, ctx.cursed || '')
+    .replace(/\{saved\}/g, ctx.saved || '')
+    .replace(/\{renom\}/g, ctx.renom || '')
+    .replace(/\{kept\}/g, kept.length > 1 ? `${kept.slice(0, -1).join(', ')} and ${kept[kept.length - 1]}` : (kept[0] || ''))
     .replace(/\{nominees\}/g, list)
     .replace(/\{margin\}/g, ctx.margin || '')
     .replace(/\{evicted\}/g, ctx.evicted || '')

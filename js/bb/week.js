@@ -6514,7 +6514,9 @@ export function simulateBBWeek(options = {}) {
 
     _themeSay(week, 'veto', { hoh: week.hohSecret ? null : week.hoh,
       nominees: week.finalNominees || week.nominees || [],
-      veto: vetoWinner || null, cursed: week.temptationChair || null });
+      veto: vetoWinner || null, cursed: week.temptationChair || null,
+      saved: week.vetoUsed && !week.duoVetoSwap ? week.vetoSaved : null, renom: week.vetoUsed && !week.duoVetoSwap ? week.vetoReplacement : null,
+      kept: week.vetoUsed ? null : (week.finalNominees || week.nominees || []) });
     // ── AFTER the ceremony, because it happens after the ceremony ──
     //
     // Pushed where it was computed, it rendered BEFORE the veto meeting it

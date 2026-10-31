@@ -92,7 +92,9 @@ function _pactPair(house, ctx) {
 }
 
 function _pitchPair(house, ctx) {
-  const noms = _nominees(ctx);
+  // a nominee who has won the veto takes themselves off the block: they have no vote to ask for (the user,
+  // 2026-10-31, at four: "angelica won it, she doesnt need to beg for votes")
+  const noms = _nominees(ctx).filter(n => n !== ctx?.vetoWinner);
   const voters = _voters(house, ctx);
   if (!noms.length || !voters.length) return null;
   const pitcher = _leastSeen(noms)[0];

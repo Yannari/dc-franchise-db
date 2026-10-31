@@ -6,7 +6,7 @@
 // refuses any other key (spec §4.3). New keys arrive with the pool that needs
 // them. Facts are read from the record and the house as it is at the scene —
 // never the truth a speaker has not seen.
-import { gs } from '../../core.js';
+import { gs, seasonConfig } from '../../core.js';
 import { getBond } from '../../bonds.js';
 import { players } from '../../core.js';
 import { pStats } from '../../players.js';
@@ -106,7 +106,17 @@ export function factsFor(scene, ctx = {}) {
 // The outgoing Head of Household does not play in the next HOH competition (until the final one, which all three
 // play): nobody wonders whether the HOH "wins the next HOH" (the user, 2026-10-31: "angelica cant win the next hoh
 // cause she was hoh right now")
+// ...and once the next week is the finale, nobody talks about "next week" as one more week of nominations (the user,
+// 2026-10-31, at four: "{c} would put you up next week": "next week is the finale")
+const NEXT_WEEK = /\bnext week\b/i;
+const finaleNext = () => (gs.activePlayers?.length || 99) <= (Number(seasonConfig?.finaleSize) || 3) + 1;
+// ...and at the final four one person casts the only vote (the veto holder): nobody is "two votes short" or asking
+// the house for its votes (the user, 2026-10-31: "theres only 1 vote at top 4"). The jury's votes are another matter.
+const MANY_VOTES = /\b(votes short|(two|three|four|five|\{gap\}|\{count\}) votes|get the votes|enough votes|the votes are there|counted the votes|count the votes|for their vote|their votes|every vote|anyone's vote|everybody's vote|the numbers)\b/i;
+const turnText = t => [t.say, t.dr, t.beat, ...Object.values(t.v || {})].filter(Boolean).join(' ');
 export function nextHohFits(entry, ctx, who) {
+  if (finaleNext() && (entry.turns || []).some(t => { const s = turnText(t); return MANY_VOTES.test(s) && !/\bjur(y|or)/i.test(s); })) return false;
+  if (finaleNext() && (entry.turns || []).some(t => NEXT_WEEK.test(turnText(t)))) return false;
   const hoh = ctx?.hoh;
   if (!hoh || (gs.activePlayers?.length || 0) <= 4) return true;
   for (const t of entry.turns || []) {

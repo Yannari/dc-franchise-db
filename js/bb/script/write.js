@@ -110,12 +110,8 @@ function acrossSentences(text) {
     if (/^\s+$/.test(part)) return part;
     const named = [...cast].filter(n => new RegExp(`\\b${escRe(n)}\\b`).test(part));
     let out = part;
-    const m = part.match(/^(["“'‘]?)([A-Z][\w-]*)(['’]s)?\s+([a-z']+)/);
-    if (m && only && m[2] === only && named.length === 1) {
-      const p = pronouns(only);
-      if (m[3] && p.posAdj) out = m[1] + capFirst(p.posAdj) + part.slice(m[1].length + m[2].length + m[3].length);
-      else if (!m[3] && p.sub && (p.sub !== 'they' || THEY_SAFE.test(m[4]))) out = m[1] + capFirst(p.sub) + part.slice(m[1].length + m[2].length);
-    }
+    // (anywhere in the sentence, not only at its start: "I voted Ben out. Now Ben gets a vote on me", 2026-10-31)
+    if (only && named.length === 1 && named[0] === only) out = pronounize(part, only);
     only = named.length === 1 ? named[0] : null;
     return out;
   }).join('');
@@ -123,10 +119,87 @@ function acrossSentences(text) {
 export const said = (kind, text) => acrossSentences(sIs(kind === 'beat' ? beatRepeats(tidyNames(text)) : tidySpoken(text)));
 
 /**
+ * A conversation about somebody who is not there says their name once, then "he", "she" or "they" (the user,
+ * 2026-10-31, of a kitchen talk that said "Ben" in six lines running: "they're saying Ben's name too much, use
+ * pronouns"). Once a line names one absent person, the next lines that name only that person (within three
+ * spoken lines) take the pronoun; a confessional starts again, as it is said to the camera, not to the room, and
+ * says the name once before its own sentences take over (acrossSentences). Never for a name that is called out
+ * ("Ben, come here"), joined to another ("Ben and I"), or a "they" whose verb would have to change.
+ */
+// "Zee's inside" is "she's inside", not "her inside": what follows a contracted "is"/"has" rather than a thing owned
+const CONTRACTED = /^(been|got|one|going|gone|not|a|an|the|just|so|really|always|never|still|already|right|wrong|in|at|on|too|very|definitely|probably|done|out|up|mad|upset|angry|over|inside|outside|upstairs|downstairs|here|there|back|home|with|by|for|from|about|after|like|all|also|ever|actually|literally|totally|basically|clearly|obviously|honestly|only|even|asleep|awake|alone|okay|sick|tired|hurt|sad|happy|nice|sure|different|better|worse|next|last|first|off|away|around|through|under|into|almost|nearly|quite|pretty|kind|sort|safe|fine|scared|nervous|worried|right|lying|crying|told|said|made|kept|left|taken|had)$/;
+const ING_NOUN = /^(thing|nothing|something|anything|everything|ring|king|wing|morning|evening|wedding|feeling|meeting|building|ceiling|painting|clothing|bedding|stocking|string|sibling|darling|pudding|ending|wording|ranking|standing|timing|reading|opening|winning|winnings|singing|cooking|washing|ironing)$/;
+const contracted = w => CONTRACTED.test(w) || (/^[a-z]{2,}(ing|ed)$/.test(w) && !ING_NOUN.test(w));
+// a question turns its subject round ("Who did Chase say that to?", "Has Emmah ever lied?"): the name is the subject
+const AUX = /^(did|does|do|has|have|had|is|was|are|were|can|could|will|would|should|might|must|didn't|doesn't|hasn't|isn't|wasn't|can't|won't|wouldn't|couldn't|shouldn't)$/;
+// ...as it is after a word that opens a clause ("Then Zee knew", "since Caleb went", "maybe Brightly guessed")
+const CLAUSE = /^(then|so|since|maybe|now|but|or|though|although|once|whenever|cause|plus|unless|guess|think|bet|hope|swear|know|knew|said|says|mean|means|thought|reckon|suppose)$/;
+// ...and before an adverb that sits in front of its verb ("Chase never tells you anything")
+const ADV = /^(never|always|just|still|already|really|actually|even|ever|only|also|probably|definitely|literally|honestly|clearly|obviously|barely|hardly|totally|basically|seriously)$/;
+const IRREG = /^(knew|said|told|went|got|made|thought|kept|left|took|gave|came|saw|ran|won|lost|put|sent|sat|felt|heard|found|meant|brought|bought|caught|taught|fought|threw|wrote|spoke|broke|chose|forgot|began|drank|ate|slept|stood|understood|became|let|hit|quit|swore|wore|hid|bit|shook|grew|blew|drew|flew|held|led|paid|read|stuck|struck|spent|lent|built|dealt)$/;
+const NOT = /^[a-z]+n't$/;
+const THEY_AUX = /^(did|can|could|will|would|should|might|must|didn't|can't|won't|wouldn't|couldn't|shouldn't)$/;
+function pronounize(text, name) {
+  const p = pronouns(name);
+  if (!p?.sub) return text;
+  const re = new RegExp(`\\b${escRe(name)}\\b(['’]s)?`, 'g');
+  return text.replace(re, (m, poss, at, whole) => {
+    const before = whole.slice(0, at), after = whole.slice(at + m.length);
+    const opens = /(^|[.!?…]["”’]?\s+)["“‘]?$/.test(before);
+    const next = ((after.match(/^\s+([A-Za-z']+)/) || [])[1] || '').toLowerCase();
+    const prev = ((before.match(/([A-Za-z']+)\s+$/) || [])[1] || '').toLowerCase();
+    const cap = w => (opens ? capFirst(w) : w);
+    if (/^(and|or|nor)$/.test(next) || /^(and|or|nor)$/.test(prev)) return m;
+    if (poss) {
+      // "Ben's gone" is "he's gone"; "Ben's mug" is "his mug"; "it was Ben's." is "it was his."
+      if (contracted(next)) return p.sub === 'they' ? m : cap(`${p.sub}'s`);
+      return /^\s*[A-Za-z]/.test(after) ? cap(p.posAdj || m) : cap(p.pos || m);
+    }
+    // a name with nothing after it but a comma or a mark is called out or ends the thought: kept
+    if (!next) return m;
+    const asked = AUX.test(prev);
+    if (opens || asked || SUBJ_AFTER.test(prev) || CLAUSE.test(prev) || VERBISH.test(next) || IRREG.test(next) || NOT.test(next) || ADV.test(next)) {
+      // ("Millie it is": a name in a set phrase stays a name)
+      if (/^(it|that|this|he|she|they|you|i|we)$/.test(next)) return m;
+      if (p.sub !== 'they') return cap(p.sub);
+      // "they" changes the verb ("they never tells", "has they"): only where it does not
+      return (asked ? THEY_AUX.test(prev) : THEY_SAFE.test(next) || IRREG.test(next)) ? cap(p.sub) : m;
+    }
+    return p.obj || m;
+  });
+}
+const SPOKEN_GAP = 3;
+/** @param {{ kind: string, by?: string|null, text: string, bg?: boolean }[]} lines */
+export function topicPronouns(lines) {
+  if (!Array.isArray(lines) || lines.length < 2 || writing.pronouns === false) return lines;
+  const cast = [...new Set((players || []).map(p => p?.name).filter(Boolean))];
+  if (!cast.length) return lines;
+  const present = new Set(lines.filter(l => !l.bg).map(l => l.by).filter(Boolean));
+  const namedIn = t => cast.filter(n => new RegExp(`\\b${escRe(n)}\\b`).test(String(t || '')));
+  let topic = null, gap = 0;
+  return lines.map(l => {
+    if (l.bg) return l;
+    if (l.kind === 'dr') { topic = null; return l; }
+    const names = namedIn(l.text);
+    const away = names.filter(n => !present.has(n));
+    if (l.kind === 'beat') {
+      // a stage direction about somebody else moves the talk on; one about the people in the room does not
+      if (away.some(n => n !== topic)) topic = null;
+      return l;
+    }
+    let text = l.text;
+    if (topic && names.length === 1 && names[0] === topic && gap <= SPOKEN_GAP) text = pronounize(text, topic);
+    if (away.length === 1) { topic = away[0]; gap = 0; } else if (away.length > 1) topic = null; else gap++;
+    return text === l.text ? l : { ...l, text };
+  });
+}
+
+/**
  * For tests only: muted, a scene is not written at all (no pick, no ledger).
  * A season played muted must match one played with words, event for event —
  * the proof that picking a line never moves the engine.
  */
+/** @type {{ muted: boolean, pronouns?: boolean }} pronouns: false turns topicPronouns off, to read what it changed */
 export const writing = { muted: false };
 
 /**
@@ -217,11 +290,11 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
   if (!entry) throw new Error(`no lines for ${key}`);
   let lineToken = null;
   if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey, book: gs.bb?.lineLedger || null }); }
-  const lines = entry.turns.map(t => {
+  const lines = topicPronouns(entry.turns.map(t => {
     const kind = t.dr ? 'dr' : t.beat ? 'beat' : 'say';
     const by = t.by ? who[t.by] || (t.by === 'hoh' ? ctx.hoh : null) : null;
     return { kind, by, text: said(kind, fill(variantOf(t, by, `${entry.id}|${pairKey}|${ctx.week?.num || 0}`) ?? (t.dr || t.beat || t.say), who, ctx, scene.data || {})) };
-  });
+  }));
   // what the scene is about, when its pool is written for any cause: one plain sentence before it (the user,
   // 2026-10-30, of "Not until you tell me the truth": "truth about what theres no setup or reasoning")
   if (typeof scene.data?.setup === 'string' && scene.data.setup) lines.unshift({ kind: 'beat', by: null, text: scene.data.setup });

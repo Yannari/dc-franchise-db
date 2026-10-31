@@ -118,45 +118,48 @@ export default {
         ],
       },
       noms: {
+        // (said plainly, what happened and what the Mastermind makes of it: the user, 2026-10-31, "that doesnt mean
+        // anything", of a line that hinted instead of saying)
         neutral: [
-          '{hoh} has named {nominees}. The Mastermind finds the choice illuminating.',
-          '{nominees}. The hotel has noted the names, in a book nobody has found.',
-          '{hoh} put up {nominees}, and did not ask who suggested it.',
-          '{nominees} are on the block, and one of them has been in a room they should not have been in.',
+          '{hoh} has nominated {nominees}. The Mastermind would have picked the same names.',
+          '{nominees} are on the block. The Mastermind is watching to see which of them panics first.',
+          '{hoh} put up {nominees}. The Mastermind did not have to say a word.',
+          'The block is {nominees}. One of them will be gone by the end of the week.',
         ],
         hostile: [
-          '{hoh} names {nominees}. The Mastermind allowed that ceremony to happen.',
-          '{nominees}. He has already decided which of them matters, and it is not the one you think.',
-          'The block reads {nominees}. It will not read that by Thursday.',
-          '{hoh} believes this week belongs to {hoh}.',
+          '{hoh} nominated {nominees}. The Mastermind let {hoh} have this week. The next one is his.',
+          '{nominees} are on the block. He already knows which one he wants gone, and he is not saying.',
+          'The block is {nominees}. Whatever the house decides, the Mastermind gets someone he wanted out.',
+          '{hoh} thinks being Head of Household makes this week theirs. The Mastermind disagrees.',
         ],
       },
+      // after the veto meeting: {saved} came down and {renom} went up; {kept} is the block the veto left alone
       veto: {
         neutral: [
-          '{veto} holds the veto. The hotel is delighted.',
-          'The veto has moved. Somewhere a door has locked that used to open.',
-          '{veto} won something today. Whether they won the right thing is a separate question.',
-          'A veto changes hands. The Mastermind enjoys the small ones.',
+          '{veto} used the veto on {saved}, and {renom} went up in their place. The Mastermind is happy with either name.',
+          '{veto} kept the veto. {kept} stay on the block, which is how the Mastermind hoped it would go.',
+          '{veto} pulled {saved} off the block. Now it is {renom} in the chair, and the Mastermind is watching {renom}.',
+          '{veto} won the veto, and the block is {nominees}. The Mastermind has no complaints.',
         ],
         hostile: [
-          '{veto} has the veto. It is not the piece on this board that is moving.',
-          'The veto went to {veto}. He let it.',
-          'A necklace, at this stage. How touching.',
-          '{veto} saved somebody. The Mastermind is counting to three, and that did not change the count.',
+          '{veto} saved {saved}. It changes nothing for the Mastermind: {renom} was on his list too.',
+          '{veto} did not use the veto. {kept}: one of you goes home this week, and he is pleased with both.',
+          '{veto} took {saved} down, and {renom} went up. The Mastermind would have chosen {renom} himself.',
+          '{veto} has the veto, and the block is {nominees}. He wanted it exactly like this.',
         ],
       },
       vote: {
         neutral: [
-          '{evicted} is evicted, {margin}. The hotel is one room emptier and does not seem smaller.',
-          '{margin}. {evicted} checks out. Their key still works — nobody has thought to test that.',
-          'The house evicts {evicted}, {margin}. Somebody in that room voted the way they were told to and does not know it.',
-          '{evicted} leaves on a {margin}. The Mastermind has no notes.',
+          '{evicted} is evicted, {margin}. One more room in the hotel is empty.',
+          '{evicted} is out, {margin}. The Mastermind did not need a vote of his own to get that result.',
+          'The house evicts {evicted}, {margin}. At least one of those votes was the Mastermind\'s idea, whoever cast it.',
+          '{evicted} leaves on a {margin}. That is exactly how the Mastermind wanted it to go.',
         ],
         hostile: [
-          '{evicted} is evicted, {margin}. That is one.',
-          '{margin}. {evicted} was a sacrifice, and the house held the knife for him.',
-          '{evicted} goes. The Mastermind did not need the vote to be close and it was not.',
-          '{margin}. He is counting down, and you are helping.',
+          '{evicted} is evicted, {margin}. The Mastermind is one name closer to his final three.',
+          '{margin}. The house sent {evicted} home, and did the Mastermind\'s work for him.',
+          '{evicted} goes home, {margin}. The Mastermind never had to cast a vote himself.',
+          '{margin}, and {evicted} is gone. Every eviction brings the Mastermind closer to his last three, and the house keeps helping.',
         ],
       },
 

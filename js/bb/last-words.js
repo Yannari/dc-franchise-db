@@ -942,7 +942,11 @@ export function checkBBLastWords(week, rngIn) {
   }
 
   // ── the room ──
-  const listeners = (gs.activePlayers || []).filter(n => n !== evictee && n !== reveal.accused);
+  // (nor the other half of what was named: the partner in a revealed final two is not hearing news, and does not
+  // demand "I want to hear it from you" of the person they made the deal with; the user, 2026-10-31: "ivyna is the
+  // one in the final 2 with baxter")
+  const named = new Set([reveal.accused, reveal.partner, ...(reveal.members || [])].filter(Boolean));
+  const listeners = (gs.activePlayers || []).filter(n => n !== evictee && !named.has(n));
   const reactions = [];
   // One drawer for the whole room, so fourteen people do not react in the same
   // eight words.

@@ -122,6 +122,15 @@ export default {
       { by: 'a', say: "Not one I'm happy with." },
       { by: 'b', dr: "{a} keeps saying {d} is safe. {d} is only safe if {c} stays on the block." },
     ] },
+    // onespare: {b} is the only person left who could be named as a replacement (story/write.js), and both of them know it
+    { id: 'ha.p5', presumes: ['hoh', 'noms', 'onespare'], room: 'hoh-room', turns: [
+      { beat: 'HOH room, after the ceremony. {b} sits down on the end of the bed.' },
+      { by: 'b', say: "If the veto comes off {d}, I'm going up, aren't I?" },
+      { by: 'a', say: "You're the only one left who can. I don't get a choice." },
+      { by: 'b', say: "So {d} can't win it. And neither can {c}." },
+      { by: 'a', say: "One of us has to win it. You or me." },
+      { by: 'b', dr: "{d} is the pawn on paper. But if anybody uses that veto, I'm the one who goes up next to {c}." },
+    ] },
   ],
 
   // ── after the ceremony: two names the HOH would both send home ──
@@ -163,6 +172,23 @@ export default {
       { by: 'b', say: "So you'd rather {d} goes?" },
       { by: 'a', say: "I'd be fine with either. I'd just sleep better if it's {d}." },
       { by: 'b', dr: "{a} put up two people and still hasn't said which one {a} wants gone. I think {a} is waiting to see who wins the veto." },
+    ] },
+    { id: 'ha.t5', presumes: ['hoh', 'noms', 'onespare'], turns: [
+      { by: 'b', say: "Which one do you actually want gone?" },
+      { by: 'a', say: "Honestly? {c}. But I'd be fine with {d} going too." },
+      { by: 'b', say: "And if one of them wins the veto?" },
+      { by: 'a', say: "Then I have to put you up. There's nobody else left." },
+      { by: 'b', say: "I know. I've thought about nothing else all day." },
+      { by: 'a', say: "So we both play in that veto like it's the last one. Because for us it is." },
+      { by: 'b', dr: "If the veto gets used, I'm the only person {a} can put up. {a} doesn't want to. {a} won't have a choice." },
+    ] },
+    { id: 'ha.t6', presumes: ['hoh', 'noms', 'onespare'], room: 'hoh-room', turns: [
+      { beat: 'HOH room, after the ceremony. {a} and {b} are sitting on the floor.' },
+      { by: 'b', say: "You know who goes up if {c} or {d} wins the veto." },
+      { by: 'a', say: "You. I know. I hate it." },
+      { by: 'b', say: "Then you'd better hope neither of them wins it." },
+      { by: 'a', say: "I'm not hoping. I'm going to win it myself." },
+      { by: 'a', dr: "There's one person left I could put up as a replacement, and it's {b}. So the veto has to end up with me or with {b}." },
     ] },
   ],
 

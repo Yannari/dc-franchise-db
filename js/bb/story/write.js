@@ -202,6 +202,9 @@ const ssGate = sc => (!sc || !ssSeason() || !(sc.lines || []).some(l => BB_GAME_
 const ssSeason = () => seasonFormat(seasonConfig) === SS_FORMAT;
 const VETO_DRAW = /\b(veto draw|the draw|that draw|the bag|a bag|get picked to play|gets picked to play)\b/i;
 const vetoDrawn = ctx => ctx.week?.vetoDraw ? !ctx.week.vetoDraw.everybodyPlays : (gs.activePlayers?.length || 0) > 6;
+const OPEN_RENOM = /\b(replacement|put (somebody|someone|anybody|anyone) (else )?up|anybody I care about|somebody I didn't plan on|somebody I'm okay losing)\b/i;
+/** Who could be named if the veto is used: everyone in the house but the HOH and the nominees. */
+const sparesOf = ctx => (gs.activePlayers || []).filter(n => n !== ctx.hoh && !(ctx.nominees || []).includes(n));
 function presumed(entry, ctx, who = null, data = null) {
   if (ssSeason() && (entry.presumes || []).some(p => ['hoh', 'hohc', 'vote', 'jurors', 'preveto', 'postveto', 'final'].includes(p))) return false;
   if (ssSeason() && BB_GAME_WORDS.test(JSON.stringify(entry.turns || []))) return false;
@@ -209,7 +212,18 @@ function presumed(entry, ctx, who = null, data = null) {
   // there is no bag (the user, 2026-10-31: "there 5 theres no more draw"). Read off the words, so no new line forgets it.
   if (VETO_DRAW.test(JSON.stringify(entry.turns || [])) && !vetoDrawn(ctx)) return false;
   if (who && !nextHohFits(entry, ctx, who)) return false;
+  // the replacement as a choice ("I put somebody else up", "I've got a couple of names") needs somebody to choose
+  // from: with one person left off the block it is that person, and the HOH knows it (the user, 2026-10-31, of "I'm
+  // not putting up anybody I care about", said at four to the only one who could go up)
+  const spare = sparesOf(ctx);
+  if (!ctx.cer && !(entry.presumes || []).includes('onespare')) {
+    const words = JSON.stringify(entry.turns || []);
+    if (spare.length <= 1 && OPEN_RENOM.test(words)) return false;
+    if (spare.length <= 2 && /\b(couple of names|a few names|plenty of options)\b/i.test(words)) return false;
+  }
   for (const p of entry.presumes || []) {
+    // onespare: {b} is the only houseguest who is neither the HOH nor on the block
+    if (p === 'onespare' && !(spare.length === 1 && (!who || who.b === spare[0]))) return false;
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
     // earlier. For forty minutes?" about their own room)
     if (p === 'guests' && who && ctx.hoh && [who.a, who.b].includes(ctx.hoh)) return false;

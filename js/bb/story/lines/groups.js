@@ -406,13 +406,14 @@ export default {
       { beat: '{a} sings. Badly. {d} does the dishes. {b} and {c} join in on the chorus.' },
       { by: 'c', dr: "We sang four songs and did every dish in the house. Best hour all week. Don't tell anyone, they'll expect it again." },
     ] },
+    // (it was a riddle about Thursdays and crying, the user 2026-10-31: "this conversation dont mean anything")
     { id: 'gb.7', presumes: ['hoh'], turns: [
-      { by: 'b', say: "Does anyone actually know what day it is?" },
-      { by: 'c', say: "Thursday?" },
-      { by: 'd', say: "It's definitely not Thursday. Nobody's crying." },
-      { by: 'b', say: "That's honestly the best way to tell." },
-      { by: 'a', say: "It feels like a Tuesday. Every day in here feels like a Tuesday." },
-      { by: 'b', dr: "You stop knowing what day it is. You start knowing what kind of day it is. This is a waiting day." },
+      { by: 'b', say: "Does anybody know what day it is?" },
+      { by: 'c', say: "No idea. I know who won HOH, and that's about it." },
+      { by: 'd', say: "I only count down to the vote. That's the only day that matters in here." },
+      { by: 'b', say: "Same. Everything in between is just waiting to find out who's going." },
+      { by: 'a', say: "And eating. Waiting and eating." },
+      { by: 'b', dr: "There are no clocks or calendars in here. You count the days between the competitions and the votes. Right now we're all just waiting for the next one." },
     ] },
   ],
   'story.life.latenight.group': [

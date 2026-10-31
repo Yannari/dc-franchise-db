@@ -214,7 +214,23 @@ const apologyWithoutTrust = {
 // 3 — the fight the rest of the house has to have an opinion about
 // ══════════════════════════════════════════════════════════════════════
 
-const FIGHT_TYPES = ['threatened-me-live', 'humiliation', 'would-not-let-it-go', 'saw-them-fight'];
+// (not 'saw-them-fight': that is a memory of watching two OTHER people fight, and it set the one who watched against
+// one of the two who fought)
+const FIGHT_TYPES = ['threatened-me-live', 'humiliation', 'would-not-let-it-go'];
+// What the fight was, said plainly, so every line about the sides names it (the user, 2026-10-31, of "After that
+// fight, I have to stand with Baxter": "what fight?")
+function fightOf(m, hurt, other) {
+  const d = m?.details || {};
+  if (m?.type === 'threatened-me-live') return `${other}'s threat in the eviction speech`;
+  if (m?.type === 'humiliation') {
+    if (d.act === 'nominations') return `${other} putting ${hurt} on the block`;
+    if (d.about === 'a prank') return `${other}'s prank on ${hurt}`;
+    if (d.at === 'a house meeting') return `${hurt} and ${other}'s row at the house meeting`;
+    if (d.about === 'living-room joke') return `${other}'s joke about ${hurt}`;
+    return `${hurt} and ${other}'s screaming match`;
+  }
+  return `${hurt} and ${other}'s argument`;
+}
 
 const fightSplitsTheRoom = {
   id: 'arc-fight-splits-the-room',
@@ -230,13 +246,13 @@ const fightSplitsTheRoom = {
   },
   fire(house, ctx, api) {
     const pair = pairFromMemory(house, FIGHT_TYPES, 'house-picked-sides', ctx)
-      || { a: house[0], b: house[1] };
+      || { a: house[0], b: house[1], m: null };
     const { a: hurt, b: other } = pair;
     const rest = quiet(house.filter(n => n !== hurt && n !== other));
     const forHurt = closestTo(hurt, rest) || rest[0];
     const forOther = closestTo(other, rest.filter(n => n !== forHurt)) || rest.find(n => n !== forHurt) || rest[1];
 
-    const scene = makeScene('arc.sides', { a: forHurt, b: forOther || null }, { ending: 'scene', target: hurt, partner: other }, [], 'living-room');
+    const scene = makeScene('arc.sides', { a: forHurt, b: forOther || null }, { ending: 'scene', target: hurt, partner: other, fight: fightOf(pair.m, hurt, other) }, [], 'living-room');
 
     if (forHurt) {
       api.addBond(forHurt, hurt, 0.9);

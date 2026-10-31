@@ -17,7 +17,7 @@ import { gs, seasonConfig, seasonFormat } from '../../core.js';
 import { SS_FORMAT } from '../../shows.js';
 import { ssTalkFor } from './sstalk.js';
 import { classify, file, causeOf } from './storylines.js';
-import { lineAired } from '../script/write.js';
+import { lineAired, topicPronouns } from '../script/write.js';
 import { writeStoryScene, recapAired, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
 import { voteTalkFor } from './votetalk.js';
 import { runnerDue, arcDue } from './arcs.js';
@@ -205,7 +205,8 @@ export function airStorylines(week) {
     // else's conversation it is a second location (the read of 2026-10-14: a lookout in a kitchen row)
     // ...but only an opening that sets a PLACE: one that sets up the moment itself ("Caleb finds Chase on
     // the floor with the letter open") is kept, or "I'm fine. Happy tears." answers nothing (read 2026-10-14)
-    const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass|path|volcano|lagoon|waterfall|beach|dock|reeds|log|umbrella|spray|court|gym|memory wall)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
+    // (a bed too: "Angelica sits down on the end of Michele's bed" aired in the storage room, read 2026-10-31)
+    const PLACE = /\b(kitchen|backyard|bedroom|living room|storage|pantry|lookout|pier|pond|hot tub|pool|garden|deck|bathroom|HOH room|hammock|sofa|couch|stairs|fence|loungers?|grass|path|volcano|lagoon|waterfall|beach|dock|reeds|log|umbrella|spray|court|gym|memory wall|bed|bunk)\b|^(Up|Out|Down|Over) (at|on|by|in)\b/i;
     const firstSay = sc.lines.findIndex(l => l.kind === 'say');
     const own = sc.lines.filter((l, i) => l.kind !== 'dr' && !l.bg && !(l.kind === 'beat' && i < firstSay && PLACE.test(String(l.text || ''))));
     const drs = sc.lines.filter(l => l.kind === 'dr');
@@ -757,6 +758,9 @@ export function airStorylines(week) {
   // confessional changing subject mid-thought (the user, 2026-10-31: "Angelica was just sad, and she was right to be"
   // then "Angelica wins from any chair": "no correlation between the two confessionals"): it airs a scene later.
   for (const act of week.acts) if (act?.scenes?.length > 1) apartDiaries(act.scenes);
+  // somebody who is not in the room is named once, then "he" or "she" (script/write.js topicPronouns): run on the
+  // finished scene, after a moment was folded into it, so the folded lines count as the same conversation
+  for (const act of week.acts) for (const sc of act?.scenes || []) if (Array.isArray(sc?.lines)) sc.lines = topicPronouns(sc.lines);
   // A Secret Story house has no Head of Household's week: no block, no key, no veto, no "whoever wins puts X up", no
   // final-two deal for a jury that does not exist. The engine still hands the Voice's game winner Big Brother's house
   // moments (breakfast in bed for whoever "holds the key", the pitch "you'd do the house a favour if X went up"), and

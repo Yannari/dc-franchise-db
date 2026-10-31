@@ -68,7 +68,7 @@ export const HUT_VOLUME_2 = {
     ...lines('hutv2.pull.r1.h', K('pull', { ...B, role: 1, rebuffed: false }), [
       "I didn't see that coming from {b}. I'm not saying I mind.",
       "{b} has got me thinking. I wasn't expecting to be thinking today.",
-      "That was a nice surprise. I'm still smiling. Don't tell anyone.",
+      "That was a nice surprise. I'm still smiling.",
     ]),
     ...lines('hutv2.chat.h', K('chat', B), [
       "Me and {b} just make sense. I don't know how else to put it.",
@@ -105,12 +105,12 @@ export const HUT_VOLUME_2 = {
       "I was so busy making sure I didn't give anything away, I forgot to actually play.",
       "Games like that are dangerous for someone like me right now. I got through it. Just.",
       "One wrong question, and that challenge would have been the end of me.",
-      "I kept a straight face the whole way through. I deserve an award.",
+      "I kept a straight face the whole way through. Inside, I was panicking.",
     ]),
     ...lines('hutv2.cer.t', { kind: CEREMONY }, [
       "Everyone's scared of the fire pit. I'm scared of what somebody might say at it.",
       "I'm holding hands and smiling, and inside I'm counting how many people know.",
-      "If tonight's the night it all comes out, I'd rather it came out later. Much later.",
+      "If tonight's the night it all comes out, I'm not ready. I'm not ready at all.",
       "I'm not nervous about being dumped. I'm nervous about being found out first.",
       "Smile. Hold hands. Don't look at anyone you shouldn't. That's my whole plan for tonight.",
       "Fire pits make people honest. That's why I hate them right now.",
@@ -135,7 +135,7 @@ export const HUT_VOLUME_2 = {
     ...lines('hutv2.movie.t', { kind: MOVIE }, [
       "Every clip they played, I was waiting for my face to come up. It didn't. This time.",
       "I watched that whole night with my heart in my mouth.",
-      "I clapped for every clip that wasn't me. Loudly.",
+      "I clapped for every clip that wasn't me. Loudly. I was so relieved.",
     ]),
     ...lines('hutv2.couple.t', { kind: COUPLE, ...B }, [
       "{b} thinks everything is perfect. I'd like to keep it that way.",

@@ -17,7 +17,7 @@ export const HUT_VOLUME_4 = {
       "I'm not usually this soppy. {b} has turned me soppy. I'm not even fighting it.",
       "That kiss was the best bit of my day, and it's been a good day.",
       "I keep thinking it'll wear off, the way I feel when {b} kisses me. It hasn't yet.",
-      "{b} kissed me in front of everyone, and I didn't even go red. Much.",
+      "{b} kissed me in front of everyone, and I didn't even care who was watching.",
     ]),
     ...lines('hutv4.ick.r0.h', K('ick', { ...B, role: 0 }), [
       "I wanted it to work with {b}. I really did. And then it just went.",
@@ -41,7 +41,7 @@ export const HUT_VOLUME_4 = {
       "{b} said what I was too scared to say to myself.",
       "I needed to hear that. I didn't want to. I needed to.",
     ]),
-    ...lines('hutv4.deep.h', K('deep-chat', B), [
+    ...lines('hutv4.deep.h', K('deep-chat', { ...B, role: 1, end: 'open' }), [
       "I didn't expect to cry today. I didn't expect to cry with {b} either.",
       "There are some people you can be completely honest with. {b} is one of them.",
       "{b} asked the right questions. Nobody asks the right questions.",
@@ -125,12 +125,12 @@ export const HUT_VOLUME_4 = {
     ...lines('hutv4.advice.t', K('advice', { ...B, role: 0 }), [
       "I told {b} to be honest with everyone. I really should listen to my own advice.",
       "I gave {b} good advice. It just happened to suit me as well.",
-      "It's funny, giving advice about trust. Very funny.",
+      "I told {b} to trust {b.posAdj} partner. I'm the last person who should be saying that.",
     ]),
     ...lines('hutv4.gkiss.t', K('game-kiss', { role: 0 }), [
       "It's a game. That's what I'll say. That's what I'll keep saying.",
-      "That kiss gave me cover and a bit of fun. Two birds.",
-      "Nobody can be angry about a game kiss. Can they? They can. Oh no.",
+      "That kiss gave me cover. Nobody's going to ask questions about a game kiss. I hope.",
+      "Nobody can be angry about a game kiss. Can they? I think {b}'s partner might be.",
       "I chose who I chose. In a game, nobody's allowed to ask why.",
     ]),
     ...lines('hutv4.gkiss.r1.t', K('game-kiss', { role: 1 }), [

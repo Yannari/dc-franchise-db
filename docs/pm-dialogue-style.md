@@ -69,6 +69,14 @@ so "cracking on" needs a slot of its own before it is used.
 
 ## 4. The shapes
 
+**Write a scene WHOLE (2026-10-30).** The user: "the writing is genuinely bad, they talk in sentences
+that don't make sense, less trying to be clever, just talk with their feelings." A scene is one
+conversation written start to finish (`talk/whole/<kind>.js`, `moves.whole`), not movements picked one
+at a time: every line answers the one before, and it never changes subject. Key lines carry voices
+(`talk/whole/voice.js` `say()`: lad, bestie, romantic, player, quiet, and the registers), so a laid-back
+lad says "I'm telling you, bro, she wants me" where a quiet one says "I like her." The shapes below are
+what a whole scene covers, not pieces to stitch.
+
 ### The chat (a pulls b)
 1. **Open.** "Can I grab you for a chat?" / "You okay?" "Yeah, you?" — a beat of nerves or a tease.
 2. **Purpose.** Why now, tied to the cause: "I just wanted to see where your head's at after last
@@ -76,8 +84,8 @@ so "cracking on" needs a slot of its own before it is used.
 3. **The answer.** The long turn. b says where they actually are, with a restart and an example.
 4. **Probe.** a pushes on the part that matters: "You paused there." / "So there's room?" / "And how do
    you feel about her?"
-5. **Tangent** (optional). A tease, a story, a joke about the villa; brings the length without moving
-   the outcome.
+5. ~~Tangent~~. Removed 2026-10-30: a chat stays on what it is about (the user: "what's the
+   correlation between him and Jess and whistling?").
 6. **Turn.** What the engine decided: reassure, keep the door open, flirt back, shut it down, a kiss.
 7. **Close.** "Right, I'll let you get back." / "I'm excited for bed tonight." / they head back, someone
    watching.
@@ -108,13 +116,14 @@ quiet or territorial → first impressions in the hut.
 
 ## 5. The beach hut
 
-One feeling and its reason, about this scene: 1-4 sentences, then often a joke on the end. "He said no,
-but he said it really nicely, which in here basically means maybe." Never a summary of the plot.
+One feeling and its reason, about this scene: 1-4 sentences, said plainly. No joke on the end
+("Probably.", "Much.", "Funny, that.", "Onwards.": cut 2026-10-30). The speaker says the side of the
+scene they were on (`role` 0 started it, 1 was on the end of it). Never a summary of the plot.
 
 ## 6. The narrator
 
-A comic aside on what the viewer just saw, dry and British: short, about the moment, never mean about
-a real group, never explaining the joke. Not on every scene.
+What is happening and what is at stake, plainly, then stop (rewritten 2026-10-30: it was a copy of a
+real show's comic voiceover). Never says how a scene ends before it does.
 
 ## 7. Personality
 

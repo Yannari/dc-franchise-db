@@ -23,7 +23,7 @@ export const HUT_CONFRONT = {
     ]),
     ...lines('hutc.r0.forgive.h', K({ role: 0, verdict: 'forgive', believed: false }), [
       "Maybe I'm an idiot for forgiving {b}. I'd rather be an idiot than spend the rest of this wondering.",
-      "We're okay. I think we're okay. Ask me again in a few days.",
+      "We're okay. I think we're okay. I want us to be okay.",
       "{b} said sorry, and I believed it. I hope I'm right.",
     ]),
     ...lines('hutc.r0.believed.h', K({ role: 0, believed: true }), [
@@ -42,11 +42,11 @@ export const HUT_CONFRONT = {
     ]),
     ...lines('hutc.r1.forgive.h', K({ role: 1, verdict: 'forgive' }), [
       "{b} has given me another chance. I'm not wasting it.",
-      "I don't know what I did to deserve {b}. Clearly not much, lately.",
+      "I don't know what I did to deserve {b}. I'm going to make sure I deserve {b.obj} from now on.",
     ]),
     ...lines('hutc.r1.warn.h', K({ role: 1, verdict: 'warning' }), [
       "I'm on thin ice with {b}. I'm going to be very, very careful from now on.",
-      "{b} is watching me now. Fair enough. I'd watch me too.",
+      "{b} is watching me now. I don't blame {b.obj}. I'd watch me too.",
     ]),
     ...lines('huts.r0.them.h', R({ role: 0, side: 'them' }), [
       "What I do is between me and {c}. {b} needs to learn that.",
@@ -80,7 +80,7 @@ export const HUT_CONFRONT = {
     ]),
     ...lines('huts.r1.back.h', R({ role: 1, of: 'back' }), [
       "{b} came at me, so I gave it straight back. What did {b} expect?",
-      "I'm the one getting shouted at, for something {b} did. Make it make sense.",
+      "I'm the one getting shouted at, for something {b} did. It's not fair, and I'm not going to pretend it is.",
     ]),
   ],
   'two-faced': [
@@ -90,7 +90,7 @@ export const HUT_CONFRONT = {
     ]),
     ...lines('hutc.r1.deny.t', K({ role: 1, of: 'denies', believed: false }), [
       "{b} doesn't believe me. Fine. Nobody can prove anything.",
-      "I stuck to my story. It's a good story. I'm sticking to it.",
+      "I stuck to my story. I'm going to keep sticking to it. I don't have a choice now.",
     ]),
     ...lines('hutc.r1.blames.t', K({ role: 1, of: 'blames' }), [
       "If everyone's talking about {c}, nobody's talking about me. That works for me.",
@@ -110,11 +110,11 @@ export const HUT_CONFRONT = {
     ]),
     ...lines('huts.r1.t', R({ role: 1 }), [
       "Information is the most useful thing in this villa. I'm not going to apologise for having it.",
-      "{b} thinks this is about {c}. It's about who's in charge of the villa's gossip. Me.",
+      "{b} thinks this is about {c}. It's not. It's about me not wanting to be the one everyone talks about.",
     ]),
     ...lines('hutc.r0.t', K({ role: 0 }), [
       "I gave {b} a hard time about secrets. I know. I'm not exactly an open book myself.",
-      "It's funny, having a go at {b} for keeping things from me. Very funny.",
+      "I had a go at {b} for keeping things from me. I'm keeping things from {b.obj} too. I know.",
     ]),
   ],
 };

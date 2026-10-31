@@ -426,9 +426,13 @@ export const NAMED_A = {
       'People underestimate {x}, and I think {x} likes it that way.',
       '{x} is nicer than me and smarter than people think, and that’s a dangerous mix.',
       'I never fully trusted {x}. I can’t tell you why, it was just a feeling.',
+      'I never knew where I stood with {x}. Not once, the whole time.',
+      '{x} was always a step ahead of the rest of us, and I don’t think people saw it.',
     ],
-    hot: ['Watch {x}. That’s all I’ll say.', '{x} is not as innocent as {x} looks.', 'I warned people about {x} for a week, and they voted me out instead.'],
-    hurt: ['I hope {x} is kinder to the next person than {x} was to me.', 'I wanted to trust {x}. I just couldn’t.'],
+    hot: ['Watch {x}. That’s all I’ll say.', '{x} is not as innocent as {x} looks.', 'I warned people about {x} for a week, and they voted me out instead.',
+      'I didn’t trust {x} from the first week, and I was right not to.'],
+    hurt: ['I hope {x} is kinder to the next person than {x} was to me.', 'I wanted to trust {x}. I just couldn’t.',
+      '{x} was kind to me one day and cold the next, and I never knew which one I’d get.'],
   },
   praise: {
     soft: [
@@ -457,6 +461,29 @@ export const NAMED_A = {
     hot: ['I’ll miss {x}. {x} is the only one I’ll miss.', '{x}. Everybody else can stay in there forever.'],
   },
 };
+/** Questions and answers in the banks above that are about somebody STILL PLAYING: who to watch, who
+ *  is counting, keep going, win the thing. Asked about someone already out, Michele told everyone to
+ *  "Watch Juan" weeks after Juan was evicted (the user, 2026-10-31). Drawn only while the person is in. */
+export const STILL_ONLY_Q = new Set([
+  'Who should everybody be watching?',
+  'Who is playing harder than it looks?',
+  'Who are you rooting for now?',
+  'What do you make of {x}’s game now?',
+]);
+export const STILL_ONLY = new Set([
+  'I’d keep an eye on {x}. {x} is a lot sharper than people give credit for.',
+  '{x} is always counting. Always.',
+  'People underestimate {x}, and I think {x} likes it that way.',
+  '{x} is nicer than me and smarter than people think, and that’s a dangerous mix.',
+  'Watch {x}. That’s all I’ll say.',
+  'I hope {x} is kinder to the next person than {x} was to me.',
+  'Honestly, I’m rooting for {x}. That sounds strange, but {x} earned it.',
+  '{x} is the real deal. I hope people at home are paying attention.',
+  '{x} is the real thing. If {x} wins, I’ll be the loudest one cheering.',
+  'Everyone thinks {x} is playing a quiet game. {x} isn’t quiet, {x} is just hiding.',
+  'I want {x} to know I’m not mad. I want {x} to keep going.',
+  '{x}, I love you, win the thing. That’s all.',
+]);
 /** A second person blamed in the same hour, and a flipper the tape just named. */
 export const BLAME2_Q = ['Who else had a hand in it?', 'And who helped?', 'Was anyone else in on it?', 'Anyone else you’re looking at?'];
 export const BLAME2_A = {

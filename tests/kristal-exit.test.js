@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { podcastFor, PODCAST_FOLLOWERS, exitFollowerDelta, EXIT_RECEPTION_TIERS, RECEPTION } from '../js/kristal.js';
 import { decideExitInterview } from '../js/exit-interview/core.js';
+import { STILL_ONLY, STILL_ONLY_Q } from '../js/kristal-exit-lines.js';
 import { seededRandom } from './helpers/rng.js';
 
 const STATS = { physical: 5, endurance: 5, mental: 5, social: 5, strategic: 5,
@@ -99,6 +100,23 @@ describe('the in-season episodes', () => {
     const ep = podcastFor(inputs([hot])).find(e => e.kind === 'exit');
     expect(ep.tier).not.toBe('quiet');
     expect(EXIT_RECEPTION_TIERS.map(r => r.label)).toEqual(RECEPTION.map(r => r.label));
+  });
+
+  it('never tells anyone to watch somebody who is already out', () => {
+    // Michele, weeks after Juan was evicted: "Who should everybody be watching?" "Watch Juan."
+    const fill = (t, x) => t.split('{x}').join(x);
+    let seen = 0;
+    for (let seed = 1; seed <= 60; seed++) {
+      // Dax is a hero (nice: a rival is warned about, never dragged); Ava and Ben left before Dax
+      const rec = decideExitInterview(facts('Dax', 4, { rivals: ['Ava', 'Ben'], suspected: [] }), { rng: seededRandom(seed), earlier: [] });
+      const ep = podcastFor({ ...inputs([rec]), proseSalts: { 'bb-9:live': seed } }).find(e => e.kind === 'exit');
+      for (const x of ep.exchanges.filter(e => e.topic === 'named' && ['Ava', 'Ben'].includes(e.who))) {
+        seen++;
+        expect([...STILL_ONLY_Q].map(t => fill(t, x.who)), `asked about ${x.who}, who is out`).not.toContain(x.q);
+        expect([...STILL_ONLY].map(t => fill(t, x.who)), `said of ${x.who}, who is out`).not.toContain(x.a);
+      }
+    }
+    expect(seen).toBeGreaterThan(20);
   });
 
   it('a juror is told they go dark until the finale', () => {

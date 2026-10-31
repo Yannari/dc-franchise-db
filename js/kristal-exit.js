@@ -246,7 +246,10 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
     // the tape just exposed is asked about as that.
     const second = n.stance === 'blame' && !(afterTape && flipped.has(n.who)) && blamed++ > 0;
     // "Who are you rooting for now?" is a question about somebody still playing.
-    const asks = (L.NAMED_Q[n.stance] || []).filter(t => n.still || !/\brooting for now\b/i.test(t));
+    // "Who should everybody be watching?" is a question about somebody still playing (L.STILL_ONLY_Q).
+    const asks = (L.NAMED_Q[n.stance] || []).filter(t => n.still || !L.STILL_ONLY_Q.has(t));
+    // ...and "Watch {x}", "win the thing" are answers about them (L.STILL_ONLY): never said of someone gone.
+    const gone = list => n.still ? list : list.filter(t => !L.STILL_ONLY.has(t));
     const q = afterTape && flipped.has(n.who) ? pick(L.AFTER_TAPE_Q, `${K}|aq|${i}`, f, used)
       : second ? pick(L.BLAME2_Q, `${K}|b2q|${i}`, f, used)
         : pick(asks, `${K}|nq|${i}`, f, used);
@@ -259,7 +262,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
       : second ? (L.BLAME2_A[g] || [])
       // "Who are you rooting for now?" is answered with a hope, not a memory.
       : forward && n.still ? [...(L.NAMED_IN[n.stance]?.[g] || []), ...(L.NAMED_IN[n.stance]?.soft || [])]
-      : [...(L.NAMED_A[n.stance]?.[g] || []), ...(n.still && !open ? (L.NAMED_IN[n.stance]?.[g] || []) : [])];
+      : gone([...(L.NAMED_A[n.stance]?.[g] || []), ...(n.still && !open ? (L.NAMED_IN[n.stance]?.[g] || []) : [])]);
     // Each rule narrows the bank; a rule that would empty it is skipped, and a
     // bank narrowed below three borrows the stance's calmer lines (same rules)
     // rather than saying the one survivor in every interview.
@@ -273,7 +276,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
     const own = narrow(lines);
     const strict = own.filter(t => rules.every(ok => ok(t)));
     if (strict.length < 3 && !exposed && !second && !forward && g !== 'soft') {
-      const calmer = (L.NAMED_A[n.stance]?.soft || []).filter(t => !lines.includes(t));
+      const calmer = gone(L.NAMED_A[n.stance]?.soft || []).filter(t => !lines.includes(t));
       lines = narrow([...lines, ...calmer]);
     } else lines = own;
     return ['named', q, pick(lines, `${K}|na|${i}`, f, used),

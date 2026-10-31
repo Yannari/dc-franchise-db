@@ -67,7 +67,8 @@ export default {
       { by: 'b', say: "I understand. I'm sorry." },
       { by: 'a', say: "I'm not angry at you. I just needed to say it." },
       { by: 'b', dr: "I'd rather {a} told me straight than smiled at me all week." }] },
-    { id: 'vf.p5', turns: [{ by: 'b', say: "You were really quiet at the ceremony." }, { by: 'a', say: "What was I going to say?" }, { by: 'b', say: "Most people say something." }, { by: 'a', say: "Most people think it helps." }, { by: 'a', dr: "I said nothing at the ceremony. People noticed that more than if I'd shouted." }] },
+    { id: 'vf.p5', when: { result: 'used' }, turns: [{ by: 'b', say: "You didn't say a word at the ceremony." }, { by: 'a', say: "What was there to say? You picked {saved}." }, { by: 'b', say: "It wasn't against you." }, { by: 'a', say: "It wasn't for me either." }, { by: 'a', dr: "I didn't make a scene. {b} chose {saved} over me, and shouting wasn't going to change that. I'll remember it, though." }] },
+    { id: 'vf.p5k', when: { result: 'kept' }, turns: [{ by: 'b', say: "You didn't say a word at the ceremony." }, { by: 'a', say: "What was there to say? You kept it." }, { by: 'b', say: "I had my reasons." }, { by: 'a', say: "I'm sure you did." }, { by: 'a', dr: "I didn't make a scene when {b} kept the veto. It wasn't going to change anything. I'll remember it, though." }] },
     { id: 'vf.p6', turns: [{ by: 'a', say: "You could tell I was hoping, couldn't you?" }, { by: 'b', say: "I could." }, { by: 'a', say: "And you didn't." }, { by: 'b', say: "I couldn't. I'm sorry." }, { by: 'b', dr: "{a} was hoping I'd use it. I could see it. I didn't." }] },
     { id: 'vf.p7', when: { hohB: false }, turns: [
       { by: 'b', say: "Good luck this week." },

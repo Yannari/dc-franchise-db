@@ -201,7 +201,9 @@ export function writeCeremony(act, week, house, extra = {}) {
         if (namer && namer !== act.replacement) {
           const end = act.forcedReplacement ? 'forced' : act.replacement === partnerOf(namer) ? 'partner'
             : close(act.replacement, namer) ? 'blindsided' : getBond(act.replacement, namer) < 0 ? 'expected' : 'any';
-          script.renom = part('veto.renom', { a: act.replacement, b: namer }, end, ctx, house, act.replacement);
+          // a forced replacement knows whose veto put them there (the user, 2026-10-31: "well she should blame baxter")
+          const user = end === 'forced' && holder && holder !== namer && holder !== act.replacement ? holder : null;
+          script.renom = part('veto.renom', { a: act.replacement, b: namer, ...(user ? { c: user } : {}) }, end, ctx, house, act.replacement);
         }
       }
     }

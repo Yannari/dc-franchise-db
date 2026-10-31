@@ -734,12 +734,13 @@ export default {
   ],
   // the only houseguest left who could sit there (the final four): nobody chose it, and everybody knew it was coming
   'veto.renom.forced': [
-    { id: 'vr.f1', turns: [{ by: 'a', dr: "The second that veto got used, I was the only person left who could go up. Nobody chose me. The numbers did." }] },
+    { id: 'vr.f1', when: { third: true }, turns: [{ by: 'a', dr: "The second {c} used that veto, I was the only person left who could go up. {c} knew that, and {c} did it anyway." }] },
     { id: 'vr.f2', turns: [{ by: 'a', dr: "{b} didn't have a choice, and I don't blame {b.obj} for it. I'm the only name left. Now I need one vote." }] },
-    { id: 'vr.f3', turns: [{ by: 'a', dr: "Final four. There's nobody else to put in that chair, so here I am. It's not personal. It's arithmetic." }] },
+    { id: 'vr.f3', turns: [{ by: 'a', dr: "There's nobody else who could go in that chair, so here I am. {b} didn't pick me. The veto did." }] },
     { id: 'vr.f4', turns: [{ by: 'a', dr: "I knew this morning that if the veto got used, I'd be sitting here. And it got used." }] },
-    { id: 'vr.f5', turns: [{ by: 'a', dr: "There were four of us. Three of them couldn't go up. You do the maths. I did, about a week ago." }] },
-    { id: 'vr.f6', turns: [{ by: 'a', dr: "Nobody nominated me, really. The house just ran out of other people. Now I need one vote, and I know whose." }] },
+    { id: 'vr.f5', when: { third: true }, turns: [{ by: 'a', dr: "{c} knew exactly what using that veto meant. There was one person left who could go up, and it was me." }] },
+    { id: 'vr.f6', turns: [{ by: 'a', dr: "Nobody really nominated me. The house just ran out of other people. Now I need one vote, and I know whose." }] },
+    { id: 'vr.f7', when: { third: true }, turns: [{ by: 'a', dr: "I don't blame {b}. {b} had no choice. {c} had a choice, and {c} chose to put me on the block." }] },
   ],
   'veto.renom.blindsided': [
     { id: 'vr.b1', turns: [{ by: 'a', dr: "{b}? Of all people, {b}? I was helping {b.obj} plan this week." }] },

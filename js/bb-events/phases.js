@@ -33,6 +33,14 @@ const _others = (house, ...x) => house.filter(n => n && !x.includes(n));
 /** Least-seen first, weighted toward whoever this week is about. */
 const _leastSeen = pool => spotlightOrder(pool);
 const _noms = ctx => (ctx?.nominees || []).filter(Boolean);
+// The one houseguest who has to go up if the veto is used, when there is only one left who can (the HOH, the
+// nominees and the holder cannot): everybody in the house can count, so the scene says the name (the user,
+// 2026-10-31: at five, "only 1 person possible for a replacement", and the holder acted as if it were a mystery)
+function _onlyReplacement(house, ctx) {
+  const holder = ctx?.vetoWinner;
+  const out = (house || []).filter(n => n && n !== ctx?.hoh && n !== holder && !_noms(ctx).includes(n));
+  return out.length === 1 ? out[0] : null;
+}
 
 /** Last week's Head of Household, who cannot compete today. */
 const outgoingHoh = () => gs.bb?.outgoingHoh || null;
@@ -191,7 +199,8 @@ const lobbyingTheVeto = {
     api.addBond(nominee, holder, hopeful ? 0.5 : -0.4);
     api.remember(holder, nominee, 'plea', hopeful ? 2 : 1, { about: 'the veto' });
     if (!hopeful) api.suspicion(holder, nominee, 0.5);
-    const scene = makeScene('phase.lobby', { a: nominee, b: holder }, { ending: hopeful ? 'hopeful' : 'pleading' }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, nominee, holder));
+    const renom = _onlyReplacement(house, ctx);
+    const scene = makeScene('phase.lobby', { a: nominee, b: holder }, { ending: hopeful ? 'hopeful' : 'pleading', intent: renom ? 'forced' : 'open', ...(renom ? { renom } : {}) }, [], _room(['bedroom', 'backyard', 'kitchen'], ctx, nominee, holder));
     return {
       scene, players: [nominee, holder],
       badgeText: hopeful ? 'THE ASK' : 'PLEADING',
@@ -231,7 +240,8 @@ const vetoHolderWeighs = {
     api.suspicion(holder, hoh, 0.7);
     api.remember(holder, hoh, 'pressure', 1, { about: 'the veto decision' });
     api.popDelta(holder, 1);
-    const scene = makeScene('phase.weighs', { a: holder, b: hoh }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, holder));
+    const renom = _onlyReplacement(house, ctx);
+    const scene = makeScene('phase.weighs', { a: holder, b: hoh }, { ending: 'scene', intent: renom ? 'forced' : 'open', ...(renom ? { renom } : {}) }, [], _room(['bedroom', 'backyard'], ctx, holder));
     return { scene, players: [holder, hoh].filter(Boolean), badgeText: 'THE DECISION', badgeClass: 'gold' };
   },
 };

@@ -25,7 +25,7 @@ import { gs, seasonConfig, seasonFormat } from '../../core.js';
 import { SS_FORMAT } from '../../shows.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { fill, said, writing } from '../script/write.js';
-import { factsFor } from '../script/facts.js';
+import { factsFor, nextHohFits } from '../script/facts.js';
 import { stableRng } from '../knowledge.js';
 import { causeOf } from './storylines.js';
 import { STORY_POOLS } from './lines/index.js';
@@ -208,6 +208,7 @@ function presumed(entry, ctx, who = null, data = null) {
   // the veto draw only happens while the house is bigger than the six who play: at six or fewer everybody plays and
   // there is no bag (the user, 2026-10-31: "there 5 theres no more draw"). Read off the words, so no new line forgets it.
   if (VETO_DRAW.test(JSON.stringify(entry.turns || [])) && !vetoDrawn(ctx)) return false;
+  if (who && !nextHohFits(entry, ctx, who)) return false;
   for (const p of entry.presumes || []) {
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
     // earlier. For forty minutes?" about their own room)
@@ -217,6 +218,9 @@ function presumed(entry, ctx, who = null, data = null) {
     // move-in night, read 2026-10-15)
     if (p === 'days' && (ctx.week?.num || 0) <= 1 && !ctx.hoh) return false;
     if (p === 'noms' && !(ctx.nominees || []).length) return false;
+    // crowd: somebody votes besides the two in the scene. At five, with the HOH and two nominees, the two of them ARE
+    // the vote: "one person wobbled, I un-wobbled them" has nobody to be about (the user, 2026-10-31)
+    if (p === 'crowd' && !(gs.activePlayers || []).some(n => n !== ctx.hoh && !(ctx.nominees || []).includes(n) && n !== who?.a && n !== who?.b)) return false;
     // the week's place, for a line that asks about the next step of it (the user, 2026-10-24: "Are you
     // putting me up if you win HOH?", said to the HOH after the nomination ceremony)
     if (p === 'nohoh' && ctx.hoh) return false;

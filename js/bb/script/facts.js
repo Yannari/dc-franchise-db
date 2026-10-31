@@ -102,3 +102,19 @@ export function factsFor(scene, ctx = {}) {
   for (const k of ['ending', 'result', 'intent', 'reason', 'again']) if (d[k] !== undefined && d[k] !== null) f[k] = d[k];
   return f;
 }
+
+// The outgoing Head of Household does not play in the next HOH competition (until the final one, which all three
+// play): nobody wonders whether the HOH "wins the next HOH" (the user, 2026-10-31: "angelica cant win the next hoh
+// cause she was hoh right now")
+export function nextHohFits(entry, ctx, who) {
+  const hoh = ctx?.hoh;
+  if (!hoh || (gs.activePlayers?.length || 0) <= 4) return true;
+  for (const t of entry.turns || []) {
+    const s = [t.say, t.dr, t.beat, ...Object.values(t.v || {})].filter(Boolean).join(' ');
+    if (!/next HOH/i.test(s)) continue;
+    for (const [, r] of s.matchAll(/\{(\w+)\}\s+(?:wins|win|takes|gets)\s+the\s+next\s+HOH/gi)) if (who[r] === hoh) return false;
+    if (t.by && who[t.by] === hoh && /\bI\b[^.?!]{0,20}\bwin\s+the\s+next\s+HOH/i.test(s)) return false;
+    if (t.by && /\byou\b[^.?!]{0,20}\bwin\s+the\s+next\s+HOH/i.test(s) && Object.entries(who).some(([r, n]) => r !== t.by && n === hoh && ['a', 'b'].includes(r))) return false;
+  }
+  return true;
+}

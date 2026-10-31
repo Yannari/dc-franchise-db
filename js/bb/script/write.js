@@ -18,7 +18,7 @@ import { gs, players } from '../../core.js';
 import { pronouns } from '../../players.js';
 import { pickEntry, newLedger } from '../../script/pick.js';
 import { POOLS } from './lines/index.js';
-import { factsFor } from './facts.js';
+import { factsFor, nextHohFits } from './facts.js';
 import { tidySpoken, tidyNames } from '../../vp-tr/tidy.js';
 import { variantOf } from '../story/register.js';
 
@@ -152,6 +152,17 @@ function noPast(key) {
 // held back while one that does not still fits.
 const DAYS = new RegExp(String.raw`(^|[^a-z])((one|two|three|four|five|six|seven|a few|\d+) (more )?days|all week|this week|next week|the week|tomorrow|for days)([^a-z]|$)`, "i");
 const liveCycle = ctx => !!ctx.week?.compressed;
+// the outgoing HOH is not in the next HOH competition (facts.js nextHohFits): a pool keeps only what fits, unless
+// nothing does
+function noNextHoh(key, pools, ctx, who) {
+  const out = { ...pools };
+  for (const k of [].concat(key)) {
+    const pool = pools[k] || [];
+    const kept = pool.filter(e => nextHohFits(e, ctx, who));
+    out[k] = kept.length ? kept : pool;
+  }
+  return out;
+}
 function noDays(key, pools) {
   const out = { ...pools };
   for (const k of [].concat(key)) {
@@ -202,7 +213,7 @@ export function writeScene(scene, ctx = {}, rng = Math.random, { track = false }
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
   const speakers = Object.values(who).filter(Boolean);
   const base = firstNight(ctx) ? noPast(key) : POOLS;
-  const entry = pickEntry(ledger(), liveCycle(ctx) ? noDays(key, base) : base, key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
+  const entry = pickEntry(ledger(), noNextHoh(key, liveCycle(ctx) ? noDays(key, base) : base, ctx, who), key, facts, pairKey, rng, speakers, clockOf(ctx), { fresh: true });
   if (!entry) throw new Error(`no lines for ${key}`);
   let lineToken = null;
   if (track) { lineToken = `ln${++tokenSeq}`; PENDING.set(lineToken, { id: entry.id, speakers, pairKey, book: gs.bb?.lineLedger || null }); }

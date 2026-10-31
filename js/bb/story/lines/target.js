@@ -481,7 +481,7 @@ export default {
   ],
 
   'story.target.count.holds': [
-    { id: 'tc.h1', presumes: ['noms'], turns: [
+    { id: 'tc.h1', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "Okay. Talk me through the vote." },
       { by: 'b', say: "Us two, and everybody I talked to today." },
       { by: 'a', say: "And they all said {target}? Out loud? They said the name?" },
@@ -489,7 +489,7 @@ export default {
       { by: 'a', say: "Okay. Then we've got it.", v: { anxious: "Okay. Okay. I'm still going to worry until Thursday." } },
       { by: 'a', dr: "I don't trust a vote until somebody says the name out loud. Out loud means they mean it. Mostly." },
     ] },
-    { id: 'tc.h2', presumes: ['noms'], turns: [
+    { id: 'tc.h2', presumes: ['noms', 'crowd'], turns: [
       { by: 'b', say: "Where are we with the vote?" },
       { by: 'a', say: "We're good. {target} goes." },
       { by: 'b', say: "Are you sure? Like, really sure?" },
@@ -498,7 +498,7 @@ export default {
       { beat: '{a} sighs and goes through every name again, out loud.' },
       { by: 'b', dr: "Every week I make {a} go through it one more time. It's always the same answer, and I always sleep better." },
     ] },
-    { id: 'tc.h3', presumes: ['noms'], turns: [
+    { id: 'tc.h3', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "Does anyone know you're voting {target} out?" },
       { by: 'b', say: "Just you." },
       { by: 'a', say: "Good. Keep it that way until Thursday." },
@@ -508,7 +508,7 @@ export default {
       { by: 'a', say: "Mouth shut." },
       { by: 'a', dr: "You don't lose a vote you've got. You lose a vote somebody else takes off you. So you don't tell anybody you've got it." },
     ] },
-    { id: 'tc.h4', presumes: ['noms'], turns: [
+    { id: 'tc.h4', presumes: ['noms', 'crowd'], turns: [
       { by: 'b', say: "Is {target} still campaigning?" },
       { by: 'a', say: "Every room. Every person." },
       { by: 'b', say: "Is it working?" },
@@ -517,7 +517,7 @@ export default {
       { by: 'a', say: "That's Thursday." },
       { by: 'b', dr: "Everybody in this house is lying to {target} right now. Including me. It's the worst part of the week." },
     ] },
-    { id: 'tc.h5', presumes: ['noms'], turns: [
+    { id: 'tc.h5', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "Last check. Anything change?" },
       { by: 'b', say: "Nope." },
       { by: 'a', say: "Nobody wobbling?" },
@@ -530,7 +530,7 @@ export default {
     ] },
   ],
   'story.target.count.short': [
-    { id: 'tc.s1', presumes: ['noms'], turns: [
+    { id: 'tc.s1', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "We've got a problem." },
       { by: 'b', say: "What kind of problem?" },
       { by: 'a', say: "The kind where I count and I get a tie." },
@@ -542,7 +542,7 @@ export default {
       { by: 'a', say: "Everybody. We have to talk to everybody. Again." },
       { by: 'a', dr: "A tie means somebody's lying to me. One of my 'yes' votes is a 'no' with a nice smile." },
     ] },
-    { id: 'tc.s2', presumes: ['noms'], turns: [
+    { id: 'tc.s2', presumes: ['noms', 'crowd'], turns: [
       { by: 'b', say: "How are we looking for Thursday?" },
       { by: 'a', say: "Honestly? Not good. We're short." },
       { by: 'b', say: "Then we find somebody. Somebody's always still deciding." },
@@ -550,7 +550,7 @@ export default {
       { by: 'b', say: "I don't know yet. Give me tonight." },
       { by: 'b', dr: "We're short, and the vote is Thursday. In this house that's a long time, or no time at all." },
     ] },
-    { id: 'tc.s3', presumes: ['noms'], turns: [
+    { id: 'tc.s3', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "Something's off." },
       { by: 'b', say: "What?" },
       { by: 'a', say: "People are being too nice to {target}. Way too nice. Like they've already changed their minds and they feel guilty." },
@@ -560,7 +560,7 @@ export default {
       { by: 'a', say: "We stop guessing and start asking, straight out, tonight." },
       { by: 'a', dr: "When the house goes quiet before a vote, somebody's flipping. I just need to know who before Thursday does." },
     ] },
-    { id: 'tc.s4', presumes: ['noms'], turns: [
+    { id: 'tc.s4', presumes: ['noms', 'crowd'], turns: [
       { by: 'a', say: "I need a number from you. Not a feeling. A number." },
       { by: 'b', say: "Four." },
       { by: 'a', say: "Four what?" },
@@ -571,7 +571,7 @@ export default {
       { by: 'b', say: "That's the bit I was hoping you'd know." },
       { by: 'b', dr: "Four is a great number. It's just not the number." },
     ] },
-    { id: 'tc.s5', presumes: ['noms'], turns: [
+    { id: 'tc.s5', presumes: ['noms', 'crowd'], turns: [
       { by: 'b', say: "Did you hear? Somebody's working the other way." },
       { by: 'a', say: "Who?" },
       { by: 'b', say: "I don't know. But {target} looks way too relaxed for someone on the block." },

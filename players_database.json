@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 211,
+    "totalPlayers": 238,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -18551,6 +18551,1769 @@
           "totalFirstPlaceRatings": 0,
           "totalBlocksMade": 0,
           "totalCatfishSeasons": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "sean",
+      "name": "Sean",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [
+        "PM1 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 1,
+          "status": "Winner",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Freya",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 2,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 87.4,
+            "label": "fan-favourite",
+            "followers": 524027,
+            "couples": [
+              {
+                "with": "Skye",
+                "from": 1,
+                "to": 4,
+                "how": "Skye was dumped"
+              },
+              {
+                "with": "Freya",
+                "from": 4,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": [
+              "Pablo"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 1,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 2,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "freya",
+      "name": "Freya",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [
+        "PM1 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 1,
+          "status": "Winner",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Sean",
+          "showmanceEnded": "intact",
+          "fanFavourite": true,
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 92.8,
+            "label": "fan-favourite",
+            "followers": 357258,
+            "couples": [
+              {
+                "with": "Sean",
+                "from": 4,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 1,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "riza",
+      "name": "Riza",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 2,
+          "status": "Runner-up",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Zara",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 2,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 37.6,
+            "label": "loved",
+            "followers": 166436,
+            "couples": [
+              {
+                "with": "Mei",
+                "from": 13,
+                "to": 15,
+                "how": "Mei left Riza for Callum"
+              },
+              {
+                "with": "Zara",
+                "from": 15,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": [
+              "Mei"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 2,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 2,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "zara",
+      "name": "Zara",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 2,
+          "status": "Runner-up",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Riza",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 3,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 86.9,
+            "label": "fan-favourite",
+            "followers": 505389,
+            "couples": [
+              {
+                "with": "Theo",
+                "from": 1,
+                "to": 6,
+                "how": "Theo was dumped"
+              },
+              {
+                "with": "Dante",
+                "from": 10,
+                "to": 13,
+                "how": "Dante left Zara for Valentina"
+              },
+              {
+                "with": "Riza",
+                "from": 15,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": [
+              "Ayesha"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 2,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 3,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "malik",
+      "name": "Malik",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 3,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Ayesha",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 81.5,
+            "label": "fan-favourite",
+            "followers": 458557,
+            "couples": [
+              {
+                "with": "Ayesha",
+                "from": 1,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 3,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "ayesha",
+      "name": "Ayesha",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 3,
+          "status": "Finalist",
+          "exit": null,
+          "exitEpisode": null,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Malik",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 57.8,
+            "label": "loved",
+            "followers": 401535,
+            "couples": [
+              {
+                "with": "Malik",
+                "from": 1,
+                "to": null,
+                "how": "together at the final"
+              }
+            ],
+            "enemies": [
+              "Lucia",
+              "Zara"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 3,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "rafael",
+      "name": "Rafael",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 4,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 25,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Lucia",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 73,
+            "label": "fan-favourite",
+            "followers": 399985,
+            "couples": [
+              {
+                "with": "Lucia",
+                "from": 1,
+                "to": 25,
+                "how": "Rafael was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 4,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "lucia",
+      "name": "Lucia",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 4,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 25,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "showmance": "Rafael",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 3,
+            "finalApproval": 44.4,
+            "label": "loved",
+            "followers": 463690,
+            "couples": [
+              {
+                "with": "Rafael",
+                "from": 1,
+                "to": 25,
+                "how": "Rafael was dumped"
+              }
+            ],
+            "enemies": [
+              "Ayesha"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 4,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "dante",
+      "name": "Dante",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 6,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 23,
+          "challengeWins": 0,
+          "votesReceived": 5,
+          "showmance": "Valentina",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 2,
+            "timesStolen": 0,
+            "publicVotesSurvived": 2,
+            "finalApproval": 63.8,
+            "label": "fan-favourite",
+            "followers": 186556,
+            "couples": [
+              {
+                "with": "Zara",
+                "from": 10,
+                "to": 13,
+                "how": "Dante left Zara for Valentina"
+              },
+              {
+                "with": "Valentina",
+                "from": 13,
+                "to": 23,
+                "how": "Dante was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 6,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 2,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "valentina",
+      "name": "Valentina",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 6,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 23,
+          "challengeWins": 0,
+          "votesReceived": 5,
+          "showmance": "Dante",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 2,
+            "finalApproval": 60.2,
+            "label": "fan-favourite",
+            "followers": 112274,
+            "couples": [
+              {
+                "with": "Dante",
+                "from": 13,
+                "to": 23,
+                "how": "Dante was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 6,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "pablo",
+      "name": "Pablo",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 8,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 21,
+          "challengeWins": 0,
+          "votesReceived": 7,
+          "showmance": "Anna",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 1,
+            "finalApproval": 80.7,
+            "label": "fan-favourite",
+            "followers": 164753,
+            "couples": [
+              {
+                "with": "Anna",
+                "from": 13,
+                "to": 21,
+                "how": "Pablo was dumped"
+              }
+            ],
+            "enemies": [
+              "Sean"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 8,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "anna",
+      "name": "Anna",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 8,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 21,
+          "challengeWins": 0,
+          "votesReceived": 7,
+          "showmance": "Pablo",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 1,
+            "finalApproval": -10,
+            "label": "divisive",
+            "followers": 69390,
+            "couples": [
+              {
+                "with": "Pablo",
+                "from": 13,
+                "to": 21,
+                "how": "Pablo was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 8,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "callum",
+      "name": "Callum",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 10,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 19,
+          "challengeWins": 0,
+          "votesReceived": 6,
+          "showmance": "Mei",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 78,
+            "label": "fan-favourite",
+            "followers": 194926,
+            "couples": [
+              {
+                "with": "Mei",
+                "from": 4,
+                "to": 13,
+                "how": "Mei came back from Casa Amor with Riza"
+              },
+              {
+                "with": "Mei",
+                "from": 15,
+                "to": 19,
+                "how": "Callum was dumped",
+                "again": true
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 10,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "mei",
+      "name": "Mei",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 10,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 19,
+          "challengeWins": 0,
+          "votesReceived": 6,
+          "showmance": "Callum",
+          "showmanceEnded": "intact",
+          "pm": {
+            "couplings": 2,
+            "timesStolen": 1,
+            "publicVotesSurvived": 0,
+            "finalApproval": 28.6,
+            "label": "loved",
+            "followers": 243316,
+            "couples": [
+              {
+                "with": "Callum",
+                "from": 4,
+                "to": 13,
+                "how": "Mei came back from Casa Amor with Riza"
+              },
+              {
+                "with": "Riza",
+                "from": 13,
+                "to": 15,
+                "how": "Mei left Riza for Callum"
+              },
+              {
+                "with": "Callum",
+                "from": 15,
+                "to": 19,
+                "how": "Callum was dumped",
+                "again": true
+              }
+            ],
+            "enemies": [
+              "Riza"
+            ]
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 10,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 2,
+          "totalTimesStolen": 1,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "kevin",
+      "name": "Kevin",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 12,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 15,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 13.2,
+            "label": "liked",
+            "followers": 16946,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 12,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "amara",
+      "name": "Amara",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 5.2,
+            "label": "liked",
+            "followers": 4126,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "antwon",
+      "name": "Antwon",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": -13.9,
+            "label": "divisive",
+            "followers": 13011,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "elias",
+      "name": "Elias",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 0.7,
+            "label": "invisible",
+            "followers": 16367,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "georgia",
+      "name": "Georgia",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 9.5,
+            "label": "liked",
+            "followers": 16171,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "makaio",
+      "name": "Makaio",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": -1.8,
+            "label": "invisible",
+            "followers": 6332,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "shamar",
+      "name": "Shamar",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 13,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": -1.9,
+            "label": "invisible",
+            "followers": 9192,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "kaylee",
+      "name": "Kaylee",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 19,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 19,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 10,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 19.1,
+            "label": "liked",
+            "followers": 17166,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 19,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "imani",
+      "name": "Imani",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 20,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 20,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 8,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 0,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 17.7,
+            "label": "liked",
+            "followers": 19577,
+            "couples": [],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 20,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 0,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "theo",
+      "name": "Theo",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 21,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 21,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 6,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": -76.3,
+            "label": "villain",
+            "followers": 52557,
+            "couples": [
+              {
+                "with": "Zara",
+                "from": 1,
+                "to": 6,
+                "how": "Theo was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 21,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "arjun",
+      "name": "Arjun",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 21,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 21,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 6,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": -1.8,
+            "label": "invisible",
+            "followers": 97646,
+            "couples": [
+              {
+                "with": "Blair",
+                "from": 1,
+                "to": 4,
+                "how": "Blair was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 21,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "skye",
+      "name": "Skye",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 23,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 23,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 4,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 37.9,
+            "label": "loved",
+            "followers": 75500,
+            "couples": [
+              {
+                "with": "Sean",
+                "from": 1,
+                "to": 4,
+                "how": "Skye was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 23,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
+        }
+      },
+      "latestAvatarFile": "",
+      "totalHohWins": 0,
+      "totalVetoWins": 0
+    },
+    {
+      "id": "blair",
+      "name": "Blair",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 23,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 23,
+          "status": "Dumped",
+          "exit": "dumped",
+          "exitEpisode": 4,
+          "challengeWins": 0,
+          "votesReceived": 0,
+          "pm": {
+            "couplings": 1,
+            "timesStolen": 0,
+            "publicVotesSurvived": 0,
+            "finalApproval": 25.4,
+            "label": "loved",
+            "followers": 74556,
+            "couples": [
+              {
+                "with": "Arjun",
+                "from": 1,
+                "to": 4,
+                "how": "Blair was dumped"
+              }
+            ],
+            "enemies": []
+          },
+          "notes": [],
+          "gameplayStyle": "",
+          "keyMoments": [],
+          "format": "perfect-match",
+          "seasonId": "pm-1"
+        }
+      ],
+      "avgPlacement": 23,
+      "hallOfFame": [],
+      "byShow": {
+        "perfect-match": {
+          "seasons": 1,
+          "totalCouplings": 1,
+          "totalTimesStolen": 0,
+          "totalPublicVotesSurvived": 0
         }
       },
       "latestAvatarFile": "",

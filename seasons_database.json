@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 211,
+    "totalPlayers": 238,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -888,6 +888,2695 @@
       "emoji": "⭕",
       "airYear": 2027,
       "airSlot": "spring"
+    },
+    {
+      "ratings": {
+        "v": 1,
+        "score": 45.3,
+        "tier": {
+          "key": "okay",
+          "label": "Okay",
+          "min": 42
+        },
+        "demos": {
+          "teens": 4.7,
+          "youngAdults": 1.2,
+          "middleAged": 60.4,
+          "older": 93.4
+        },
+        "curve": [
+          60.9,
+          53.2,
+          51.6,
+          46.6,
+          45.9,
+          39,
+          38.9,
+          38.5,
+          40.1,
+          48.5,
+          47.7,
+          47.1,
+          44.5,
+          41.9,
+          38.9,
+          38.2,
+          37.5,
+          37.7,
+          37.8,
+          37.8,
+          38.9,
+          43.2,
+          44.3,
+          47.7,
+          52,
+          59.9,
+          64
+        ]
+      },
+      "seasonNumber": 1,
+      "format": "perfect-match",
+      "seasonId": "pm-1",
+      "title": "Perfect Match 1",
+      "subtitle": "",
+      "castSize": 27,
+      "episodeCount": 27,
+      "winner": null,
+      "winners": [
+        {
+          "name": "Sean",
+          "playerSlug": "sean",
+          "share": 0.374
+        },
+        {
+          "name": "Freya",
+          "playerSlug": "freya",
+          "share": 0.374
+        }
+      ],
+      "finalVote": [
+        {
+          "couple": [
+            "Sean",
+            "Freya"
+          ],
+          "share": 0.374,
+          "placement": 1
+        },
+        {
+          "couple": [
+            "Riza",
+            "Zara"
+          ],
+          "share": 0.313,
+          "placement": 2
+        },
+        {
+          "couple": [
+            "Malik",
+            "Ayesha"
+          ],
+          "share": 0.313,
+          "placement": 3
+        }
+      ],
+      "awards": {
+        "fanFavorite": {
+          "name": "Freya",
+          "playerSlug": "freya"
+        }
+      },
+      "theme": "",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/pm-1-cast.png",
+      "emoji": "💘",
+      "exitInterviews": [
+        {
+          "id": "perfect-match-w4-Skye",
+          "show": "perfect-match",
+          "week": 4,
+          "guest": "Skye",
+          "with": "Blair",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 13,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next",
+            "message-in"
+          ],
+          "named": [
+            {
+              "who": "Sean",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            },
+            {
+              "who": "Ayesha",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": null,
+          "prediction": "Zara",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Sean",
+            "Ayesha"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Arjun",
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Theo",
+            "Zara",
+            "Callum",
+            "Freya"
+          ],
+          "heat": 2.5,
+          "reception": "cold",
+          "profile": {
+            "archetype": "showmancer",
+            "stats": {
+              "physical": 6,
+              "endurance": 7,
+              "mental": 6,
+              "social": 6,
+              "strategic": 3,
+              "loyalty": 8,
+              "boldness": 9,
+              "intuition": 6,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Skye": -0.77,
+              "Sean": 1.2,
+              "Ayesha": 1.2
+            },
+            "bonds": [
+              {
+                "a": "Sean",
+                "b": "Skye",
+                "delta": 0.26,
+                "when": 27
+              },
+              {
+                "a": "Ayesha",
+                "b": "Skye",
+                "delta": 0.26,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Sean",
+            "Ayesha"
+          ]
+        },
+        {
+          "id": "perfect-match-w4-Blair",
+          "show": "perfect-match",
+          "week": 4,
+          "guest": "Blair",
+          "with": "Skye",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 12,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Ayesha",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.3
+            },
+            {
+              "who": "Malik",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            },
+            {
+              "who": "Theo",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": null,
+          "prediction": "Rafael",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Malik",
+            "Theo"
+          ],
+          "rivals": [
+            "Ayesha"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Arjun",
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Theo",
+            "Zara",
+            "Callum",
+            "Freya"
+          ],
+          "heat": 3.8,
+          "reception": "cold",
+          "profile": {
+            "archetype": "chaos-agent",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 7,
+              "social": 6,
+              "strategic": 7,
+              "loyalty": 3,
+              "boldness": 9,
+              "intuition": 7,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Blair": -0.77,
+              "Ayesha": -3.42,
+              "Malik": 1.03,
+              "Theo": 1.03
+            },
+            "bonds": [
+              {
+                "a": "Theo",
+                "b": "Blair",
+                "delta": 0.31,
+                "when": 6
+              },
+              {
+                "a": "Ayesha",
+                "b": "Blair",
+                "delta": -1.09,
+                "when": 27
+              },
+              {
+                "a": "Malik",
+                "b": "Blair",
+                "delta": 0.29,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Theo",
+            "Ayesha",
+            "Malik"
+          ]
+        },
+        {
+          "id": "perfect-match-w6-Arjun",
+          "show": "perfect-match",
+          "week": 6,
+          "guest": "Arjun",
+          "with": "Theo",
+          "kind": "dumped",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 11,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Sean",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.3
+            },
+            {
+              "who": "Mei",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.3
+            }
+          ],
+          "truth": null,
+          "prediction": "Mei",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Sean",
+            "Mei"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya"
+          ],
+          "heat": 0.6,
+          "reception": "warm",
+          "profile": {
+            "archetype": "mastermind",
+            "stats": {
+              "physical": 8,
+              "endurance": 7,
+              "mental": 8,
+              "social": 8,
+              "strategic": 9,
+              "loyalty": 3,
+              "boldness": 7,
+              "intuition": 8,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Arjun": 1.04,
+              "Sean": 0.02,
+              "Mei": 0.02
+            },
+            "bonds": [
+              {
+                "a": "Mei",
+                "b": "Arjun",
+                "delta": 0.12,
+                "when": 19
+              },
+              {
+                "a": "Sean",
+                "b": "Arjun",
+                "delta": 0.15,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Mei",
+            "Sean"
+          ]
+        },
+        {
+          "id": "perfect-match-w6-Theo",
+          "show": "perfect-match",
+          "week": 6,
+          "guest": "Theo",
+          "with": "Arjun",
+          "kind": "dumped",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 10,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "message-in"
+          ],
+          "named": [
+            {
+              "who": "Mei",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.1
+            },
+            {
+              "who": "Zara",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            },
+            {
+              "who": "Malik",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            }
+          ],
+          "truth": null,
+          "prediction": "Malik",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara",
+            "Malik"
+          ],
+          "rivals": [
+            "Mei"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya"
+          ],
+          "heat": 2.2,
+          "reception": "warm",
+          "profile": {
+            "archetype": "chaos-agent",
+            "stats": {
+              "physical": 8,
+              "endurance": 6,
+              "mental": 4,
+              "social": 7,
+              "strategic": 4,
+              "loyalty": 5,
+              "boldness": 9,
+              "intuition": 4,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Theo": 0.96,
+              "Mei": -0.09,
+              "Zara": 0.02,
+              "Malik": 0.02
+            },
+            "bonds": [
+              {
+                "a": "Zara",
+                "b": "Theo",
+                "delta": 0.3,
+                "when": 15
+              },
+              {
+                "a": "Zara",
+                "b": "Theo",
+                "delta": 0.3,
+                "when": 15
+              },
+              {
+                "a": "Zara",
+                "b": "Theo",
+                "delta": 0.3,
+                "when": 15
+              },
+              {
+                "a": "Mei",
+                "b": "Theo",
+                "delta": -0.75,
+                "when": 19
+              },
+              {
+                "a": "Zara",
+                "b": "Theo",
+                "delta": 0.3,
+                "when": 27
+              },
+              {
+                "a": "Malik",
+                "b": "Theo",
+                "delta": 0.25,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Mei",
+            "Zara",
+            "Malik"
+          ]
+        },
+        {
+          "id": "perfect-match-w8-Imani",
+          "show": "perfect-match",
+          "week": 8,
+          "guest": "Imani",
+          "with": null,
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 11,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them",
+            "who-next"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Lucia",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante"
+          ],
+          "heat": 1.5,
+          "reception": "cold",
+          "profile": {
+            "archetype": "challenge-beast",
+            "stats": {
+              "physical": 9,
+              "endurance": 8,
+              "mental": 5,
+              "social": 5,
+              "strategic": 6,
+              "loyalty": 5,
+              "boldness": 7,
+              "intuition": 5,
+              "temperament": 3
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Imani": -0.7
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w10-Kaylee",
+          "show": "perfect-match",
+          "week": 10,
+          "guest": "Kaylee",
+          "with": null,
+          "kind": "dumped",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 12,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "rank-them"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Pablo",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo"
+          ],
+          "heat": 0,
+          "reception": "warm",
+          "profile": {
+            "archetype": "social-butterfly",
+            "stats": {
+              "physical": 5,
+              "endurance": 5,
+              "mental": 5,
+              "social": 9,
+              "strategic": 3,
+              "loyalty": 8,
+              "boldness": 6,
+              "intuition": 5,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Kaylee": 1.12
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Amara",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Amara",
+          "with": "Antwon",
+          "kind": "dumped",
+          "mood": "relieved",
+          "juror": false,
+          "placement": 20,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "rank-them"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Malik",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 0,
+          "reception": "warm",
+          "profile": {
+            "archetype": "social-butterfly",
+            "stats": {
+              "physical": 5,
+              "endurance": 5,
+              "mental": 5,
+              "social": 9,
+              "strategic": 4,
+              "loyalty": 7,
+              "boldness": 7,
+              "intuition": 5,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Amara": 1.12
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Antwon",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Antwon",
+          "with": "Amara",
+          "kind": "dumped",
+          "mood": "denial",
+          "juror": false,
+          "placement": 19,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "caller"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Lucia",
+          "caller": "Kaylee",
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 1.5,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "villain",
+            "stats": {
+              "physical": 8,
+              "endurance": 6,
+              "mental": 5,
+              "social": 7,
+              "strategic": 6,
+              "loyalty": 3,
+              "boldness": 8,
+              "intuition": 5,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Antwon": 0.12
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Elias",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Elias",
+          "with": "Amara",
+          "kind": "dumped",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 18,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next",
+            "caller"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Ayesha",
+          "caller": "Blair",
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 0,
+          "reception": "warm",
+          "profile": {
+            "archetype": "goat",
+            "stats": {
+              "physical": 7,
+              "endurance": 6,
+              "mental": 3,
+              "social": 7,
+              "strategic": 2,
+              "loyalty": 7,
+              "boldness": 6,
+              "intuition": 2,
+              "temperament": 8
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Elias": 0.96
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Georgia",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Georgia",
+          "with": "Amara",
+          "kind": "dumped",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 17,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them",
+            "fan-mail"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Ayesha",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 0,
+          "reception": "warm",
+          "profile": {
+            "archetype": "wildcard",
+            "stats": {
+              "physical": 7,
+              "endurance": 6,
+              "mental": 3,
+              "social": 8,
+              "strategic": 5,
+              "loyalty": 4,
+              "boldness": 8,
+              "intuition": 6,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Georgia": 1.04
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Makaio",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Makaio",
+          "with": "Amara",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 16,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next",
+            "fan-mail"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Valentina",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 1.5,
+          "reception": "cold",
+          "profile": {
+            "archetype": "loyal-soldier",
+            "stats": {
+              "physical": 8,
+              "endurance": 8,
+              "mental": 4,
+              "social": 5,
+              "strategic": 3,
+              "loyalty": 8,
+              "boldness": 5,
+              "intuition": 4,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Makaio": -0.7
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w13-Shamar",
+          "show": "perfect-match",
+          "week": 13,
+          "guest": "Shamar",
+          "with": "Amara",
+          "kind": "dumped",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 15,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Elias",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            }
+          ],
+          "truth": null,
+          "prediction": "Rafael",
+          "caller": "Kaylee",
+          "answerBack": [],
+          "allies": [],
+          "rivals": [
+            "Elias"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 0.5,
+          "reception": "warm",
+          "profile": {
+            "archetype": "challenge-beast",
+            "stats": {
+              "physical": 9,
+              "endurance": 8,
+              "mental": 4,
+              "social": 6,
+              "strategic": 4,
+              "loyalty": 6,
+              "boldness": 8,
+              "intuition": 5,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Shamar": 0.88
+            },
+            "bonds": [
+              {
+                "a": "Elias",
+                "b": "Shamar",
+                "delta": -0.12,
+                "when": 13
+              }
+            ]
+          },
+          "heard": [
+            "Elias"
+          ]
+        },
+        {
+          "id": "perfect-match-w15-Kevin",
+          "show": "perfect-match",
+          "week": 15,
+          "guest": "Kevin",
+          "with": null,
+          "kind": "dumped",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 15,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next",
+            "rank-them"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Callum",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Mei",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Callum",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 0,
+          "reception": "warm",
+          "profile": {
+            "archetype": "showmancer",
+            "stats": {
+              "physical": 7,
+              "endurance": 7,
+              "mental": 5,
+              "social": 6,
+              "strategic": 5,
+              "loyalty": 8,
+              "boldness": 4,
+              "intuition": 8,
+              "temperament": 8
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Kevin": 0.88
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w19-Mei",
+          "show": "perfect-match",
+          "week": 19,
+          "guest": "Mei",
+          "with": "Callum",
+          "kind": "dumped",
+          "mood": "denial",
+          "juror": false,
+          "placement": 14,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "message-in",
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Riza",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.2
+            },
+            {
+              "who": "Zara",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            },
+            {
+              "who": "Ayesha",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            }
+          ],
+          "truth": null,
+          "prediction": "Pablo",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara",
+            "Ayesha"
+          ],
+          "rivals": [
+            "Riza"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 3.7,
+          "reception": "cold",
+          "profile": {
+            "archetype": "perceptive-player",
+            "stats": {
+              "physical": 4,
+              "endurance": 5,
+              "mental": 7,
+              "social": 4,
+              "strategic": 8,
+              "loyalty": 6,
+              "boldness": 5,
+              "intuition": 9,
+              "temperament": 9
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Mei": -0.63,
+              "Riza": -3.09,
+              "Zara": 0.93,
+              "Ayesha": 0.93
+            },
+            "bonds": [
+              {
+                "a": "Riza",
+                "b": "Mei",
+                "delta": -1.01,
+                "when": 27
+              },
+              {
+                "a": "Zara",
+                "b": "Mei",
+                "delta": 0.31,
+                "when": 27
+              },
+              {
+                "a": "Ayesha",
+                "b": "Mei",
+                "delta": 0.24,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Riza",
+            "Zara",
+            "Ayesha"
+          ]
+        },
+        {
+          "id": "perfect-match-w19-Callum",
+          "show": "perfect-match",
+          "week": 19,
+          "guest": "Callum",
+          "with": "Mei",
+          "kind": "dumped",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 13,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Sean",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            },
+            {
+              "who": "Malik",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            }
+          ],
+          "truth": null,
+          "prediction": "Malik",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Sean",
+            "Malik"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Dante",
+            "Pablo",
+            "Anna",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 1.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "underdog",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 6,
+              "social": 5,
+              "strategic": 5,
+              "loyalty": 10,
+              "boldness": 3,
+              "intuition": 5,
+              "temperament": 9
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Callum": 0.8,
+              "Sean": 1.35,
+              "Malik": 1.35
+            },
+            "bonds": [
+              {
+                "a": "Sean",
+                "b": "Callum",
+                "delta": 0.23,
+                "when": 27
+              },
+              {
+                "a": "Malik",
+                "b": "Callum",
+                "delta": 0.25,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Sean",
+            "Malik"
+          ]
+        },
+        {
+          "id": "perfect-match-w21-Pablo",
+          "show": "perfect-match",
+          "week": 21,
+          "guest": "Pablo",
+          "with": "Anna",
+          "kind": "dumped",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 12,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Sean",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.1
+            },
+            {
+              "who": "Riza",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            },
+            {
+              "who": "Zara",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.55
+            }
+          ],
+          "truth": null,
+          "prediction": "Dante",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Riza",
+            "Zara"
+          ],
+          "rivals": [
+            "Sean"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Dante",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 2.2,
+          "reception": "warm",
+          "profile": {
+            "archetype": "hothead",
+            "stats": {
+              "physical": 9,
+              "endurance": 8,
+              "mental": 4,
+              "social": 6,
+              "strategic": 3,
+              "loyalty": 7,
+              "boldness": 8,
+              "intuition": 4,
+              "temperament": 2
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Pablo": 0.88,
+              "Sean": -7.45,
+              "Riza": 1.4,
+              "Zara": 1.4
+            },
+            "bonds": [
+              {
+                "a": "Sean",
+                "b": "Pablo",
+                "delta": -0.92,
+                "when": 27
+              },
+              {
+                "a": "Riza",
+                "b": "Pablo",
+                "delta": 0.23,
+                "when": 27
+              },
+              {
+                "a": "Zara",
+                "b": "Pablo",
+                "delta": 0.3,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Sean",
+            "Riza",
+            "Zara"
+          ]
+        },
+        {
+          "id": "perfect-match-w21-Anna",
+          "show": "perfect-match",
+          "week": 21,
+          "guest": "Anna",
+          "with": "Pablo",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 11,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Zara",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": null,
+          "prediction": "Riza",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Dante",
+            "Riza",
+            "Valentina"
+          ],
+          "heat": 2,
+          "reception": "cold",
+          "profile": {
+            "archetype": "schemer",
+            "stats": {
+              "physical": 4,
+              "endurance": 5,
+              "mental": 7,
+              "social": 6,
+              "strategic": 9,
+              "loyalty": 4,
+              "boldness": 6,
+              "intuition": 7,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Anna": -0.77,
+              "Zara": 0.03
+            },
+            "bonds": [
+              {
+                "a": "Zara",
+                "b": "Anna",
+                "delta": 0.34,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Zara"
+          ]
+        },
+        {
+          "id": "perfect-match-w23-Dante",
+          "show": "perfect-match",
+          "week": 23,
+          "guest": "Dante",
+          "with": "Valentina",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 10,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Zara",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            },
+            {
+              "who": "Sean",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": null,
+          "prediction": "Zara",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara",
+            "Sean"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Riza"
+          ],
+          "heat": 2.5,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "schemer",
+            "stats": {
+              "physical": 6,
+              "endurance": 5,
+              "mental": 5,
+              "social": 8,
+              "strategic": 7,
+              "loyalty": 3,
+              "boldness": 9,
+              "intuition": 5,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Dante": 0.13,
+              "Zara": 2.1,
+              "Sean": 2.1
+            },
+            "bonds": [
+              {
+                "a": "Zara",
+                "b": "Dante",
+                "delta": 0.34,
+                "when": 27
+              },
+              {
+                "a": "Sean",
+                "b": "Dante",
+                "delta": 0.26,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Zara",
+            "Sean"
+          ]
+        },
+        {
+          "id": "perfect-match-w23-Valentina",
+          "show": "perfect-match",
+          "week": 23,
+          "guest": "Valentina",
+          "with": "Dante",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 9,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "who-next",
+            "fan-mail"
+          ],
+          "named": [],
+          "truth": null,
+          "prediction": "Lucia",
+          "caller": null,
+          "answerBack": [],
+          "allies": [],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [
+            "Ayesha",
+            "Lucia",
+            "Malik",
+            "Rafael",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Riza"
+          ],
+          "heat": 1.5,
+          "reception": "cold",
+          "profile": {
+            "archetype": "villain",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 5,
+              "social": 7,
+              "strategic": 6,
+              "loyalty": 3,
+              "boldness": 9,
+              "intuition": 6,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Valentina": -0.84
+            },
+            "bonds": []
+          },
+          "heard": []
+        },
+        {
+          "id": "perfect-match-w25-Lucia",
+          "show": "perfect-match",
+          "week": 25,
+          "guest": "Lucia",
+          "with": "Rafael",
+          "kind": "dumped",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 8,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Riza",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.3
+            },
+            {
+              "who": "Zara",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            },
+            {
+              "who": "Ayesha",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": null,
+          "prediction": "Zara",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara",
+            "Ayesha"
+          ],
+          "rivals": [
+            "Riza"
+          ],
+          "partner": "Rafael",
+          "stillIn": [
+            "Ayesha",
+            "Malik",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Riza"
+          ],
+          "story": {
+            "partner": {
+              "who": "Rafael",
+              "feel": 8.96,
+              "theirs": 7.66,
+              "stays": false,
+              "weeks": 24
+            },
+            "ex": null,
+            "crush": null,
+            "fight": {
+              "who": "Ayesha",
+              "n": 5,
+              "cause": "partner",
+              "mine": true,
+              "partner": false,
+              "feel": 0
+            },
+            "bestFriend": "Zara",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": {
+              "by": "Rafael"
+            },
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 25
+          },
+          "heat": 3.8,
+          "reception": "cold",
+          "profile": {
+            "archetype": "schemer",
+            "stats": {
+              "physical": 4,
+              "endurance": 4,
+              "mental": 7,
+              "social": 8,
+              "strategic": 9,
+              "loyalty": 4,
+              "boldness": 7,
+              "intuition": 7,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Lucia": -0.91,
+              "Riza": -4.93,
+              "Zara": 1.48,
+              "Ayesha": 1.48
+            },
+            "bonds": [
+              {
+                "a": "Riza",
+                "b": "Lucia",
+                "delta": -1.09,
+                "when": 27
+              },
+              {
+                "a": "Zara",
+                "b": "Lucia",
+                "delta": 0.34,
+                "when": 27
+              },
+              {
+                "a": "Ayesha",
+                "b": "Lucia",
+                "delta": 0.26,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Riza",
+            "Zara",
+            "Ayesha"
+          ]
+        },
+        {
+          "id": "perfect-match-w25-Rafael",
+          "show": "perfect-match",
+          "week": 25,
+          "guest": "Rafael",
+          "with": "Lucia",
+          "kind": "dumped",
+          "mood": "denial",
+          "juror": false,
+          "placement": 7,
+          "how": "dumped",
+          "votes": null,
+          "segments": [
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Malik",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            },
+            {
+              "who": "Sean",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            }
+          ],
+          "truth": null,
+          "prediction": "Sean",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Malik",
+            "Sean"
+          ],
+          "rivals": [],
+          "partner": "Lucia",
+          "stillIn": [
+            "Ayesha",
+            "Malik",
+            "Sean",
+            "Zara",
+            "Freya",
+            "Riza"
+          ],
+          "story": {
+            "partner": {
+              "who": "Lucia",
+              "feel": 7.66,
+              "theirs": 8.96,
+              "stays": false,
+              "weeks": 24
+            },
+            "ex": null,
+            "crush": null,
+            "fight": {
+              "who": "Lucia",
+              "n": 4,
+              "cause": "stress",
+              "mine": false,
+              "partner": true,
+              "feel": 7.66
+            },
+            "bestFriend": "Malik",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": {
+              "by": "Lucia"
+            },
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 25
+          },
+          "heat": 2.5,
+          "reception": "cold",
+          "profile": {
+            "archetype": "floater",
+            "stats": {
+              "physical": 8,
+              "endurance": 7,
+              "mental": 4,
+              "social": 7,
+              "strategic": 3,
+              "loyalty": 7,
+              "boldness": 6,
+              "intuition": 4,
+              "temperament": 9
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Rafael": -0.84,
+              "Malik": 2.19,
+              "Sean": 2.19
+            },
+            "bonds": [
+              {
+                "a": "Malik",
+                "b": "Rafael",
+                "delta": 0.26,
+                "when": 27
+              },
+              {
+                "a": "Sean",
+                "b": "Rafael",
+                "delta": 0.24,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Malik",
+            "Sean"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Riza",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Riza",
+          "with": null,
+          "kind": "finalist",
+          "mood": "denial",
+          "juror": false,
+          "placement": 6,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Lucia",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.72
+            },
+            {
+              "who": "Sean",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.72
+            },
+            {
+              "who": "Zara",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.6
+            },
+            {
+              "who": "Pablo",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.48
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Zara",
+            "Pablo"
+          ],
+          "rivals": [
+            "Lucia",
+            "Sean"
+          ],
+          "partner": "Zara",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Zara",
+              "feel": 8.21,
+              "theirs": 9.44,
+              "stays": true,
+              "weeks": 13
+            },
+            "ex": {
+              "who": "Mei",
+              "feel": 0,
+              "stays": false
+            },
+            "crush": null,
+            "fight": {
+              "who": "Zara",
+              "n": 3,
+              "cause": null,
+              "mine": true,
+              "partner": true,
+              "feel": 8.21
+            },
+            "bestFriend": null,
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": null,
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 17
+          },
+          "heat": 4,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "showmancer",
+            "stats": {
+              "physical": 7,
+              "endurance": 6,
+              "mental": 5,
+              "social": 8,
+              "strategic": 4,
+              "loyalty": 6,
+              "boldness": 7,
+              "intuition": 5,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Riza": 0.13
+            },
+            "bonds": [
+              {
+                "a": "Lucia",
+                "b": "Riza",
+                "delta": -0.23,
+                "when": 27
+              },
+              {
+                "a": "Sean",
+                "b": "Riza",
+                "delta": -0.21,
+                "when": 27
+              },
+              {
+                "a": "Zara",
+                "b": "Riza",
+                "delta": 0.32,
+                "when": 27
+              },
+              {
+                "a": "Pablo",
+                "b": "Riza",
+                "delta": 0.36,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Lucia",
+            "Sean",
+            "Zara",
+            "Pablo"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Zara",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Zara",
+          "with": null,
+          "kind": "finalist",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 5,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "caller",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Ayesha",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            },
+            {
+              "who": "Lucia",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.3
+            },
+            {
+              "who": "Riza",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.38
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Lucia",
+          "answerBack": [],
+          "allies": [
+            "Lucia",
+            "Riza"
+          ],
+          "rivals": [
+            "Ayesha"
+          ],
+          "partner": "Riza",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Riza",
+              "feel": 9.44,
+              "theirs": 8.21,
+              "stays": true,
+              "weeks": 13
+            },
+            "ex": {
+              "who": "Theo",
+              "feel": 0,
+              "stays": false
+            },
+            "crush": null,
+            "fight": {
+              "who": "Riza",
+              "n": 3,
+              "cause": null,
+              "mine": true,
+              "partner": true,
+              "feel": 9.44
+            },
+            "bestFriend": "Freya",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": {
+              "by": "Riza"
+            },
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 27
+          },
+          "heat": 1.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "wildcard",
+            "stats": {
+              "physical": 5,
+              "endurance": 5,
+              "mental": 5,
+              "social": 8,
+              "strategic": 6,
+              "loyalty": 6,
+              "boldness": 9,
+              "intuition": 6,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Zara": 1.04
+            },
+            "bonds": [
+              {
+                "a": "Ayesha",
+                "b": "Zara",
+                "delta": -0.13,
+                "when": 27
+              },
+              {
+                "a": "Lucia",
+                "b": "Zara",
+                "delta": 0.17,
+                "when": 27
+              },
+              {
+                "a": "Riza",
+                "b": "Zara",
+                "delta": 0.16,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Ayesha",
+            "Lucia",
+            "Riza"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Malik",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Malik",
+          "with": null,
+          "kind": "finalist",
+          "mood": "relieved",
+          "juror": false,
+          "placement": 4,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Ayesha",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.35
+            },
+            {
+              "who": "Rafael",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.28
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Rafael",
+          "answerBack": [],
+          "allies": [
+            "Ayesha",
+            "Rafael"
+          ],
+          "rivals": [],
+          "partner": "Ayesha",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Ayesha",
+              "feel": 8.67,
+              "theirs": 9.65,
+              "stays": true,
+              "weeks": 27
+            },
+            "ex": null,
+            "crush": null,
+            "fight": {
+              "who": "Ayesha",
+              "n": 6,
+              "cause": "stress",
+              "mine": true,
+              "partner": true,
+              "feel": 8.67
+            },
+            "bestFriend": "Sean",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": {
+              "took": "Ayesha",
+              "from": "Arjun"
+            },
+            "cheatedOn": {
+              "by": "Ayesha"
+            },
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 27
+          },
+          "heat": 0.6,
+          "reception": "warm",
+          "profile": {
+            "archetype": "social-butterfly",
+            "stats": {
+              "physical": 8,
+              "endurance": 8,
+              "mental": 3,
+              "social": 9,
+              "strategic": 2,
+              "loyalty": 6,
+              "boldness": 7,
+              "intuition": 4,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Malik": 1.12
+            },
+            "bonds": [
+              {
+                "a": "Ayesha",
+                "b": "Malik",
+                "delta": 0.15,
+                "when": 27
+              },
+              {
+                "a": "Rafael",
+                "b": "Malik",
+                "delta": 0.11,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Ayesha",
+            "Rafael"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Ayesha",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Ayesha",
+          "with": null,
+          "kind": "finalist",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 3,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Zara",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            },
+            {
+              "who": "Malik",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.38
+            },
+            {
+              "who": "Lucia",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.3
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Lucia",
+          "answerBack": [],
+          "allies": [
+            "Malik",
+            "Lucia"
+          ],
+          "rivals": [
+            "Zara"
+          ],
+          "partner": "Malik",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Malik",
+              "feel": 9.65,
+              "theirs": 8.67,
+              "stays": true,
+              "weeks": 27
+            },
+            "ex": null,
+            "crush": null,
+            "fight": {
+              "who": "Malik",
+              "n": 6,
+              "cause": "stress",
+              "mine": false,
+              "partner": true,
+              "feel": 9.65
+            },
+            "bestFriend": "Freya",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": {
+              "by": "Malik"
+            },
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 27
+          },
+          "heat": 1.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "showmancer",
+            "stats": {
+              "physical": 4,
+              "endurance": 5,
+              "mental": 7,
+              "social": 7,
+              "strategic": 5,
+              "loyalty": 6,
+              "boldness": 6,
+              "intuition": 8,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Ayesha": 0.96
+            },
+            "bonds": [
+              {
+                "a": "Zara",
+                "b": "Ayesha",
+                "delta": -0.17,
+                "when": 27
+              },
+              {
+                "a": "Malik",
+                "b": "Ayesha",
+                "delta": 0.17,
+                "when": 27
+              },
+              {
+                "a": "Lucia",
+                "b": "Ayesha",
+                "delta": 0.17,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Zara",
+            "Malik",
+            "Lucia"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Freya",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Freya",
+          "with": null,
+          "kind": "finalist",
+          "mood": "elated",
+          "juror": false,
+          "placement": 1,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Sean",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.4
+            },
+            {
+              "who": "Lucia",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.32
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Lucia",
+          "answerBack": [],
+          "allies": [
+            "Sean",
+            "Lucia"
+          ],
+          "rivals": [],
+          "partner": "Sean",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Sean",
+              "feel": 8.73,
+              "theirs": 10,
+              "stays": true,
+              "weeks": 24
+            },
+            "ex": null,
+            "crush": null,
+            "fight": {
+              "who": "Sean",
+              "n": 5,
+              "cause": "stress",
+              "mine": false,
+              "partner": true,
+              "feel": 8.73
+            },
+            "bestFriend": "Ayesha",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": null,
+            "cheatedOn": null,
+            "endedBy": null,
+            "unfair": null,
+            "bitter": false,
+            "days": 25
+          },
+          "heat": 0.7,
+          "reception": "warm",
+          "profile": {
+            "archetype": "loyal-soldier",
+            "stats": {
+              "physical": 4,
+              "endurance": 4,
+              "mental": 7,
+              "social": 7,
+              "strategic": 3,
+              "loyalty": 9,
+              "boldness": 4,
+              "intuition": 5,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Freya": 0.96
+            },
+            "bonds": [
+              {
+                "a": "Sean",
+                "b": "Freya",
+                "delta": 0.17,
+                "when": 27
+              },
+              {
+                "a": "Lucia",
+                "b": "Freya",
+                "delta": 0.18,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Sean",
+            "Lucia"
+          ]
+        },
+        {
+          "id": "perfect-match-w27-Sean",
+          "show": "perfect-match",
+          "week": 27,
+          "guest": "Sean",
+          "with": null,
+          "kind": "finalist",
+          "mood": "elated",
+          "juror": false,
+          "placement": 1,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "fan-mail",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Pablo",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.48
+            },
+            {
+              "who": "Riza",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.48
+            },
+            {
+              "who": "Freya",
+              "stance": "miss",
+              "still": false,
+              "heat": 0.4
+            },
+            {
+              "who": "Malik",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.32
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Pablo",
+          "answerBack": [],
+          "allies": [
+            "Freya",
+            "Malik"
+          ],
+          "rivals": [
+            "Pablo",
+            "Riza"
+          ],
+          "partner": "Freya",
+          "stillIn": [],
+          "story": {
+            "partner": {
+              "who": "Freya",
+              "feel": 10,
+              "theirs": 8.73,
+              "stays": true,
+              "weeks": 24
+            },
+            "ex": {
+              "who": "Skye",
+              "feel": 0,
+              "stays": false
+            },
+            "crush": null,
+            "fight": {
+              "who": "Freya",
+              "n": 5,
+              "cause": "stress",
+              "mine": true,
+              "partner": true,
+              "feel": 10
+            },
+            "bestFriend": "Malik",
+            "loveSaid": true,
+            "turnedOn": null,
+            "robbed": null,
+            "stole": {
+              "took": "Freya",
+              "from": "Pablo"
+            },
+            "cheatedOn": {
+              "by": "Skye"
+            },
+            "endedBy": "Freya",
+            "unfair": null,
+            "bitter": false,
+            "days": 27
+          },
+          "heat": 1.7,
+          "reception": "warm",
+          "profile": {
+            "archetype": "hero",
+            "stats": {
+              "physical": 8,
+              "endurance": 7,
+              "mental": 4,
+              "social": 7,
+              "strategic": 3,
+              "loyalty": 7,
+              "boldness": 6,
+              "intuition": 4,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Sean": 0.96
+            },
+            "bonds": [
+              {
+                "a": "Pablo",
+                "b": "Sean",
+                "delta": -0.21,
+                "when": 27
+              },
+              {
+                "a": "Riza",
+                "b": "Sean",
+                "delta": -0.14,
+                "when": 27
+              },
+              {
+                "a": "Freya",
+                "b": "Sean",
+                "delta": 0.17,
+                "when": 27
+              },
+              {
+                "a": "Malik",
+                "b": "Sean",
+                "delta": 0.18,
+                "when": 27
+              }
+            ]
+          },
+          "heard": [
+            "Pablo",
+            "Riza",
+            "Freya",
+            "Malik"
+          ]
+        }
+      ],
+      "airYear": 2027,
+      "airSlot": "summer"
     }
   ]
 }

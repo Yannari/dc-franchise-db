@@ -298,6 +298,9 @@ export function pmTwistsPlayed(rows = []) {
   return out;
 }
 
+/** What the reunion decided about the weeks after the villa (pm/reunion.js aftermath), or null. */
+const reunionOf = rows => [...rows].reverse().find(r => r.pm?.reunion)?.pm.reunion || null;
+
 /** The season document. */
 export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } = {}) {
   const story = pmStories(rows);
@@ -312,7 +315,11 @@ export function buildPerfectMatchSeasonDocument(rows = [], { seasonNumber = 1 } 
     const leftWith = !finalCouple && career.lastPartner && history.some(h => h.exits.some(x => x.name === p.name)
       && h.exits.some(x => x.name === career.lastPartner)) ? career.lastPartner : null;
     const partner = finalCouple ? finalCouple.find(n => n !== p.name) : leftWith;
-    return { ...p, ...(partner ? { showmance: partner, showmanceEnded: 'intact' } : {}),
+    // …and whether it outlived the weeks after: the reunion said so on air (pm/reunion.js), so the
+    // wiki and the life after the show (js/life-hook.js) start from a couple that has split.
+    const since = partner ? reunionOf(rows)?.couples?.find(c => [c.a, c.b].includes(p.name) && [c.a, c.b].includes(partner)) : null;
+    const ended = since && (since.fate === 'split' || since.fate === 'friends') ? 'broken' : 'intact';
+    return { ...p, ...(partner ? { showmance: partner, showmanceEnded: ended, ...(since ? { afterVilla: since.fate } : {}) } : {}),
       pm: { couplings: career.couplings, timesStolen: career.timesStolen, publicVotesSurvived: career.publicVotesSurvived,
         finalApproval: career.finalApproval, label: career.label,
         // The following the villa built them on air: fame scaled by how the

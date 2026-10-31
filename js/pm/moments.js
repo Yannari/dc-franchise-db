@@ -31,6 +31,7 @@ import { confrontation } from './movie-night.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { closeEpisode, BETRAYAL, nudgeBelief, beliefOf } from './ledger.js';
 import { FINAL_COUPLES } from './schedule.js';
+import { aftermath, segments } from './reunion.js';
 
 const EXIT = 'dumped';
 // How many couples reach the final: four, or three (Villa options, `pmFinalCouples`).
@@ -1659,6 +1660,9 @@ Object.assign(MOMENTS, {
     const final = finalVote(state, { rng: ctx.rng });
     const envelope = ctx.splitOrStealOn ? splitOrSteal(state, final[0].couple, { rng: ctx.rng }) : null;
     state.winnersCouple = [...final[0].couple];
+    // What the reunion asks about: the envelope, and how far each couple got (pm/reunion.js).
+    state.envelope = envelope ? { holder: envelope.holder, choice: envelope.choice } : null;
+    state.finalShares = final.map(f => ({ couple: [...f.couple], share: f.share }));
     // THE RESULT, on screen. The vote was counted and exported and never
     // shown: every final went from the declarations to the reunion with no
     // winner named (read in season 11, 2026-09-23 — §11.5's system that runs
@@ -1734,14 +1738,8 @@ Object.assign(MOMENTS, {
       .map(e => [e, Object.values(e.pop).reduce((a, p) => a + Math.abs(p.approval || 0), 0) * (state.secrets.some(s => s.eventId === e.id) ? 3 : 1)])
       .sort((a, b) => b[1] - a[1]).map(([e]) => e)
       .filter(e => { const k = revealExchange(state, e.id); if (k && shownScripts.has(k)) return false; if (k) shownScripts.add(k); return true; })
-      .slice(0, 5);
-    // The host's welcome, and the winners on the sofa first: how life is
-    // since the final (user: "not just a continuation of text without setup").
-    const winners = state.winnersCouple || null;
-    const open = [makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-open', players: [], aired: true, extra: { pop: {} } })];
-    if (winners && winners.length === 2) open.push(makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-winners', players: [...winners], aired: true,
-      extra: { of: winners.every(n => state.villa.includes(n)) && partnerOf(state, winners[0]) === winners[1] ? 'together' : 'apart', pop: {} } }));
-    const events = hidden.map(e => {
+      .slice(0, 4);
+    const clips = hidden.map(e => {
       const touched = Object.keys(e.pop);
       airLater(state, e);
       // The reveal names everyone the clip moves, so the row can explain the
@@ -1761,10 +1759,21 @@ Object.assign(MOMENTS, {
       // who did it, who with, and who they were coupled with at the time.
       const what = sec ? (sec.kind || (sec.said ? 'said' : 'pull')) : e.kind === 'bed-share' ? 'bed' : e.kind;
       const cast = sec ? [...new Set([sec.who, sec.with || e.players.find(n => n !== sec.who), sec.partner].filter(Boolean))] : e.players;
-      return makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reveal', players: cast,
-        aired: true, major: touched, extra: { revealed: e.id, of: scandal ? 'scandal' : 'mild', what, pop: {} } });
+      const of = scandal ? 'scandal' : 'mild';
+      // Who is in it, for the partner's answer after it (pm/reunion.js): only a secret knows the partner it was kept from.
+      return { cast, major: touched, what, of, extra: { revealed: e.id, of, what },
+        who: sec?.who || null, with: sec ? (sec.with || e.players.find(n => n !== sec.who) || null) : null, partner: sec?.partner || null };
     });
-    const close = makeEvent(state, ctx.rng, { phase: 'reunion', kind: 'reunion-close', players: [], aired: true, extra: { pop: {} } });
-    return { events: [...open, ...events, close], exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id) } };
+    // THE REUNION (the user, 2026-10-31: "16 clicks is absolutely nothing … at
+    // least 80 frames covering the whole season … are they still together, what
+    // happened, are you still friends, run by Dior"). The weeks since the final
+    // are decided first, then the show is cast from them (pm/reunion.js).
+    const after = aftermath(state, clips);
+    state.reunion = after;
+    const events = segments(state, after, clips).map(([kind, players, extra]) => {
+      const { major = [], ...rest } = extra;
+      return makeEvent(state, ctx.rng, { phase: 'reunion', kind, players, aired: true, major, extra: { ...rest, pop: {} } });
+    });
+    return { events, exits: [], ballots: [], extra: { revealed: hidden.map(e => e.id), reunion: after } };
   },
 });

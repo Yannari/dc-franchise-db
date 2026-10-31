@@ -79,6 +79,8 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   'chaser',
   // a challenge's evening (pm/challenge-frame.js): how the partner took it at the time; a graft started from the kiss
   'watched', 'started',
+  // the reunion (pm/reunion.js): what happened since the villa, and the quick questions
+  'fate', 'envelope', 'place', 'now', 'lasted', 'q', 'how', 'label',
   // how a Sports Day event was won (clean · fall · cheat)
   'how',
   // a Couple Goals board: the same couple named as the board before

@@ -644,6 +644,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         majors: [...new Set([...day, ...m.events].flatMap(e => e.aired ? e.major : []))],
         labels: snap.label, approval: snap.approval, fame: snap.fame,
         envelope: m.extra?.envelope || null, revealed: m.extra?.revealed || null,
+        // The reunion's record of the weeks since the villa (pm/reunion.js): the export and the life after read it.
+        ...(m.extra?.reunion ? { reunion: m.extra.reunion } : {}),
         relationships: rel, relLabels: labels,
         ladder: { ...state.ladder },
         emotions: Object.fromEntries(state.villa.map(n => {

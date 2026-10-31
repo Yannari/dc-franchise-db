@@ -142,6 +142,7 @@ import { RIVAL_SHADE, RIVAL_PLAY, CODE_CALL, RIVAL_ROW, RIVAL_STEP_BACK, RIVAL_W
 import { CLOSE_OFF, KEEPING_OPEN, OPEN_BACK_UP, EXCLUSIVE_ASK, OFFICIAL_ASK, ASK_DECLINED, LOVE_SAID, LOVE_HANGING } from './ladder.js';
 import { KIN_HEART, KIN_VET, KIN_PROTECT, EX_AWKWARD, EX_JEALOUS } from './kin.js';
 import { REASSURANCE, JEALOUS_CONFRONT, JEALOUS_RETALIATE, CONFESSION, NO_SHOW } from './jealousy.js';
+import { RU_OPEN, RU_HOST, RU_WINNERS, RU_FIRSTOUT, RU_COUPLE, RU_STEAL, RU_CASA, RU_EXES, RU_FEUD, RU_CLIP, RU_FRIENDS, RU_ASK, RU_QUICK, RU_CLOSE, RU_PUBLIC } from './reunion.js';
 
 // More for the pools a season wears thin (pm/talk/more/, measured).
 extend(FRIENDSHIP, FRIENDSHIP_MORE); extend(FRIENDSHIP, FRIENDSHIP_VOLUME);
@@ -206,7 +207,10 @@ export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'dee
   'rival-won': RIVAL_WON, 'crush-confide': CRUSH_CONFIDE, 'crush-watch': CRUSH_WATCH, 'crush-move': CRUSH_MOVE, 'crush-plea': CRUSH_PLEA, 'crush-over': CRUSH_OVER,
   'kin-heart': KIN_HEART, 'kin-vet': KIN_VET, 'kin-protect': KIN_PROTECT, 'ex-awkward': EX_AWKWARD, 'ex-jealous': EX_JEALOUS,
   'graft-eyes': GRAFT_EYES, watching: WATCHING, 'where-head': WHERE_HEAD, 'graft-shut': GRAFT_SHUT, 'graft-turn': GRAFT_TURN,
-  'feels-off': FEELS_OFF, 'secret-burden': SECRET_BURDEN, 'group-chat': GROUP_CHAT, 'bed-chat': BED_CHAT };
+  'feels-off': FEELS_OFF, 'secret-burden': SECRET_BURDEN, 'group-chat': GROUP_CHAT, 'bed-chat': BED_CHAT,
+  // the reunion (talk/reunion.js)
+  'ru-open': RU_OPEN, 'ru-host': RU_HOST, 'ru-winners': RU_WINNERS, 'ru-firstout': RU_FIRSTOUT, 'ru-couple': RU_COUPLE, 'ru-steal': RU_STEAL, 'ru-casa': RU_CASA,
+  'ru-exes': RU_EXES, 'ru-feud': RU_FEUD, 'ru-clip': RU_CLIP, 'ru-friends': RU_FRIENDS, 'ru-ask': RU_ASK, 'ru-quick': RU_QUICK, 'ru-close': RU_CLOSE, 'ru-public': RU_PUBLIC };
 
 // A doubt's confide says its real reason (threads.js doubt): `why` leads, and {x} is who {a} looks at.
 extend(VENT, VENT_STORY);

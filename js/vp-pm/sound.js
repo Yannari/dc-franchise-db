@@ -305,6 +305,20 @@ const STORY_MUSIC = {
   'pick-chat': () => 'suspense',
   'vote-worry': () => 'suspense',
   'stick-twist': () => 'suspense',
+  // The reunion (pm/reunion.js), by what each segment found: a couple still together is romance, one
+  // that split is the sad track; a feud or a steal still sore is drama; footage nobody saw is cheating;
+  // the catching-up in between is the villa's own pop, and the winners close it on theirs.
+  'ru-open': () => 'villa', 'ru-host': x => (x.of === 'clips' ? 'cheating' : 'villa'), 'ru-ask': () => 'villa', 'ru-quick': () => 'villa',
+  'ru-firstout': () => 'villa', 'ru-friends': x => (x.now === 'drifted' ? 'cry' : 'villa'),
+  'ru-winners': x => (x.fate === 'split' ? 'cry' : x.fate === 'friends' ? 'villa' : 'romance'),
+  'ru-couple': x => (x.fate === 'split' ? 'cry' : x.fate === 'friends' ? 'villa' : 'romance'),
+  'ru-public': x => (['villain', 'disliked'].includes(x.label) ? 'drama' : 'villa'),
+  'ru-steal': x => (x.now === 'over' ? 'villa' : x.now === 'cold' ? 'drama' : 'cry'),
+  'ru-casa': x => (x.now === 'over' ? 'villa' : x.now === 'cold' ? 'drama' : 'cry'),
+  'ru-exes': x => (x.now === 'friends' ? 'villa' : x.now === 'hurt' ? 'cry' : 'drama'),
+  'ru-feud': x => (x.now === 'made-up' ? 'villa' : 'drama'),
+  reveal: () => 'cheating', 'ru-clip': () => 'cheating',
+  'ru-close': x => (x.fate === 'split' ? 'cry' : 'winner'),
 };
 const ONE_SHOT = new Set(['transition']);
 const CUTS_BEFORE = new Set(['dump-verdict', 'dump-verdict-couple', 'dump-verdict-singles']);

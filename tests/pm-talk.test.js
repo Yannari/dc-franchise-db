@@ -30,7 +30,9 @@ const THREE = new Set([
   'movie-after', 'postcard', 'enemy-bitch', 'enemy-freeze', 'enemy-snipe', 'enemy-clash', 'chal-buzz', 'chal-watch', 'chal-row', 'chal-spark', 'sports-pick', 'sports-race', 'knowing-q', 'goals-board', 'tower-fall', 'talent-act', 'betray-see', 'betray-confront', 'told-confront', 'stirrer-confront', 'villa-happy', 'redeem-doubt', 'grass-talk', 'parents-named', 'parents-advice', 'parents-mediate', 'exw-stir', 'exw-partner',
   'dump-tie', 'gossip', 'advice', 'jealous-confront', 'jealous-retaliate', 'kin-vet', 'kin-protect', 'ex-jealous', 'debrief', 'date-picked', 'date-back',
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
-  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept', 'pick-plan', 'dump-unfair']);
+  'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept', 'pick-plan', 'dump-unfair',
+  // the reunion: {b} took {c} from {a}; {a} came back from Casa with {c}; {c} was in the clip with {a}
+  'ru-steal', 'ru-casa', 'ru-clip']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'took-back', 'refused', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
 // dump-unfair: the couple the villa kept, always both named (talk/dumping.js slots).
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect', 'dump-unfair']);
@@ -238,7 +240,8 @@ describe('a line happens at its own time of day', () => {
   const NIGHT = /\b(goodnight|night, then|a quick kiss before the fire pit|help me with my hair before the fire pit)\b/i;
   const phases = e => [].concat(e.when?.phase || []);
   // Kinds that only ever happen at bedtime: a bed shared at Casa.
-  const NIGHT_KINDS = new Set(['stretch-answer', 'secret-kept', 'hook', 'bed-share']);
+  // …and the reunion's goodnight: a studio show, at night.
+  const NIGHT_KINDS = new Set(['stretch-answer', 'secret-kept', 'hook', 'bed-share', 'ru-close']);
   it('morning words only in the morning, night words only at night', () => {
     const bad = [];
     for (const [k, s, e] of ENTRIES) {

@@ -1,7 +1,7 @@
 // Kristal-talKs in-season exit interviews, on the site.
 // Spec: docs/superpowers/specs/2026-10-21-kristal-exit-interviews-design.md
 import { describe, expect, it } from 'vitest';
-import { podcastFor, PODCAST_FOLLOWERS, exitFollowerDelta } from '../js/kristal.js';
+import { podcastFor, PODCAST_FOLLOWERS, exitFollowerDelta, EXIT_RECEPTION_TIERS, RECEPTION } from '../js/kristal.js';
 import { decideExitInterview } from '../js/exit-interview/core.js';
 import { seededRandom } from './helpers/rng.js';
 
@@ -87,6 +87,18 @@ describe('the in-season episodes', () => {
       expect(exitFollowerDelta({ tier, reception: 'warm' })).toBeGreaterThan(0);
       expect(exitFollowerDelta({ tier, reception: 'cold' })).toBeLessThan(0);
     }
+  });
+
+  it('labels an exit interview on its own scale, not the debrief’s', () => {
+    for (const e of exits) {
+      const tier = [...EXIT_RECEPTION_TIERS].reverse().find(x => e.listeners / 1000 >= x.min);
+      expect([e.tier, e.tierLabel]).toEqual([tier.tier, tier.label]);
+    }
+    // a hot hour from a first-season boot: (10 + 5 × 5) × 0.5 × luck is 14 to 23 thousand, never quiet
+    const hot = { ...records[0], id: 'big-brother-w1-Hot', heat: 5 };
+    const ep = podcastFor(inputs([hot])).find(e => e.kind === 'exit');
+    expect(ep.tier).not.toBe('quiet');
+    expect(EXIT_RECEPTION_TIERS.map(r => r.label)).toEqual(RECEPTION.map(r => r.label));
   });
 
   it('a juror is told they go dark until the finale', () => {

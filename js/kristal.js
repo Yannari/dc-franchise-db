@@ -54,6 +54,17 @@ export const RECEPTION = [
   { tier: 'viral', label: 'EVERYONE HEARD IT', min: 150 },
 ];
 
+/** The same three labels for an exit interview, on its own scale: its listeners are (10 + heat × 5) × (0.5 + fame)
+ *  thousand, a fifth of a debrief's, so on the debrief's bars every one of them read A QUIET ONE (the user,
+ *  2026-10-31: "why are every kristal talks interviews labeled a quiet one"). Measured on 123 boots across three
+ *  shows (heat 0 to 5.3, median 1.5): a first-season boot lands about 65% quiet, 33% good and 2% everyone
+ *  heard it; a past winner back again is about half good and half viral. */
+export const EXIT_RECEPTION_TIERS = [
+  { tier: 'quiet', label: 'A QUIET ONE', min: 0 },
+  { tier: 'solid', label: 'A GOOD LISTEN', min: 10 },
+  { tier: 'viral', label: 'EVERYONE HEARD IT', min: 20 },
+];
+
 /** What an appearance does to the guest's following, by how the episode went. */
 export const PODCAST_FOLLOWERS = { quiet: 1200, solid: 4500, viral: 14000 };
 /** And what a viral episode costs whoever it was ABOUT. Proportional, like
@@ -421,7 +432,7 @@ export function podcastFor({ careers = [], seasons = [], lifeEvents = [],
         mentioned: loud ? slugOf(loud.who) : null,
       };
       const k = ep.listeners / 1000;
-      const tier = [...RECEPTION].reverse().find(x => k >= x.min) || RECEPTION[0];
+      const tier = [...EXIT_RECEPTION_TIERS].reverse().find(x => k >= x.min) || EXIT_RECEPTION_TIERS[0];
       ep.tier = tier.tier;
       ep.tierLabel = tier.label;
       ep.minutes = Math.min(70, 22 + Math.round(ep.listeners / 3000) + Math.round(chance(ep.id + '|len') * 10));

@@ -18,6 +18,7 @@ import { ARGUMENT_WHOLE } from './whole/argument.js';
 import { BED_CHAT_WHOLE } from './whole/bed-chat.js';
 import { LOYALTY_WHOLE } from './whole/loyalty.js';
 import { ADVICE_WHOLE } from './whole/advice.js';
+import { FEELS_OFF_WHOLE, SECRET_BURDEN_WHOLE } from './whole/secrets.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
@@ -150,7 +151,7 @@ for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads |
 
 // Whole conversations (pm/talk/whole/): one talk start to finish, in the speakers' own voices.
 extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE); extend(DEEP_CHAT, DEEP_CHAT_WHOLE); extend(DEBRIEF, DEBRIEF_WHOLE); extend(PICK_CHAT, PICK_CHAT_WHOLE); extend(VOTE_WORRY, VOTE_WORRY_WHOLE); extend(ARGUMENT, ARGUMENT_WHOLE);
-extend(BED_CHAT, BED_CHAT_WHOLE); extend(LOYALTY, LOYALTY_WHOLE); extend(ADVICE, ADVICE_WHOLE);
+extend(BED_CHAT, BED_CHAT_WHOLE); extend(LOYALTY, LOYALTY_WHOLE); extend(ADVICE, ADVICE_WHOLE); extend(FEELS_OFF, FEELS_OFF_WHOLE); extend(SECRET_BURDEN, SECRET_BURDEN_WHOLE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
@@ -261,6 +262,8 @@ WHERE_HEAD.plans = WHERE_HEAD_PLANS;
 for (const [k, more] of Object.entries(STORY_MORE)) extend(TALK[k], more);
 WATCHING.plans = WATCHING_PLANS;
 WATCHING.facts = (state, ev) => ({ ...watchingFacts(state, ev) });
+// Who {c} has been looking at instead, when the doubt has a name (threads.js doubtWhy 'eyes').
+FEELS_OFF.facts = (state, ev) => ({ hasAbout: !!ev.extra?.about });
 // cGone was written into the debrief lines and never passed (2026-10-30): {c} gone home tonight.
 DEBRIEF.facts = (state, ev) => ({ ...debriefFacts(state, ev) }); FEELS_OFF.plans = FEELS_OFF_PLANS; BED_CHAT.plans = BED_CHAT_PLANS;
 GROUP_CHAT.slots = (state, ev) => ({ ...(ev.extra?.x ? { x: ev.extra.x } : {}), ...(ev.extra?.about ? { about: ev.extra.about } : {}) });

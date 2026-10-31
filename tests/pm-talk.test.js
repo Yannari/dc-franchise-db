@@ -151,6 +151,8 @@ describe('a placeholder only where somebody fills it', () => {
       if (ABOUT_ALWAYS.has(k)) continue;
       // Who it was with, named only behind the fact that there is somebody (talk/index.js facts).
       if (k === 'group-chat' || k === 'secret-burden') { expect(e.when?.hasWith, tag(k, s, e)).toBe(true); continue; }
+      // Who {c} has been looking at, when the doubt has a name (talk/index.js FEELS_OFF.facts).
+      if (k === 'feels-off') { expect(e.when?.hasAbout, tag(k, s, e)).toBe(true); continue; }
       expect(k, tag(k, s, e)).toBe('argument');
       expect(list(e.when?.cause).length && list(e.when.cause).every(c => ABOUT_CAUSES.includes(c)), tag(k, s, e)).toBe(true);
     }
@@ -220,8 +222,8 @@ describe('a played season', () => {
     const featured = scenes.filter(e => e.tier === 'featured');
     const turns = featured.map(e => (e.script?.lines || []).filter(l => !l.action).length);
     // Whole conversations (pm/script.js talkScript `whole`, 2026-10-30) say it in fewer lines than the
-    // stitched movements did: the 9 was set for those, and was partly padding; whole ones run 5-7 spoken lines ("less trying to be clever").
-    expect(turns.reduce((a, b) => a + b, 0) / turns.length, 'mean turns in a featured scene').toBeGreaterThan(6);
+    // stitched movements did: the 9 was set for those, and was partly padding; whole ones run 5-7 spoken lines (5.9 once feels-off was whole) ("less trying to be clever").
+    expect(turns.reduce((a, b) => a + b, 0) / turns.length, 'mean turns in a featured scene').toBeGreaterThan(5.5);
     expect(TALK_MISSES.length / scenes.length, `misses: ${[...new Set(TALK_MISSES)].join(', ')}`).toBeLessThan(0.03);
   }, 300000);
 });

@@ -10,6 +10,7 @@
 // touches a listener count or a follower.
 
 import * as L from './kristal-exit-lines.js';
+import { pmExchanges } from './kristal-exit-pm.js';
 import { seasonId, familyOf } from './shows.js';
 
 function hash(key) {
@@ -200,11 +201,19 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const oa = B('OPEN_A', openKind, g).length ? B('OPEN_A', openKind, g) : B('OPEN_A', openKind, 'soft');
   // A question every line of which needs a fact this exit lacks (a showmance
   // exit with no partner on the record) is asked the general way, not blank.
-  const oq = pick(B('OPEN_Q', openKind), `${K}|oq`, base, used)
-    || pick(['How are you feeling, now it’s over?', 'How are you, honestly, after that?'], `${K}|oq2`, base, used);
-  const oaLine = pick(oa, `${K}|oa`, base, used)
-    || pick(B('OPEN_A', 'seen-it-coming', g).length ? B('OPEN_A', 'seen-it-coming', g) : B('OPEN_A', 'seen-it-coming', 'soft'), `${K}|oa2`, base, used);
-  push('the-exit', oq, oaLine);
+  // A Perfect Match islander is asked about their own story (kristal-exit-pm.js):
+  // their couple, their ex, the night it happened to them, their fight, their
+  // friend. The general opener's question and answer were drawn apart ("Did you
+  // see it coming?" / "I was the realest person in that villa").
+  const story = fmt === 'perfect-match' && r.story ? pmExchanges(r, { g, base, K, used, pick }) : [];
+  if (story.length) for (const [topic, q, a, extra] of story) push(topic, q, a, extra);
+  else {
+    const oq = pick(B('OPEN_Q', openKind), `${K}|oq`, base, used)
+      || pick(['How are you feeling, now it’s over?', 'How are you, honestly, after that?'], `${K}|oq2`, base, used);
+    const oaLine = pick(oa, `${K}|oa`, base, used)
+      || pick(B('OPEN_A', 'seen-it-coming', g).length ? B('OPEN_A', 'seen-it-coming', g) : B('OPEN_A', 'seen-it-coming', 'soft'), `${K}|oa2`, base, used);
+    push('the-exit', oq, oaLine);
+  }
 
   // ── the people they name, written once and placed below ──
   const t = r.truth;
@@ -379,7 +388,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const friend = (r.named || []).find(n => POSITIVE.has(n.stance) && !flipped.has(n.who))?.who
     || (r.allies || []).find(a => !flipped.has(a));
   const foe = (r.named || []).find(n => !POSITIVE.has(n.stance))?.who || (r.rivals || [])[0];
-  if (friend) rapid.push({ q: 'Best friend in there?', a: `${friend}.` });
+  if (friend && !exchanges.some(x => x.topic === 'pm-friend')) rapid.push({ q: 'Best friend in there?', a: `${friend}.` });
   if (foe && foe !== friend) rapid.push({ q: 'Least trusted?', a: `${foe}.` });
   if (r.kind !== 'finalist') rapid.push({ q: 'Would you go back?', a: g === 'hot' ? 'Tomorrow. I have unfinished business.' : g === 'hurt' ? 'Not yet. Ask me in a year.' : 'In a heartbeat.' });
 

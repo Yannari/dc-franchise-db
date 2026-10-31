@@ -227,6 +227,8 @@ export function decideExitInterview(f, { rng = Math.random, earlier = [] } = {})
     segments, named, truth, prediction, caller, answerBack,
     allies: [...(f.allies || [])].slice(0, 3), rivals: [...(f.rivals || [])].slice(0, 3),
     partner: f.partner || null, stillIn: [...(f.stillIn || [])],
+    // What happened to them on the show, when the show says (exit-interview/pm-story.js).
+    ...(f.story ? { story: f.story } : {}),
     heat, reception, profile: { archetype: f.profile?.archetype || '', stats: { ...(f.profile?.stats || {}) } },
     effects: { popularity: {}, bonds: [] }, heardBy: {},
   };

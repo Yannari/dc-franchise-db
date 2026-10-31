@@ -56,11 +56,18 @@ export function recordAiredExits(before, row, adapter) {
     deliverInterviews(store(), { at: round, canHear, ops: OPS });
     // Already out before tonight: everybody with an interview on file.
     const goneBefore = [...new Set(store().filter(r => r.show === show && r.kind !== 'finalist').map(r => r.guest))];
-    const facts = (name, how, placement, withName, gone) => houseFacts({
-      show, round, name, how, placement, withName,
-      ballots: how === 'evicted' ? (adapter.ballots?.(row) || []) : [],
-      canHear, isJuror: () => false, gone, publicVotes: !!adapter.publicVotes,
-    });
+    const facts = (name, how, placement, withName, gone) => {
+      const f = houseFacts({
+        show, round, name, how, placement, withName,
+        ballots: how === 'evicted' ? (adapter.ballots?.(row) || []) : [],
+        canHear, isJuror: () => false, gone, publicVotes: !!adapter.publicVotes,
+      });
+      // The show's own story of them; its partner when the franchise's showmances
+      // don't know it (Perfect Match couples are its own, not gs.showmances).
+      const story = adapter.story?.(name, row) || null;
+      const partner = f.partner || story?.partner?.who || null;
+      return { ...f, story, partner, partnerStillIn: !!partner && f.stillIn.includes(partner) };
+    };
     const howOfName = n => adapter.howOf?.(n, row) || 'evicted';
     leaving.forEach((name, i) => {
       const how = howOfName(name);

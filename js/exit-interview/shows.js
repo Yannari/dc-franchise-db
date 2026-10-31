@@ -5,6 +5,7 @@
 // finished. Ridonculous Race is not here yet.
 
 import { gs } from '../core.js';
+import { pmStory } from './pm-story.js';
 
 const exitsOf = row => (Array.isArray(row?.exits) ? row.exits : []).filter(x => x && x.name);
 
@@ -34,6 +35,8 @@ export const AIRED_ADAPTERS = {
     seed: () => gs?.pm?.seed ?? '',
     howOf: () => 'dumped',
     winners: () => gs?.pmWinners || gs?.pm?.winners || [],
+    // Their couple, their ex, their fight, their friend, their drama (pm-story.js).
+    story: (name, row) => pmStory(name, row, gs?.episodeHistory || []),
   },
   'the-circle': {
     show: 'the-circle',

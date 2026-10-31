@@ -531,9 +531,9 @@ function nomScreen(act, ctx) {
     steps.push({ k: 'beat', t: x.kind === 'quit' ? `${x.player} walks away from ${x.alliance}.` : `${x.alliance} throws ${x.player} out.`, card: { kind: 'out', name: x.alliance, members: [x.player] } });
   }
   for (const n of noms) steps.push(...scriptSteps(act.script?.nomDr?.[n]));
-  return { id: 'bb-noms-v', kind: 'noms', anchor: 'noms', set: 'dining', room: ROOM_NAME.dining, cam: CAM.dining,
-    title: 'Nomination Ceremony', kicker: 'Cam 03 · Dining room', sub: `${hoh} at the head of the table`,
-    day: ctx.day, time: ACT_TIME.nominations, seated, steps };
+  return { id: 'bb-noms-v', kind: 'noms', anchor: 'noms', set: 'dining', room: doll ? 'The Sanctum' : ROOM_NAME.dining, cam: CAM.dining,
+    title: doll ? 'The Sanctum' : 'Nomination Ceremony', kicker: doll ? 'The Sanctum · By candlelight' : 'Cam 03 · Dining room', sub: `${hoh} at the head of the table`,
+    day: ctx.day, time: ACT_TIME.nominations, seated, steps, ...(doll ? { sanctum: true } : {}) };
 }
 
 

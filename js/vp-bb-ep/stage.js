@@ -270,7 +270,23 @@ function wallHtml(S, L, st, fresh) {
     return `<div class="mf ${s} ${i % 3 === 2 ? 'dark' : ''} ${isFresh ? 'fresh' : ''}" style="left:${fr.x}%;bottom:${fr.y}%;width:${fr.w}%;height:${fr.h}%;--c:${col(n)}"><div class="mfin">${img(n)}</div>${s === 'hoh' && !SS_DRAWING ? '<span class="mft">HOH</span>' : ''}</div>`;
   }).join('')}</div>`;
 }
+// The Sanctum (BB27): no key box and no screen. The Head of Household sets each nominee's voodoo doll in the middle
+// of the table, a pin through it (the user, 2026-10-31: "they should really use doll for the nominations")
+const DOLL = `<svg class="dsv" viewBox="0 0 60 96"><path d="M30 30 C20 30 17 36 17 44 L6 48 C2 50 3 56 8 55 L17 53 L18 70 L12 90 C11 94 17 96 19 92 L27 74 L33 74 L41 92 C43 96 49 94 48 90 L42 70 L43 53 L52 55 C57 56 58 50 54 48 L43 44 C43 36 40 30 30 30Z" fill="#b08a5a" stroke="#5e4426" stroke-width="1.6"/>
+  <path d="M21 46 L39 46 M21 52 L39 52 M22 62 L38 62" stroke="#7a5a35" stroke-width="1" stroke-dasharray="2 2"/><path d="M26 56 l3 3 m0 -3 l-3 3" stroke="#3a2a15" stroke-width="1.2"/>
+  <circle cx="30" cy="18" r="16" fill="#c9a26e" stroke="#5e4426" stroke-width="1.6"/></svg>`;
+const PIN = `<svg class="dpin" viewBox="0 0 40 40"><line x1="6" y1="34" x2="30" y2="10" stroke="#cfd6df" stroke-width="2.2" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#c4161c" stroke="#5a0508" stroke-width="1.2"/></svg>`;
+function sanctumDollsHtml(S, L, st, fresh) {
+  const b = (anchOf(S)?.screen ? anchOf(S) : ANCH.dining).box;
+  const dolls = L.revealed.map(who => {
+    const flip = fresh && st && st.reveal === who;
+    return `<div class="ndoll ${flip ? 'flip' : ''}">${DOLL}<div class="nface"><i>${esc(String(who).charAt(0))}</i>${img(who)}</div>${PIN}<b>${esc(who)}</b></div>`;
+  }).join('');
+  // in the middle of the table, in front of the Head of Household's place rather than over it
+  return `<div class="ndolls" style="left:${b.at[0]}%;bottom:${(b.at[1] * 0.5625 - 7).toFixed(2)}cqw;z-index:${zOf(b) + 2}">${dolls}</div>`;
+}
 function nomScreenHtml(S, L, st, fresh) {
+  if (S.sanctum) return sanctumDollsHtml(S, L, st, fresh);
   const DA = anchOf(S)?.screen ? anchOf(S) : ANCH.dining;
   const r = DA.screen;
   const n = S.steps.filter(x => x.reveal).length;

@@ -304,6 +304,19 @@ export const BBX_CSS = `.bbx .stage{position:relative;aspect-ratio:16/9;containe
 .bbx .nkey.turned{transform:rotate(90deg)}
 .bbx .nkey.now{animation:bbx-nturn .6s cubic-bezier(.3,.8,.3,1.2) both}
 @keyframes bbx-nturn{from{transform:rotate(0)}to{transform:rotate(90deg)}}
+.bbx .ndolls{position:absolute;transform:translateX(-50%);display:flex;justify-content:center;align-items:flex-end;gap:1.2cqw;filter:drop-shadow(0 .5cqw .6cqw rgba(0,0,0,.55))}
+.bbx .ndoll{position:relative;width:8cqw;aspect-ratio:60/96}
+.bbx .ndoll .dsv{position:absolute;inset:0;width:100%;height:100%}
+.bbx .ndoll .nface{position:absolute;left:50%;top:2.6%;width:46%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;overflow:hidden;border:.18cqw solid #5e4426;box-sizing:border-box;filter:sepia(.35) saturate(.8)}
+.bbx .ndoll .nface{background:#c9a26e;display:grid;place-items:center}
+.bbx .ndoll .nface i{grid-area:1/1;font:900 2.2cqw/1 Archivo;font-style:normal;color:#5e4426}
+.bbx .ndoll .nface img{grid-area:1/1;width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+.bbx .ndoll .dpin{position:absolute;left:44%;top:38%;width:46%;transform-origin:10% 90%}
+.bbx .ndoll b{position:absolute;left:50%;bottom:-1.6cqw;transform:translateX(-50%);white-space:nowrap;font:800 .95cqw Archivo;letter-spacing:.08cqw;color:#f1e6cc;text-transform:uppercase;text-shadow:0 .1cqw .3cqw #000}
+.bbx .ndoll.flip{animation:bbx-dset .8s cubic-bezier(.3,.7,.2,1) both}
+.bbx .ndoll.flip .dpin{animation:bbx-dpin .5s .6s cubic-bezier(.5,0,.2,1.4) both}
+@keyframes bbx-dset{0%{transform:translateY(-6cqw) rotate(-14deg);opacity:0}60%{opacity:1}100%{transform:none}}
+@keyframes bbx-dpin{0%{transform:translate(1.6cqw,-1.6cqw);opacity:0}100%{transform:none;opacity:1}}
 .bbx .chipx.key{background:#f5c542;color:#2a1d00}
 .bbx .vchip{position:absolute;left:50%;top:40%;z-index:60;width:11cqw;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#fff8d8,#f5c542 55%,#a87a10);box-shadow:0 0 0 .3cqw #fff3c4,0 1.2cqw 3cqw rgba(0,0,0,.5);

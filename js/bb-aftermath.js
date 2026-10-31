@@ -30,7 +30,19 @@ import {
   fearOf, respectOf, trustOf,
 } from './bb-events/_read.js';
 
-const _pick = (rng, list) => list[Math.min(list.length - 1, Math.floor(rng() * list.length))];
+// The line this season has heard least, of these (names blanked, so the same sentence about somebody else is still
+// the same sentence): one host interviews every evictee, and a plain random pick from a few lines aired the same
+// question six times a season (measured 2026-10-31: 147 of 327 interview lines repeated across three seasons)
+const _shape = t => { let x = String(t); for (const q of players || []) if (q?.name) x = x.split(q.name).join('#'); return x; };
+const _pick = (rng, list) => {
+  if (!list?.length) return undefined;
+  const led = gs.bb ? (gs.bb.interviewLines ||= {}) : {};
+  const sc = list.map(x => led[_shape(x)] || 0), min = Math.min(...sc);
+  const c = list.filter((_, i) => sc[i] === min);
+  const x = c[Math.min(c.length - 1, Math.floor(rng() * c.length))];
+  led[_shape(x)] = (led[_shape(x)] || 0) + 1;
+  return x;
+};
 
 // Hosts do not play the game, so contestant stats are the wrong vocabulary for
 // them. A small editorial profile controls how they ask, press and release.
@@ -125,7 +137,12 @@ function hostQuestion(style, kind, v, rng) {
       playful: ['"Give your game a title. Comedy, tragedy, or an unfinished revenge story?"', '"What will your housemates pretend they miss most tomorrow?"'],
     },
   };
-  return _pick(rng, pools[kind]?.[style] || pools[kind]?.balanced || ['"What happened?"']);
+  const own = pools[kind]?.[style] || [];
+  const plain = { blame: ['"Who do you think got you out?"', '"Who do you think was behind this vote?"', '"Who do you blame tonight?"'],
+    regret: ['"If you could change one thing about your game, what would it be?"', '"Is there a moment you\'d take back?"', '"What do you wish you\'d done earlier?"'],
+    identity: ['"What do you want people to know about how you played?"', '"What did you do in there that nobody saw?"', '"What are you proud of?"'] }[kind] || [];
+  const all = [...new Set([...own, ...(pools[kind]?.balanced || []), ...plain])];
+  return _pick(rng, all.length ? all : ['"What happened?"']);
 }
 
 function evicteeVoice(name) {
@@ -793,13 +810,17 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   if (read.betrayedByAlly.length) {
     const traitor = read.betrayedByAlly[0];
     questions.push({
-      q: style === 'warm'
+      q: _pick(rng, [style === 'warm'
         ? `"I need to ask you something difficult. You trusted ${traitor}. What would it mean if ${pronouns(traitor).sub} voted against you?"`
         : style === 'incisive'
           ? `"You are protecting ${traitor}. ${pronouns(traitor).Sub} voted you out. What do you say to ${pronouns(traitor).obj} now?"`
           : style === 'playful'
             ? `"You keep leaving ${traitor} off the suspect board. Should I lend you my notes?"`
             : `"You and ${traitor} were close. Would it change anything if ${pronouns(traitor).sub} voted against you?"`,
+        `"You trusted ${traitor}. Are you sure ${pronouns(traitor).sub} voted to keep you?"`,
+        `"You haven't said ${traitor}'s name once tonight. Why not?"`,
+        `"What if I told you ${traitor} voted to evict you?"`,
+        `"Where do you think ${traitor}'s vote went?"`]),
       a: pickLayeredAnswer(rng,
         statFlavoredLines(evictee, 'betrayal', { traitor }),
         voice === 'sincere'
@@ -916,14 +937,17 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       .map(b => ({ voter: b.voter, said: b.stated && b.stated !== evictee ? b.stated : null })),
     reaction: plan && plan.organizer !== read.blamed
       ? _pick(rng, [
-        `"${plan.organizer}? I sat across from ${pronouns(plan.organizer).obj} at breakfast this morning." The sentence just stops there.`,
-        `${evictee} laughs once — the wrong kind of laugh. "I named the wrong person on live television, didn't I."`,
-        `"Huh." A long pause. "That's... actually, that's good. That's a good game. I hate it."`,
+        `"${plan.organizer}? I had breakfast with ${pronouns(plan.organizer).obj} this morning." ${evictee} can't finish the thought.`,
+        `${evictee} laughs, but not happily. "So I blamed the wrong person on live TV. Great."`,
+        `"Huh." A long pause. "Okay. That's a good move. I hate it, but it's a good move."`,
+        `"${plan.organizer}?" ${evictee} looks at the host. "I never even thought about ${plan.organizer}."`,
+        `${evictee} puts ${p.posAdj} head in ${p.posAdj} hands. "It was ${plan.organizer} the whole time."`,
       ])
       : _pick(rng, [
-        `"I knew it. I KNEW it." Being right is worth nothing now, and ${evictee}'s face knows both halves of that.`,
-        `${evictee} nods slowly, the way people nod at news that is only new officially.`,
-        `"At least I read the room right on the way out." It is somewhere between pride and an autopsy.`,
+        `"I knew it. I knew it." ${evictee} shakes ${p.posAdj} head. "Knowing it didn't help, though."`,
+        `${evictee} nods. "Yeah. That's what I thought."`,
+        `"At least I got that part right." ${evictee} almost smiles.`,
+        `"I told people it was ${read.blamed}." ${evictee} sighs. "Nobody listened."`,
       ]),
   } : null;
 
@@ -948,97 +972,108 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
     const withThem = bond(g.name, evictee);
     const wereAllied = sharesAlliance(g.name, evictee);
 
+    const nm = g.name;
     const confessionReacts = temperVal <= 4
       ? [
-        `${evictee} stands halfway up out of the chair before remembering there is nowhere to go with it.`,
-        `"Play it again." Nobody plays it again. ${evictee} watches the dark screen anyway.`,
-        `${evictee} points at the monitor and starts a sentence three different ways. None of them finish.`,
-        `The audience reacts before ${evictee} does. Then ${evictee} does, and the host lets it run.`,
+        `${evictee} shakes ${p.posAdj} head. "Wow. Okay. I did not see that coming."`,
+        `"Are you serious?" ${evictee} looks at the host. "Did everybody know but me?"`,
+        `${evictee} sits back and crosses ${p.posAdj} arms. "I need a minute with that one."`,
+        `"I told ${nm} everything." ${evictee} stares at the screen. "Everything."`,
       ]
       : [
-        `${evictee} watches the whole thing without blinking, then exhales like somebody setting down a heavy thing.`,
-        `A slow nod. "Okay. Okay." The word means about nine different things.`,
-        `${evictee} looks away from the screen exactly once, right at the word that costs the most.`,
-        `"That's the one that gets me." Quietly, to nobody in particular.`,
-        `${evictee} says "I know" to the screen, twice, and it is not clear ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} talking to the screen.`,
-        `A long breath in. A longer one out. ${evictee} gestures at the monitor as if to say what would you like me to do with that.`,
-        `${evictee} folds both arms and watches it the way you watch weather you have already been caught in.`,
-        `"Yeah." That is all of it. ${evictee} does not add anything and the host does not ask.`,
+        `${evictee} nods slowly. "Okay. At least ${nm} told me."`,
+        `"That one hurts." ${evictee} looks down at ${p.posAdj} hands.`,
+        `${evictee} takes a breath. "I really thought ${nm} was with me."`,
+        `"Yeah. I had a feeling." ${evictee} doesn't say anything else.`,
+        `${evictee} laughs a little. "Thanks for being honest, I guess."`,
+        `"I would never have voted ${nm} out." ${evictee} says it quietly.`,
+        `${evictee} looks at the host. "Did ${nm} really say that?"`,
+        `"Okay." ${evictee} nods for a long time. "Okay."`,
+        `${evictee} lets out a breath. "Well. Now I know."`,
       ];
     if (wereAllied) confessionReacts.push(
-      `"We had an ALLIANCE." ${evictee} says it to the room, not the screen, and the room has no answer.`,
-      `${evictee} counts something off on ${p.posAdj} fingers — weeks, probably — and then stops counting.`,
+      `"We were in an alliance." ${evictee} turns to the host. "We were in an alliance."`,
     );
     if (withThem >= 6) confessionReacts.push(
-      `${evictee} says the name once, softly, the way you say a name you are going to keep saying for a while.`,
+      `${evictee} says ${nm}'s name quietly and shakes ${p.posAdj} head.`,
     );
     if (evVillain) confessionReacts.push(
-      `${evictee} laughs — genuinely, warmly — and says "good" out loud. It is not clear ${p.sub} ${p.sub === 'they' ? 'mean' : 'means'} it kindly.`,
-      `"There it is." ${evictee} looks almost relieved to have been right about somebody.`,
+      `${evictee} actually smiles. "Good for ${nm}. That's how you play."`,
+      `"There it is. I knew it."`,
     );
     if (evNice) confessionReacts.push(
-      `${evictee} nods along like ${p.sub} ${p.sub === 'they' ? 'are' : 'is'} taking notes, then quietly says "that's alright" to a screen that has already gone dark.`,
+      `${evictee} nods. "It's okay. It's a game. I'd still hug ${nm}."`,
     );
 
     const unapologeticReacts = [
-      `${evictee} smiles at the screen with no warmth in it whatsoever. The jury exists, and both of them know it.`,
-      `"Noted," ${evictee} says, in the voice people use for lists they intend to keep.`,
-      `${evictee} applauds — three slow claps, precisely as sincere as the message.`,
-      `An eyebrow, nothing else. Some messages answer themselves.`,
-      `"Well, that's honest." ${evictee} says it like a scoreline rather than a compliment.`,
-      `${evictee} mouths the last four words along with the screen, having apparently guessed them.`,
-      `A short laugh with nothing funny in it. ${evictee} sits back and lets the tape finish alone.`,
-      `${evictee} looks straight down the barrel of the camera instead of at the monitor. The message was not really the point.`,
+      `"Okay. Noted." ${evictee} doesn't look happy about it.`,
+      `${evictee} raises an eyebrow. "At least ${nm} said it to my face. Sort of."`,
+      `"Well, that's honest." ${evictee} shrugs.`,
+      `${evictee} claps three times, slowly. "Great. Thanks, ${nm}."`,
+      `${evictee} rolls ${p.posAdj} eyes. "I knew ${nm} would say something like that."`,
+      `${evictee} looks at the camera. "We'll see how that works out for you, ${nm}."`,
+      `A short laugh. "Wow. Okay."`,
+      `"Okay, ${nm}." ${evictee} nods at the screen. "Okay."`,
+      `${evictee} shakes ${p.posAdj} head and looks at the host. "Can you believe that?"`,
+      `"That's fine. I'll remember it."`,
+      `${evictee} just stares at the screen until it goes dark.`,
+      `"You didn't have to say all that, ${nm}." ${evictee} sighs.`,
     ];
     if (evVillain) unapologeticReacts.push(
-      `"Good." ${evictee} means it. Somebody finally played the game at ${p.obj} properly.`,
-      `${evictee} points at the screen and tells the host, flatly, "that one can win it. The rest of them can't."`,
+      `"Good." ${evictee} means it. "Finally somebody played the game."`,
+      `${evictee} points at the screen. "That one can win it. I'm serious."`,
     );
     if (temperVal <= 3) unapologeticReacts.push(
-      `${evictee} is talking over the message before it finishes and does not stop when it does.`,
+      `${evictee} starts talking back to the screen before the message is even over.`,
     );
     if (evArch === 'goat' || evArch === 'floater') unapologeticReacts.push(
-      `${evictee} shrugs at the monitor. "Fair enough." It is the least dramatic thing anybody has said tonight.`,
+      `${evictee} shrugs at the screen. "Fair enough."`,
     );
     if (withThem <= -4) unapologeticReacts.push(
-      `${evictee} was already nodding before the sentence started. No surprises there, and no hard feelings either — they were hard a long time ago.`,
+      `${evictee} nods. "Yeah. We never liked each other. That's fine."`,
     );
 
     const warmReacts = [
-      `${evictee} presses ${p.posAdj} sleeve to ${p.posAdj} eyes and waves at the screen like the screen can see.`,
-      `That one lands. ${evictee} needs a second, and the host gives it.`,
-      `"Oh, don't—" ${evictee} laughs and cries at the same time, which is the correct response.`,
-      `${evictee} mouths a thank-you at the monitor. The friendship was real; the game just happened around it.`,
-      `${evictee} puts a hand flat on the desk and leaves it there until the message has finished.`,
-      `"I love ${p.obj === 'them' ? 'them' : p.obj}." Said to the studio, to the camera, to nobody, entirely without embarrassment.`,
-      `${evictee} points at the screen, unable to speak for a moment, and the audience fills the gap.`,
-      `A wet laugh. "They're going to be furious with me for crying at this."`,
+      `${evictee} wipes ${p.posAdj} eyes and waves at the screen.`,
+      `"Stop it." ${evictee} is laughing and crying at the same time.`,
+      `${evictee} mouths "thank you" at the screen.`,
+      `"I love ${nm}." ${evictee} says it to the whole studio.`,
+      `${evictee} needs a second. "That means a lot. It really does."`,
+      `"${nm} is going to be so embarrassed I cried at this."`,
+      `${evictee} puts a hand on ${p.posAdj} chest. "I'm going to miss ${nm} so much."`,
+      `"Go win it, ${nm}." ${evictee} is smiling through it.`,
+      `${evictee} blows a kiss at the screen.`,
+      `"I'm okay. I'm okay." ${evictee} is not okay, and laughs about it.`,
+      `${evictee} wipes ${p.posAdj} face. "Sorry. Give me a second."`,
     ];
     if (wereAllied) warmReacts.push(
-      `"That's my person." ${evictee} says it to the audience, and the audience says it back.`,
+      `"That's my person." ${evictee} points at the screen.`,
     );
     if (evVillain) warmReacts.push(
-      `${evictee} goes very still for a moment, which from ${p.obj} is the same as anybody else falling apart.`,
+      `${evictee} goes quiet for a moment. "Okay. That one got me."`,
     );
     if (temperVal <= 4) warmReacts.push(
-      `${evictee} makes a noise nobody was ready for and covers ${p.posAdj} whole face with both hands.`,
+      `${evictee} covers ${p.posAdj} face with both hands.`,
     );
 
     const politeReacts = [
-      `${evictee} nods politely at the screen, filing the message under people who were never really in the story.`,
-      `A small smile, nothing behind it. Some goodbyes are just administration.`,
-      `${evictee} tilts ${pronouns(evictee)?.posAdj || 'their'} head at the screen — genuinely unsure, for a second, who that was.`,
-      `Polite applause from the audience. ${evictee} matches it exactly.`,
-      `"That's kind." ${evictee} means it and will not think about it again.`,
-      `${evictee} gives the monitor a thumbs up. The monitor, being a monitor, does not respond.`,
-      `A nod, a beat, and ${evictee} is already looking at the next screen.`,
-      `${evictee} says the name back out loud, the way you do when you are making sure you have it right.`,
+      `${evictee} nods. "That's nice of ${nm}."`,
+      `"Thanks, ${nm}." ${evictee} smiles at the screen.`,
+      `${evictee} gives the screen a thumbs up.`,
+      `"Aw. That's sweet."`,
+      `${evictee} smiles. "We didn't talk much, but that's kind."`,
+      `"Good luck, ${nm}," ${evictee} says to the screen.`,
+      `${evictee} nods along and waits for the next one.`,
+      `"That's really nice. Thank you."`,
+      `${evictee} waves at the screen. "Bye, ${nm}."`,
+      `"I didn't expect that from ${nm}." ${evictee} smiles.`,
+      `${evictee} laughs. "Okay, ${nm}. Thank you."`,
     ];
     if (withThem <= -4) politeReacts.push(
-      `${evictee} raises both eyebrows at the sheer politeness of it, and lets the silence do the rest.`,
+      `${evictee} raises ${p.posAdj} eyebrows. "That's the nicest thing ${nm} has ever said to me."`,
     );
     if (evArch === 'social-butterfly' || evArch === 'showmancer') politeReacts.push(
-      `${evictee} says "aw" at somebody ${p.sub} spoke to maybe four times, and means it anyway.`,
+      `${evictee} says "aw" at the screen, and means it.`,
     );
 
     return {
@@ -1063,7 +1098,10 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
   const hostLines = {
     // an evictee who named the right person is told so, not that the read "was incomplete" (the user, 2026-10-27:
     // "Michele organised it", and Alexander had said exactly that)
-    truth: _pick(rng, (read.correct ? {
+    // ...and only when the person they named is the one the tape is about: blaming somebody who voted them out,
+    // when somebody else organised it, is the wrong person (the user, 2026-10-31: "why did she said he named the
+    // right person when he didnt", over "I named the wrong person on live television")
+    truth: _pick(rng, (rightRead => [...(rightRead ? {
       balanced: ['"You had it right. Let me show you how it came together."', '"You read the week correctly. Here is the part you could not see."'],
       warm: ['"You saw it coming. Here is how the rest of it happened."', '"You were right about who. Let me show you the rest."'],
       incisive: ['"You named the right person. Now let us see who went with them."', '"Your read was right. Here is the rest of it."'],
@@ -1073,13 +1111,14 @@ export function generateBBEvictionInterview(ep, week, rng = Math.random, who = n
       warm: ['"Some of this may be hard to hear, but you deserve to leave with the truth."', '"Before the messages, I want to give you the missing pieces."'],
       incisive: ['"Your read was incomplete. Here is what actually happened."', '"You named the move. Now let us name the people who made it."'],
       playful: ['"We have checked the tapes, and the tapes brought receipts."', '"Time for the least enjoyable answer key in television."'],
-    })[style]),
-    goodbyes: _pick(rng, {
+    })[style], ...(rightRead ? [`"You were right. Let me show you how it happened."`, `"You guessed it. Here's how it went down."`]
+      : [`"There's something you should see before you go."`, `"Let me show you what really happened this week."`, `"Here's what you didn't see from inside the house."`])])(read.correct && (!truth?.organizer || truth.organizer === read.blamed))),
+    goodbyes: _pick(rng, [...new Set([...{
       balanced: ['"Your housemates recorded some messages in case tonight went this way."', '"The people still inside had a chance to say goodbye."'],
       warm: ['"Some people in that house care about you very much. Let us hear from them."', '"Your housemates left messages for you. Take all the time you need."'],
       incisive: ['"You have heard their promises. Now hear what they recorded after making their decisions."', '"These messages were recorded after the votes began to settle."'],
       playful: ['"Your housemates recorded messages—some kinder than their ballots."', '"The house has prepared a farewell montage and, inevitably, several explanations."'],
-    }[style]),
+    }[style], '"Let\'s see what your housemates had to say."', '"Some of them recorded goodbye messages for you."', '"Here are your goodbye messages."', '"Your housemates wanted to say something to you."'])]),
   };
 
   const partingPools = {

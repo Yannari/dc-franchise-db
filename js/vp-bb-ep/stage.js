@@ -810,7 +810,8 @@ function sceneHtml(S, st, prevSt, L, idx, fresh, o) {
   // the host on the stage with them (move-in night), not on a screen
   if (S.hostOn && o.host) h += `<div class="gt host ${speaker === o.host ? 'speak' : ''}" style="left:${Number(S.hostX) || 9}%;--c:#ff2e4d;--ry:10deg"><div class="tile">${img(o.host, true)}</div><div class="plate"><b data-t="${esc(o.host)}"><span>${esc(o.host)}</span></b><span class="hostlab">HOST</span></div></div>`;
   const seated = S.seated ? seatsAt(S, idx) : null;
-  if ((SCENE_KINDS.has(S.kind) || S.sceneful) && !seated && cast.length > 3) {
+  // (a line-up, the nominees in the airlock: everybody in the row)
+  if ((SCENE_KINDS.has(S.kind) || S.sceneful) && !seated && cast.length > 3 && !S.lineup) {
     const focus = focusAt(S, idx);
     const before = idx > sceneStartOf(S, idx) ? focusAt(S, idx - 1) : focus;
     const back = cast.map(([n]) => n).filter(n => !focus.includes(n));

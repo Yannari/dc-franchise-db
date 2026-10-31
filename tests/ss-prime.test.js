@@ -50,7 +50,8 @@ describe('the prime\'s segments', () => {
     expect(t.talkers.length).toBeGreaterThan(0);
     expect(t.effects.bond.every(([a]) => a === 'Cy')).toBe(true);
   });
-  it('a secret nobody found is told on the set, and its partner is exposed', () => {
+  // (the user, 2026-10-31: "they only revealed their secret to the public not the housemates")
+  it('a secret nobody found is told on the set, to the public: shared, it stays hidden in the house with its partner', () => {
     const st = fresh();
     st.secrets[0].holders = ['Ana', 'Ben'];
     st.theories = { Cy: { Ana: { text: 'secret of Ana', right: true, conf: 0.6 } }, Di: { Ana: { text: 'x', right: false, conf: 0.5 } } };
@@ -59,6 +60,14 @@ describe('the prime\'s segments', () => {
     expect(r.right).toEqual(['Cy']);
     expect(r.wrong).toEqual(['Di']);
     expect(r.partners).toEqual(['Ben']);
+    expect(st.secrets[0].found).toBe(false);
+    expect(st.secrets[0].revealedOnExit).toBe(4);
+    expect(st.theories.Cy.Ana).toBeUndefined();
+  });
+  it('a secret nobody found, held alone, is out once its holder leaves', () => {
+    const st = fresh();
+    const r = revealOnExit(st, { evicted: 'Ana', house: H.filter(n => n !== 'Ana'), week: 4 });
+    expect(r.partners).toEqual([]);
     expect(st.secrets[0].found).toBe(true);
     expect(st.secrets[0].foundBy).toBe(null);
   });

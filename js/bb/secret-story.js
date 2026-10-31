@@ -1010,9 +1010,9 @@ function afterPrimeCore({ week = undefined, evicted = null, house = [], rng = Ma
       beats: [{ text: `${evicted} is not eliminated: the Voice sends ${evicted} to the secret room. The house thinks ${evicted} has gone.`, players: [evicted], badgeText: 'SECRET ROOM', badgeClass: 'purple', part: 'after' }] };
   }
   const reveal = revealOnExit(state, { evicted, house: room, week: ctx.week });
-  // a partner left in the house is exposed with it: the house knows now
-  for (const p of reveal?.partners || []) pub(p, 'pity', 0.2, 'had a shared secret come out on the set');
-  // the ones who were right and never pressed: "I knew it", and the house hears it
+  // a partner left in the house: the public knows their secret now, the house does not (js/ss/prime.js revealOnExit)
+  for (const p of (reveal && !reveal.alreadyFound ? reveal.partners : [])) pub(p, 'arc', 0.2, 'keeps a secret the public now knows');
+  // the ones who were right and never pressed: the public saw them have it all along
   for (const n of reveal?.right || []) pub(n, 'fun', 0.05, 'had it right all along');
   const after = afterShow(state, ctx, { evicted, house: room, popOf: n => support(state, n) });
   after.public = readThePublic(state, room);

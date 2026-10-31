@@ -265,19 +265,50 @@ export function runBuzzes(state, ctx, { house = [], weeksLeft = 6, maxPerWeek = 
     if (acts.length >= maxPerWeek) break;
     if (taken.has(c.target) || secretOf(state, c.target)?.found) continue;
     taken.add(c.target);
-    acts.push(resolveBuzz(state, ctx, c.n, c.target, { free: c.free, bar: buzzBar(state, ctx, c.n, { weeksLeft }) }));
+    acts.push(resolveBuzz(state, ctx, c.n, c.target, { free: c.free, bar: buzzBar(state, ctx, c.n, { weeksLeft }), house }));
   }
   return acts;
 }
 
+/**
+ * A SHARED secret is only found with the people who share it (the user, 2026-10-31: "with who shared secret demand the
+ * other person too u can just find that so easily"): the buzzer names them. Who they name comes from what they saw (a
+ * slip, the pair caught together, a jealous scene, a clue) and how sharp they are; otherwise the one the target is
+ * closest to. A guess that only SOUNDS shared ("We are...") names somebody too. Kept on the theory; a partner named
+ * wrong once is never named again.
+ */
+const sharedText = text => /^(we|our)\b/i.test(String(text || '').trim());
+function partnersGuess(state, ctx, by, target, th, house) {
+  const truth = (secretOf(state, target)?.holders || []).filter(h => h !== target);
+  const need = th.right ? truth.length : sharedText(th.text) ? 1 : 0;
+  if (!need) return [];
+  if (th.with?.length === need) return th.with;
+  const rng = ctx.rng || Math.random;
+  const seen = (th.ev || []).filter(e => /slip|caught|jealousy|defended|clue/.test(String(e.how))).length;
+  const p = th.right ? clamp(0.25 + readSkill(ctx, by) * 0.35 + seen * 0.12, 0.1, 0.92) : 0;
+  const decoys = house.filter(n => n !== by && n !== target && !truth.includes(n) && !(th.notWith || []).includes(n))
+    .sort((x, y) => (Number(ctx.bond?.(target, y)) || 0) - (Number(ctx.bond?.(target, x)) || 0));
+  const named = [];
+  for (const h of (th.right ? truth : [null])) {
+    if (h && (rng() < p || !decoys.length)) named.push(h);
+    else if (decoys.length) named.push(decoys.splice(Math.floor(rng() * Math.min(3, decoys.length)), 1)[0]);
+  }
+  return (th.with = named);
+}
+
 /** One buzz, start to finish. Exported so a twist can force one (a free buzz on the prime). */
-export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } = {}) {
+export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7, house = [] } = {}) {
   huntOf(state);
   const rng = ctx.rng || Math.random;
   const week = ctx.week ?? 0;
   const secret = secretOf(state, target);
   const th = theoryOf(state, by, target) || { text: '…', right: false, conf: 0.5, ev: [] };
   const confBefore = th.conf;
+  // (a shared secret: right only with every partner named, js above)
+  const named = partnersGuess(state, ctx, by, target, th, house);
+  const truthP = (secret?.holders || []).filter(h => h !== target);
+  const withRight = !th.right || !truthP.length || (named.length === truthP.length && truthP.every(h => named.includes(h)));
+  const right = !!th.right && withRight;
   // ── the confrontation: the target defends without revealing anything ──
   // a calculating player bluffs better in the confessional (ctx.play)
   const defence = (st(ctx, target, 'strategic') * 0.4 + st(ctx, target, 'temperament') * 0.3 + st(ctx, target, 'social') * 0.3) / 10 + (Number(playOf(ctx, target).bluff) || 0);
@@ -295,12 +326,20 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
   th.conf = clamp(confBefore + shift, 0, 0.98);
   // (to confirm, the buzzer must still be as sure as when they pressed: many presses end in the room, withdrawn)
   const confirmed = th.conf >= bar || (free && th.conf >= bar * 0.8);
-  const rec = { week, by, target, guess: th.text, right: !!th.right, free, confBefore: Math.round(confBefore * 100) / 100,
-    confAfter: Math.round(th.conf * 100) / 100, leak, outcome: confirmed ? (th.right ? 'right' : 'wrong') : 'withdrawn', took: 0, lost: 0,
+  const rec = { week, by, target, guess: th.text, right, free, confBefore: Math.round(confBefore * 100) / 100,
+    confAfter: Math.round(th.conf * 100) / 100, leak, outcome: confirmed ? (right ? 'right' : 'wrong') : 'withdrawn', took: 0, lost: 0,
     // the hunter was RIGHT and the holder talked their way out of it: a secret kept under pressure
-    held: !!th.right && !confirmed };
+    held: right && !confirmed,
+    // who they said shares it, and whether the secret itself was right (a right secret with the wrong partner is wrong)
+    with: [...named], textRight: !!th.right, withRight };
   if (free) state.freeBuzz[by] = Math.max(0, (state.freeBuzz[by] || 0) - 1);
-  if (confirmed && th.right && secret) {
+  if (confirmed && !right && th.right) {
+    // the secret was right and the partner wrong: the buzzer keeps the secret in mind, and crosses that partner off
+    rec.lost = free ? 0 : transfer(state, by, target, BUZZ_STAKE, `wrong buzz on ${target}`, week);
+    th.notWith = [...new Set([...(th.notWith || []), ...named.filter(n => !truthP.includes(n))])];
+    delete th.with;
+    th.conf *= 0.6;
+  } else if (confirmed && right && secret) {
     rec.took = takeAll(state, target, by, `found ${target}'s secret`, week);
     secret.found = true; secret.foundBy = by; secret.week = week;
     // Everybody now knows; every theory about this secret is settled.
@@ -314,10 +353,11 @@ export function resolveBuzz(state, ctx, by, target, { free = false, bar = 0.7 } 
     th.conf *= 0.3;
   }
   state.buzzes.push(rec);
+  const shares = named.length ? `, shared with ${named.join(' and ')}` : '';
   const beats = rec.outcome === 'right'
-    ? [{ text: `${by} buzzes ${target} — "${rec.guess}" — and is right. ${target}'s kitty is ${by}'s.`, players: [by, target], badgeText: 'SECRET FOUND', badgeClass: 'gold', part: 'found' }]
+    ? [{ text: `${by} buzzes ${target} — "${rec.guess}"${shares} — and is right. ${target}'s kitty is ${by}'s.`, players: [by, target], badgeText: 'SECRET FOUND', badgeClass: 'gold', part: 'found' }]
     : rec.outcome === 'wrong'
-      ? [{ text: `${by} buzzes ${target} — "${rec.guess}" — and is wrong.`, players: [by, target], badgeText: 'WRONG BUZZ', badgeClass: 'red', part: 'wrong' }]
+      ? [{ text: `${by} buzzes ${target} — "${rec.guess}"${shares} — and is wrong${th.right ? `: the secret was right, but ${target} does not share it with ${named.join(' and ')}` : ''}.`, players: [by, target], badgeText: 'WRONG BUZZ', badgeClass: 'red', part: 'wrong' }]
       : [{ text: `${by} buzzes ${target}, hears ${target} out, and withdraws.`, players: [by, target], badgeText: 'WITHDRAWN', badgeClass: 'grey', part: 'withdrawn' }];
   // (the clues about this secret the buzzer saw: their evidence in the confrontation, vp-bb-ep/steps.js)
   const seenClues = secret ? (state.shownClues || []).filter(c => c.secretId === secret.id && !c.fake && (c.to === 'house' || (Array.isArray(c.to) && c.to.includes(by))) && c.week <= week).map(c => c.clue).slice(-3) : [];

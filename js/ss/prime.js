@@ -247,9 +247,12 @@ const noPop = (/** @type {string} */ _n) => /** @type {number} */ (0);
 // ── AFTER THE VERDICT ────────────────────────────────────────────────────
 
 /**
- * The eliminated leaves: if nobody found their secret, the house hears it on
- * the set tonight. Who was right, who was wrong, who never guessed. The
- * theories about it close.
+ * The eliminated leaves: if nobody found their secret, they tell it on the set
+ * tonight, to the PUBLIC (the user, 2026-10-31: "they only revealed their secret
+ * to the public not the housemates"). The house never hears it. Who in the
+ * house had it right or wrong is what the cameras saw. The theories about the
+ * one who left close; a secret they SHARE with somebody still inside stays
+ * hidden in the house, and can still be buzzed on the partner.
  */
 export function revealOnExit(state, { evicted = undefined, house = [], week = 0 } = {}) {
   const s = secretOf(state, evicted);
@@ -262,12 +265,12 @@ export function revealOnExit(state, { evicted = undefined, house = [], week = 0 
     if (!th || th.conf < 0.2) continue;
     (th.right ? right : wrong).push(n);
   }
-  // nobody found it: it is out now, and nobody is paid for it (foundBy stays empty)
-  if (!was) { s.found = true; s.foundBy = null; s.week = week; s.revealedOnExit = week; }
-  // the theories about it are moot now
-  for (const n of Object.keys(state.theories || {})) if (state.theories[n]?.[evicted]) delete state.theories[n][evicted];
-  // a partner still in the house is exposed with it
+  // a partner still in the house keeps it hidden in there
   const partners = (s.holders || []).filter(h => h !== evicted && house.includes(h));
+  // nobody found it: it is out to the public, and nobody is paid for it (foundBy stays empty)
+  if (!was) { s.revealedOnExit = week; if (!partners.length) { s.found = true; s.foundBy = null; s.week = week; } }
+  // the theories about the one who left are moot now
+  for (const n of Object.keys(state.theories || {})) if (state.theories[n]?.[evicted]) delete state.theories[n][evicted];
   return { evicted, secret: s.text, alreadyFound: was, foundBy: was ? foundBy : null, right, wrong, partners, kitty: balance(state, evicted) };
 }
 

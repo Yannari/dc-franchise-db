@@ -7,6 +7,7 @@ import { simulateBBEpisode, runBBFinale } from '../js/bb-run.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { ssPartOf } from '../js/vp-bb-ep/ss-episode.js';
 import { weeklyRuleBreaks, dOfficeFor } from '../js/ss/voice.js';
+import { resolveBuzz } from '../js/ss/hunt.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -54,7 +55,58 @@ describe('the buzz', () => {
       if (/^bb-ss-prime-reveal-/.test(s.id)) expect(ssPartOf(s)).toBe('prime');
       if (s.steps.some(st => st.card?.state === 'found')) expect(s.steps.some(st => /^My secret is/.test(String(st.t || '')))).toBe(true);
     }
+    // (the press spread through the days: never its confrontation and its reveal back to back)
+    for (const w of weeks) for (const r of w.filter(s => s.buzzOf && /-reveal$/.test(s.id))) {
+      const room = w.findIndex(s => s.id === `${r.buzzOf}-room`);
+      expect(w.indexOf(r) - room).toBeGreaterThan(1);
+    }
     expect(steps.filter(st => st.bed === 'ss-anthem')).toEqual([]);
+  });
+});
+
+describe('the prime\'s tapes', () => {
+  // (the user, 2026-10-31: "we need a tape before every moment in the prime", with flashback dialogue)
+  const weeks = gs.episodeHistory.filter(e => e?.format === 'big-brother').map(e => bbWeekSteps(e, { host: 'Josh' }));
+  it('come before every dilemma, mission result and buzz answer, never before the house that night', () => {
+    let tapes = 0;
+    for (const w of weeks) for (const [i, s] of w.entries()) {
+      if (/^bb-ss-prime-tape-/.test(s.id)) {
+        tapes++;
+        expect(ssPartOf(w[i + 1])).toBe('prime');
+        expect(w[i + 1].ssAfterPrime).toBeFalsy();
+        expect(s.steps.some(st => st.magneto)).toBe(true);
+      }
+    }
+    expect(tapes).toBeGreaterThan(5);
+  });
+  it('play back only lines that aired in the days', () => {
+    for (const w of weeks) {
+      const said = new Set(w.filter(s => ssPartOf(s) === 'daily').flatMap(s => s.steps || []).map(st => st.t));
+      for (const st of w.filter(s => /^bb-ss-prime-tape-/.test(s.id)).flatMap(s => s.steps).filter(st => st.flashback)) expect(said.has(st.t)).toBe(true);
+    }
+  });
+});
+
+describe('a shared secret', () => {
+  // (the user, 2026-10-31: "with who shared secret demand the other person too")
+  const buzz = withName => {
+    const state = { kitty: { Ana: 20000, Ben: 20000, Cy: 20000, Di: 20000 }, secrets: [{ id: 's', holders: ['Ana', 'Ben'], text: 'We are a fake couple', found: false }],
+      theories: { Cy: { Ana: { text: 'We are a fake couple', right: true, conf: 0.95, ev: [], with: [withName] } } } };
+    const ctx = { week: 3, rng: () => 0.5, stat: () => 5, bond: () => 0 };
+    return { state, rec: resolveBuzz(state, ctx, 'Cy', 'Ana', { house: ['Ana', 'Ben', 'Cy', 'Di'] }) };
+  };
+  it('is found only with the partner named', () => {
+    const { state, rec } = buzz('Ben');
+    expect(rec.outcome).toBe('right');
+    expect(rec.with).toEqual(['Ben']);
+    expect(state.secrets[0].found).toBe(true);
+  });
+  it('with the right secret and the wrong partner, is a wrong buzz and stays hidden', () => {
+    const { state, rec } = buzz('Di');
+    expect(rec).toMatchObject({ outcome: 'wrong', textRight: true, withRight: false, with: ['Di'] });
+    expect(state.secrets[0].found).toBe(false);
+    expect(state.kitty.Cy).toBe(15000);
+    expect(state.theories.Cy.Ana.notWith).toContain('Di');
   });
 });
 

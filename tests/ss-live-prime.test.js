@@ -12,7 +12,8 @@ import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
 const NAMES = ['Bowie', 'Chase', 'Ripper', 'Scary', 'Nichelle', 'Axel', 'Zee', 'Brightly', 'Hicks', 'Emmah', 'Millie', 'Caleb', 'Duncan', 'Gwen'];
-const RECORDED = /^bb-ss-prime-(mag-|package)|^bb-hl|^bb-ss-(previously|tonight)/;
+// (a tape before a prime moment is recorded too: vp-bb-ep/ss-context-tapes.js)
+const RECORDED = /^bb-ss-prime-(mag-|package|tape-)|^bb-hl|^bb-ss-(previously|tonight)/;
 describe('the live prime', () => {
   it('has no plain confessional: Josh calls each one live, and the launch portraits say what they are', () => {
     const CAST = NAMES.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater'][i % 6] }));

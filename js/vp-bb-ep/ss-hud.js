@@ -349,9 +349,9 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   // a package's title card (the real prime's "magnéto"): it fills the screen, then the tape rolls
   if (st.magneto) {
     const M = st.magneto;
-    h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div><img class="ssmg-eye" src="${EYE}" alt="">
-      ${M.n ? `<span class="ssmg-tag">TAPE ${M.n}</span>` : ''}
-      ${(M.who || []).length ? `<div class="ssmg-ps ${M.who.length > 3 ? 'n4' : ''}">${M.who.slice(0, 4).map((n, i, w) => `${i && M.sym ? `<i class="ssmg-sym">${esc(M.sym)}</i>` : ''}<span class="ssmg-p" style="--c:${H.col(n)};--i:${i};--d:${i === 0 ? -1 : i === w.length - 1 ? 1 : 0}">${H.img(n)}<em>${esc(n)}</em></span>`).join('')}</div>` : ''}
+    // (the mist rolling over the card, as on the show's own title screens; no "TAPE 2" numbering: the user, 2026-10-31)
+    h += `<div class="ssmg ${fresh ? 'fresh' : ''}"><div class="ssmg-rays"></div>${MIST}<div class="ssmg-cl"></div><img class="ssmg-eye" src="${EYE}" alt="">
+      ${(M.who || []).length ? `<div class="ssmg-ps ${M.who.length > 4 ? 'n5' : M.who.length > 3 ? 'n4' : ''}">${M.who.slice(0, 6).map((n, i, w) => `${i && M.sym ? `<i class="ssmg-sym">${esc(M.sym)}</i>` : ''}<span class="ssmg-p" style="--c:${H.col(n)};--i:${i};--d:${i === 0 ? -1 : i === w.length - 1 ? 1 : 0}">${H.img(n)}<em>${esc(n)}</em></span>`).join('')}</div>` : ''}
       <b class="ssmg-t">${ssx(M.title)}</b><span class="ssmg-s">${esc(M.sub || '')}</span></div>`;
   }
   // the call to vote: every nominee under a big number, and how to vote
@@ -372,6 +372,11 @@ export function ssPiecesHtml(S, st, idx, fresh, o, H) {
   }
   return h;
 }
+
+// mist for the title cards: fractal noise turned to white smoke, two layers drifting the opposite way (SVG, never CSS hacks)
+const MIST = ['b', 't'].map(k => `<svg class="ssmg-mist ${k}" viewBox="0 0 1600 360" preserveAspectRatio="none" aria-hidden="true"><filter id="ssmgf-${k}" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="${k === 'b' ? '0.0035 0.011' : '0.005 0.016'}" numOctaves="4" seed="${k === 'b' ? 7 : 19}"/>
+  <feColorMatrix values="0 0 0 0 1  0 0 0 0 0.93  0 0 0 0 0.98  0 0 0 1.9 -0.62"/></filter><rect width="1600" height="360" filter="url(#ssmgf-${k})"/></svg>`).join('');
 
 function askHtml(A, o, H) {
   const b = bankOf(o?.ssKey);
@@ -744,6 +749,13 @@ export const SS_CSS = `${SS_TYPE_CSS}
 .ssmg-ps{position:relative;display:flex;align-items:center;gap:2cqw;margin-bottom:.4cqw}
 .ssmg-p{position:relative;width:15cqw;aspect-ratio:4/5;border-radius:1.6cqw;overflow:hidden;background:var(--c);box-shadow:0 0 0 .5cqw #fff,0 1.6cqw 3cqw rgba(60,0,60,.45);rotate:calc(var(--d) * 6deg);animation:ssmg-bob 3s ease-in-out infinite;animation-delay:calc(var(--i) * -1.1s)}
 .ssmg-ps.n4 .ssmg-p{width:12cqw}
+.ssmg-ps.n5{gap:1.2cqw}.ssmg-ps.n5 .ssmg-p{width:9.6cqw}.ssmg-ps.n5 .ssmg-p em{font-size:1.1cqw}
+.ssmg-mist{position:absolute;left:0;width:200%;height:46%;pointer-events:none;animation:ssmg-drift 26s ease-in-out infinite alternate}
+.ssmg-mist.b{bottom:-4%;-webkit-mask:linear-gradient(0deg,#000 35%,transparent);mask:linear-gradient(0deg,#000 35%,transparent);opacity:.95}
+.ssmg-mist.t{top:-6%;height:34%;-webkit-mask:linear-gradient(180deg,#000 20%,transparent);mask:linear-gradient(180deg,#000 20%,transparent);opacity:.55;animation-duration:34s;animation-direction:alternate-reverse}
+@keyframes ssmg-drift{from{translate:0 0}to{translate:-50% 0}}
+.ssmg-cl{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 30% 16% at 6% 100%,#fff 0 38%,transparent 70%),radial-gradient(ellipse 28% 14% at 94% 102%,#ffe9f6 0 38%,transparent 70%),
+  radial-gradient(ellipse 22% 12% at 30% 106%,rgba(255,255,255,.9) 0 40%,transparent 72%),radial-gradient(ellipse 22% 12% at 72% 106%,rgba(255,240,250,.9) 0 40%,transparent 72%);animation:ssmg-bob 6s ease-in-out infinite}
 .ssmg-p img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;display:block}
 .ssmg-p em{position:absolute;left:0;right:0;bottom:0;padding:.4cqw 0 .3cqw;text-align:center;font:1.4cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(0deg,rgba(43,13,63,.9),transparent)}
 .ssmg-sym{font:5cqw 'SSAachen',sans-serif;font-style:normal;color:#fff;-webkit-text-stroke:.2cqw #c8137a;text-shadow:0 0 2cqw #ff3ea5}

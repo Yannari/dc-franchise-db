@@ -44,9 +44,9 @@ function storylines(row, noms) {
         { t: `So ${b.by} went to the confessional, alone, and pressed the buzzer.`, alarm: true, scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
         { dr: b.by, t: `I think ${guess}. I was sure of it. Completely sure.`, scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
         { t: pickBy([`Face to face on the confessional sofas, ${b.target} denied everything.`, `In the confessional, ${b.target} looked ${b.by} in the eye and said nothing. Nothing that helped.`], `${week}|mh4`), scene: at('confessional-showdown', 'dr', 'Confessional', [b.by, b.target]) },
-        { t: right ? `And ${b.by} was right. ${b.target}'s secret was out, and ${money(b.took)} changed hands.` : `And ${b.by} was wrong. Five thousand dollars, gone, and ${b.target} knows exactly who came for them.`, scene: at('living-sofas', 'ceremony', 'Living Room', [b.by, b.target, ...house.slice(0, 4)]) },
-        right ? { dr: b.target, t: pickBy([`Weeks of keeping it, and ${b.by} takes it in one afternoon. And my money.`, `I'm gutted. But I'll say it: well played, ${b.by}.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.target]) }
-          : { dr: b.by, t: pickBy(['Wrong. In front of everybody. I want the ground to swallow me.', `Five thousand dollars to make ${b.target} my enemy. Great week.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
+        { outcome: true, t: right ? `And ${b.by} was right. ${b.target}'s secret was out, and ${money(b.took)} changed hands.` : `And ${b.by} was wrong. Five thousand dollars, gone, and ${b.target} knows exactly who came for them.`, scene: at('living-sofas', 'ceremony', 'Living Room', [b.by, b.target, ...house.slice(0, 4)]) },
+        right ? { outcome: true, dr: b.target, t: pickBy([`Weeks of keeping it, and ${b.by} takes it in one afternoon. And my money.`, `I'm gutted. But I'll say it: well played, ${b.by}.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.target]) }
+          : { outcome: true, dr: b.by, t: pickBy(['Wrong. In front of everybody. I want the ground to swallow me.', `Five thousand dollars to make ${b.target} my enemy. Great week.`], `${week}|mh5`), scene: at('confessional-close', 'dr', 'Confessional', [b.by]) },
         ...(house[0] ? [{ dr: house[0], t: pickBy([`After that, everybody in this house checks who's watching them.`, `That buzz changed the whole house. Nobody trusts anybody now.`], `${week}|mh6`), scene: at('confessional-close', 'dr', 'Confessional', [house[0]]) }] : []),
       ] });
   }
@@ -93,7 +93,7 @@ function storylines(row, noms) {
   }
   // the nominees' week
   if (noms.length) {
-    out.push({ key: 'noms', title: noms.length === 2 ? `${noms[0]} or ${noms[1]}` : `${noms.length} in danger`, sub: "The nominees' week", who: noms.slice(0, 3), sym: noms.length === 2 ? 'OR' : '',
+    out.push({ key: 'noms', title: noms.length === 2 ? `${noms[0]} or ${noms[1]}` : `${noms.length} in danger`, sub: "The nominees' week", who: noms.slice(), sym: noms.length === 2 ? 'OR' : '',
       lines: [
         { t: `When the Voice read out the names, ${listOf(noms)} knew the week would be long.`, scene: at('living-sofas', 'ceremony', 'Living Room', noms) },
         ...noms.slice(0, 2).map((n, i) => ({ dr: n, t: [`I'm trying to stay myself. That's all I can do now.`, `Every night I go to bed thinking it could be my last one in here.`, `I've got people out there. I hope they've got me too.`,
@@ -119,7 +119,8 @@ export function ssMagnetoScreens(act, ctx, host) {
       { k: 'host', by: host, scene: STUDIO, t: pickBy([`Let's look back at what happened this week. ${p.sub}.`, `Before we go on, a look back at the week. ${p.sub}.`, `Let's take a look at the tape.`], `${k}|in`) },
       { k: 'beat', t: p.title, magneto: { title: p.title, sub: p.sub, n: i + 1, who: p.who || [], sym: p.sym || '' }, scene: p.lines[0].scene },
     ];
-    for (const l of p.lines) steps.push(l.dr ? { k: 'dr', by: l.dr, t: l.t, scene: l.scene } : { k: 'beat', t: l.t, scene: l.scene, ...(l.card ? { card: l.card } : {}), ...(l.alarm ? { alarm: true } : {}) });
+    // (`outcome`: the buzz's answer, cut by steps.js when that answer is held for later on the prime)
+    for (const l of p.lines) steps.push({ ...(l.dr ? { k: 'dr', by: l.dr, t: l.t, scene: l.scene } : { k: 'beat', t: l.t, scene: l.scene, ...(l.card ? { card: l.card } : {}), ...(l.alarm ? { alarm: true } : {}) }), ...(l.outcome ? { outcome: true } : {}) });
     steps.push({ k: 'beat', scene: STUDIO, t: pickBy(['Back in the studio, the crowd is on its feet.', 'The lights come back up on the studio. A long "ooooh" from the crowd.', 'Back live. The couch is shaking its head.'], `${k}|out`) },
       // (the host's word after a tape turns over through the season: one line eight times read as a jingle)
       { k: 'host', by: host, t: ['What a week. And it is not over yet.', "Well. I don't think anybody in that house will forget that one.", "You saw it, at home. And tonight, you'll decide what happens next.",

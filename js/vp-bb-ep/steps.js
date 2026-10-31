@@ -38,6 +38,7 @@ import { ssPlace } from './ss-stage.js';
 import { ssArrange, ssLiveConfessionals, ssPartOf } from './ss-episode.js';
 import { ssVoiceMomentScreen } from './ss-voice-moments.js';
 import { ssMagnetoScreens } from './ss-magneto.js';
+import { ssContextTapes } from './ss-context-tapes.js';
 import { ssHouseEventScreen } from './ss-house-events.js';
 import { ssProductionScreen } from './ss-production.js';
 import { ssSplitScreens } from './ss-split.js';
@@ -3228,6 +3229,8 @@ function ssBuzzScreen(act, ctx) {
   const DR = { set: 'dr', plate: 'confessional-close', room: 'Confessional', cam: CAM.dr, kicker: 'Cam 01 · Confessional', cast: [[a, 50]] };
   const RED = { set: 'ceremony', plate: 'living-sofas', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Cam 04 · Living room', cast: others.slice(0, 4).map((n, i, w) => [n, w.length === 1 ? 50 : Math.round(20 + 60 * i / (w.length - 1))]) };
   const shout = [pickO(0, 'o1'), pickO(1, 'o1')].filter((x, i, w) => x && w.indexOf(x) === i);
+  const W = (act.with || []).join(' and ');
+  const mates = (act.holders || []).filter(h => h !== t);
   // ── 1. the press ──
   /** @type {BB.Step[]} */ const press = [
     { k: 'beat', scene: DR, t: pickBy([`${a} slips away from the others and closes the confessional door.`, `While the house is busy in the kitchen, ${a} walks into the confessional and sits down.`, `${a} waits until the corridor is empty, then goes into the confessional.`], `${k}|in`) },
@@ -3243,6 +3246,10 @@ function ssBuzzScreen(act, ctx) {
     { k: 'say', by: a, t: `${t}'s.` },
     ssv(`And what do you think ${t}'s secret is?`),
     { k: 'say', by: a, push: true, t: `"${act.guess}."` },
+    // (a shared secret is only found with everybody who holds it named: js/ss/hunt.js partnersGuess)
+    ...(W ? [ssv(`That is a secret held by more than one person. To find it, you must name everybody who holds it. Who shares it with ${t}?`),
+      { k: 'say', by: a, push: true, t: `${W}.` },
+      ssv(`So you think ${t} and ${W} share this secret.`)] : []),
     ssv(`Very well. ${t} will be called to the confessional.`),
     { k: 'dr', by: a, t: pickBy(['No going back now.', 'My hands are shaking. That is five thousand dollars on the table.', "Now I just have to look normal when I walk back out there."], `${k}|after`) },
   ];
@@ -3257,6 +3264,7 @@ function ssBuzzScreen(act, ctx) {
     { k: 'say', by: t, t: pickBy([`On me? Okay.`, `Of course you did.`, `Right. Go on, then.`], `${k}|on`) },
     ssv(`${a}, tell ${t} what you think ${P(t).posAdj || 'their'} secret is.`),
     { k: 'say', by: a, push: true, t: `I think your secret is: "${act.guess}."` },
+    ...(W ? [{ k: 'say', by: a, t: `And you share it with ${W}.` }] : []),
     { k: 'beat', t: pickBy([`${t} does not blink.`, `${t} looks at the floor, then back up.`, `For a second, nobody breathes.`], `${k}|bl`), tense: [t] },
     ssv(`${a}, why?`),
     // THE EVIDENCE (the user, 2026-10-29: "if they had clues they can use it in the debate like in danganronpa"): the
@@ -3282,7 +3290,8 @@ function ssBuzzScreen(act, ctx) {
     if (act.held) room.push({ k: 'dr', by: t, t: pickBy(["They had it. They actually had it, and they didn't press.", 'I bluffed my way out of that one. I need a drink.'], `${k}|h`) });
   } else {
     room.push({ k: 'say', by: a, push: true, t: pickBy(['I confirm.', 'I confirm. I know I am right.', 'Confirmed.'], `${k}|c`), toast: ['CONFIRMED', '#ff3ea5'] },
-      ssv(`Your buzz is confirmed. You will have the answer in front of the whole house.`),
+      // (said again once the reveal has its place: tonight, tomorrow, or live on the prime, the buzz post-pass below)
+      ssv(`Your buzz is confirmed. You will have the answer in front of the whole house.`, { revealWhen: true }),
       { k: 'dr', by: a, t: pickBy(['Now we wait. That is the worst part.', 'Five thousand dollars, or the biggest win of my game. No in between.'], `${k}|cdr`) });
     // ── 3. the reveal ──
     const right = act.outcome === 'right';
@@ -3297,6 +3306,7 @@ function ssBuzzScreen(act, ctx) {
       { k: 'beat', t: pickBy(['A gasp goes round the sofas. Somebody covers their mouth.', 'Half the house turns to look at ' + t + '. The other half looks at ' + a + '.'], `${k}|g`) },
       ssv(`${a}, tell the house what you think ${t}'s secret is.`),
       { k: 'say', by: a, push: true, t: `I think ${t}'s secret is: "${act.guess}."` },
+      ...(W ? [{ k: 'say', by: a, t: `And ${t} shares it with ${W}.` }, { k: 'beat', t: `Heads turn to ${W} as well.` }] : []),
       { k: 'beat', t: pickBy(['Whispers on the sofas. Somebody shakes their head.', `${pickO(2, 'w') || 'Somebody'} mouths "no way".`], `${k}|wh`) },
       ssv(`${t}, do you have anything to say before the answer?`),
       { k: 'say', by: t, t: right ? pickBy(['Nothing. Let the screen talk.', 'Just that I tried.', "I'll say it after."], `${k}|ls`) : pickBy(["Only that I'm about to be five thousand dollars richer.", 'Nothing. I am very calm.'], `${k}|ls`) },
@@ -3308,6 +3318,7 @@ function ssBuzzScreen(act, ctx) {
       reveal.push(ssv(`...you have found ${t}'s secret.`, { toast: ['SECRET FOUND', '#f5c542'], card: { text: act.secretText, state: 'found', who: `${t}'s secret` }, bed: 'ss-epic' }),
         { k: 'beat', t: pickBy(['The living room explodes. Screams, hands in the air.', `${a} jumps up. ${t} stays very still on the stool.`], `${k}|x`) },
         ssv(`${t}'s kitty, ${euros(act.took)}, is now ${a}'s.`, { coins: { from: t, to: a }, board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } }),
+        ...(mates.length ? [ssv(`${mates.join(' and ')}, this secret is yours too. It is out for you as well.`)] : []),
         ssv(`${t}, the house is listening. Tell them your secret.`, { bed: 'ss-think' }),
         { k: 'say', by: t, push: true, t: `My secret is: "${act.secretText}."` },
         { k: 'say', by: t, t: pickBy(LAUNCH_KIND_STORY[act.secretKind] || LAUNCH_KIND_STORY.past, `${k}|st`) },
@@ -3318,20 +3329,24 @@ function ssBuzzScreen(act, ctx) {
         { k: 'dr', by: a, t: pickBy(['I knew it. I knew it from the first week.', 'All that watching paid off. Literally.'], `${k}|adr`) },
         { k: 'dr', by: t, t: pickBy(["Somebody worked it out. Fine. But I know exactly who it was, and I'm not done.", 'My secret is out, and my money with it. That hurts more than I thought it would.', (ctx.week || 1) < 3 ? "I kept it every single day since I walked in. And it's gone like that." : "I kept it for weeks. Weeks. And it's gone like that."], `${k}|f`) });
     } else {
-      reveal.push(ssv(`...that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'], card: { text: act.guess, state: 'wrong', who: `${a}'s guess` }, bed: 'ss-quirky' }),
+      // (a shared guess is wrong as a whole: the Voice never says which part, or the house would have the secret)
+      reveal.push(ssv(W ? `...you are wrong.` : `...that is not ${t}'s secret.`, { toast: ['WRONG', '#ff3355'], card: { text: act.guess, state: 'wrong', who: `${a}'s guess` }, bed: 'ss-quirky' }),
         { k: 'beat', t: pickBy([`${t} bursts out laughing. ${a} puts both hands over ${P(a).posAdj || 'their'} face.`, 'Relief on the sofas, and a few laughs.'], `${k}|x`) },
         ...(act.lost ? [ssv(`${euros(act.lost)} of ${a}'s kitty goes to ${t}.`, { coins: { from: a, to: t }, board: { title: 'THE KITTIES', rows: Object.entries(act.kitty || {}).map(([n, v]) => ({ n, text: euros(v) })) } })] : []),
         ssv(`${t}, your secret is safe. For now.`),
         { k: 'say', by: t, t: pickBy(['Told you.', 'Thank you for the money.', 'Better luck next time.'], `${k}|t`) },
         { k: 'beat', t: `Now the whole house knows ${a} suspected ${t}, and what ${a} guessed.` },
-        { k: 'dr', by: a, t: pickBy([`I was so sure. Now the whole house knows I suspect ${t}, and ${t} got paid for it.`, 'Five thousand dollars to find out I was wrong.', 'Wrong. In front of everybody.'], `${k}|xa`) });
+        { k: 'dr', by: a, t: W ? pickBy([`Was it the secret I got wrong, or ${W}? The Voice won't say, and that is the worst part.`, `Maybe I had the secret and the wrong person. Maybe I had nothing. I don't know which.`], `${k}|xa`)
+          : pickBy([`I was so sure. Now the whole house knows I suspect ${t}, and ${t} got paid for it.`, 'Five thousand dollars to find out I was wrong.', 'Wrong. In front of everybody.'], `${k}|xa`) });
     }
   }
-  // the reveal on the prime, now and then: the host sets it up and closes it, the Voice does the protocol in the house
-  const onPrime = !!act.outcome && act.outcome !== 'withdrawn' && (ctx.row?.acts || []).some(x => x?.type === 'ss-prime') && hash(k) % 3 === 0;
+  // the reveal on the prime when the week has one: the host sets it up and closes it, the Voice does the protocol in the
+  // house. Both versions are built; the buzz post-pass keeps one (the prime when the days run out after the confrontation)
+  const onPrime = !!act.outcome && act.outcome !== 'withdrawn' && (ctx.row?.acts || []).some(x => x?.type === 'ss-prime');
+  const daily = reveal.slice();
   const out = [
     { ...base, id, set: 'dr', plate: 'confessional-close', room: 'Confessional', cam: CAM.dr, kicker: 'Cam 01 · Confessional', title: 'The Buzzer', label: 'The Buzzer', sub: `${a} presses the buzzer`, cast: [[a, 50]], sceneful: true, steps: press,
-      rules: [['THE STAKE', '$5,000'], ['RIGHT', "the target's whole kitty"], ['WRONG', 'the stake goes to the target']], rulesTitle: 'THE BUZZER · HOW IT WORKS' },
+      rules: [['THE STAKE', '$5,000'], ['RIGHT', "the target's whole kitty"], ['WRONG', 'the stake goes to the target'], ['SHARED', 'name everybody who holds it']], rulesTitle: 'THE BUZZER · HOW IT WORKS' },
     { ...base, id: `${id}-room`, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Cam 04 · Living room', title: 'The Confrontation', label: 'Confrontation', sub: `${a} faces ${t}`, cast: [[a, 30], [t, 70]], sceneful: true, steps: room },
   ];
   if (reveal.length && onPrime) {
@@ -3341,7 +3356,8 @@ function ssBuzzScreen(act, ctx) {
       { k: 'host', by: host, t: 'Voice, the house is yours.' });
     reveal.push({ k: 'host', by: host, scene: STU, t: act.outcome === 'right' ? pickBy([`${t}'s secret is out! What a moment.`, `${a}, that is how you play Secret Story.`], `${k}|hc`) : pickBy([`Oh, ${a}. Five thousand dollars, gone.`, `${t} keeps the secret, and the money. Wow.`], `${k}|hc`) });
     out.push({ ...base, id: `bb-ss-prime-reveal-${a}-${t}-w${ctx.week}`, time: 'LIVE', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Reveal', label: 'The Reveal', sub: act.outcome === 'right' ? 'Secret found' : 'Wrong', cast: [[a, 42], [t, 58]], sceneful: true, steps: reveal.filter(st => st.k !== 'dr') });  // (live, on the stools: no confessional asides)
-  } else if (reveal.length) out.push({ ...base, id: `${id}-reveal`, time: '21:00', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Reveal', label: 'The Reveal', sub: act.outcome === 'right' ? 'Secret found' : 'Wrong', cast: [[a, 42], [t, 58]], sceneful: true, steps: reveal });
+  }
+  if (daily.length) out.push({ ...base, id: `${id}-reveal`, time: '21:00', set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room', title: 'The Reveal', label: 'The Reveal', sub: act.outcome === 'right' ? 'Secret found' : 'Wrong', cast: [[a, 42], [t, 58]], sceneful: true, steps: daily });
   return out;
 }
 
@@ -3865,7 +3881,9 @@ function ssNomScreen(act, ctx) {
 const SS_COHOST = 'Blaineley';
 const ssLive = (ctx, extra) => ({ kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', ...extra });
 const STUDIO = { set: 'studio-wide', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio' };
-const AIRLOCK = { set: 'door', room: 'The Airlock', cam: 7, kicker: 'Live · The Airlock' };
+// (lineup: everybody in the airlock stands in the row, never three in front and the rest lost behind: the user, 2026-10-31,
+// "even in the verdict we only seeing max 3 person in the airlock"; vp-bb-ep/stage.js)
+const AIRLOCK = { set: 'door', room: 'The Airlock', cam: 7, kicker: 'Live · The Airlock', lineup: true };
 const LIVING = { set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, kicker: 'Live · Living room' };
 const pct = v => `${Math.round((Number(v) || 0) * 100)}%`;
 
@@ -4029,7 +4047,7 @@ function ssAirlockScreen(act, ctx, host) {
   }
   steps.push({ k: 'host', by: host, t: 'The lines stay open until the end of the night. Nominees, you can go back to the house for now.' },
     { k: 'beat', t: `The airlock opens again. ${listOf(noms)} walk back in to the sofas.` });
-  return ssLive(ctx, { id: `bb-ss-prime-airlock-w${ctx.week}`, ...AIRLOCK, title: 'The Airlock', label: 'The Nominees', sub: listOf(noms), cast: noms.map((n, i) => [n, 30 + i * 22]), steps });
+  return ssLive(ctx, { id: `bb-ss-prime-airlock-w${ctx.week}`, ...AIRLOCK, title: 'The Airlock', label: 'The Nominees', sub: listOf(noms), cast: noms.map((n, i, a) => [n, Math.round(50 + (i - (a.length - 1) / 2) * Math.min(22, 70 / Math.max(1, a.length - 1)))]), steps });
 }
 
 // LIVE IN THE HOUSE: the host talks to the people the week happened to.
@@ -4569,12 +4587,15 @@ function ssWalkScreen(act, ctx, host) {
     { k: 'say', by: ev, t: pickBy(["Honestly? A bit lost. In there it's all you know.", "Sad, but proud. I gave it everything.", "It hasn't sunk in yet. Ask me tomorrow."], `${k}|f`) },
   ];
   if (rv.secret && !rv.alreadyFound) {
-    steps.push({ k: 'host', by: host, t: `Nobody found your secret, ${ev}. The house is watching. Tell them.` },
-      { k: 'say', by: ev, push: true, t: `My secret was: "${rv.secret}."`, toast: ['THE SECRET', '#f5c542'] });
-    for (const n of (rv.right || []).slice(0, 2)) steps.push({ k: 'dr', by: n, t: pickBy([`I knew it. I knew it! Why didn't I press the buzzer?`, `I had it. I had it for days.`, `That's exactly what I thought. I should have buzzed.`], `${k}|r|${n}`) });
-    for (const n of (rv.wrong || []).slice(0, 1)) steps.push({ k: 'beat', t: `On the sofas, ${n} sits with ${pronouns(n).posAdj || 'their'} mouth open. ${n} had been sure it was something else.` });
-    for (const p of rv.partners || []) steps.push({ k: 'beat', t: `Every head in the living room turns to ${p}. It was ${p}'s secret too.`, toast: ['EXPOSED', '#ff3355'] },
-      { k: 'dr', by: p, t: pickBy(["Well. That's out now.", "There goes half of my game.", "I can't hide now. Everybody knows."], `${k}|p|${p}`) });
+    // (told to the public, on the set: the house never hears it. The user, 2026-10-31: "they only revealed their secret
+    // to the public not the housemates". What the house had guessed is what the cameras saw, said by the host)
+    steps.push({ k: 'host', by: host, t: `Nobody in the house found your secret, ${ev}. They will not hear it tonight. But everybody at home can. Tell us.` },
+      { k: 'say', by: ev, push: true, t: `My secret was: "${rv.secret}."`, toast: ['THE SECRET', '#f5c542'], studioIn: 'cheer' });
+    const R = (rv.right || []).slice(0, 2), Wr = (rv.wrong || []).slice(0, 1);
+    if (R.length) steps.push({ k: 'host', by: host, t: `${listOf(R)} had it right in there, and never pressed the buzzer.` });
+    if (Wr.length) steps.push({ k: 'host', by: host, t: `And ${Wr[0]} was sure it was something else.` });
+    for (const p of rv.partners || []) steps.push({ k: 'host', by: host, t: `And it was not only your secret. ${p} shares it, and ${p} is still in the house. The house still does not know.`, toast: ['STILL HIDDEN', '#f5c542'] },
+      { k: 'say', by: ev, t: pickBy([`Keep it, ${p}. Don't let them have it.`, `${p}, it's all on you now. Hold on to it.`], `${k}|p|${p}`) });
   } else if (rv.secret) {
     steps.push({ k: 'host', by: host, t: rv.foundBy ? `${rv.foundBy} found your secret. "${rv.secret}." Did you see it coming?` : `Your secret was found. "${rv.secret}." Did you see it coming?` },
       { k: 'say', by: ev, t: rv.foundBy ? pickBy([`Not from ${rv.foundBy}. That's what hurt.`, `I knew ${rv.foundBy} was close. I couldn't stop it.`, `Once ${rv.foundBy} had it, I knew I was in trouble.`], `${k}|fd`)
@@ -6771,18 +6792,61 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     // after that (before the days' cliffhanger), or on the prime, before the verdict
     {
       const dailyEnd = () => { const i = out.findIndex(x => /^bb-ss-tonight/.test(String(x.id || '')) && ssPartOf(x) === 'daily'); return i >= 0 ? i : out.findIndex(x => ssPartOf(x) === 'prime'); };
-      for (const press of out.filter(x => x.buzzOf && x.buzzOf === x.id)) {
+      const presses = out.filter(x => x.buzzOf && x.buzzOf === x.id);
+      for (const [pk, press] of presses.entries()) {
         const mine = out.filter(x => x.buzzOf === press.id && x !== press);
         for (const x of mine) out.splice(out.indexOf(x), 1);
+        // THE PRESS THROUGH THE DAYS (2026-10-31: the week's buzzes were built last, so every press sat at the end of the
+        // days and its confrontation and reveal came back to back): after the clues they rest on, spread across the days
+        if (ssPartOf(press) === 'daily') {
+          out.splice(out.indexOf(press), 1);
+          const end = dailyEnd() >= 0 ? dailyEnd() : out.length;
+          const clued = out.reduce((m, x, i) => (i < end && !x.buzzOf && /^bb-ss-(clue|clueroom|hunt|houseclue)/.test(String(x.id || '')) ? i : m), 0);
+          const first = Math.min(clued + 1, end);
+          let pos = Math.min(end, first + Math.floor((end - first) * pk / presses.length));
+          // (never between another buzz and its own confrontation or reveal)
+          while (pos < end && out[pos]?.buzzOf && out[pos].buzzOf !== out[pos].id) pos++;
+          out.splice(pos, 0, press);
+        }
         let at = out.indexOf(press);
         // (a step past the next screen that is not another buzz's, never past the days' end)
         const after = (from, n) => { let i = from; for (let m = 0; m < n; m++) { let j = i + 1; while (j < out.length && out[j].buzzOf) j++; const end = dailyEnd(); if (j >= out.length || (end >= 0 && j >= end)) break; i = j; } return i; };
         const room = mine.find(x => /-room$/.test(x.id));
         if (room) { at = after(at, 1) + 1; out.splice(at, 0, room); }
-        const rev = mine.find(x => /-reveal$|^bb-ss-prime-reveal-/.test(x.id));
-        if (rev && /^bb-ss-prime-reveal-/.test(rev.id)) {
-          const v = out.findIndex(x => /^bb-ss-prime-verdict/.test(String(x.id || '')));
-          out.splice(v >= 0 ? v : out.length, 0, rev);
+        // THE REVEAL'S PLACE (the user, 2026-10-31: "confrontation and the reveal were still right after the other, some
+        // reveal can be placed on the next day if the episode is close to being finished or in the prime"): tonight when
+        // the days have room for it, the next day now and then, and live on the prime when the confrontation came late
+        const rev = mine.find(x => /-reveal$/.test(x.id));
+        const revP = mine.find(x => /^bb-ss-prime-reveal-/.test(x.id));
+        const endAt = dailyEnd() >= 0 ? dailyEnd() : out.length;
+        const rest = out.slice(at + 1, endAt).filter(x => !x.buzzOf);
+        const verdict = out.findIndex(x => /^bb-ss-prime-verdict/.test(String(x.id || '')));
+        const roll = hash(String(press.id)) % 3;
+        const pressDay = Number(press.day) || 0;
+        const nextDay = rest.find(x => (Number(x.day) || 0) > pressDay);
+        const when = revP && verdict >= 0 && (rest.length < 2 || roll === 0) ? 'prime'
+          : nextDay && (rest.length < 3 || roll === 1) ? 'tomorrow' : 'tonight';
+        const say = when === 'prime' ? 'Your buzz is confirmed. You will have the answer live, on the prime.'
+          : when === 'tomorrow' ? 'Your buzz is confirmed. You will have the answer tomorrow, in front of the whole house.' : null;
+        if (say) for (const st of room?.steps || []) if (st.revealWhen) st.t = say;
+        if (when === 'prime' && revP) {
+          out.splice(verdict, 0, revP);
+          // (the night's hunt package told this buzz: it stops before the answer, which comes later tonight)
+          const pair = (revP.cast || []).map(c => c[0]).sort().join('|');
+          for (const m of out.filter(x => /^bb-ss-prime-mag-hunt/.test(String(x.id || '')))) {
+            const card = (m.steps || []).find(st => st.magneto);
+            if (!card || [...(card.magneto.who || [])].sort().join('|') !== pair || !m.steps.some(st => st.outcome)) continue;
+            const by = (revP.cast || [])[0]?.[0];
+            const at0 = m.steps.findIndex(st => st.outcome);
+            m.steps = m.steps.filter(st => !st.outcome);
+            m.steps.splice(at0, 0, { k: 'beat', t: `${by} confirmed the buzz. And tonight, live, ${by} gets the answer.`, scene: m.steps[at0 - 1]?.scene });
+          }
+        }
+        else if (rev && when === 'tomorrow' && nextDay) {
+          // (after the next day's first scene, with a night of waiting said out loud)
+          rev.day = nextDay.day;
+          rev.steps = [rev.steps[0], { k: 'beat', t: `A whole night and a day of waiting. Since yesterday, the buzz has been the only thing anybody in the house talks about.`, tense: (rev.cast || []).map(c => c[0]) }, ...rev.steps.slice(1)];
+          out.splice(Math.min(out.indexOf(nextDay) + 1, dailyEnd() >= 0 ? dailyEnd() : out.length), 0, rev);
         } else if (rev) { at = after(at, 2) + 1; out.splice(Math.min(at, dailyEnd() >= 0 ? dailyEnd() : out.length), 0, rev); }
       }
     }
@@ -6891,8 +6955,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
         for (const st of s.steps || []) {
           if (st.k !== 'voice' || !/^Housemates[,.]/.test(String(st.t || '')) || house.length < 2) continue;
           const have = (st.scene?.cast || []).map(c => (Array.isArray(c) ? c[0] : c)).filter(n => house.includes(n));
-          const all = [...new Set([...have, ...house])].slice(0, 14);
-          st.scene = { ...LIVE, cast: all.map((n, i, a) => [n, Math.round(6 + 88 * i / (a.length - 1))]) };
+          // (a buzz's reveal keeps its two on the stools in the middle, the house around them)
+          const mid = s.buzzOf ? (s.cast || []).map(c => (Array.isArray(c) ? c[0] : c)).filter(n => house.includes(n)).slice(0, 2) : [];
+          const all = [...new Set([...have, ...house])].filter(n => !mid.includes(n)).slice(0, 14 - mid.length);
+          const ring = mid.length
+            ? all.map((n, i) => [n, i % 2 === 0 ? Math.round(5 + 33 * (i / 2) / Math.max(1, Math.ceil(all.length / 2) - 1)) : Math.round(95 - 33 * ((i - 1) / 2) / Math.max(1, Math.floor(all.length / 2) - 1))])
+            : all.map((n, i, a) => [n, Math.round(6 + 88 * i / Math.max(1, a.length - 1))]);
+          st.scene = { ...LIVE, cast: [...ring, ...mid.map((n, i) => [n, mid.length === 1 ? 50 : 42 + 16 * i])] };
           touched = true;
         }
         if (touched && !SCENEFUL_KINDS.has(s.kind)) s.sceneful = true;
@@ -6905,6 +6974,8 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       const placed = x => { x.plate = fall(x.plate); for (const st of x.steps || []) if (st.scene?.plate) st.scene = { ...st.scene, plate: fall(st.scene.plate) }; return { ...x, ss: true }; };
       if (deals.length && at >= 0) out.splice(at + 1, 0, ...ssDealScreens(deals, ctx, { pickBy }).map(placed));
     }
+    // A TAPE BEFORE EVERY MOMENT OF THE PRIME (vp-bb-ep/ss-context-tapes.js)
+    ssContextTapes(out, { row, ctx, partOf: ssPartOf, bond: (a, b) => bondNow(ctx, a, b) });
     mergeSameLabel(out, ssPartOf);
     ssBreaks(out, { host: ctx.host || 'Josh', partOf: ssPartOf });
   }

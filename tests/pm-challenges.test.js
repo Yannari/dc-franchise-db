@@ -130,7 +130,8 @@ describe('every challenge has consequences', () => {
           expect(e.phase).toBe('challenge');
           expect(e.aired).toBe(true);
           expect(e.script.stage || e.script.lines.length, `${id} ${e.kind}`).toBeTruthy();
-          expect(e.script.id, `${id} ${e.kind} has no scene written`).not.toMatch(/\.0$/);
+          // A placeholder is `<kind>.0` (pm/script.js placeholder); a whole talk's voice pick ends `:0.0`.
+          expect(e.script.id, `${id} ${e.kind} has no scene written`).not.toBe(`${e.kind}.0`);
         }
       }
     }

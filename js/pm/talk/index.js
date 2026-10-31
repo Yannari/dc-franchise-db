@@ -19,6 +19,12 @@ import { BED_CHAT_WHOLE } from './whole/bed-chat.js';
 import { LOYALTY_WHOLE } from './whole/loyalty.js';
 import { ADVICE_WHOLE } from './whole/advice.js';
 import { FEELS_OFF_WHOLE, SECRET_BURDEN_WHOLE } from './whole/secrets.js';
+import { ENEMY_SNIPE_WHOLE, ENEMY_BITCH_WHOLE, ENEMY_CLASH_WHOLE, ENEMY_FREEZE_WHOLE, ENEMY_TRUCE_WHOLE } from './whole/enemies.js';
+import { VENT_WHOLE } from './whole/vent.js';
+import { ICK_WHOLE } from './whole/ick.js';
+import { CHAL_BUZZ_WHOLE, CHAL_WATCH_WHOLE, CHAL_PRIZE_WHOLE, CHAL_ROW_WHOLE, CHAL_SPARK_WHOLE } from './whole/challenge.js';
+import { GAME_KISS_WHOLE } from './whole/game-kiss.js';
+import { ARRIVAL_CHAT_WHOLE } from './whole/arrival.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
@@ -152,6 +158,17 @@ for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads |
 // Whole conversations (pm/talk/whole/): one talk start to finish, in the speakers' own voices.
 extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE); extend(DEEP_CHAT, DEEP_CHAT_WHOLE); extend(DEBRIEF, DEBRIEF_WHOLE); extend(PICK_CHAT, PICK_CHAT_WHOLE); extend(VOTE_WORRY, VOTE_WORRY_WHOLE); extend(ARGUMENT, ARGUMENT_WHOLE);
 extend(BED_CHAT, BED_CHAT_WHOLE); extend(LOYALTY, LOYALTY_WHOLE); extend(ADVICE, ADVICE_WHOLE); extend(FEELS_OFF, FEELS_OFF_WHOLE); extend(SECRET_BURDEN, SECRET_BURDEN_WHOLE);
+extend(ENEMY_SNIPE, ENEMY_SNIPE_WHOLE); extend(ENEMY_BITCH, ENEMY_BITCH_WHOLE); extend(ENEMY_CLASH, ENEMY_CLASH_WHOLE); extend(ENEMY_FREEZE, ENEMY_FREEZE_WHOLE); extend(ENEMY_TRUCE, ENEMY_TRUCE_WHOLE);
+extend(VENT, VENT_WHOLE); extend(ICK, ICK_WHOLE); extend(GAME_KISS, GAME_KISS_WHOLE); extend(ARRIVAL_CHAT, ARRIVAL_CHAT_WHOLE);
+extend(CHAL_BUZZ, CHAL_BUZZ_WHOLE); extend(CHAL_WATCH, CHAL_WATCH_WHOLE); extend(CHAL_PRIZE, CHAL_PRIZE_WHOLE); extend(CHAL_ROW, CHAL_ROW_WHOLE); extend(CHAL_SPARK, CHAL_SPARK_WHOLE);
+// Two enemies who have had it out before have it out AGAIN: the scene says so (whole/enemies.js).
+// On air or not: they were both there.
+const CLASH_FACTS = ENEMY_CLASH.facts;
+ENEMY_CLASH.facts = (state, ev) => {
+  const pair = ev.players.slice(0, 2).sort().join('|');
+  return { ...(CLASH_FACTS ? CLASH_FACTS(state, ev) : {}), xAgain: [...(state.history || []), ...(state._today || [])].some(e => e !== ev
+    && (ev.id == null || e.id !== ev.id) && e.kind === 'enemy-clash' && e.players.slice(0, 2).sort().join('|') === pair) };
+};
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,

@@ -139,10 +139,10 @@ export const HUT_VOLUME_3 = {
       "I told {b} to be honest with everyone. Bit rich, coming from me.",
     ]),
     ...lines('hutv3.vent.t', K('vent', { role: 0 }), [
-      "I needed to let off steam. I only let off the bits that were safe to let off.",
-      "I vented about everything except the one thing that's actually bothering me.",
-      "{b} probably thinks I've told {b} everything. Not even close.",
-      "I picked the wrong person to vent to. Or the right person. I'll find out.",
+      "I needed to say it out loud to someone. I feel a bit lighter now.",
+      "I trust {b}. I just really hope it stays between us.",
+      "Saying it out loud made it real. I don't know if that's a good thing.",
+      "I feel guilty even talking about it. But I had to tell someone, or I'd have burst.",
     ]),
     ...lines('hutv3.comfort.t', K('comfort', { role: 0 }), [
       "I was there for {b}. I'll always be there for {b}. It also keeps me away from questions.",

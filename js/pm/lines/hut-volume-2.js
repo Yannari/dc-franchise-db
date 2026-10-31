@@ -144,7 +144,7 @@ export const HUT_VOLUME_2 = {
       "{b} is so sure about us. I want to be that sure.",
       "Sitting there with {b}, I kept rehearsing what I'd say if it all came out.",
     ]),
-    ...lines('hutv2.every.t', { kind: EVERYDAY, ...B }, [
+    ...lines('hutv2.every.t', { kind: EVERYDAY.filter(k => k !== 'vent'), ...B }, [
       "{b} had no idea. {b} just kept talking, and I just kept nodding.",
       "I was there, and I wasn't there. My head was somewhere else the whole time.",
       "{b} asked me if I was okay. I said yes. That's my answer to everything this week.",

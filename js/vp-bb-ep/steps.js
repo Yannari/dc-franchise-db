@@ -6984,6 +6984,13 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
     }
     // A TAPE BEFORE EVERY MOMENT OF THE PRIME (vp-bb-ep/ss-context-tapes.js)
     ssContextTapes(out, { row, ctx, partOf: ssPartOf, bond: (a, b) => bondNow(ctx, a, b) });
+    // THE NARRATOR (the user, 2026-10-31: voice the tapes' narration): what is told over the pictures in a tape, the
+    // week's package and the "previously" is the narrator's, and voiced as "Narrator" (vp-bb-ep/voicing.js voiceName).
+    // Never the title card, never the studio.
+    for (const s of out) {
+      if (!/^bb-ss-prime-(mag-|tape-|package)|^bb-ss-previously/.test(String(s.id || ''))) continue;
+      for (const st of s.steps || []) if (st.k === 'beat' && st.t && !st.magneto && !/^studio/.test(String(st.scene?.set || ''))) st.narr = true;
+    }
     mergeSameLabel(out, ssPartOf);
     ssBreaks(out, { host: ctx.host || 'Josh', partOf: ssPartOf });
   }

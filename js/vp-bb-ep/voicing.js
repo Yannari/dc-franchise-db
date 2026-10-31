@@ -49,6 +49,8 @@ export function voiceName(st) {
   // a season's own voice (The Mastermind, AINSLEY, The Voice...) speaks too (the user, 2026-10-25: "cant find how
   // to voice the big brother and the mastermind")
   if (st.k === 'say' || st.k === 'dr' || st.k === 'host' || st.k === 'voice') return st.by || null;
+  // the narrator over a Secret Story tape, its week's package and its "previously" (steps.js marks them `narr`)
+  if (st.k === 'beat' && st.narr) return 'Narrator';
   return null;
 }
 

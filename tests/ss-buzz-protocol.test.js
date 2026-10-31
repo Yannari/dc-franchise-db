@@ -8,6 +8,7 @@ import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { ssPartOf } from '../js/vp-bb-ep/ss-episode.js';
 import { weeklyRuleBreaks, dOfficeFor } from '../js/ss/voice.js';
 import { resolveBuzz } from '../js/ss/hunt.js';
+import { voiceName } from '../js/vp-bb-ep/voicing.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
 
@@ -78,6 +79,13 @@ describe('the prime\'s tapes', () => {
       }
     }
     expect(tapes).toBeGreaterThan(5);
+  });
+  it('are told by the Narrator, a voice of its own; never the title card or the studio', () => {
+    const tapes = weeks.flat().filter(s => /^bb-ss-prime-tape-/.test(s.id));
+    const narr = tapes.flatMap(s => s.steps).filter(st => voiceName(st) === 'Narrator');
+    expect(narr.length).toBeGreaterThan(tapes.length);
+    for (const st of tapes.flatMap(s => s.steps)) if (st.magneto || /^studio/.test(String(st.scene?.set || ''))) expect(voiceName(st)).not.toBe('Narrator');
+    expect(weeks.flat().filter(s => /^bb-ss-buzz-/.test(s.id)).flatMap(s => s.steps).some(st => voiceName(st) === 'Narrator')).toBe(false);
   });
   it('play back only lines that aired in the days', () => {
     for (const w of weeks) {

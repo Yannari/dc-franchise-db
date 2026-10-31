@@ -753,6 +753,10 @@ export function airStorylines(week) {
   for (const act of week.acts) {
     if (act?.scenes) act.scenes = act.scenes.filter(x => !(x.step === 'campaign-declined' && lobbied.has((x.cast || [])[0])));
   }
+  // A Diary Room moment on its own, straight after a scene that ended on the same person's Diary Room, reads as one
+  // confessional changing subject mid-thought (the user, 2026-10-31: "Angelica was just sad, and she was right to be"
+  // then "Angelica wins from any chair": "no correlation between the two confessionals"): it airs a scene later.
+  for (const act of week.acts) if (act?.scenes?.length > 1) apartDiaries(act.scenes);
   // A Secret Story house has no Head of Household's week: no block, no key, no veto, no "whoever wins puts X up", no
   // final-two deal for a jury that does not exist. The engine still hands the Voice's game winner Big Brother's house
   // moments (breakfast in bed for whoever "holds the key", the pitch "you'd do the house a favour if X went up"), and
@@ -761,6 +765,28 @@ export function airStorylines(week) {
   if (SS) {
     for (const act of week.acts) if (act?.scenes) act.scenes = act.scenes.filter(x => !BB_ONLY.test(saidIn(x)));
   }
+}
+
+/** The one speaker of a scene that is only Diary Room (and stage directions), or null. */
+const loneDiary = sc => {
+  const ls = sc?.lines || [];
+  const dr = ls.filter(l => l.kind === 'dr');
+  return dr.length && ls.every(l => l.kind === 'dr' || l.kind === 'beat') && new Set(dr.map(l => l.by)).size === 1 ? dr[0].by : null;
+};
+const endsOnDiary = sc => { const l = (sc?.lines || []).at(-1); return l?.kind === 'dr' ? l.by : null; };
+const opensOnDiary = sc => { const l = (sc?.lines || []).find(x => x.kind !== 'beat'); return l?.kind === 'dr' ? l.by : null; };
+/** Moves a lone Diary Room scene that follows the same person's Diary Room one scene on, where there is one to pass. */
+export function apartDiaries(scenes) {
+  for (let i = 1; i < scenes.length; i++) {
+    const who = loneDiary(scenes[i]);
+    if (!who || endsOnDiary(scenes[i - 1]) !== who) continue;
+    const next = scenes[i + 1];
+    if (next && opensOnDiary(next) !== who && endsOnDiary(next) !== who) { scenes.splice(i, 2, next, scenes[i]); i++; continue; }
+    // (the last scene of the act, or the next one is theirs too: it airs a scene earlier instead)
+    const prev = scenes[i - 1], before = scenes[i - 2];
+    if (opensOnDiary(prev) !== who && (!before || endsOnDiary(before) !== who)) scenes.splice(i - 1, 2, scenes[i], prev);
+  }
+  return scenes;
 }
 
 // the words a Big Brother week says that a Secret Story week never can

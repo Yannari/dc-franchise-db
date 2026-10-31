@@ -389,4 +389,20 @@ export const PULL_WHOLE = { moves: { whole: [
     ['a', "It's just a chat."],
     ['b', "I know. I'd still rather not."],
   ], beat: "{a} nods, and goes back to the others." },
+  // ── graft, {a} coupled, {b} single ──
+  { when: { story: 'graft', taken: true, bTaken: false, end: LANDS, kissed: false, promised: false }, stage: "{a} sits down next to {b} on the swing seat.", turns: [
+    ['a', "Can I talk to you? Just us."],
+    ['b', "Shouldn't you be with {pa}?"],
+    say('a', "Probably. But I wanted to talk to you.", { lad: "Probably, yeah. But I wanted to talk to you.", nervy: "I know. I just wanted to talk to you. Is that bad?" }),
+    ['b', "About what?"],
+    ['a', "About how much I like talking to you."],
+    say('b', "You can't say things like that. You're in a couple.", { flirty: "I like talking to you too. But you're with {pa}, and I'm not stupid." }),
+    ['a', "I know I am. I'm just being honest."],
+  ], beat: "{b} doesn't get up, and {a} doesn't either." },
+  { when: { story: 'graft', taken: true, bTaken: false, end: 'turned-down', rebuffed: true }, stage: "{a} sits down next to {b} on the swing seat.", turns: [
+    ['a', "I'm going to be honest with you. I've been thinking about you a lot."],
+    say('b', "You're with {pa}. I'm not going to be the reason you two fall apart.", { sharp: "You're with {pa}. Go and talk to {pa.obj}, not me.", soft: "That's really kind, but you're with {pa}. I don't want to get in the middle of that." }),
+    ['a', "What if I wasn't with {pa}?"],
+    ['b', "But you are."],
+  ], beat: "{b} gets up and goes back inside, and {a} is left on the swing seat." },
 ] } };

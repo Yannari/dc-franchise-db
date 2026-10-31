@@ -187,4 +187,32 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
       big: "Then go for it! You've only got a few days, don't waste them!",
     }),
   ], beat: "{a} is already on {a.posAdj} feet." },
+  // ── {a} is coupled too, and {b} says go for it (any time of day) ──
+  { when: { taken: true, fresh: false, of: 'go-for-it', theirs: 'yes' }, stage: "{a} and {b} are lying on the sunbeds, away from the others.", turns: [
+    ['a', "Can I tell you something? You can't tell anyone."],
+    ['b', "Go on."],
+    say('a', "I like {c}. Like, really like {c.obj}.", { lad: "I like {c}, {~bro}. I really like {c.obj}.", bestie: "Babe. I like {c}. I really, really like {c.obj}.", nervy: "I think I like {c}. I can't stop thinking about {c.obj}." }),
+    ['b', "I know. I've seen how you look at each other."],
+    ['a', "Each other? You think {c.he} feels it too?"],
+    say('b', "I think {c.he} does. And I think you're only with {pa} because it's easy.", { soft: "I think {c.he} does. And I think you deserve to be with someone who makes you feel like that." }),
+    ['a', "So what do I do?"],
+    ['b', "Be honest with {pa}. Then go and talk to {c}."],
+  ], beat: "{a} lies back and stares at the sky, and doesn't say anything for a while." },
+  { when: { taken: true, fresh: false, of: 'go-for-it', theirs: 'no' }, stage: "{a} and {b} are in the dressing room, getting ready.", turns: [
+    ['a', "Can I ask you something? Would it be really bad if I went for {c}?"],
+    ['b', "You're with {pa}."],
+    say('a', "I know. But I don't feel about {pa} the way I feel about {c}.", { lad: "I know, {~bro}. But {pa} isn't {c}. I can't help it.", romantic: "I know. But with {c}, I feel something I've never felt. I can't ignore it." }),
+    ['b', "Does {c} even know?"],
+    ['a', "No. I don't even know if {c.he} likes me."],
+    say('b', "Then find out. But tell {pa} first. Don't do it behind {pa.posAdj} back.", { sharp: "Then find out. Just don't lie to {pa} while you do." }),
+  ], beat: "{a} looks at {a.posAdj} reflection for a long time, and then nods." },
+  { when: { taken: true, fresh: false, of: 'careful' }, stage: "{a} and {b} are sitting at the kitchen island.", turns: [
+    ['a', "I think I've got a problem."],
+    ['b', "What kind of problem?"],
+    ['a', "{c}. I can't stop thinking about {c.obj}."],
+    say('b', "You're with {pa}. And {c}'s with {d}.", { lad: "Bro. You're with {pa}. And {c}'s with {d}. Come on." }),
+    ['a', "I know. I know all of that."],
+    say('b', "Then be careful. You could lose {pa} over this and not even get {c}.", { soft: "I'm not judging you. I just don't want you to end up with nobody." }),
+    ['a', "I know. I'm not going to do anything. Not yet."],
+  ], beat: "{b} gives {a} a long look, and doesn't believe the last bit." },
 ] } };

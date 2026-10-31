@@ -8,6 +8,9 @@ import { GRAFT_EYES_WHOLE } from './whole/graft-eyes.js';
 import { FRIENDSHIP_WHOLE } from './whole/friendship.js';
 import { PULL_WHOLE } from './whole/pull.js';
 import { CHAT_WHOLE } from './whole/chat.js';
+import { GROUP_CHAT_WHOLE, groupChatFacts } from './whole/group-chat.js';
+import { WATCHING_WHOLE, watchingFacts } from './whole/watching.js';
+import { WHERE_HEAD_WHOLE } from './whole/where-head.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
@@ -139,7 +142,7 @@ extend(FINAL_DATE, FINAL_DATE_MATES); extend(JOURNEY_OPEN, JOURNEY_OPEN_MATES); 
 for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads || []), 'mates']; extend(DATE, DATE_MORE);
 
 // Whole conversations (pm/talk/whole/): one talk start to finish, in the speakers' own voices.
-extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE);
+extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
@@ -248,11 +251,12 @@ extend(WHERE_HEAD, WHERE_HEAD_MORE);
 WHERE_HEAD.plans = WHERE_HEAD_PLANS;
 // …and the other storyline talks run on a movement longer each.
 for (const [k, more] of Object.entries(STORY_MORE)) extend(TALK[k], more);
-WATCHING.plans = WATCHING_PLANS; FEELS_OFF.plans = FEELS_OFF_PLANS; BED_CHAT.plans = BED_CHAT_PLANS;
+WATCHING.plans = WATCHING_PLANS;
+WATCHING.facts = (state, ev) => ({ ...watchingFacts(state, ev) }); FEELS_OFF.plans = FEELS_OFF_PLANS; BED_CHAT.plans = BED_CHAT_PLANS;
 GROUP_CHAT.slots = (state, ev) => ({ ...(ev.extra?.x ? { x: ev.extra.x } : {}), ...(ev.extra?.about ? { about: ev.extra.about } : {}) });
 // `sec`: what kind of secret it was (a kiss, a promise, a pull) — never passed until 2026-10-26, so the
 // story's found-out tells (more/group-chat-story.js) never played: 45 chats in 10 seasons lost their telling.
-GROUP_CHAT.facts = (state, ev) => ({ hasWith: !!ev.extra?.about, ...(ev.extra?.sec ? { sec: ev.extra.sec } : {}) });
+GROUP_CHAT.facts = (state, ev) => ({ hasWith: !!ev.extra?.about, ...(ev.extra?.sec ? { sec: ev.extra.sec } : {}), ...groupChatFacts(state, ev) });
 // The witness names who it was with.
 SECRET_BURDEN.slots = (state, ev) => { const s = (state.secrets || []).find(z => z.id === ev.extra?.secret); return s?.with ? { about: s.with } : {}; };
 SECRET_BURDEN.facts = (state, ev) => ({ hasWith: !!(state.secrets || []).find(z => z.id === ev.extra?.secret)?.with });

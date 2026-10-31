@@ -273,6 +273,10 @@ const SITUATION = {
 SITUATION.suspense.push('dump-nerves', 'recouple-nerves', 'dump-recap', 'lie-question');
 SITUATION.comedy.push('ick');
 SITUATION.romance.push('reassurance');
+// Scenes that still played in silence once the talk got shorter (2026-10-30, whole conversations).
+SITUATION.drama.push('enemy-freeze', 'enemy-bitch', 'game-suspect', 'ex-sting');
+SITUATION.cry.push('apology');
+SITUATION.villa.push('knowing-q', 'movie-react');
 const BY_KIND = Object.fromEntries(Object.entries(SITUATION).flatMap(([sit, ks]) => ks.map(k => [k, sit])));
 /*
  * THE STORYLINES' SCENES (pm/threads.js), by how each one went: these played

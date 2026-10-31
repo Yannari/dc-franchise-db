@@ -189,7 +189,7 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
   ], beat: "{a} wipes {a.posAdj} eyes with the back of {a.posAdj} hand." },
   { when: { subj: 'honest', story: 'doubt', cast: C }, stage: "{a} sits down on the daybeds, and the others make room.", turns: [
     ['b', "How did it go with {x}?"],
-    say('a', "{x} said {x.he}'s not feeling it like {x.he} was.", { lad: "{x}'s not feeling it any more, {~mate}. Said it straight.", bestie: "{x}'s gone off me, babe. {x.He} actually said it." }),
+    say('a', "{x} said {x.he}'s not feeling it like {x.he} was.", { lad: "{x} is not feeling it any more, {~mate}. Said it straight.", bestie: "{x} has gone off me, babe. {x.He} actually said it." }),
     ['c', "Did {x.he} say why?"],
     ['a', "No. Just that it's changed. And {x.he}'s sorry."],
     ['b', "At least {x.he} was honest."],
@@ -400,7 +400,7 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     ['b', "I heard."],
     ['a', "{about}. Of all the people in here."],
     ['b', "I'm sorry. That must have been horrible to hear."],
-    say('a', "It was. And {x.he}'s acting like it was nothing.", { sharp: "It was. And {x}'s going to have to explain it." }),
+    say('a', "It was. And {x.he}'s acting like it was nothing.", { sharp: "It was. And {x} is going to have to explain it." }),
   ], beat: "{b} puts a hand on {a.posAdj} knee." },
   { when: { subj: 'named', cast: C }, stage: "{a} comes back to the daybeds after the game.", turns: [
     ['b', "That was awkward."],

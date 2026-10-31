@@ -89,7 +89,7 @@ export function nightDebrief(state, rng, entry, pre, m) {
     // had never met).
     const mourner = (here(partnerBefore(d)) && partnerBefore(d))
       || state.villa.filter(n => g(n) === g(d) && getBond(d, n) >= 2).sort((x, y) => getBond(d, y) - getBond(d, x))[0];
-    add(2, 'miss', mourner, d);
+    add(2, 'miss', mourner, d, null, { mine: partnerBefore(d) === mourner });
     const voter = (m.ballots || []).find(b => !b.save && (b.target === d || b.couple?.includes(d)) && here(b.voter))?.voter;
     if (voter && mourner && voter !== mourner) add(3, 'blame', mourner, voter, null, { gone: d });
   }

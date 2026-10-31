@@ -61,7 +61,7 @@ export const SPEAKERS = ['a', 'b', 'c', 'dior', 'narrator'];
 export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'staying', 'came', 'another', 'ago', 'behind', 'friction', 'chose', 'rung', 'thinks', 'persona', 'intent', 'attachment', 'mood', 'bombshell',
   'early', 'coupled', 'gap', 'knows', 'faking', 'bPersona', 'bMood', 'bRung', 'stance', 'family',
   'choice', 'cause', 'channel', 'grudge', 'stole', 'bTaken', 'archetype', 'taken', 'loyal', 'late', 'gender', 'bGender', 'myRung', 'phase', 'kind', 'role', 'withB', 'newArrival', 'dialect',
-  'friend', 'partnerStays', 'bitter', 'xMine', 'tempted', 'xAgain', 'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
+  'friend', 'partnerStays', 'bitter', 'xMine', 'tempted', 'xAgain', 'cMine', 'comfortedYesterday', 'rowedBefore', 'rowedToday', 'feels', 'of', 'knowsB', 'verdict', 'noticed',
   'reason', 'split', 'guessed', 'stoleFrom', 'full', 'hasQuote', 'rank', 'cast', 'justMet', 'rebuffed', 'heard', 'kissed', 'promised', 'sec', 'lastBy', 'theirs', 'going', 'nth', 'exes', 'leaving', 'what', 'heat', 'game', 'why', 'risk',
   // the director (pm/story/director.js): how each one sounds, how much is shown, what it follows
   'reg', 'bReg', 'tier', 'after', 'afterBy', 'afterWhen', 'end', 'firstKiss', 'bPartnered', 'fresh', 'bFresh',

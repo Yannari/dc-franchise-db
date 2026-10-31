@@ -117,7 +117,7 @@ export const PULL_WHOLE = { moves: { whole: [
     ['b', "Then why are you?"],
     say('a', "Because I can't stop thinking about you. I care about {pa}. But I don't feel about {pa} the way I feel about you.", {
       romantic: "Because when I'm with you, I feel something I've never felt with {pa}. I didn't know it could feel like this.",
-      lad: "Because I can't help it. {pa}'s great. But you're the one I want to talk to.",
+      lad: "Because I can't help it. {pa} is great. But you're the one I want to talk to.",
     }),
     say('b', "This is such a mess. Two couples, and we're the ones sitting here making it worse.", {
       nervy: "We can't do this. Can we? I don't know. I don't know what we're doing.",
@@ -380,7 +380,7 @@ export const PULL_WHOLE = { moves: { whole: [
     ['a', "Have you got a minute? I feel like we've never spoken properly."],
     ['b', "We haven't, have we? Go on, then."],
     ['a', "How's it going with {pb}?"],
-    say('b', "Good. Really good. {pb} makes me happy.", { lad: "Good, yeah. {pb}'s great.", quiet: "Good. Really good." }),
+    say('b', "Good. Really good. {pb} makes me happy.", { lad: "Good, yeah. {pb} is great.", quiet: "Good. Really good." }),
     ['a', "I'm glad. You look happy."],
   ], beat: "They chat a while longer, and it's easy." },
   { when: { story: NONE, bTaken: true, end: 'turned-down', rebuffed: true }, stage: "{a} asks {b} for a chat on the daybeds.", turns: [

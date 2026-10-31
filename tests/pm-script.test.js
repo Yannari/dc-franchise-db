@@ -7,7 +7,8 @@ import { TALK } from '../js/pm/talk/index.js';
 
 // The movements written for a fact (js/pm/talk/): a scene's id is its movements' ids joined by '+'.
 const idsFor = key => new Set(Object.values(TALK).flatMap(t => [...Object.values(t.moves).flat(), ...t.notes]).filter(e => e.when?.[key]).map(e => e.id));
-const uses = (e, ids) => String(e.script?.id || '').split('+').some(id => ids.has(id));
+// A whole conversation's id carries which voice each line took (pm/script.js renderScript: 'x17:0.2').
+const uses = (e, ids) => String(e.script?.id || '').split('+').some(id => ids.has(id.split(':')[0]));
 
 function season(seed) {
   const cast = makeIslanders(22, seed);

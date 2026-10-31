@@ -13,7 +13,7 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
   // ── {c} has noticed {a} too ──
   { when: { ...ME, theirs: 'yes', of: 'careful' }, stage: "{a} and {b} are lying on the sunbeds at the far end of the garden.", turns: [
     say('a', "I think {c} likes me. {c.He} keeps finding reasons to sit next to me, even when {d}'s right there.", {
-      lad: "I'm telling you, {~bro}, I swear {c} wants me. Every time I sit down, there {c.he} is. {d}'s sat right there and everything.",
+      lad: "I'm telling you, {~bro}, I swear {c} wants me. Every time I sit down, there {c.he} is. {d} is sitting right there and everything.",
       bestie: "{~Girl}, I'm not making this up. {c} likes me. I can feel it every time {c.he} looks over.",
       nervy: "Can I tell you something, and you won't laugh? I think {c} might like me. I keep catching {c.obj} looking at me.",
       dry: "I think {c} likes me. And before you say it, I've checked. It's not just me being hopeful.",
@@ -135,7 +135,7 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
     ['a', "I need to tell someone, and it has to be you. I've got feelings for {c}."],
     ['b', "What about {pa}?"],
     say('a', "That's the thing. I care about {pa}. But when I'm with {c}, I feel something I don't feel with {pa}.", {
-      lad: "I know, I know. {pa}'s great. But {c}, I don't know, {~bro}. It's different.",
+      lad: "I know, I know. {pa} is great. But {c}, I don't know, {~bro}. It's different.",
       romantic: "I care about {pa}. I do. But with {c}, it feels like it did in the films. I didn't know it could feel like that.",
     }),
     say('b', "You can't do this behind {pa}'s back. If you're going to go for {c}, you have to be honest with {pa} first.", {
@@ -167,7 +167,7 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
       flirty: "{c}. Have you seen {c.obj}? Of course you have.",
       bestie: "{c}. Obviously. I noticed {c.obj} before I'd even put my bag down.",
     }),
-    ['b', "{c}'s with {d}. You know that, right?"],
+    ['b', "{c} is with {d}. You know that, right?"],
     ['a', "I know. Everyone's told me. I still want to get to know {c.obj}."],
     say('b', "Just don't go in too hard. {d} is going to be watching your every move.", {
       sharp: "Then go carefully. {d} has already clocked you.",
@@ -210,7 +210,7 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
     ['a', "I think I've got a problem."],
     ['b', "What kind of problem?"],
     ['a', "{c}. I can't stop thinking about {c.obj}."],
-    say('b', "You're with {pa}. And {c}'s with {d}.", { lad: "Bro. You're with {pa}. And {c}'s with {d}. Come on." }),
+    say('b', "You're with {pa}. And {c} is with {d}.", { lad: "Bro. You're with {pa}. And {c} is with {d}. Come on." }),
     ['a', "I know. I know all of that."],
     say('b', "Then be careful. You could lose {pa} over this and not even get {c}.", { soft: "I'm not judging you. I just don't want you to end up with nobody." }),
     ['a', "I know. I'm not going to do anything. Not yet."],

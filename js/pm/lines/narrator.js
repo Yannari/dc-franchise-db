@@ -32,9 +32,9 @@ export const NARRATOR = {
     { id: 'nar.jealous-sulk.x2', turns: [['narrator', "{a} says {a.he}'s fine. {a} isn't fine."]] },
   ],
   'deep-chat': [
-    { id: 'nar.deep-chat.x1', turns: [['narrator', "{a} is opening up to {b} about things {a.he} doesn't usually talk about."]] },
-    { id: 'nar.deep-chat.x2', turns: [['narrator', "This is the most serious {a} and {b} have ever been with each other."]] },
-    { id: 'nar.deep-chat.x3', turns: [['narrator', "{a} has told {b} something nobody else in the villa knows."]] },
+    { id: 'nar.deep-chat.x1', turns: [['narrator', "{a} wants to know {b} better, and asks {b.obj} something real."]] },
+    { id: 'nar.deep-chat.x2', turns: [['narrator', "{a} and {b} find somewhere quiet to talk, away from everyone."]] },
+    { id: 'nar.deep-chat.x3', turns: [['narrator', "{a} asks {b} the kind of question you only ask someone you are starting to care about."]] },
   ],
   chat: [
     { id: 'nar.chat.x1', turns: [['narrator', "{a} and {b} are spending the whole afternoon together, and they're happy."]] },

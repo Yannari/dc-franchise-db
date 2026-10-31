@@ -100,7 +100,7 @@ export const WATCHING_WHOLE = { moves: { whole: [
   ], beat: "{a} watches the two of them, and doesn't say another word." },
   { when: { of: 'sees', chaser: true, heat: 'steamy' }, stage: "From the kitchen, {a} and {b} watch {c} sit down next to {d}. {c} is laughing at everything {d} says.", turns: [
     ['a', "Look at {c}. I haven't seen {c.obj} laugh like that in days."],
-    ['b', "Maybe {d}'s just funny."],
+    ['b', "Maybe {d} is just funny."],
     ['a', "{d} isn't that funny."],
     say('b', "What are you going to do?", { lad: "What are you going to do, bro?" }),
     say('a', "I don't know. Ask {c} what's going on, I suppose. And hope I like the answer.", { sharp: "Ask {c} what that was. And I want a straight answer.", nervy: "I don't know. I don't think I want to know." }),

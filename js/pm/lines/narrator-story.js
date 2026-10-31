@@ -77,6 +77,6 @@ export const NARRATOR_STORY = {
     { id: 'nst.gossip.1', when: { story: 'secret' }, turns: [['narrator', "{a} has decided to tell {b} what {c} has been up to."]] },
   ],
   'deep-chat': [
-    { id: 'nst.deep.1', when: { story: 'progress' }, turns: [['narrator', "{a} and {b} have been getting closer, and today they talk about what comes next."]] },
+    { id: 'nst.deep.1', when: { story: 'progress' }, turns: [['narrator', "{a} and {b} have been getting closer, and {a} wants to know more about {b}."]] },
   ],
 };

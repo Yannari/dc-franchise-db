@@ -93,7 +93,7 @@ export const FRIENDSHIP_WHOLE = { moves: { whole: [
     ['b', "That was the right thing to do."],
     say('a', "I just want {pa} to know I'm not going anywhere.", {
       romantic: "I want {pa} to know there's nobody else. There isn't.",
-      lad: "I'm not going anywhere, {~bro}. {pa}'s the one. Simple as that.",
+      lad: "I'm not going anywhere, {~bro}. {pa} is the one. Simple as that.",
     }),
   ] },
 

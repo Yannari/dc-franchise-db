@@ -476,7 +476,8 @@ function tableTalk(player, backer, doubter, residents, draw) {
   // what each speaker values decides their argument (the user, 2026-10-07: "they always keep the
   // one with the most comp wins as the one winning"); the record's version stays when the
   // speaker's lens has nothing true to say about this player
-  const forL = lensCase(backer, player, 'for'), agL = lensCase(doubter, player, 'against');
+  const forC = lensCase(backer, player, 'for'), agC = lensCase(doubter, player, 'against');
+  const forL = forC ? draw(`lens-for-${lensOf(backer)}`, forC) : null, agL = agC ? draw(`lens-against-${lensOf(doubter)}`, agC) : null;
   const bi = out.findIndex(t => t.by === backer), di = out.findIndex(t => t.by === doubter);
   if (forL && bi >= 0) {
     out[bi] = { by: backer, t: forL };
@@ -582,6 +583,19 @@ function tableTalkBase(player, backer, doubter, residents, draw) {
       `Never on the block means nobody ever thought ${player} was a threat. Why would I reward that?`,
       `${player} was never nominated because ${player} was never in anybody's way. That's not a strategy. That's a hiding place.`,
     ]));
+  } else if (r.hoh) {
+    // they held the key: the case against is what they did with it, never that they decided nothing (the user,
+    // 2026-10-31: "Everything Angelica did, somebody else planned" of a sitting HOH, "objectively untrue")
+    reason = 'keyuse';
+    const boot = (gs.bb?.weeks || []).filter(w => w.hoh === player && w.evicted).map(w => w.evicted)[0];
+    sayBy(doubter, draw('against-keyuse', boot ? [
+      `${player} was HOH and sent ${boot} home. ${boot} was never the biggest threat in there. That was the easy pick.`,
+      `${player} had the key and used it on ${boot}. I'd have gone after somebody who could actually beat ${pp.obj}.`,
+      `When ${player} had the power, ${pp.sub} took the safe shot. ${boot} going home didn't change anything.`,
+    ] : [
+      `${player} won HOH and nobody went home on ${pp.posAdj} week that ${pp.sub} picked. What was the point?`,
+      `${player} had the key and didn't do anything with it. I keep waiting for the big move.`,
+    ]));
   } else {
     reason = 'nomove';
     sayBy(doubter, draw('against-nomove', [
@@ -598,6 +612,7 @@ function tableTalkBase(player, backer, doubter, residents, draw) {
     nowins: [`You don't need to win comps if nobody ever puts you on the block.`, `Some of the best players never won a thing. They didn't need to.`, `Competitions aren't everything. ${player} is still in that house and we're sitting in a lodge.`, `Winning comps makes you a target. Not winning them and still being there is the harder thing.`],
     safewins: [`Winning without making enemies is the hardest thing in that house.`, `${pp.Sub} won and nobody turned on ${pp.obj}. That's twice as impressive.`, `Using power without making enemies is the hardest thing in that house. ${player} did it.`, `Nobody came for ${pp.obj} because ${pp.sub} kept winning. That's the point.`],
     floated: [`Calling it floating doesn't make it easy. Try staying off the block that long.`, `Quiet isn't the same as lazy. ${pp.Sub} picked every side carefully.`, `Staying off the block for that long is a strategy. It's just a quiet one.`, `Being in nobody's way is how you get to the end. And ${pp.sub}'s nearly there.`],
+    keyuse: [`Every HOH picks somebody. ${player} picked, and ${pp.sub}'s still there. That's the point.`, `The safe pick is how you last. You're all sitting here because somebody didn't take the safe pick.`, `You'd have gone after a big name and ended up in this lodge a week earlier.`, `I'll take a player who made a choice over one who never had to.`],
     nomove: [`Maybe the big moves just weren't ${pp.posAdj} name on them. That's smart too.`, `You don't see the moves because ${pp.sub} made them in private.`, `Then name somebody in that house who made more.`, `Not every game is loud. Some of the best ones aren't.`],
   }[reason]));
   return out;

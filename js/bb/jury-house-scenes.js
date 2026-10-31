@@ -303,26 +303,80 @@ export function chooseNight({ week, residents, newcomer, full, lastKinds = [], g
   return { acts, kinds };
 }
 
-/** The roundtable's case for and against, chosen by what the speaker values. */
+/**
+ * The roundtable's case for and against, chosen by what the speaker values: a few ways of saying it, every one
+ * true of this player, or null when the lens has nothing true to say. The caller draws the one the season has heard
+ * least (one fixed sentence per lens aired every week: the user, 2026-10-31, "so repetitive").
+ * @returns {string[]|null}
+ */
 export function lensCase(speaker, player, side) {
   const lens = lensOf(speaker);
   const p = P(player);
-  if (side === 'for') return {
-    control: bootsOf(player).length ? `${player} sent ${bootsOf(player)[0]} home on ${p.posAdj} own terms. That's control. That's what I'm voting for.` : null,
-    challenge: winsOf(player) ? `${player} has won ${word(winsOf(player))} competition${winsOf(player) === 1 ? '' : 's'}. When it mattered, ${p.sub} delivered.` : null,
-    loyalty: keptOf(player) ? `${player} kept every promise ${p.sub} made. In that house? That's the most impressive thing anyone did.` : brokeOf(player) === 0 ? `${player} never broke a deal. Not one. I respect that more than any competition.` : null,
-    social: liked(player, gs.activePlayers || []) > 1 ? `Everybody in that house wants ${player} around. You can't fake that for this long.` : null,
-    honesty: brokeOf(player) === 0 ? `${player} never lied to me. Not once. That's my vote.` : null,
-    hidden: `Nobody here gives ${player} enough credit. ${p.Sub} was in every important conversation and never once took the blame.`,
+  const wins = winsOf(player), boots = bootsOf(player), kept = keptOf(player), broke = brokeOf(player);
+  const deals = (gs.sideDeals || []).filter(d => (d.members || d.players || []).includes(player) || d.honouredBy === player || d.brokenBy === player).length;
+  const like = liked(player, gs.activePlayers || []);
+  const W2 = `${word(wins)} competition${wins === 1 ? '' : 's'}`;
+  if (side === 'for') return ({
+    control: boots.length ? [
+      `${player} sent ${boots[0]} home on ${p.posAdj} own HOH. That was ${p.posAdj} plan, start to finish.`,
+      `When ${player} had the key, ${boots[0]} went home. ${player} picked that, nobody picked it for ${p.obj}.`,
+      `${boots[0]} going home was ${player}'s move. ${p.Sub} ${p.sub === 'they' ? 'were' : 'was'} HOH and ${p.sub} got it done.`,
+    ] : null,
+    challenge: wins ? [
+      `${player} has won ${W2}. When it mattered, ${p.sub} won.`,
+      `${Cap(word(wins))} competition${wins === 1 ? '' : 's'}. Every time ${player} needed a win, ${p.sub} went and got one.`,
+      `I respect the wins. ${player} won ${W2} and never asked anybody to carry ${p.obj}.`,
+    ] : null,
+    loyalty: kept ? [
+      `${player} kept every promise ${p.sub} made. In that house, that's rare.`,
+      `When ${player} gave somebody ${p.posAdj} word, ${p.sub} kept it. I care about that.`,
+    ] : deals && !broke ? [
+      `${player} made deals and didn't break a single one. I respect that more than any competition.`,
+      `${player} never went back on a deal. Not once. That matters to me.`,
+    ] : null,
+    social: like > 1 ? [
+      `Everybody in that house wants ${player} around. You can't fake that for this long.`,
+      `Ask anybody in there who they'd want to sit with. Most of them say ${player}.`,
+      `${player} gets on with everyone in that house. That's why nobody puts ${p.obj} up.`,
+    ] : null,
+    honesty: deals && !broke ? [
+      `${player} never lied to me. Not once. That's my vote.`,
+      `Whatever ${player} told me turned out to be true. I can't say that about many people.`,
+    ] : null,
+    hidden: [
+      `People don't give ${player} enough credit. ${p.Sub} talked to everyone and never took the blame for anything.`,
+      `Watch who ${player} talks to before every vote. ${p.Sub} knew where the numbers were the whole time.`,
+    ],
     grudge: null,
-  }[lens] || null;
-  return {
-    control: bootsOf(player).length === 0 ? `Name one move ${player} made. One decision that was ${p.posAdj} idea. I'll wait.` : null,
-    challenge: winsOf(player) === 0 ? `${player} hasn't won anything. I can't hand somebody the money for never winning.` : null,
-    loyalty: brokeOf(player) ? `${player} broke ${brokeOf(player) === 1 ? 'a deal' : 'deals'}. I watched people trust ${p.obj} and get burned.` : null,
-    social: liked(player, gs.activePlayers || []) < -0.5 ? `Half that house can't stand ${player}. That's not a social game. That's a problem.` : null,
-    honesty: brokeOf(player) ? `${player} lied. To people's faces. I don't care how good the game was.` : null,
-    hidden: winsOf(player) >= 3 ? `${player} is the obvious answer, and the obvious answer is usually wrong. Look at who ${p.sub} was protecting.` : null,
-    grudge: `I'm not voting for ${player}. You all know why. I don't need to explain myself.`,
-  }[lens] || null;
+  })[lens] || null;
+  return ({
+    control: !boots.length ? [
+      `${player} never sent anybody home on ${p.posAdj} own HOH. I want to hear one move that was ${p.posAdj} idea.`,
+      `Tell me who ${player} got out. Not voted with the house. Got out, on ${p.posAdj} own.`,
+    ] : null,
+    challenge: !wins ? [
+      `${player} hasn't won anything. I can't hand somebody the money for never winning.`,
+      `Not one competition. Not one. ${player} needed other people to keep ${p.obj} safe every single week.`,
+    ] : null,
+    loyalty: broke ? [
+      `${player} broke ${broke === 1 ? 'a deal' : 'deals'}. People trusted ${p.obj} and got burned.`,
+      `${player} gave ${p.posAdj} word and then went back on it. I'm not rewarding that.`,
+    ] : null,
+    social: like < -0.5 ? [
+      `Half that house can't stand ${player}. That's not a social game. That's a problem.`,
+      `Nobody in there wants to sit next to ${player}. That's going to show at the end.`,
+    ] : null,
+    honesty: broke ? [
+      `${player} lied. To people's faces. I don't care how good the game was.`,
+      `${player} broke a deal and then acted like it never happened. That's not okay with me.`,
+    ] : null,
+    hidden: wins >= 3 ? [
+      `Everybody sees ${player}'s ${W2} and stops thinking. I want to know what ${p.sub} did with them.`,
+      `${player} won ${W2}. Fine. Winning isn't the same as playing well, and I don't think ${p.sub} played that well.`,
+    ] : null,
+    grudge: [
+      `I'm not voting for ${player}. You all know why. I don't need to explain myself.`,
+      `${player} knows what ${p.sub} did to me. That's all I'm going to say.`,
+    ],
+  })[lens] || null;
 }

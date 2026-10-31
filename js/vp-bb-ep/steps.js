@@ -5545,7 +5545,7 @@ function interviewScreen(iv, ctx, host, row) {
 // staging and the spoken line, spoken by the person the line names first. The side panel is the
 // board: where every juror leans, from before the roundtable until it has been played.
 /** @returns {BB.Step[]} */
-function proseSteps(text, players = []) {
+export function proseSteps(text, players = []) {
   const t = stripTags(String(text || '')).trim();
   if (!t) return [];
   const re = /[“"]([^”"]+)[”"]/g;
@@ -5566,17 +5566,21 @@ function proseSteps(text, players = []) {
   const ATTR = new RegExp('^[\\s,.;:—-]*(?:(?:' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters)|(?:says|asks|adds|replies|snaps|mutters)\\s+(?:' + who + '))[\\s,.;:—-]*', 'i');
   const out = [];
   let speaker = null;
-  for (const x of parts) {
+  const TAG = new RegExp('^[\\s,]*(?:(' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters|whispers)|(?:says|asks|adds|replies|snaps|mutters|whispers)\\s+(' + who + '))\\b');
+  for (const [xi, x] of parts.entries()) {
     if (x.narr != null) {
       // the speaker of the next quotation is the person named earliest in the narration before it
       // an attribution straight after a quotation names who said it ("You weren't there," Hicks
       // says): that line is Hicks's, whoever the narration before it named
-      const tag = new RegExp('^[\\s,]*(?:(' + who + ')\\s+(?:says|asks|adds|replies|snaps|mutters|whispers)|(?:says|asks|adds|replies|snaps|mutters|whispers)\\s+(' + who + '))\\b').exec(x.narr);
+      const tag = TAG.exec(x.narr);
       const tagged = tag ? tag[1] || tag[2] : null;
       const prevSay = out[out.length - 1];
       if (tagged && prevSay && prevSay.k === 'say') { prevSay.by = tagged; speaker = tagged; }
       const named = players.filter(p => x.narr.includes(p)).sort((a, b) => x.narr.indexOf(a) - x.narr.indexOf(b));
       if (named.length && !tag) speaker = named[0];
+      // after the attribution, somebody else named ("Lacey asks. Ben shrugs.") speaks next
+      // (only a new sentence that opens on them: "Hicks says, looking at Mia," is still Hicks)
+      if (tag) { const next = new RegExp('^[\\s,]*[.!?]\\s+(' + who + ')\\b').exec(x.narr.slice(tag[0].length)); if (next) speaker = next[1]; }
       // what is left after an attribution ("..., and that is where it stops") is its own sentence
       const n0 = x.narr.replace(ATTR, '').replace(/^[\s,.;:—-]+/, '').trim();
       const n = n0.replace(/^and\s+/i, '').replace(/^[a-z]/, c => c.toUpperCase());
@@ -5588,7 +5592,11 @@ function proseSteps(text, players = []) {
       if (n.length > 2 && !manner && !said) out.push({ k: 'beat', t: /[.!?]$/.test(n) ? n : n.replace(/[\s,;:—-]+$/, '') + '.' });
       continue;
     }
-    const by = speaker || players[0] || null;
+    // the attribution straight after a quotation names its speaker, and is read BEFORE it is joined to the line before
+    // ("Who's it like in there?" Lacey asks. "It's Angelica's house," Ben says.): joined first, Ben's answer and
+    // Lacey's question became one line of Ben's (the user, 2026-10-31: "why is he asking and answering his own question")
+    const post = parts[xi + 1]?.narr != null ? TAG.exec(parts[xi + 1].narr) : null;
+    const by = (post && (post[1] || post[2])) || speaker || players[0] || null;
     const q = x.quote.trim();
     const prev = out[out.length - 1];
     // a quotation broken by its attribution is one line: "Before we go any further," the wall

@@ -574,4 +574,35 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     ['b', "Just stay away from {x.obj} for a bit."],
     ['a', "I'm trying. {x.He} keeps finding me."],
   ], beat: "{a} puts {a.posAdj} feet in the water to calm down." },
+  // ── more of "again" (season read: the commonest repeat in a chasing season) ──
+  { when: { subj: 'pulled', taken: true, tempted: false, xAgain: true, cast: C }, stage: "{a} drops onto the beanbags. The others don't even need to ask.", turns: [
+    ['b', "{x}?"],
+    ['a', "{x}. Again."],
+    ['c', "What did {x.he} want this time?"],
+    say('a', "To ask if I'm sure. Like the answer might have changed since last time.", { sharp: "To ask if I'm sure. I'm sure. I've been sure every time." }),
+    ['b', "Has it?"],
+    ['a', "No. I'm with {pa}. That's not changing."],
+  ], beat: "The others nod. Nobody pushes it." },
+  { when: { subj: 'pulled', taken: true, tempted: false, xAgain: true, cast: C }, stage: "{a} comes back to the kitchen island, shaking {a.posAdj} head.", turns: [
+    ['b', "Let me guess."],
+    ['a', "Yeah. {x} again."],
+    ['c', "Did you tell {pa} about the last one?"],
+    say('a', "I did. And I'll tell {pa} about this one too. I'm not hiding anything.", { lad: "I did, bro. And I'll tell {pa} about this one. Nothing to hide." }),
+    ['b', "Good. Then {x} can try all {x.he} likes."],
+  ], beat: "{a} grabs a drink and goes to find {pa}." },
+  { when: { subj: 'pulled', taken: true, tempted: true, xAgain: true, cast: C }, stage: "{a} sits down on the end of the bed, and the others go quiet.", turns: [
+    ['b', "Where have you been?"],
+    ['a', "With {x}. Again."],
+    ['c', "How long are you going to keep doing this?"],
+    say('a', "I don't know. Every time I tell myself I won't go, and then I go.", { lad: "I don't know, bro. I keep saying I won't, and then I do." }),
+    ['b', "Then you know what you want. You just don't want to say it."],
+  ], beat: "{a} doesn't argue. {a.He} looks over at {pa}, and then at the floor." },
+  { when: { subj: 'pulled', taken: true, tempted: true, xAgain: true, cast: C }, stage: "{a} comes into the dressing room and shuts the door behind {a.obj}.", turns: [
+    ['a', "Don't say anything."],
+    ['b', "{x} again?"],
+    ['a', "I said don't say anything."],
+    ['c', "We're not judging you. We're worried about you."],
+    say('a', "I know. I'm worried about me too.", { bestie: "I know, babe. I'm worried about me too." }),
+  ], beat: "{b} hugs {a}, and doesn't say anything else." },
+
 ] } };

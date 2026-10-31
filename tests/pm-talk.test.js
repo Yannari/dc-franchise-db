@@ -220,8 +220,8 @@ describe('a played season', () => {
     const featured = scenes.filter(e => e.tier === 'featured');
     const turns = featured.map(e => (e.script?.lines || []).filter(l => !l.action).length);
     // Whole conversations (pm/script.js talkScript `whole`, 2026-10-30) say it in fewer lines than the
-    // stitched movements did: the 9 was set for those, and was partly padding ("less trying to be clever").
-    expect(turns.reduce((a, b) => a + b, 0) / turns.length, 'mean turns in a featured scene').toBeGreaterThan(7);
+    // stitched movements did: the 9 was set for those, and was partly padding; whole ones run 5-7 spoken lines ("less trying to be clever").
+    expect(turns.reduce((a, b) => a + b, 0) / turns.length, 'mean turns in a featured scene').toBeGreaterThan(6);
     expect(TALK_MISSES.length / scenes.length, `misses: ${[...new Set(TALK_MISSES)].join(', ')}`).toBeLessThan(0.03);
   }, 300000);
 });

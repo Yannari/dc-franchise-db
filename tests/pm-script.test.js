@@ -6,7 +6,8 @@ import { makeIslanders, roleSetup } from './helpers/pm-cast.js';
 import { TALK } from '../js/pm/talk/index.js';
 
 // The movements written for a fact (js/pm/talk/): a scene's id is its movements' ids joined by '+'.
-const idsFor = key => new Set(Object.values(TALK).flatMap(t => [...Object.values(t.moves).flat(), ...t.notes]).filter(e => e.when?.[key]).map(e => e.id));
+// Written for the fact being TRUE: a line gated to either value ([true, false]) claims nothing.
+const idsFor = key => new Set(Object.values(TALK).flatMap(t => [...Object.values(t.moves).flat(), ...t.notes]).filter(e => e.when?.[key] === true).map(e => e.id));
 // A whole conversation's id carries which voice each line took (pm/script.js renderScript: 'x17:0.2').
 const uses = (e, ids) => String(e.script?.id || '').split('+').some(id => ids.has(id.split(':')[0]));
 

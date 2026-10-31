@@ -215,4 +215,13 @@ export const GRAFT_EYES_WHOLE = { moves: { whole: [
     say('b', "Then be careful. You could lose {pa} over this and not even get {c}.", { soft: "I'm not judging you. I just don't want you to end up with nobody." }),
     ['a', "I know. I'm not going to do anything. Not yet."],
   ], beat: "{b} gives {a} a long look, and doesn't believe the last bit." },
+  { when: { taken: true, fresh: false, of: 'careful' }, stage: "{a} and {b} are floating in the pool, the only two in it.", turns: [
+    ['a', "Nobody can hear us out here, right?"],
+    ['b', "Right. Why?"],
+    say('a', "Because I think I like {c}. And I'm with {pa}. And {c} is with {d}.", { lad: "Because I like {c}, {~bro}. And it's a mess." }),
+    ['b', "That's a lot of people to hurt."],
+    ['a', "I know. That's why I haven't done anything."],
+    say('b', "Keep it that way until you're sure. Really sure.", { soft: "Then be careful. You don't want to lose everything for a maybe." }),
+  ], beat: "{a} floats there, looking up at the sky, saying nothing." },
+
 ] } };

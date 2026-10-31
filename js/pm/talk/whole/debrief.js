@@ -227,4 +227,42 @@ export const DEBRIEF_WHOLE = { moves: { whole: [
     ['a', "I'm with {pa}. I just don't feel it."],
     ['b', "Give it time."],
   ], beat: "{a} shrugs." },
+  // ── more of the common nights ──
+  { when: { of: 'bomb-threat', taken: true }, stage: "{Where}, {a} sits down and doesn't say anything for a while.", turns: [
+    ['b', "Is it {c}?"],
+    ['a', "It's {c}. Did you see how {c.he} looked at {pa}?"],
+    ['b', "I saw."],
+    say('a', "I've got a horrible feeling about tomorrow.", { lad: "I've got a bad feeling about this, {~bro}.", sharp: "{c} can try. {pa} is with me." }),
+    ['b', "{pa} picked you. Remember that."],
+  ], beat: "{a} nods, and tries to hold on to that." },
+  { when: { of: 'bomb-threat', taken: true }, stage: "{Where}, {b} sits down next to {a}.", turns: [
+    ['a', "Can I ask you something? Do you think {pa} likes {c}?"],
+    ['b', "{c} has been here five minutes."],
+    ['a', "That's not a no."],
+    say('b', "It's a no. {pa} has been looking at you all night.", { soft: "I don't think so. And if {pa} does, you'll know soon enough. Try to sleep." }),
+  ], beat: "{a} looks over at {pa}, and {pa} looks back. That helps a bit." },
+  { when: { of: 'meh', taken: true }, stage: "{Where}, {a} and {b} talk the night over.", turns: [
+    ['a', "Can I be honest with you? I'm not excited about {pa}."],
+    ['b', "Did you think you would be?"],
+    ['a', "I hoped. {pa} is nice. That's all I've got. Nice."],
+    say('b', "Nice can turn into something. Or it won't, and then you'll know.", { sharp: "Then don't waste {pa.posAdj} time." }),
+  ], beat: "{a} looks across at {pa}, and tries to feel more than nice." },
+  { when: { of: 'meh', taken: true }, stage: "{Where}, {b} sits down next to {a}.", turns: [
+    ['b', "You don't look like someone who got what they wanted."],
+    ['a', "Because I didn't. I ended up with {pa} because nobody else picked me."],
+    ['b', "That doesn't mean it can't work."],
+    say('a', "I know. I just wanted to be chosen. Not left over.", { romantic: "I wanted someone to stand up there and want me. Not end up with me." }),
+  ], beat: "{b} puts an arm round {a}, and doesn't say anything else." },
+  { when: { of: 'eyeing', taken: true }, stage: "{Where}, {a} sits down and stares at the floor.", turns: [
+    ['b', "Talk to me."],
+    ['a', "{pa} hasn't stopped looking at {c} since {c.he} walked in."],
+    ['b', "Everyone's looking at {c}. It's new."],
+    say('a', "Then why does it feel like it's just {pa}?", { sharp: "I'm not everyone. I'm with {pa}. And I saw it." }),
+  ], beat: "{b} doesn't have an answer." },
+  { when: { of: 'next' }, stage: "{Where}, {a} and {b} talk the night over.", turns: [
+    ['a', "Did you see how close it was tonight?"],
+    ['b', "I saw."],
+    say('a', "Next time, that's me going home.", { nervy: "Next time, it's me. I can feel it.", lad: "Next time, I'm gone, {~bro}." }),
+    ['b', "Then we spend this week making sure it isn't."],
+  ], beat: "{a} lets out a breath, and nods." },
 ] } };

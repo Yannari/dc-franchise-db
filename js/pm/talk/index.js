@@ -13,6 +13,11 @@ import { WATCHING_WHOLE, watchingFacts } from './whole/watching.js';
 import { WHERE_HEAD_WHOLE } from './whole/where-head.js';
 import { DEEP_CHAT_WHOLE } from './whole/deep-chat.js';
 import { DEBRIEF_WHOLE, debriefFacts } from './whole/debrief.js';
+import { PICK_CHAT_WHOLE, VOTE_WORRY_WHOLE } from './whole/tonight.js';
+import { ARGUMENT_WHOLE } from './whole/argument.js';
+import { BED_CHAT_WHOLE } from './whole/bed-chat.js';
+import { LOYALTY_WHOLE } from './whole/loyalty.js';
+import { ADVICE_WHOLE } from './whole/advice.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
 import { PULL } from './pull.js';
@@ -144,7 +149,8 @@ extend(FINAL_DATE, FINAL_DATE_MATES); extend(JOURNEY_OPEN, JOURNEY_OPEN_MATES); 
 for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads || []), 'mates']; extend(DATE, DATE_MORE);
 
 // Whole conversations (pm/talk/whole/): one talk start to finish, in the speakers' own voices.
-extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE); extend(DEEP_CHAT, DEEP_CHAT_WHOLE); extend(DEBRIEF, DEBRIEF_WHOLE);
+extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE); extend(DEEP_CHAT, DEEP_CHAT_WHOLE); extend(DEBRIEF, DEBRIEF_WHOLE); extend(PICK_CHAT, PICK_CHAT_WHOLE); extend(VOTE_WORRY, VOTE_WORRY_WHOLE); extend(ARGUMENT, ARGUMENT_WHOLE);
+extend(BED_CHAT, BED_CHAT_WHOLE); extend(LOYALTY, LOYALTY_WHOLE); extend(ADVICE, ADVICE_WHOLE);
 
 export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,

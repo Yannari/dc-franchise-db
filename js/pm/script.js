@@ -186,7 +186,8 @@ export function factsFor(state, ev) {
   // (Not after having it out over a telling: the making-up lines are for a
   // row about nothing much, "and agree it was about nothing" — events.js
   // keeps that couple's warm scenes off for the day instead.)
-  f.rowedToday = !!b && (state._today || []).some(e => e.ep === state.ep && e !== ev && e.kind === 'argument'
+  // (By id: talkScript passes a copy of the scene, and every argument read as a second row of the day.)
+  f.rowedToday = !!b && (state._today || []).some(e => e.ep === state.ep && e !== ev && (ev.id == null || e.id !== ev.id) && e.kind === 'argument'
     && e.players.includes(a) && e.players.includes(b));
   // Somebody walked in today (a bombshell, Casa's arrivals) — not day one.
   f.newArrival = state.ep > 1 && (state.villa || []).some(n => state.ledger?.firstEp?.[n] === state.ep);          // morning, day, event (the challenge), evening, firepit…

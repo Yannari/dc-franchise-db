@@ -35,6 +35,15 @@ export const AIRED_ADAPTERS = {
     seed: () => gs?.pm?.seed ?? '',
     howOf: () => 'dumped',
     winners: () => gs?.pmWinners || gs?.pm?.winners || [],
+    // A finalist's place is their COUPLE's, from the final's shares: numbered one islander at a time, the
+    // runners-up came "3rd" and "4th" and nobody was ever second.
+    placeOf: (name, row) => {
+      // The final's row: the interviews may be recorded on the reunion's.
+      const sh = [row, ...[...(gs?.episodeHistory || [])].reverse()].find(r => Array.isArray(r?.pm?.shares))?.pm.shares;
+      if (!Array.isArray(sh)) return null;
+      const i = [...sh].sort((a, b) => (b.share || 0) - (a.share || 0)).findIndex(x => (x.couple || []).includes(name));
+      return i >= 0 ? i + 1 : null;
+    },
     // Their couple, their ex, their fight, their friend, their drama (pm-story.js).
     story: (name, row) => pmStory(name, row, gs?.episodeHistory || []),
   },

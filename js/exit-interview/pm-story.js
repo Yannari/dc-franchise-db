@@ -85,5 +85,7 @@ export function pmStory(name, row, history) {
     unfair: unfair ? { with: unfair.players.slice(0, 2).find(n => n !== name) || null } : null,
     bitter,
     days: inVilla.length,
+    // The prize envelope, on the final night: who held it and whether they split or stole (pm/public-vote.js).
+    envelope: row?.pm?.envelope ? { holder: row.pm.envelope.holder, choice: row.pm.envelope.choice } : null,
   };
 }

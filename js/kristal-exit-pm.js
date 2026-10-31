@@ -210,6 +210,61 @@ const FRIEND = [
     hot: ['{bf}. Everyone else can stay in there as long as they like.'] }),
 ];
 
+// ── the final: they stood up there with {p} (a finalist's interview, recorded on finale night) ──
+// Answered by how they feel about {p} (love · fond · not): a couple who won without being in love says so.
+const FINAL = {
+  won: [
+    Q('You and {p} won. Take me back to the moment Dior read out your names.', {
+      love: ['I couldn’t hear anything after that. I just held on to {p}, and I think we were both crying.'],
+      fond: ['I didn’t believe it. I looked at {p}, and {p} looked as shocked as I was.'],
+      not: ['Honestly? I was shocked. {p} and I were never the strongest couple in there, and we both know it.'] }),
+    Q('The public chose you and {p} over everyone. Why do you think it was you two?', {
+      love: ['I think people could see it was real. We never pretended to be anything we weren’t.'],
+      fond: ['I think people liked watching us figure it out. We didn’t rush anything.'],
+      not: ['I think people liked us as people. I’m grateful. I just don’t want to pretend it was a love story.'] }),
+  ],
+  second: [
+    Q('You and {p} came second. So close. How does that feel tonight?', {
+      love: ['I don’t mind, honestly. I’m going home with {p}. That’s what I wanted.'],
+      fond: ['I was gutted for a minute. Then I looked at {p}, and it mattered a lot less.'],
+      not: ['Second is good. We didn’t really expect to get that far, if I’m honest.'] }),
+  ],
+  final: [
+    Q('You and {p} made the final. What was it like standing up there?', {
+      love: ['I just kept squeezing {p}’s hand. I didn’t care where we came. We were there together.'],
+      fond: ['Surreal. A few weeks ago we barely knew each other, and there we were.'],
+      not: ['Strange. We were proud to get there. I don’t think either of us expected to win.'] }),
+  ],
+  alone: [
+    Q('You made the final. What was it like standing up there?', {
+      soft: ['I kept looking around, thinking how far we’d all come. I’m proud of myself.'],
+      hurt: ['Bittersweet. I got there, but not the way I hoped.'],
+      hot: ['I earned that spot. I wanted everyone to see it.'] }),
+  ],
+};
+// The envelope: one winner chose to split the prize or keep it all (pm/public-vote.js splitOrSteal).
+const ENVELOPE = {
+  'mine-split': [Q('You had the envelope. Was there ever a second you thought about keeping the money?', {
+    soft: ['Not for a second. It was always going to be half each. We won it together.'],
+    hurt: ['No. I couldn’t have looked {p} in the eye.'], hot: ['No. I’m not that person, whatever people say about me.'] })],
+  'mine-steal': [Q('You opened the envelope and kept all the money. Why?', {
+    soft: ['I know how it looks. I had my reasons, and I’m going to have to live with it.'],
+    hurt: ['I panicked, and I chose wrong. I keep replaying it.'], hot: ['It was my decision, and I made it. I’m not going to apologise for it here.'] })],
+  'theirs-split': [Q('{p} had the envelope. Did you ever worry {p} would keep the money?', {
+    soft: ['No. I knew {p} would share it. That’s who {p} is.'], hurt: ['For a second, yes. Then {p} smiled at me, and I knew.'],
+    hot: ['No. If {p} had kept it, we’d have been finished on the spot.'] })],
+  'theirs-steal': [Q('{p} kept all the money. How did that feel, in front of everyone?', {
+    soft: ['Like I’d been hit. I still don’t understand it.'], hurt: ['Like the whole summer was a lie. I trusted {p} completely.'],
+    hot: ['Humiliating. I don’t want to say {p}’s name again for a while.'] })],
+};
+// And now: what happens with {p}, outside.
+const AFTER = [
+  Q('So what happens with you and {p} now, outside the villa?', {
+    love: ['We go home together. I want {p} to meet my family, and I want to meet {p}’s.'],
+    fond: ['We take it slowly and see. I want it to work out here as well.'],
+    not: ['We’ll stay friends. I’m proud of what we did, but I don’t think it’s love.'] }),
+];
+
 function hsh(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; }
 
 /**
@@ -231,6 +286,19 @@ export function pmExchanges(r, { g, base, K, used, pick }) {
   const p = s.partner?.who || null;
   // Told they're better as friends by the one they left beside: friends is what they were.
   const pl = !s.partner ? null : s.endedBy === p ? 'not' : level(s.partner.feel);
+  // 0. A finalist didn't leave anybody behind: they stood in the final with {p}. Sean won it with Freya and
+  // was asked "Will you wait for Freya?" (the user, 2026-10-31: "they literally won together", "and they
+  // dont even talk about their win at all"). Ask about the result, the envelope, and what happens now.
+  if (r.kind === 'finalist') {
+    if (p) {
+      const place = r.placement === 1 ? 'won' : r.placement === 2 ? 'second' : 'final';
+      ask('pm-final', FINAL[place], { ...base, p }, p, pl);
+      const env = r.placement === 1 && s.envelope && [base.guest, p].includes(s.envelope.holder) ? s.envelope : null;
+      if (env) ask('pm-envelope', ENVELOPE[`${env.holder === p ? 'theirs' : 'mine'}-${env.choice}`], { ...base, p }, p);
+      // After a steal there is no "us" to ask about: the envelope answered it.
+      if (!(env && env.choice === 'steal')) ask('pm-after', AFTER, { ...base, p }, p, pl);
+    } else ask('pm-final', FINAL.alone, base);
+  } else
   // 1. How they went.
   if (s.unfair?.with) ask('pm-exit', EXIT.unfair, { ...base, with: s.unfair.with }, s.unfair.with);
   else if (p && s.partner.stays) ask('pm-exit', EXIT.stays[pl], { ...base, p }, p);
@@ -249,7 +317,7 @@ export function pmExchanges(r, { g, base, K, used, pick }) {
   } else if (s.crush) ask('pm-ex', EX.crush, { ...base, x: s.crush }, s.crush);
   // 4. Their couple: how they really feel about who they were with.
   // (Not when the way they went has already said it was nothing.)
-  if (p && out.length < 4 && pl !== 'not') {
+  if (p && out.length < 4 && pl !== 'not' && r.kind !== 'finalist') {
     if (s.loveSaid) ask('pm-couple', COUPLE.said, { ...base, p }, p, pl);
     else ask('pm-couple', COUPLE[pl], { ...base, p }, p);
   }

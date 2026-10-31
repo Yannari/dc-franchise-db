@@ -315,7 +315,10 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   }
 
   // ── the people they name ──
-  const named = (r.named || []).filter(n => !backTo.has(n.who) && n !== suspectBeat)
+  // A finalist's partner is asked about as their partner (kristal-exit-pm.js), not missed: a season recorded
+  // before exit-interview/core.js stopped naming them still has them on the record.
+  const finalPartner = r.kind === 'finalist' ? (r.story?.partner?.who || r.partner || null) : null;
+  const named = (r.named || []).filter(n => !backTo.has(n.who) && n !== suspectBeat && n.who !== finalPartner)
     .sort((a, b) => (ORDER[a.stance] ?? 9) - (ORDER[b.stance] ?? 9) || b.heat - a.heat);
   // Everyone the simulator decided they named is named on air: a later guest
   // answers that line, and the bond it moved was moved by something said.
@@ -331,12 +334,14 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   for (const seg of r.segments || []) {
     if (seg === 'fan-mail') {
       const rc = L.FAN_Q[r.reception] ? r.reception : 'mixed';
-      const fq = pick(B('FAN_Q', rc), `${K}|fq`, base, used);
+      const fin = r.kind === 'finalist';
+      const notOut = list => fin ? list.filter(t => !L.OUT_ONLY.test(t)) : list;
+      const fq = pick(notOut(B('FAN_Q', rc)), `${K}|fq`, base, used);
       // A listener's question gets that question's answer (FAN_FIT); the
       // general reactions answer only a comment read out, never a question.
       const fit = L.FAN_FIT.find(x => x.when.test(fq));
       const days = t => (Number(r.week) || 0) >= 4 || !/\bday thirty\b/i.test(t);
-      const fa = fit ? (fit.a[g] || fit.a.soft) : (L.FAN_A[rc][g] || []).filter(t => !L.FAN_SPECIFIC.test(t) && days(t));
+      const fa = notOut(fit ? (fit.a[g] || fit.a.soft) : (L.FAN_A[rc][g] || []).filter(t => !L.FAN_SPECIFIC.test(t) && days(t)));
       push('fan-mail', fq, pick(fa.length ? fa : L.FAN_A[rc].soft, `${K}|fa`, base, used));
     } else if (seg === 'rank-them' && still.length >= 3) {
       const top = [r.prediction, ...order].filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 3);
@@ -356,7 +361,8 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
         || (r.named || []).find(n => n.who === r.caller)?.stance;
       const tone = stance && !POSITIVE.has(stance) ? 'cold' : 'warm';
       const f = { ...base, caller: r.caller };
-      push('caller', pick(L.CALLER_IN, `${K}|ci`, f, used), pick(L.CALLER_SAY[tone], `${K}|cs`, f, used),
+      const says = r.kind === 'finalist' ? L.CALLER_SAY[tone].filter(t => !L.OUT_ONLY.test(t)) : L.CALLER_SAY[tone];
+      push('caller', pick(L.CALLER_IN, `${K}|ci`, f, used), pick(says, `${K}|cs`, f, used),
         { speaker: r.caller, reply: pick(L.CALLER_REPLY[tone], `${K}|cr`, f, used), who: r.caller });
     } else if (seg === 'who-next' && still.length >= 2) {
       const x = picks.next;

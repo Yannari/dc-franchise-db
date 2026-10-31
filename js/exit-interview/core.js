@@ -110,6 +110,9 @@ function namedOf(f, kind, mood, nice, truth = null) {
   const exposed = new Set((truth?.flippers || []).filter(x => !(f.suspected || []).includes(x)));
   const put = (who, stance, still, force = false) => {
     if (!who || who === f.guest || who === f.with) return;
+    // A finalist's partner stood in the final beside them: the show's own questions are about them, and
+    // "Who do you wish had come with you?" answered with the partner who did.
+    if (kind === 'finalist' && who === f.partner) return;
     if (nice && stance === 'drag') stance = 'warn';
     const prev = out.get(who);
     // What the tape showed them overrides how they felt walking in.

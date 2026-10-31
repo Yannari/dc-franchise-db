@@ -7,6 +7,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { gs, setGs, setPlayers, seasonConfig, players } from '../js/core.js';
 import { simulatePerfectMatchEpisode } from '../js/pm-run.js';
 import { composeExit, pronounsFor } from '../js/kristal-exit.js';
+import * as L from '../js/kristal-exit-lines.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 
 let interviews = [];
@@ -52,5 +53,24 @@ describe('Kristal asks a Perfect Match islander about their own story', () => {
     const withPartner = interviews.filter(x => x.rec.story?.partner);
     expect(withPartner.length).toBeGreaterThan(0);
     for (const { rec } of withPartner) expect(rec.partner, rec.guest).toBe(rec.story.partner.who);
+  });
+  it('a finalist is asked about the final they stood in, never about a partner left behind', () => {
+    // Sean won with Freya and was asked "Will you wait for Freya?" (the user, 2026-10-31).
+    const finalists = interviews.filter(x => x.rec.kind === 'finalist');
+    expect(finalists.length).toBeGreaterThan(3);
+    for (const { rec, t } of finalists) {
+      const said = t.exchanges.map(x => `${x.q} ${x.a}`).join(' | ');
+      expect(said.match(/.{0,80}(wait for|still in there|walked out|left on your own|left together).{0,40}/i)?.[0] ?? null, rec.guest).toBe(null);
+      expect(t.exchanges.some(x => x.topic === 'pm-final'), `${rec.guest}: ${t.exchanges.map(x => x.topic)}`).toBe(true);
+      if (rec.placement === 1) expect(said, rec.guest).toMatch(/\bwon\b|chose you/i);
+      // Nobody in the final misses the partner beside them, or is welcomed to "the club nobody wanted to join".
+      const p = rec.story?.partner?.who;
+      if (p) expect(t.exchanges.some(x => x.topic === 'named' && x.who === p && /miss|goodbye|wish had come|want .* to know/i.test(x.q)), `${rec.guest} misses ${p}: ${JSON.stringify(t.exchanges.filter(x => x.who === p).map(x => [x.topic, x.stance, x.q, x.a]))}`).toBe(false);
+      expect(said, rec.guest).not.toMatch(L.OUT_ONLY);
+    }
+    // A couple's place, not an islander's rank: both members of a couple share it, and there is a second.
+    const places = new Map(finalists.map(x => [x.rec.guest, x.rec.placement]));
+    for (const { rec } of finalists) { const p = rec.story?.partner?.who; if (p && places.has(p)) expect(places.get(p), `${rec.guest} and ${p}`).toBe(rec.placement); }
+    expect([...places.values()]).toContain(2);
   });
 });

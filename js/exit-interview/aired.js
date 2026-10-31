@@ -86,7 +86,8 @@ export function recordAiredExits(before, row, adapter) {
       const ranked = [...finalists.filter(n => winners.has(n)), ...finalists.filter(n => !winners.has(n))];
       ranked.slice().reverse().forEach(name => {
         if (store().some(r => r.show === show && r.guest === name && r.kind === 'finalist')) return;
-        out.push(recordHouseExit(facts(name, 'finalist', winners.has(name) ? 1 : ranked.indexOf(name) + 1, null, goneBefore),
+        const place = winners.has(name) ? 1 : (adapter.placeOf?.(name, row) ?? ranked.indexOf(name) + 1);
+        out.push(recordHouseExit(facts(name, 'finalist', place, null, goneBefore),
           exitRng(show, adapter.seed ?? '', 'finale', name)));
       });
     }

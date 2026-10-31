@@ -679,6 +679,9 @@ export const MESSAGE_A = {
   hurt: ['{x}, I miss you. Please don’t give up because I’m gone.', '{x}, it’s not your fault. Keep going.', '{x}, I’ll be waiting for you.'],
 };
 
+/** Fan mail and callers that are about being voted out: never read to a finalist, who was not. */
+export const OUT_ONLY = /doesn’t know what it lost|Justice for|got robbed|talked yourself out the door|got exactly what|Bye \{guest\}|Finally, some peace|sorry it went that way|club nobody wanted|when it’s your turn|remember how it felt|\{crowd\} didn’t/i;
+
 export const CALLER_IN = [
   'We have someone on the line. {caller}, you’re on Kristal-talKs.',
   'I said I had a surprise. {caller} is calling in.',

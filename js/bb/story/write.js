@@ -200,9 +200,14 @@ const BB_GAME_WORDS = /\b(HOH|Head of Household|veto|jury|jurors?|backdoor\w*|vo
 /** A written scene in Big Brother's game words does not air in a Secret Story house. */
 const ssGate = sc => (!sc || !ssSeason() || !(sc.lines || []).some(l => BB_GAME_WORDS.test(String(l?.text || ''))) ? sc : null);
 const ssSeason = () => seasonFormat(seasonConfig) === SS_FORMAT;
+const VETO_DRAW = /\b(veto draw|the draw|that draw|the bag|a bag|get picked to play|gets picked to play)\b/i;
+const vetoDrawn = ctx => ctx.week?.vetoDraw ? !ctx.week.vetoDraw.everybodyPlays : (gs.activePlayers?.length || 0) > 6;
 function presumed(entry, ctx, who = null, data = null) {
   if (ssSeason() && (entry.presumes || []).some(p => ['hoh', 'hohc', 'vote', 'jurors', 'preveto', 'postveto', 'final'].includes(p))) return false;
   if (ssSeason() && BB_GAME_WORDS.test(JSON.stringify(entry.turns || []))) return false;
+  // the veto draw only happens while the house is bigger than the six who play: at six or fewer everybody plays and
+  // there is no bag (the user, 2026-10-31: "there 5 theres no more draw"). Read off the words, so no new line forgets it.
+  if (VETO_DRAW.test(JSON.stringify(entry.turns || [])) && !vetoDrawn(ctx)) return false;
   for (const p of entry.presumes || []) {
     // guests: neither of the two is the HOH (read 2026-10-14: the HOH asked "I saw you up in the HOH room
     // earlier. For forty minutes?" about their own room)
@@ -352,6 +357,8 @@ function pick(keys, who, data, ctx, room, salt, freshOnly = false) {
   for (const r of ['a', 'b', 'c']) facts[`low${r.toUpperCase()}`] = !!(comp && who[r] && comp.low.includes(who[r]));
   facts.words = !data.about || ['joke', 'snap', 'condescend', 'story'].includes(data.about);
   if (typeof data.history === 'string') facts.history = data.history;
+  if (data.hid) facts.hid = data.hid === 'yes';
+  if (data.fought) facts.fought = data.fought === 'yes';
   const rng = stableRng(gs.bb?.seasonSalt || 0, ctx.week?.num || 0, 'story', salt);
   const speakers = Object.values(who).filter(Boolean);
   const pairKey = [who.a, who.b].filter(Boolean).sort().join('|');
@@ -648,8 +655,16 @@ function writeStoryScene0(line, step, ctx) {
   // A showmance never goes backwards on screen (read 2026-10-15: Chase and Ripper had the "what are we?" talk
   // twice; Beth and Scary had their first kiss after they had already said what they were). Once the viewer has
   // seen them become a couple, a declare or a spark is the couple being one, and a "first" kiss is not the first.
+  // What the two of them have already been through, aired or not: a row over "we agreed to say we're just friends"
+  // is only had by a couple who agreed it, and a second fight is not their first (the user, 2026-10-31)
+  if (line.type === 'showmance') {
+    const before = line.steps.slice(0, line.steps.indexOf(step));
+    data.hid = before.some(s => s.step === 'hiding') ? 'yes' : 'no';
+    data.fought = before.some(s => s.step === 'fight') ? 'yes' : 'no';
+  }
   if (line.type === 'showmance' && !preShow) {
-    const seen = line.steps.slice(0, line.steps.indexOf(step)).filter(s => s.aired);
+    // (a step the viewer was told about in a recap counts as seen)
+    const seen = line.steps.slice(0, line.steps.indexOf(step)).filter(s => s.aired || s.recapped);
     const declared = seen.some(s => s.step === 'declare'), kissed = seen.some(s => s.step === 'kiss');
     if (STORY_POOLS['story.showmance.together.any']?.length
       && ((step.step === 'declare' && (step.outcome === 'couple' || declared)) || (step.step === 'spark' && (declared || kissed)))) keys = ['story.showmance.together.any'];
@@ -733,7 +748,13 @@ function writeStoryScene0(line, step, ctx) {
   let lines = render(entry, who, ctx, data);
   // The cause, said plainly, when the viewer never saw it.
   let recap = [];
-  if (told) {
+  // A couple's recap tells the viewer something new or nothing: never a step already on screen or already told, and
+  // never one behind where they are ("Scary and I are a thing. Since last week", after the kiss and the "what are
+  // we" talk both aired; "flirting since last week" after they were a couple; the user, 2026-10-31)
+  const STAGE = { spark: 1, kiss: 2, declare: 3 };
+  const stale = told && line.type === 'showmance' && (told.recapped || line.steps.slice(0, line.steps.indexOf(step))
+    .some(s => s !== told && (s.aired || s.recapped) && (s.step === told.step || (STAGE[told.step] && STAGE[s.step] >= STAGE[told.step]))));
+  if (told && !stale) {
     const pw = line.type === 'feud' ? feudWho(line, told) : { a: told.roles.a, b: told.roles.b, c: told.roles.c };
     const saw = n => n && (told.seenBy || []).includes(n) && cast.includes(n);
     // an apology's recap is the apologiser owning what they did (a, in a clash), so the sorry that follows has
@@ -747,9 +768,11 @@ function writeStoryScene0(line, step, ctx) {
     const rk = [...(together ? [`recap.${line.type}.${told.step}.couple.${who2}`] : []),
       ...(tAbout ? [`recap.${line.type}.${told.step}.about-${tAbout}.${who2}`] : []),
       `recap.${line.type}.${told.step}.${told.outcome}.${who2}`, `recap.${line.type}.${told.step}.${who2}`].filter(k => STORY_POOLS[k]?.length).slice(0, 1);
+    /** @type {Record<string, string>} */
     const rdata = { ...Object.fromEntries(Object.entries(told.data || {}).filter(([, v]) => typeof v === 'string')), when: data.when, ...(data.over ? { over: data.over } : {}) };
+    if (line.type === 'showmance') { const tb = line.steps.slice(0, line.steps.indexOf(told)); rdata.hid = tb.some(s => s.step === 'hiding') ? 'yes' : 'no'; rdata.fought = tb.some(s => s.step === 'fight') ? 'yes' : 'no'; }
     const re = rk.length ? pick(rk, pw, rdata, ctx, room, `${line.id}|recap|${line.steps.indexOf(step)}`) : null;
-    if (re) recap = render(re, pw, ctx, rdata);
+    if (re) { recap = render(re, pw, ctx, rdata); RECAP_OF.set(base.id, told); }
   }
   // Left out of a decision: what it was, said by the one left out before the scene, when the scene's own words do
   // not name it (the user, 2026-10-27: "You decided something with the others and I found out last": "stop being
@@ -764,7 +787,7 @@ function writeStoryScene0(line, step, ctx) {
   // On stage: the people the scene actually uses — who speaks, or who a stage direction names.
   // (The event's third person is often only somebody the scene never needed.)
   const used = cast.filter(n => lines.some(l => l.by === n || (l.kind === 'beat' && l.text.includes(n))));
-  /** @type {BB.Scene} */ const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, lineId: entry.id };
+  /** @type {BB.Scene} */ const sc = { ...base, cast: used.length ? used : cast, fixedRoom: !!entry.room, recap: recap.length > 0, ...(stale ? { causeKnown: true } : {}), lineId: entry.id };
   if (!ctx.inSet || base.ownRoom) lines = background(lines, sc, ctx, sc.id, LOUD(line.type, step.step, step.outcome));
   if (recap.length) lines = lines.filter(l => !(l.kind === 'beat' && /^(Earlier|Last week|Yesterday|The other day|Since)\b/.test(String(l.text || ''))));
   sc.lines = [...recap, ...lines];
@@ -1111,6 +1134,14 @@ const voiced = (sc, kind, ctx) => {
     { text: sc.lines.slice(i + 1).filter(x => x.kind !== 'beat').map(x => x.text).join(' ') }, regKey(ctx)));
   return addThemeTexture(addInsight(sc, kind, ctx?.week?.num), kind, ctx);
 };
+// The step a written scene's recap told, by scene id, until the scene airs: a scene written and then not aired told
+// nobody anything, so the step is marked told only when it airs (bb/story/director.js calls recapAired)
+const RECAP_OF = new Map();
+/** The scene with this id aired: the step its recap told is now told. */
+export function recapAired(id) {
+  const told = RECAP_OF.get(id);
+  if (told) { told.recapped = true; RECAP_OF.delete(id); }
+}
 export function writeStoryScene(line, step, ctx) {
   return staging(addWitnesses(voiced(writeStoryScene0(line, step, ctx), `${line?.type}.${step?.step}`, ctx), step?.witnesses, ctx));
 }

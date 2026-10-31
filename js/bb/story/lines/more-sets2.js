@@ -103,15 +103,13 @@ export default {
   ],
   'set.afternoms.open': [
     { id: 'xa.1', room: 'living-room', turns: [
-      { beat: 'After the ceremony. {a} hasn’t moved from the chair. Somebody brings a blanket.' },
-      { by: 'd', say: "Here." },
-      { by: 'a', say: "I'm not cold." },
-      { by: 'd', say: "It's not for cold. It's for being sad." },
-      { by: 'a', say: "...Okay. Thanks." },
-      { by: 'b', say: "Can I have a sad blanket?" },
-      { by: 'e', say: "You get the other half." },
-      { beat: 'The two nominees end up under one blanket. It is a very small blanket.' },
-      { by: 'd', dr: "Two people on the block, sharing a blanket. Nobody said the obvious thing out loud." },
+      { beat: 'After the ceremony. {a} hasn’t moved from the chair. {d} brings a blanket.' },
+      { by: 'd', say: "Here. You're shaking." },
+      { by: 'a', say: "I'm fine. ...Thanks." },
+      { by: 'b', say: "Can I sit with you?" },
+      { by: 'a', say: "Yeah. Come here." },
+      { beat: 'The two nominees end up under the same blanket.' },
+      { by: 'd', dr: "{a} and {b} are sharing a blanket, and one of them is going home this week. Nobody wants to say that out loud." },
     ] },
     { id: 'xa.2', room: 'kitchen', turns: [
       { beat: 'After nominations, the kitchen. {c} comes down and makes a sandwich in total silence.' },
@@ -160,7 +158,7 @@ export default {
       { by: 'a', say: "You haven't been outside all day." },
       { by: 'd', say: "...I'm guessing, okay?" },
       { beat: '{b} snorts. The tension breaks a little.' },
-      { by: 'e', dr: "Nomination days are the worst days. Everybody's trying not to say the obvious thing." },
+      { by: 'e', dr: "Nomination days are the worst. {a} and {b} are sitting right there, and everybody's trying not to talk about which one of them leaves." },
     ] },
     { id: 'xa.7', room: 'bedroom', turns: [
       { beat: 'After the ceremony. {a} is packing a bag, just in case. Everybody keeps walking past to look.' },

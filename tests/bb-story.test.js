@@ -204,7 +204,9 @@ describe('house life in real weeks', () => {
       const cause = causeOf(line, step);
       if (!cause || cause.aired) continue;
       const sc = scenes.find(s => s.id === `${line.id}#${line.steps.indexOf(step)}`);
-      if (sc) expect(sc.recap, `${sc.id} answers an unaired ${cause.step} without saying it`).toBe(true);
+      // (a couple's cause the viewer already knows, told before or overtaken by a later step on screen, is not
+      // told again: bb/story/write.js causeKnown)
+      if (sc) expect(sc.recap || sc.causeKnown, `${sc.id} answers an unaired ${cause.step} without saying it`).toBe(true);
     }
   });
 

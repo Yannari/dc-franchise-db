@@ -18,7 +18,7 @@ import { SS_FORMAT } from '../../shows.js';
 import { ssTalkFor } from './sstalk.js';
 import { classify, file, causeOf } from './storylines.js';
 import { lineAired } from '../script/write.js';
-import { writeStoryScene, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
+import { writeStoryScene, recapAired, writeSetPiece, writeGameTalk, writeCampaignScene, writeEngineScene, writeWitnessAfter, writeVoteTalk, writeArcScene, hasPool, roomName } from './write.js';
 import { voteTalkFor } from './votetalk.js';
 import { runnerDue, arcDue } from './arcs.js';
 import { gameTalkFor, bondTalkFor, styleTalkFor, phaseOf, hohWeekFor } from './gametalk.js';
@@ -560,7 +560,7 @@ export function airStorylines(week) {
       ? writeSetPiece(setFor(ctx), { ...ctx, present: ctx.present.filter(n => atStart.includes(n)) }, inSet.map(x => x.sc), { gone: clock.evictJust && evictedNow ? evictedNow : lastGone, at: pending[0].step.at - 0.5 }) : null;
     if (set) (firstAct.scenes ||= []).push(set);
     for (const { p, sc } of inside) {
-      p.step.aired = true; p.beat.aired = true; note(p);
+      p.step.aired = true; p.beat.aired = true; note(p); recapAired(sc.id);
       // no set piece to stage it in, or a room of its own: it airs on its own
       if (!set || sc.ownRoom) (p.act.scenes ||= []).push(sc);
     }
@@ -624,7 +624,7 @@ export function airStorylines(week) {
       p.step.aired = true;
       p.beat.aired = true;
       (p.act.scenes ||= []).push(scene);
-      note(p);
+      note(p); recapAired(scene.id);
     });
     if (talks.length) airTalks((ordered.at(-1) || pending[0]).act);
     airAfter((ordered.at(-1) || pending[0]).act, ctx);

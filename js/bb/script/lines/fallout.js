@@ -10,7 +10,8 @@
 //   fallout.grief       a lost a friend; b comforts, if there (bedroom)    scene; intent held | alone
 //   fallout.hypocrisy   a is upset about {gone}; b doubts it                scene
 //   fallout.relief      a is glad {gone} went; b, if there, minds           loud | quiet; intent seen
-//   fallout.blame       a decides b got {gone} evicted                      correct | wrong
+//   fallout.blame       a decides b got {gone} evicted                      correct | wrong; intent split | unanimous
+//                       reason hoh | told | veto | alliance ({partner}) | couple ({partner}): what the blame rests on
 //   fallout.denial      a asks; b voted {gone} out and says otherwise       caught | believed | doubted
 //                       {votes}: how many voted {gone} out, as a word
 //   fallout.recognition a finds out b voted to keep {gone}                  close | new
@@ -55,17 +56,20 @@ export default {
     { id: 'fr.q6', turns: [{ by: 'a', dr: "I feel bad about feeling good. But I do feel good." }] },
   ],
   'fallout.blame.correct': [
-    { id: 'fb.c1', turns: [{ by: 'a', say: "You were awfully quiet last night." }, { by: 'b', say: "It was an eviction. Everyone was quiet." }, { by: 'a', say: "Not like you." }, { by: 'b', say: "What are you getting at?" }, { by: 'a', say: "Nothing. Yet." }, { by: 'a', dr: "I worked it out. It was {b}. I can't prove it yet, but I know." }] },
+    { id: 'fb.c1', when: { intent: 'split' }, turns: [{ by: 'a', say: "You were really quiet at the vote last night." }, { by: 'b', say: "Everybody was quiet." }, { by: 'a', say: "Not like you. You voted {gone} out, didn't you?" }, { by: 'b', say: "I'm not doing this with you right now." }, { by: 'a', dr: "{b} didn't say no. I'm pretty sure {b} voted {gone} out. I just can't prove it yet." }] },
     { id: 'fb.c2', turns: [{ by: 'a', say: "Who wanted {gone} gone the most? Honestly?" }, { by: 'b', say: "I don't know. Lots of people?" }, { by: 'a', say: "I keep coming back to one name." }, { by: 'b', say: "Is it mine?" }, { by: 'a', say: "You tell me." }, { by: 'a', dr: "I asked myself who wanted {gone} gone the most. Every time, I get the same answer. {b}." }] },
-    { id: 'fb.c3', turns: [{ by: 'a', say: "It was you, wasn't it?" }, { by: 'b', say: "What was?" }, { by: 'a', say: "{gone}. You did that." }, { by: 'b', say: "I don't know what you're talking about." }, { by: 'a', say: "Yes, you do." }, { by: 'b', dr: "{a} knows. I don't know how, but {a} knows." }] },
+    { id: 'fb.c3', when: { intent: 'split' }, turns: [{ by: 'a', say: "You voted {gone} out, didn't you?" }, { by: 'b', say: "I don't know what you're talking about." }, { by: 'a', say: "Yes, you do." }, { by: 'b', dr: "{a} knows I voted {gone} out. I don't know how, but {a} knows." }] },
     { id: 'fb.c4', turns: [
       { by: 'b', say: "Morning! Do you want a coffee?" },
       { by: 'a', say: "No, I'm okay." },
       { by: 'a', say: "You're in a good mood today.", v: { hard: "You're very happy this morning." } },
       { by: 'b', say: "I slept well." },
-      { by: 'a', dr: "{b} has been smiling all morning. After last night, I know exactly why." }] },
+      { by: 'a', dr: "{gone} went home last night and {b} has been smiling all morning. {b} wanted {gone} out. I'd bet anything on it." }] },
     { id: 'fb.c5', turns: [{ by: 'b', say: "Are we okay?" }, { by: 'a', say: "{gone} is gone. So no, we're not okay." }, { by: 'b', say: "That wasn't me." }, { by: 'a', say: "It was. And the sooner you stop pretending, the sooner we can both stop wasting time." }, { by: 'a', dr: "{gone} is gone, and {b} is the reason. {b} is my target now." }] },
-    { id: 'fb.c6', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "Okay." }, { by: 'a', say: "That's it? Okay?" }, { by: 'b', say: "What do you want me to say?" }, { by: 'a', say: "The truth." }, { by: 'b', say: "The truth is it's a game, and {gone} was in my way." }, { by: 'a', dr: "At least {b} finally said it. That's going to cost {b} more than {b} thinks." }] },
+    { id: 'fb.c6', when: { intent: 'split' }, turns: [{ by: 'a', say: "I know you voted {gone} out." }, { by: 'b', say: "Okay." }, { by: 'a', say: "That's it? Okay?" }, { by: 'b', say: "What do you want me to say? Yes. I did." }, { by: 'a', say: "Why?" }, { by: 'b', say: "Because it's a game, and {gone} was in my way." }, { by: 'a', dr: "At least {b} admitted it. I'm coming after {b} now, and {b} knows it." }] },
+    // everybody wrote the same name: there is no ballot to find, only who got the house there
+    { id: 'fb.c7', when: { intent: 'unanimous' }, turns: [{ by: 'a', say: "I know everybody voted {gone} out. But somebody got the house there, and I think it was you." }, { by: 'b', say: "It wasn't some big plan. Everybody wanted it." }, { by: 'a', say: "Everybody wanted it after you'd talked to them." }, { by: 'a', dr: "The vote was unanimous, so there's no one ballot to be mad at. But I think {b} is the one who got everyone to {gone}." }] },
+    { id: 'fb.c8', when: { intent: 'unanimous' }, turns: [{ by: 'b', say: "It was unanimous. You can't be mad at just me." }, { by: 'a', say: "I can. I think you're the one who started it." }, { by: 'b', say: "I said what I thought about {gone}. Everybody else agreed." }, { by: 'a', dr: "Every single person voted {gone} out. I still think {b} is the one who made it easy for them." }] },
   ],
   // the one blamed held the key last week: they did not vote, they nominated (read 2026-10-14: an HOH
   // answering "I voted to keep Millie!"). bb/script/write.js takes this pool on data.reason 'hoh'.
@@ -84,8 +88,8 @@ export default {
   ],
   'fallout.blame.wrong': [
     { id: 'fb.w1', turns: [{ by: 'a', say: "Can we stop pretending?" }, { by: 'b', say: "Pretending what?" }, { by: 'a', say: "That you had nothing to do with {gone} going." }, { by: 'b', say: "I didn't!" }, { by: 'a', say: "Nobody else makes sense." }, { by: 'a', dr: "It was {b}. It has to be. Nobody else makes sense." }] },
-    { id: 'fb.w2', turns: [{ by: 'a', say: "I know it was you." }, { by: 'b', say: "It wasn't. I swear." }, { by: 'a', say: "That's exactly what you would say." }, { by: 'b', say: "Ask anyone. Ask how I voted." }, { by: 'a', say: "Everybody in here lies about how they voted." }, { by: 'b', dr: "There's nothing I can say. Every answer sounds like a lie to {a} now." }] },
-    { id: 'fb.w3', turns: [{ by: 'b', say: "You haven't said a word to me all day." }, { by: 'a', say: "I don't have anything to say to you." }, { by: 'b', say: "What did I do?" }, { by: 'a', say: "You know what you did." }, { by: 'b', say: "I genuinely don't." }, { by: 'a', dr: "I can't prove it was {b}. I don't need to. I just know." }] },
+    { id: 'fb.w2', turns: [{ by: 'a', say: "I know you voted {gone} out." }, { by: 'b', say: "I didn't. I swear." }, { by: 'a', say: "That's exactly what you'd say." }, { by: 'b', say: "I voted to keep {gone}. Ask anyone." }, { by: 'a', say: "Nobody in here tells the truth about how they voted." }, { by: 'b', dr: "I voted to keep {gone} and {a} doesn't believe me. There's no way to prove a vote." }] },
+    { id: 'fb.w3', turns: [{ by: 'b', say: "You haven't said a word to me all day." }, { by: 'a', say: "I don't have anything to say to you. Not after {gone}." }, { by: 'b', say: "What did I do?" }, { by: 'a', say: "You voted {gone} out." }, { by: 'b', say: "I didn't! I really didn't." }, { by: 'a', dr: "I can't prove {b} voted {gone} out. I just know it." }] },
     { id: 'fb.w4', turns: [
       { by: 'b', say: "Why are you looking at me like that?" },
       { by: 'a', say: "You know why. {gone}." },
@@ -94,6 +98,47 @@ export default {
       { by: 'b', dr: "How do you prove how you voted? You can't. That's the whole problem with this house." }] },
     { id: 'fb.w5', turns: [{ by: 'b', say: "Why are you being so cold with me?" }, { by: 'a', say: "You know what you did to {gone}." }, { by: 'b', say: "I didn't do anything!" }, { by: 'a', say: "Didn't you? Then who did?" }, { by: 'b', say: "I don't know! Not me!" }, { by: 'b', dr: "Now I've got a target on my back for something I didn't do." }] },
     { id: 'fb.w6', turns: [{ by: 'b', say: "People are saying you think it was me." }, { by: 'a', say: "People are right." }, { by: 'b', say: "It wasn't. Ask anyone." }, { by: 'a', say: "I've asked. They all say the same thing you do." }, { by: 'b', say: "Because it's true!" }, { by: 'a', dr: "People keep telling me I'm wrong about {b}. I don't care. {b} goes next." }] },
+  ],
+  // somebody TOLD them how b voted (bb/fallout.js assignBlame basis 'told')
+  'fallout.blame.about-told': [
+    { id: 'fbt.1', when: { ending: 'correct' }, turns: [{ by: 'a', say: "Somebody told me how you voted." }, { by: 'b', say: "Who?" }, { by: 'a', say: "Doesn't matter. You voted {gone} out." }, { by: 'b', say: "...Yeah. I did." }, { by: 'a', dr: "I heard it from someone else first, and then {b} said it to my face. At least {b} didn't lie about it." }] },
+    { id: 'fbt.2', when: { ending: 'correct' }, turns: [{ by: 'b', say: "Why are you looking at me like that?" }, { by: 'a', say: "Because I know you voted {gone} out. Someone told me." }, { by: 'b', say: "Whoever told you should mind their own business." }, { by: 'a', say: "So it's true." }, { by: 'a', dr: "{b} didn't deny it. {b} just wanted to know who told me." }] },
+    { id: 'fbt.3', when: { ending: 'wrong' }, turns: [{ by: 'a', say: "I heard you voted {gone} out." }, { by: 'b', say: "Who said that? Because it's not true." }, { by: 'a', say: "Someone I trust." }, { by: 'b', say: "Then someone you trust is lying to you. I voted to keep {gone}." }, { by: 'b', dr: "Somebody is telling people I voted {gone} out. I didn't. Now I have to find out who's saying it." }] },
+    { id: 'fbt.4', when: { ending: 'wrong' }, turns: [{ by: 'a', say: "I was told you flipped on {gone}." }, { by: 'b', say: "I didn't flip. I voted to keep {gone}." }, { by: 'a', say: "That's not what I heard." }, { by: 'b', say: "Then you heard wrong." }, { by: 'a', dr: "Somebody told me {b} voted {gone} out. {b} says no. One of them is lying to me." }] },
+    { id: 'fbt.5', when: { ending: 'correct' }, turns: [{ by: 'a', dr: "Somebody told me {b} voted {gone} out. I didn't want to believe it. Then I asked {b}, and {b} couldn't look at me." }] },
+    { id: 'fbt.6', when: { ending: 'wrong' }, turns: [{ by: 'b', say: "People are saying I voted {gone} out. You believe them?" }, { by: 'a', say: "I don't know what to believe. Someone told me you did." }, { by: 'b', say: "I voted to keep {gone}. I don't know what else to tell you." }, { by: 'a', dr: "I was told {b} voted {gone} out. {b} swears it was a vote to keep. I really don't know who to believe right now." }] },
+    { id: 'fbt.7', turns: [{ by: 'a', say: "Someone told me you voted {gone} out." }, { by: 'b', say: "And you believe them?" }, { by: 'a', say: "I don't know yet. That's why I'm asking you." }, { by: 'b', say: "Then ask me again when you're not this angry." }, { by: 'a', dr: "I heard {b} voted {gone} out. {b} didn't say yes and didn't say no." }] },
+    { id: 'fbt.8', turns: [{ by: 'a', dr: "Somebody came to me this morning and told me {b} voted {gone} out. Now I can't stop watching {b}." }] },
+    { id: 'fbt.9', turns: [{ by: 'b', say: "Who's been talking to you about me?" }, { by: 'a', say: "Doesn't matter. They said you voted {gone} out." }, { by: 'b', say: "People say a lot of things in here." }, { by: 'a', dr: "{b} wanted to know who told me before {b} would tell me how the vote went. That's what I'll remember." }] },
+  ],
+  // b won the veto and left {gone} on the block
+  'fallout.blame.about-veto': [
+    { id: 'fbv.1', turns: [{ by: 'a', say: "You had the veto." }, { by: 'b', say: "I know." }, { by: 'a', say: "You could have taken {gone} off the block, and you didn't even try." }, { by: 'b', say: "I thought about it. It wasn't the right move for my game." }, { by: 'a', dr: "{b} had the veto and left {gone} sitting up there. That's how {gone} went home." }] },
+    { id: 'fbv.2', turns: [{ by: 'b', say: "You're mad at me." }, { by: 'a', say: "You won the veto and you didn't use it on {gone}." }, { by: 'b', say: "If I use it, someone else goes up. Maybe me." }, { by: 'a', say: "Maybe. And {gone} would still be here." }, { by: 'a', dr: "I know why {b} didn't use it. I still can't look at {b} today." }] },
+    { id: 'fbv.3', when: { ending: 'correct' }, turns: [{ by: 'a', say: "You left {gone} on the block, and then you voted {gone} out." }, { by: 'b', say: "I did. I'm not going to pretend I didn't." }, { by: 'a', dr: "{b} won the veto, didn't use it, and then voted {gone} out as well. I'm not forgetting that." }] },
+    { id: 'fbv.4', when: { ending: 'wrong' }, turns: [{ by: 'a', say: "You left {gone} on the block. You wanted {gone} gone." }, { by: 'b', say: "Not using the veto isn't the same thing. I voted to keep {gone}." }, { by: 'a', say: "You can say that. You still left {gone} up there." }, { by: 'b', dr: "I voted to keep {gone}. But I didn't use the veto, and that's all {a} can see." }] },
+    { id: 'fbv.5', turns: [{ by: 'a', dr: "{b} won the veto this week. {gone} was sitting right there on the block, and {b} kept it. I'm not going to forget that." }] },
+    { id: 'fbv.6', turns: [{ by: 'b', say: "I know what you're going to say." }, { by: 'a', say: "Then say it for me." }, { by: 'b', say: "I should have used the veto on {gone}." }, { by: 'a', say: "Yeah. You should have." }, { by: 'b', dr: "I kept the veto to protect my own game, and {gone} went home. {a} is never going to let that go." }] },
+  ],
+  // b is in a group the mourner thinks did it; {partner} is another of them
+  'fallout.blame.about-alliance': [
+    { id: 'fba.1', turns: [{ by: 'a', say: "You and {partner} are working together. Don't bother saying you're not." }, { by: 'b', say: "And?" }, { by: 'a', say: "And {gone} is gone. You two had the numbers." }, { by: 'a', dr: "{b} and {partner} vote together. They wanted {gone} out, and now {gone} is out." }] },
+    { id: 'fba.2', when: { ending: 'correct' }, turns: [{ by: 'b', say: "Why are you being cold with me?" }, { by: 'a', say: "Because you and {partner} voted {gone} out." }, { by: 'b', say: "We talked about it, yes." }, { by: 'a', say: "So you admit it." }, { by: 'b', dr: "I didn't mean to say it like that. Now {a} knows {partner} and I voted together." }] },
+    { id: 'fba.3', when: { ending: 'wrong' }, turns: [{ by: 'a', say: "You and {partner} got {gone} out." }, { by: 'b', say: "I voted to keep {gone}. Whatever {partner} did, I didn't." }, { by: 'a', say: "You two do everything together." }, { by: 'b', dr: "{a} thinks I voted with {partner}. I didn't. But I can't say who did without giving up my own side." }] },
+    { id: 'fba.4', turns: [{ by: 'a', dr: "Every time I see {b}, {partner} is right there. I know they're working together, and I know who wanted {gone} out." }] },
+    { id: 'fba.5', when: { ending: 'correct' }, turns: [{ by: 'a', say: "Did you and {partner} decide on {gone} together?" }, { by: 'b', say: "We talk about everything. You know that." }, { by: 'a', say: "That's a yes." }, { by: 'a', dr: "{b} didn't even try to deny it. {b} and {partner} voted {gone} out together." }] },
+    { id: 'fba.6', when: { ending: 'wrong' }, turns: [{ by: 'b', say: "This is about {partner}, isn't it?" }, { by: 'a', say: "It's about the two of you voting {gone} out." }, { by: 'b', say: "I didn't. I don't know how {partner} voted and I didn't ask." }, { by: 'b', dr: "I'm getting blamed for {gone} because I'm close to {partner}. I voted to keep {gone}." }] },
+    { id: 'fba.7', turns: [{ by: 'b', say: "Are you okay?" }, { by: 'a', say: "Don't. I know you and {partner} wanted {gone} gone." }, { by: 'b', say: "That's not fair." }, { by: 'a', say: "Isn't it? You two had the votes and {gone} isn't here." }, { by: 'a', dr: "{b} and {partner} are working together, and {gone} was in their way. That's all I need to know." }] },
+  ],
+  // b's partner in a showmance: two votes {a} reads as one
+  'fallout.blame.about-couple': [
+    { id: 'fbp.1', turns: [{ by: 'a', say: "You and {partner} voted {gone} out." }, { by: 'b', say: "You don't know that." }, { by: 'a', say: "You two vote the same way every week. Everybody knows that." }, { by: 'a', dr: "{b} and {partner} are a couple. If one of them voted {gone} out, they both did." }] },
+    { id: 'fbp.2', when: { ending: 'wrong' }, turns: [{ by: 'a', say: "You and {partner} got {gone} out." }, { by: 'b', say: "I voted to keep {gone}. I can't tell you what {partner} did." }, { by: 'a', say: "Come on. You two do everything together." }, { by: 'b', dr: "Because I'm with {partner}, everybody thinks we're one vote. I voted to keep {gone}." }] },
+    { id: 'fbp.3', when: { ending: 'correct' }, turns: [{ by: 'b', say: "Is this about {gone}?" }, { by: 'a', say: "It's about you and {partner}. You both voted {gone} out." }, { by: 'b', say: "We talked about it. We decided together." }, { by: 'a', dr: "There it is. They decide together. That's two votes I have to deal with now." }] },
+    { id: 'fbp.4', turns: [{ by: 'a', dr: "{b} and {partner} are a couple. They sleep in the same bed and they vote the same way. {gone} never stood a chance against them." }] },
+    { id: 'fbp.5', when: { ending: 'correct' }, turns: [{ by: 'a', say: "Did {partner} tell you how to vote?" }, { by: 'b', say: "Nobody tells me how to vote." }, { by: 'a', say: "But you both voted {gone} out." }, { by: 'b', say: "...Yes. We did." }, { by: 'a', dr: "{b} voted {gone} out, and so did {partner}. I'm done treating them like two different people." }] },
+    { id: 'fbp.6', when: { ending: 'wrong' }, turns: [{ by: 'b', say: "I know what you think. You think {partner} and I voted {gone} out." }, { by: 'a', say: "Didn't you?" }, { by: 'b', say: "I didn't. I voted to keep {gone}. I'm allowed to vote differently from {partner}." }, { by: 'a', dr: "{b} says the vote was to keep {gone}. I don't know. {b} and {partner} do everything together." }] },
+    { id: 'fbp.7', turns: [{ by: 'a', say: "I'm not going to yell at you. I just want you to know I know." }, { by: 'b', say: "Know what?" }, { by: 'a', say: "That you and {partner} wanted {gone} out. You two are one vote with two names on it." }, { by: 'b', say: "That's not how it works with us." }, { by: 'a', dr: "{b} and {partner} can say they vote separately. I don't believe it, not after {gone}." }] },
   ],
   'fallout.denial.caught': [
     { id: 'fz.c1', turns: [{ by: 'b', say: "It wasn't me." }, { by: 'a', say: "It was {votes} to nothing, {b}. Everybody voted {gone} out." }, { by: 'b', say: "...Okay. Fine." }] },

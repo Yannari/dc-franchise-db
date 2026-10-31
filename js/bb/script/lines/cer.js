@@ -39,7 +39,7 @@ export default {
   ],
   'cer.pawn.trusted': [
     { id: 'zp.t1', turns: [{ by: 'a', say: "You're not the one going. I just need you up there until the vote." }, { by: 'b', say: "Okay. I trust you." }, { by: 'b', dr: "I trust {a}. Mostly. But pawns go home in this game, and everybody knows it." }] },
-    { id: 'zp.t2', turns: [{ by: 'b', say: "Say it to my face." }, { by: 'a', say: "You're a pawn. You're safe. If that changes, you'll hear it from me first." }, { by: 'b', dr: "Every pawn in this house has heard that exact sentence." }] },
+    { id: 'zp.t2', turns: [{ by: 'b', say: "So I'm the pawn." }, { by: 'a', say: "You're the pawn. You're safe. If that changes, you'll hear it from me first." }, { by: 'b', say: "Okay. I'm holding you to that." }, { by: 'b', dr: "I said yes to sitting up there for {a}. I just really hope {a} has the votes, because pawns go home in this game." }] },
     { id: 'zp.t3', turns: [{ by: 'a', say: "Stay calm, and you're off the block after the vote." }, { by: 'b', say: "Are the votes really there?" }, { by: 'a', say: "They're there." }] },
     { id: 'zp.t4', turns: [{ by: 'b', dr: "{a} talked fast and quietly. I nodded. Later I realised I never got an actual number." }] },
     { id: 'zp.t5', turns: [{ by: 'a', dr: "I need {b} to trust me. If {b} panics, the whole week falls apart." }] },

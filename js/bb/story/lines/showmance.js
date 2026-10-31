@@ -292,7 +292,7 @@ export default {
 
   // ── hiding: keeping it from the house ───────────────────────────────
   'story.showmance.hiding.any': [
-    { id: 'sh.1', turns: [
+    { id: 'sh.1', when: { hid: false }, turns: [
       { by: 'a', say: "Okay. We need some rules." },
       { by: 'b', say: "Here we go." },
       { by: 'a', say: "Separate beds at night. No saving seats for each other. And we don't leave a room together." },
@@ -330,7 +330,7 @@ export default {
       { by: 'c', say: "Okay. Weird. But okay." },
       { by: 'c', dr: "They're either fighting, or they're trying very hard to look like they're not together. Both mean something." },
     ] },
-    { id: 'sh.5', turns: [
+    { id: 'sh.5', when: { hid: false }, turns: [
       { by: 'a', say: "Somebody asked me about us today." },
       { by: 'b', say: "What did you say?" },
       { by: 'a', say: "I said we're just friends." },
@@ -341,6 +341,27 @@ export default {
       { by: 'b', say: "So we need to be more 'just friends'." },
       { by: 'a', say: "We need to be the most 'just friends' anyone's ever seen." },
       { by: 'a', dr: "We're going to have to be boring. Publicly boring. I don't know if we can do boring." },
+    ] },
+    // they already agreed to keep it quiet: this is the second talk about it, and it knows that
+    { id: 'sh.6', when: { hid: true }, turns: [
+      { by: 'b', say: "It's not working, you know." },
+      { by: 'a', say: "What isn't?" },
+      { by: 'b', say: "The whole not-sitting-together thing. People still know." },
+      { by: 'a', say: "Who said something?" },
+      { by: 'b', say: "Nobody said it. They just look at us. They look at me, and then they look at you." },
+      { by: 'a', say: "So we try harder." },
+      { by: 'b', say: "Or we stop hiding, because it's not doing anything." },
+      { by: 'a', say: "I'm not ready for that. Not this week." },
+      { by: 'b', dr: "We've been pretending for a while now and I think we're the only ones who believe it." },
+    ] },
+    { id: 'sh.7', when: { hid: true }, turns: [
+      { by: 'a', say: "I almost held your hand at dinner." },
+      { by: 'b', say: "I saw. I moved my hand." },
+      { by: 'a', say: "I know. Thank you. I think." },
+      { by: 'b', say: "We said we'd keep it quiet. That means dinner too." },
+      { by: 'a', say: "I know what we said. It's just been a lot longer than I thought it would be." },
+      { by: 'b', say: "Me too. A few more weeks. Then we can stop." },
+      { by: 'a', dr: "When we agreed to hide it I thought it'd be easy. It's the hardest thing I do in here every day." },
     ] },
   ],
 
@@ -427,7 +448,7 @@ export default {
 
   // ── fight ───────────────────────────────────────────────────────────
   'story.showmance.fight.any': [
-    { id: 'sg.1', turns: [
+    { id: 'sg.1', when: { hid: true }, turns: [
       { by: 'b', say: "Can we not do this here?" },
       { by: 'a', say: "Where do you want to do it? The storage room? Again?" },
       { by: 'b', say: "Keep your voice down." },
@@ -441,16 +462,16 @@ export default {
       { by: 'b', dr: "We're on the same side. We're always on the same side. So why does it feel like a war?" },
     ] },
     { id: 'sg.2', turns: [
-      { by: 'a', say: "You said you'd talk to me first. Before anything. You promised." },
-      { by: 'b', say: "It happened really fast—" },
-      { by: 'a', say: "You promised!" },
-      { by: 'b', say: "I know I promised! I'm sorry! I didn't have time!" },
-      { by: 'a', say: "You had time to talk to everyone else." },
-      { by: 'b', say: "That was game. This is us." },
-      { by: 'a', say: "There isn't a difference in here! Everything is game!" },
-      { by: 'b', say: "Then what are we?" },
-      { by: 'a', say: "...I don't know any more." },
-      { by: 'a', dr: "I said that to hurt {b}. It worked. I wish it hadn't." },
+      { by: 'a', say: "Can I ask you something? If it came down to me or the money, what would you pick?" },
+      { by: 'b', say: "Why would you ask me that?" },
+      { by: 'a', say: "Because I want to know." },
+      { by: 'b', say: "It's not going to come down to that." },
+      { by: 'a', say: "That's not an answer." },
+      { by: 'b', say: "Fine. I don't know. I came here to win. So did you." },
+      { by: 'a', say: "Wow. Okay." },
+      { by: 'b', say: "You asked me! You wanted me to lie?" },
+      { by: 'a', say: "I wanted you to say me." },
+      { by: 'a', dr: "I know it was a stupid question. I still wanted {b} to say me without thinking about it." },
     ] },
     { id: 'sg.3', room: 'bedroom', turns: [
       { beat: 'Earlier, in the kitchen, {a} found out {b} had made a deal without telling {a.obj}, and shouted about it in front of the whole house.' },
@@ -468,7 +489,7 @@ export default {
       { by: 'b', say: "It's half of one. The other half is that next time, you hear it first. Now go to sleep." },
       { by: 'a', dr: "It was only half an apology. But from {b}, that's a lot." },
     ] },
-    { id: 'sg.4', turns: [
+    { id: 'sg.4', when: { hid: true }, turns: [
       { by: 'a', say: "Do you even want this anymore?" },
       { by: 'b', say: "Where's this coming from?" },
       { by: 'a', say: "You barely look at me. You go to bed before me. You sit at the other end of the table." },
@@ -480,7 +501,7 @@ export default {
       { by: 'a', say: "Maybe it's getting in yours." },
       { by: 'b', dr: "This is what the house does. It doesn't split you up. It just makes you split yourselves up." },
     ] },
-    { id: 'sg.5', turns: [
+    { id: 'sg.5', when: { hid: true }, turns: [
       { by: 'b', say: "I heard you told people we're 'just friends'." },
       { by: 'a', say: "We agreed to say that." },
       { by: 'b', say: "We agreed to say it. You didn't have to say it like that." },
@@ -492,6 +513,40 @@ export default {
       { by: 'b', say: "...Do you lie to me?" },
       { by: 'a', say: "No. Never you." },
       { by: 'b', dr: "{a} said 'never you' so fast. I want to believe it. I want to believe it so badly." },
+    ] },
+    // a couple everybody can see: the fight is about what that does to their game
+    { id: 'sg.6', when: { hid: false }, turns: [
+      { by: 'b', say: "Do you know what people are saying about us?" },
+      { by: 'a', say: "That we're cute?" },
+      { by: 'b', say: "That if they put one of us up, they have to get both of us out. That we're two votes." },
+      { by: 'a', say: "We are two votes." },
+      { by: 'b', say: "That's not funny. You sit on my bed in front of everyone. You wait for me after every comp." },
+      { by: 'a', say: "Because I want to! Am I supposed to stop wanting to?" },
+      { by: 'b', say: "In front of the whole house, yes! A little bit!" },
+      { by: 'a', say: "Then say that. Don't make it sound like I'm the problem." },
+      { by: 'b', dr: "I'm not ashamed of {a}. I just don't want to go home because everybody can see how much I like {a}." },
+    ] },
+    // they have fought before, and both of them know it
+    { id: 'sg.7', when: { fought: true }, turns: [
+      { by: 'a', say: "Are we really doing this again?" },
+      { by: 'b', say: "You started it." },
+      { by: 'a', say: "You said that last time too. Then you said sorry." },
+      { by: 'b', say: "Because last time I was wrong. This time I'm not." },
+      { by: 'a', say: "Okay. Then tell me what I did. Properly, not just that face." },
+      { by: 'b', say: "You keep making plans without me, and then you're surprised when I'm upset about it." },
+      { by: 'a', say: "...Okay. That one's fair." },
+      { by: 'b', dr: "That's not our first fight. I don't want to be the couple that fights all the time. I really don't." },
+    ] },
+    { id: 'sg.8', when: { fought: true }, turns: [
+      { by: 'b', say: "I don't want to fight with you again." },
+      { by: 'a', say: "Then don't." },
+      { by: 'b', say: "That's what you said last time, right before we fought." },
+      { by: 'a', say: "I'm tired. Everything in here is about the game, and then I come to you and it's more stuff." },
+      { by: 'b', say: "I'm not stuff. I'm the one person in here who's on your side." },
+      { by: 'a', say: "I know. I know you are. I'm sorry." },
+      { by: 'b', say: "Don't just say it so we can stop talking." },
+      { by: 'a', say: "I'm not. I mean it. Come here." },
+      { by: 'a', dr: "We keep having the same fight. And every time it's because I'm stressed about the game and I take it out on {b}." },
     ] },
   ],
 
@@ -596,7 +651,7 @@ export default {
   'recap.showmance.kiss.b': [
     { id: 'rmk.b1', turns: [{ by: 'b', dr: "{a} kissed me {when}. I kissed back. Obviously." }] },
     { id: 'rmk.b2', turns: [{ by: 'b', dr: "{when}, {a} and I kissed. The whole house knows by now." }] },
-    { id: 'rmk.b3', turns: [{ by: 'b', dr: "{a} and I have been together since {when}. Together together." }] },
+    { id: 'rmk.b3', turns: [{ by: 'b', dr: "{when}, {a} kissed me. Since then we've barely been apart." }] },
   ],
   'recap.showmance.kiss.caption': [
     { id: 'rmk.x1', turns: [{ beat: '{when}, {a} and {b} kissed.' }, { by: 'a', dr: "Yeah. That happened." }] },
@@ -606,12 +661,12 @@ export default {
   'recap.showmance.declare.a': [
     { id: 'rmd.a1', turns: [{ by: 'a', dr: "{b} and I made it official {when}. It's real now. Scary real." }] },
     { id: 'rmd.a2', turns: [{ by: 'a', dr: "{when}, I told {b} how I feel. {b} feels the same." }] },
-    { id: 'rmd.a3', turns: [{ by: 'a', dr: "Since {when}, {b} and I are a proper couple." }] },
+    { id: 'rmd.a3', turns: [{ by: 'a', dr: "{when}, {b} and I finally talked about what we are. We're a couple. We said it out loud." }] },
   ],
   'recap.showmance.declare.b': [
     { id: 'rmd.b1', turns: [{ by: 'b', dr: "{when}, {a} told me that what we have is real, not a game move to get my vote. I believe {a}." }] },
     { id: 'rmd.b2', turns: [{ by: 'b', dr: "{when}, {a} and I decided we're together. Properly." }] },
-    { id: 'rmd.b3', turns: [{ by: 'b', dr: "{a} and I are a thing. Since {when}. A real thing." }] },
+    { id: 'rmd.b3', turns: [{ by: 'b', dr: "{when}, {a} asked me what we are. I said we're together. So now it's official." }] },
   ],
   'recap.showmance.fight.a': [
     { id: 'rmf.a1', turns: [{ by: 'a', dr: "{b} and I had a fight {when}. A bad one." }] },
@@ -621,7 +676,7 @@ export default {
   'recap.showmance.fight.b': [
     { id: 'rmf.b1', turns: [{ by: 'b', dr: "{a} and I had it out {when}. It wasn't pretty." }] },
     { id: 'rmf.b2', turns: [{ by: 'b', dr: "Since {when}, things with {a} have been weird." }] },
-    { id: 'rmf.b3', turns: [{ by: 'b', dr: "{when}, {a} and I had our first real fight. It was a big one." }] },
+    { id: 'rmf.b3', when: { fought: false }, turns: [{ by: 'b', dr: "{when}, {a} and I had our first real fight. It was a big one." }] },
   ],
   'recap.showmance.jealous.a': [
     { id: 'rmj.a1', turns: [{ by: 'a', dr: "{when}, I got jealous. I'm not proud of it." }] },

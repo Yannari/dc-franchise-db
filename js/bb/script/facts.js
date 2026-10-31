@@ -16,6 +16,9 @@ export const BB_FACT_KEYS = ['ending', 'result', 'intent', 'reason', 'act', 'ear
   'showmance', 'alliance', 'hohA', 'hohB', 'nomA', 'nomB', 'havenot', 'third', 'nice', 'villain', 'again',
   // how long two feuding people have been at it (bb/witness.js feudHistory): new | again | long
   'history',
+  // a showmance's own past on screen (bb/story/write.js): they agreed to hide it, they have already fought. A row
+  // over "we agreed to say we're just friends" is only had by a couple who agreed it (the user, 2026-10-31)
+  'hid', 'fought',
   // where the scene is: a line that stages a room ("pulls her into the storage room") airs only there
   'room',
   // how the speaker (a) talks: the picker weights a line written for it well above a plain one

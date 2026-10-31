@@ -102,7 +102,11 @@ export function chiefMourner(week = lastCompletedWeek()) {
  * out was voting together — plus, decisively, whatever anybody has actually
  * told them. The truth itself is not an input.
  *
- * @returns {{blamed:string, correct:boolean, why:string, confidence:number, reasons?:string[]}|null}
+ * `basis` is the strongest reason as a scene can say it: 'told' (somebody told them how b voted), 'hoh' (b put
+ * them up), 'veto' (b held the veto and left them there), or 'bloc' (b is in the group they think did it, with
+ * `bloc`: its label and kind). Null when it is only a feeling.
+ *
+ * @returns {{blamed:string, correct:boolean, why:string, confidence:number, reasons?:string[], basis?:string|null, bloc?:{label:string, kind:string, members:string[]}|null}|null}
  */
 export function assignBlame(mourner, week = lastCompletedWeek()) {
   if (!mourner || !week?.evicted) return null;
@@ -113,22 +117,23 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
   const scored = suspects.map(name => {
     let score = 0;
     const reasons = [];
+    const basis = [];
 
     // The person who put them there. Public, undeniable, and the first place
     // anybody looks — which is exactly why a Head of Household takes the blame
     // for a vote they did not control.
-    if (name === week.hoh) { score += 3.2; reasons.push('put them up'); }
+    if (name === week.hoh) { score += 3.2; reasons.push('put them up'); basis.push({ k: 'hoh', w: 3.2 }); }
     // The one who could have moved the block and left it alone.
     if (name === week.vetoWinner && name !== week.hoh
       && !(week.finalNominees || []).includes(name)) {
-      score += 1.8; reasons.push('held the veto and did nothing with it');
+      score += 1.8; reasons.push('held the veto and did nothing with it'); basis.push({ k: 'veto', w: 1.8 });
     }
     // A group the mourner already believes votes together is the obvious engine
     // behind any result they did not like.
     for (const bloc of listBlocs()) {
       if (!bloc.members.includes(name) || bloc.members.includes(mourner)) continue;
       const known = knowledgeOf(mourner, bloc.id);
-      if (known >= 0.4) { score += known * 2.4; reasons.push(`is one of ${bloc.label}`); }
+      if (known >= 0.4) { score += known * 2.4; reasons.push(`is one of ${bloc.label}`); basis.push({ k: 'bloc', w: known * 2.4, bloc: { label: bloc.label, kind: bloc.kind, members: [...bloc.members] } }); }
     }
     // Somebody who was visibly warm to the mourner is the last person suspected,
     // which is the whole reason a quiet betrayal works.
@@ -142,7 +147,7 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
     // do is get told things and work out whether the person telling them is
     // worth believing. A mourner who has heard it from somebody is close to
     // certain; one who has heard nothing is reconstructing from a result.
-    if (knowsVote(mourner, name, gone)) { score += 5.5; reasons.push('and somebody told them so'); }
+    if (knowsVote(mourner, name, gone)) { score += 5.5; reasons.push('and somebody told them so'); basis.push({ k: 'told', w: 5.5 }); }
 
     // And nothing at all from the truth itself.
     //
@@ -159,7 +164,7 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
     // a source better when they are told. What they cannot do is see a ballot.
     const reallyDid = votedAgainst(name, week);
 
-    return { name, score, reasons, reallyDid };
+    return { name, score, reasons, reallyDid, basis: basis.sort((x, y) => y.w - x.w)[0] || null };
   }).sort((a, b) => b.score - a.score);
 
   const pick = scored[0];
@@ -171,6 +176,8 @@ export function assignBlame(mourner, week = lastCompletedWeek()) {
     confidence: clamp(0.35 + spread * 0.18, 0.2, 0.95),
     why: pick.reasons[0] || 'was standing in the wrong place',
     reasons: pick.reasons,
+    basis: pick.basis?.k || null,
+    bloc: pick.basis?.bloc || null,
   };
 }
 

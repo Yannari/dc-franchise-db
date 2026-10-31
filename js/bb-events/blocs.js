@@ -266,6 +266,16 @@ const blocRecruit = {
 
 // ── telling, and being disbelieved ────────────────────────────────────
 
+// A couple is news once. Told while they still think nobody knows, and only the first time: after that the whole house
+// has heard it, and "I'm only telling you because I trust you, X and Y are together" five times a season is not
+// a secret (the user, 2026-10-31). A couple out in the open (past the spark) was never a secret to tell.
+const coupleNews = bloc => {
+  if (bloc.kind !== 'couple') return true;
+  if ((gs.bb?.coupleTold || {})[bloc.id]) return false;
+  const sh = (gs.showmances || []).find(x => x.phase !== 'broken-up' && bloc.members.every(m => (x.players || []).includes(m)));
+  return !sh || sh.phase === 'spark';
+};
+
 const blocTold = {
   id: 'bloc-told',
   category: 'social',
@@ -275,13 +285,13 @@ const blocTold = {
     // second half was missing was "has nobody left to tell", a card with no
     // consequence, twice in one week.
     const teller = house.find(name => knownBlocsFor(name).some(e => e.known >= 0.55
-      && outsidersTo(e.bloc, name).length));
+      && coupleNews(e.bloc) && outsidersTo(e.bloc, name).length));
     return teller ? band(8 * _fit(ctx)) : 0;
   },
   fire(house, ctx, api) {
     const teller = _quiet(house).find(name => knownBlocsFor(name).some(e => e.known >= 0.55
-      && outsidersTo(e.bloc, name).length)) || house[0];
-    const entry = knownBlocsFor(teller).find(e => e.known >= 0.55) || knownBlocsFor(teller)[0];
+      && coupleNews(e.bloc) && outsidersTo(e.bloc, name).length)) || house[0];
+    const entry = knownBlocsFor(teller).find(e => e.known >= 0.55 && coupleNews(e.bloc)) || knownBlocsFor(teller).find(e => coupleNews(e.bloc));
     if (!entry) return { scene: makeScene('bloc.quiet', { a: teller }, { ending: 'scene' }, [], _room(['bedroom', 'backyard'], ctx, teller)),
       players: [teller], badgeText: 'SAYS NOTHING', badgeClass: 'grey' };
     const bloc = entry.bloc;
@@ -290,6 +300,7 @@ const blocTold = {
       badgeText: 'NOBODY LEFT', badgeClass: 'grey' };
 
     const result = tellAbout(teller, listener, bloc);
+    if (bloc.kind === 'couple' && gs.bb) (gs.bb.coupleTold ||= {})[bloc.id] = true;
     const named = bloc.members.filter(m => m !== teller && m !== listener);
     const why = result.why || '';
     const scene = makeScene('bloc.told', { a: teller, b: listener }, {

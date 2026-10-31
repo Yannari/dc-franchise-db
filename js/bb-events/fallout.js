@@ -205,9 +205,15 @@ const findingTheCulprit = {
     }
     const { blamed, correct, why } = verdict;
     if (blamed === week.hoh) _spend('blame-hoh', ctx);
-
+    // what the blame rests on, said in the scene: "I know it was you" never airs without what "it" was (the user,
+    // 2026-10-31: "i know it was you you what? be clear"). The HOH's own pool first: an HOH did not vote.
+    const bl = verdict.bloc;
+    const partner = bl ? bl.members.find(n => n !== blamed && n !== mourner.name && n !== gone) || null : null;
+    const reason = blamed === week.hoh ? 'hoh' : verdict.basis === 'told' ? 'told' : verdict.basis === 'veto' ? 'veto'
+      : verdict.basis === 'bloc' && partner ? (bl.kind === 'couple' ? 'couple' : 'alliance') : null;
     const scene = makeScene('fallout.blame', { a: mourner.name, b: blamed },
-      { ending: correct ? 'correct' : 'wrong', gone, ...(blamed === week.hoh ? { reason: 'hoh' } : {}) }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, mourner.name, blamed));
+      { ending: correct ? 'correct' : 'wrong', gone, intent: (week.ballots || []).some(x => x?.evict && x.evict !== gone) ? 'split' : 'unanimous', ...(reason ? { reason } : {}),
+        ...(reason === 'alliance' || reason === 'couple' ? { partner } : {}) }, [], _room(['kitchen', 'living-room', 'backyard', 'bedroom'], ctx, mourner.name, blamed));
     api.setTarget(mourner.name, blamed, `holds ${blamed} responsible for ${gone} going home`);
     api.remember(mourner.name, blamed, 'took-my-ally', 3, { about: gone });
     api.suspicion(mourner.name, blamed, 2);

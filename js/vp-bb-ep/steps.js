@@ -533,7 +533,7 @@ function nomScreen(act, ctx) {
   for (const n of noms) steps.push(...scriptSteps(act.script?.nomDr?.[n]));
   return { id: 'bb-noms-v', kind: 'noms', anchor: 'noms', set: 'dining', room: doll ? 'The Sanctum' : ROOM_NAME.dining, cam: CAM.dining,
     title: doll ? 'The Sanctum' : 'Nomination Ceremony', kicker: doll ? 'The Sanctum · By candlelight' : 'Cam 03 · Dining room', sub: `${hoh} at the head of the table`,
-    day: ctx.day, time: ACT_TIME.nominations, seated, steps, ...(doll ? { sanctum: true } : {}) };
+    day: ctx.day, time: ACT_TIME.nominations, seated, steps, ...(doll ? { sanctum: true, plate: 'sanctum-noms' } : {}) };
 }
 
 
@@ -1049,7 +1049,7 @@ function evictionScreen(act, ctx, host) {
     }
   }
   const rest = stillIn(ctx).filter(n => !noms.includes(n));
-  return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: inSanctum ? 'The Sanctum' : ROOM_NAME.ceremony, cam: 1, sanctum: sanct, ...(inSanctum ? { nv: true } : {}),
+  return { id: 'bb-evict-v', kind: 'evict', anchor: 'evict', set: 'ceremony', room: inSanctum ? 'The Sanctum' : ROOM_NAME.ceremony, cam: 1, sanctum: sanct, ...(inSanctum ? { nv: true, plate: 'sanctum-eviction' } : {}),
     title: sanct ? 'The Sanctum' : 'Eviction Night', kicker: inSanctum ? 'The Sanctum · Mid-week' : 'Live · Eviction night', sub: `${listOf(noms)} on the block`, day: ctx.day, time: inSanctum ? 'MID-WEEK' : 'LIVE',
     // everybody who speaks on the night gets a seat before anybody who stays silent: the sofas hold
     // eight, and the people arguing after the parting shot were the ones left off (the user,
@@ -1938,7 +1938,7 @@ function campScreens(act, ctx) {
     else steps.push(...linesOf(b));
   }
   return [{
-    id: `bb-campdoor-w${ctx.week}`, kind: 'camp', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard,
+    id: `bb-campdoor-w${ctx.week}`, kind: 'camp', anchor: ctx.anchor, day: ctx.day, set: 'yard', plate: 'camp-yard', room: 'Camp', cam: CAM.yard,
     time: '22:10', kicker: 'Cam 05 · Backyard', title: 'The Door', label: 'Camp Comeback · the door', sub: 'One camper comes back',
     cast: played.map((n, i) => [n, Math.round(20 + i * (60 / Math.max(1, played.length - 1)))]),
     camp: { names: played, size: played.length },
@@ -2390,9 +2390,9 @@ function temptationScreens(act, ctx) {
       if (b.part === 'tcomp') steps.push({ k: 'bb', t: 'Houseguests, somebody took a temptation. For the next three weeks, the Temptation Competition comes into the house: before the nominations, anybody may opt in. The winner is safe for the week. Whoever finishes last is the third nominee.', toast: ['THE TEMPTATION COMPETITION', '#ff3355'] }, ...linesOf(b));
     }
     return [{
-      id: `bb-den-w${ctx.week}`, kind: 'den', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: 'The Den', cam: CAM.hoh, time: '11:20',
+      id: `bb-den-w${ctx.week}`, kind: 'den', anchor: ctx.anchor, day: ctx.day, set: 'hoh', plate: 'temptation-den', room: 'The Den', cam: CAM.hoh, time: '11:20',
       kicker: 'Cam 13 · The Den', title: 'The Den of Temptation', label: 'The Den of Temptation', sub: 'Free, and somebody else pays',
-      cast: [[a, 50]], power: { name: act.power, holder: a },
+      cast: [[a, 33]], power: { name: act.power, holder: a },
       rules: [['THE DEN', 'one houseguest is offered a power'], ['FREE', 'no competition, no vote'],
         ['THE CONSEQUENCE', 'take it, and somebody else is cursed'], ['SECRET', 'the house is never told who']],
       rulesTitle: 'THE DEN OF TEMPTATION · HOW IT WORKS', steps,
@@ -2473,10 +2473,33 @@ function treeScreen(act, ctx) {
     steps.push({ k: 'dr', by: a, t: act.good ? pickBy(['I ran before I could talk myself out of it. Best run of my life.', 'Everybody else was scared of that tree. Their loss.'], `${ctx.week}|tg|${a}`)
       : pickBy(["I ran for it. I shouldn't have run for it.", 'Well. That is what I get for being fast.'], `${ctx.week}|tb|${a}`) });
   }
-  return { id: `bb-tree-w${ctx.week}`, kind: 'tree', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: ROOM_NAME.ceremony, cam: CAM.ceremony, time: '10:30',
-    kicker: 'Cam 04 · Living room', title: 'The Tree of Temptation', label: 'Tree of Temptation', sub: act.picker ? `${act.picker} takes an apple` : 'Nobody dares',
+  return { id: `bb-tree-w${ctx.week}`, kind: 'tree', anchor: ctx.anchor, day: ctx.day, set: 'yard', plate: 'temptation-tree', room: 'The Tree of Temptation', cam: CAM.yard, time: '10:30',
+    kicker: 'Cam 05 · Backyard', title: 'The Tree of Temptation', label: 'Tree of Temptation', sub: act.picker ? `${act.picker} takes an apple` : 'Nobody dares',
     cast: act.picker ? [[act.picker, 50]] : [],
     rules: [['THE LIGHTS', 'turn red before nominations'], ['FIRST', 'to the Diary Room takes an apple'], ['THIS WEEK', 'prize or punishment']], rulesTitle: 'THE TREE OF TEMPTATION · HOW IT WORKS', steps };
+}
+
+// ── BB26's AI Arena (the machine theme's Block Buster) ─────────────────
+// The three nominees fight for safety on the arena's stage (machine/ai-arena), before the live vote; the eviction
+// night opens on its result. Every other theme keeps the Block Buster to the host's announcement.
+function aiArenaScreen(act, ctx) {
+  const host = ctx.host;
+  const who = (act.participants || []).filter(Boolean);
+  const w = act.winner;
+  const placed = (act.results || []).map(r => r && r.name).filter(Boolean);
+  const out = placed.length ? placed.filter(n => n !== w).reverse() : who.filter(n => n !== w);
+  const up = who.filter(n => n !== w);
+  /** @type {BB.Step[]} */ const steps = [
+    { k: 'host', by: host, t: `${listOf(who)}, welcome to the AI Arena. One of you leaves this stage safe for the week, and off the block.`, rule: 1, toast: ['THE AI ARENA', '#4fd1ff'] },
+    { k: 'host', by: host, t: 'The last one standing wins safety. Everybody else stays on the block for the live vote.', rule: 2 },
+  ];
+  for (const n of out) steps.push({ k: 'beat', t: `${n} is out of the AI Arena.`, board: { title: 'THE AI ARENA', rows: placed.map(x => ({ n: x, text: x === w ? '' : out.indexOf(x) <= out.indexOf(n) ? 'OUT' : '' })) } });
+  steps.push({ k: 'host', by: host, t: `${w}, you have won the AI Arena. You are safe this week.`, safe: w, big: [w, 'Won the AI Arena', 'safe'], toast: ['SAFE', '#4fd1ff'] });
+  if (up.length >= 2) steps.push({ k: 'host', by: host, t: `${listOf(up)}, you are still on the block, and one of you is going home tonight.` });
+  const xs = who.length === 1 ? [50] : who.map((_, i) => Math.round(34 + i * (32 / Math.max(1, who.length - 1))));
+  return { id: `bb-aiarena-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'finale', arena: true, plate: 'ai-arena', room: 'The AI Arena', cam: 7, time: 'LIVE',
+    kicker: 'Live · The AI Arena', title: 'The AI Arena', label: 'AI Arena', sub: `${listOf(who)} · safety on the line`, cast: who.map((n, i) => [n, xs[i]]),
+    rules: [['THE NOMINEES', 'all three play'], ['THE WINNER', 'safe, and off the block'], ['THE REST', 'face the live vote']], rulesTitle: 'THE AI ARENA · HOW IT WORKS', steps };
 }
 
 // ── BB26's premiere night (bb/machine-premiere.js) ──────────────────────
@@ -2556,7 +2579,7 @@ function jankieWorldScreen(act, ctx) {
   ];
   if (act.star) steps.push({ k: 'beat', t: `${act.star} has the song memorised by lunch and leads the first dance party. Half the house joins in. The other half lies on the grass and stares at the sky.` });
   steps.push({ k: 'beat', t: 'By the third slice of pizza for breakfast, nobody is laughing at the theme song anymore.' });
-  return { id: `bb-jankie-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', room: ROOM_NAME.yard, cam: CAM.yard, time: '10:00',
+  return { id: `bb-jankie-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'yard', plate: 'jankie-world', room: 'JANKIE World', cam: CAM.yard, time: '10:00',
     kicker: 'Cam 05 · Backyard', title: 'JANKIE World', label: 'JANKIE World', sub: 'AINSLEY is away',
     cast: [], rules: [['THE HOUSE', 'closed for the week'], ['MEALS', 'pizza and ice cream'], ['THE VETO', 'second place wins the JANKIE Veto']],
     rulesTitle: 'JANKIE WORLD · HOW IT WORKS', steps };
@@ -6559,6 +6582,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'roadkill': flush(); for (const scr of roadkillScreens(act, ctx, KIT)) ceremony(scr); ctx.roadkillWinner = act.winner; beatsOf(act); break;
       // the audience's chair is turned at the nomination ceremony itself (nomScreen)
       case 'americas-nominee': ctx.anAct = act; beatsOf(act); break;
+      case 'safety': if (ctx.row?.themeId === 'machine-summer' && act.winner) { flush(); ceremony(aiArenaScreen(act, ctx)); } beatsOf(act); break;
       case 'pandoras-box': flush(); for (const scr of pandoraScreens(act, ctx, KIT)) ceremony(scr); beatsOf(act); break;
       case 'diamond-detonation': flush(); for (const scr of detonationScreens(act, ctx, KIT)) ceremony(scr);
         if (act.saved && act.replacement) ctx.nominees = ctx.nominees.map(n => (n === act.saved ? act.replacement : n));

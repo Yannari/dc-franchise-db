@@ -40,8 +40,11 @@ function weighted(list, key) {
 // other themes redecorate the resort, and fall back to it (themedFor).
 const OWN_HOUSE = new Set(['secret-story']);
 let HOUSE = 'default';
+// the season's theme as given, for its own twist rooms (plates.json "only": the Sanctum, JANKIE World, the Den...):
+// a redecorated theme plays the resort's rooms, but the room a twist happens in is that theme's alone
+let SEASON = 'default';
 /** The house the plates are chosen from: a season's theme (its id or plate folder); call before choosing. */
-export function setPlateTheme(theme) { HOUSE = OWN_HOUSE.has(theme) ? theme : 'default'; }
+export function setPlateTheme(theme) { HOUSE = OWN_HOUSE.has(theme) ? theme : 'default'; SEASON = theme || 'default'; }
 /** Whether this theme is a house of its own (no resort plate ever shows in it). */
 export const ownHouse = theme => OWN_HOUSE.has(theme);
 /** The house the plates are being chosen from right now. */
@@ -132,9 +135,12 @@ export function placeOf(id) {
 
 /** The plate a screen plays on: a ceremony's plate has its seats; a scene keeps its own pick. */
 export function plateFor(S) {
+  if (!S || S.built) return null;
+  // a twist's own room, painted for this season's theme, wins over the room it stands in for (its seats are a copy)
+  if (S.plate && RESORT.have[SEASON]?.[S.plate] && !built(S.plate)) return S.plate;
   // the studio (interview, arrivals, finale) plays on its plates once the user's sets are built;
   // a competition's arena never does
-  if (!S || S.built || (S.arena && !(STUDIO.has(S.set) && platesOf(S.set).length))) return null;
+  if (S.arena && !(STUDIO.has(S.set) && platesOf(S.set).length)) return null;
   if (S.seated) {
     const id = platesOf(S.set).find(p => RESORT.plates[p].anchors);
     return id || null;

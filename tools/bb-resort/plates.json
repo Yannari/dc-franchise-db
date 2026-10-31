@@ -305,5 +305,15 @@
  "ss-crystal-ball": {"room": "backyard", "sets": ["ceremony"], "use": [], "indoor": false, "nonight": true, "words": "crystal ball", "only": "secret-story"},
  "ss-jungle": {"room": "backyard", "sets": ["yard"], "use": [], "indoor": false, "nonight": true, "words": "jungle", "only": "secret-story"},
  "ss-lie-detector": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "lie detector|polygraph", "only": "secret-story"},
- "ss-shields": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "shield", "only": "secret-story"}
+ "ss-shields": {"room": "living-room", "sets": ["ceremony"], "use": [], "indoor": true, "nonight": true, "words": "shield", "only": "secret-story"},
+ "sanctum-noms": {"room": "kitchen", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "mystery", "anchors": {"seats": {"S0": {"at": [15.4, 46.7, 6.0], "w": 9.5}, "S1": {"at": [25.8, 51, 6.4], "w": 9.5}, "S2": {"at": [36.1, 52, 6.6], "w": 9.5}, "S3": {"at": [63.8, 52, 6.6], "w": 9.5}, "S4": {"at": [74.4, 51, 6.4], "w": 9.5}, "S5": {"at": [84.4, 46.7, 6.0], "w": 9.5}, "S6": {"at": [8.3, 33, 5.0], "w": 11}, "S7": {"at": [91.3, 33, 5.0], "w": 11}, "S8": {"at": [17.5, 24.5, 2.6], "w": 15}, "S9": {"at": [30.8, 23, 2.4], "w": 15}, "S10": {"at": [49.75, 20, 2.0], "w": 15}, "S11": {"at": [69.2, 23, 2.4], "w": 15}, "S12": {"at": [82.5, 24.5, 2.6], "w": 15}}, "head": {"at": [50, 53, 6.8], "w": 5.6}, "box": {"at": [50, 48.5, 6.4], "w": 6.8}, "screen": {"x": 31.6, "y": 64.0, "w": 36.85, "h": 29.0}}},
+ "sanctum-eviction": {"room": "living-room", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "mystery", "floor": [630, 900], "anchors": {"seats": {"N-1": {"at": [40.6, 29, 6.5], "w": 8.5}, "N1": {"at": [59.7, 29, 6.5], "w": 8.5}, "L0": {"at": [6, 3, 3.0], "w": 10.5}, "R0": {"at": [94, 3, 3.0], "w": 10.5}, "L1": {"at": [17, 8, 3.6], "w": 9.0}, "R1": {"at": [83, 8, 3.6], "w": 9.0}, "L2": {"at": [24, 17, 4.6], "w": 7.4}, "R2": {"at": [76, 17, 4.6], "w": 7.4}, "L3": {"at": [31, 23, 5.4], "w": 6.4}, "R3": {"at": [69, 23, 5.4], "w": 6.4}, "stand": {"at": [50, 11, 2.5], "w": 8.6}}, "panels": [{"x": 13.3, "y": 36.4, "w": 14.1, "h": 43.6}, {"x": 76.6, "y": 36.4, "w": 14.1, "h": 43.6}]}},
+ "jankie-world": {"room": "backyard", "sets": [], "use": [], "pool": [[450, 505, 1560, 660, 0, 1000, 580]], "windows": [[0, 270, 70, 620], [133, 383, 325, 608], [575, 280, 650, 460]], "only": "machine"},
+ "ai-arena": {"room": "living-room", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "machine"},
+ "temptation-den": {"room": "pantry", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "temptation"},
+ "temptation-tree": {"room": "backyard", "sets": [], "use": [], "windows": [[0, 150, 550, 550]], "only": "temptation"},
+ "high-rollers-room": {"room": "kitchen", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "high-rollers"},
+ "camp-yard": {"room": "backyard", "sets": [], "use": [], "windows": [[0, 150, 550, 550]], "only": "summer-camp"},
+ "pandoras-box": {"room": "pantry", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "summer-school"},
+ "clique-hallway": {"room": "washroom", "sets": [], "use": [], "indoor": true, "nonight": true, "only": "summer-school"}
 }

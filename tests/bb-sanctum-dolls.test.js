@@ -50,5 +50,19 @@ describe('the Sanctum nominations', () => {
     for (const n of placed) expect(html).toContain(`<b>${n}</b>`);
     expect(html).not.toMatch(/class="nomscreen|class="nkeys/);
     expect(html).not.toMatch(/undefined|NaN/);
+    // in the Mystery season, the candlelit Sanctum the user painted (to-edit/F-twists), not the dining room
+    const themed = stageHtml(screens, at, last, true, { season: 'mystery', host: 'Valeria' }).html;
+    expect(themed).toContain('data-plate="sanctum-noms"');
+    expect(themed).toContain('resort/mystery/sanctum-noms-day');
+    // ...and the same week in a season without it keeps the ordinary room
+    expect(html).not.toContain('sanctum-noms');
+  });
+
+  it('holds the vote in the Sanctum room in the Mystery season', () => {
+    const screens = bbWeekSteps(sanctumRow());
+    const at = screens.findIndex(S => S.id === 'bb-evict-v' && S.nv);
+    expect(at, 'no mid-week Sanctum vote').toBeGreaterThanOrEqual(0);
+    const themed = stageHtml(screens, at, 0, true, { season: 'mystery', host: 'Valeria' }).html;
+    expect(themed).toContain('data-plate="sanctum-eviction"');
   });
 });

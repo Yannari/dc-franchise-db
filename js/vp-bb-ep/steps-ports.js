@@ -420,8 +420,8 @@ export function pandoraScreens(act, ctx, kit) {
     if (act.consequenceName) steps.push({ k: 'beat', t: `The price: ${h} spends the week in ${act.consequenceName}${act.publicClaim ? `, and tells the house the box held ${act.publicClaim}` : ''}.` });
   } else steps.push({ k: 'beat', t: `${h} reads the card twice and walks away. The door closes behind the refusal without a sound.`, toast: ['LEFT CLOSED', '#9aa4b2'] });
   return [{
-    id: 'bb-pandora-v', kind: 'pandora', anchor: ctx.anchor, day: ctx.day, set: 'hoh', room: kit.ROOM_NAME.hoh, cam: kit.CAM.hoh, time: '12:15',
-    kicker: `Cam ${kit.CAM.hoh} · HOH room`, title: "Pandora's Box", label: "Pandora's Box", sub: 'Something good for you. Something bad for them.', cast: [[h, 50]], steps,
+    id: 'bb-pandora-v', kind: 'pandora', anchor: ctx.anchor, day: ctx.day, set: 'hoh', plate: 'pandoras-box', room: "Pandora's Box", cam: kit.CAM.hoh, time: '12:15',
+    kicker: `Cam ${kit.CAM.hoh} · Pandora's Box`, title: "Pandora's Box", label: "Pandora's Box", sub: 'Something good for you. Something bad for them.', cast: [[h, 27]], steps,
   }];
 }
 
@@ -554,7 +554,10 @@ export function cliqueScreens(act, ctx, kit) {
     { k: say, t: act.secret ? 'The house is sorted into cliques, and nobody in it is told.' : 'Houseguests, this summer you have been sorted into cliques.', rule: 1 },
     { k: say, t: 'While somebody from your clique is Head of Household, nobody in your clique can be nominated.', rule: 2 },
     ...teams.flatMap(t => [
-      { k: say, t: `${t.name}: ${kit.listOf(t.members)}.`, board: { title: String(t.name).toUpperCase(), rows: t.members.map(n => ({ n })) } },
+      { k: say, t: `${t.name}: ${kit.listOf(t.members)}.`, board: { title: String(t.name).toUpperCase(), rows: t.members.map(n => ({ n })) },
+        // BB11's cliques are a high school: each one is shown at its lockers in the hallway (summer-school/clique-hallway)
+        ...(act.style === 'captains' ? {} : { scene: { set: 'bathroom', plate: 'clique-hallway', room: 'The Hallway', cam: 9, kicker: `Cam 09 · ${t.name}`, seated: null, lineup: true,
+          cast: t.members.map((n, i, m) => [n, m.length === 1 ? 36 : Math.round(12 + 50 * i / (m.length - 1))]) } }) },
       ...(t.blurb ? [{ k: 'beat', t: strip(t.blurb) }] : []),
     ]),
   ];
@@ -562,7 +565,7 @@ export function cliqueScreens(act, ctx, kit) {
   return [{
     id: over ? 'bb-cliques-end-v' : 'bb-cliques-v', kind: 'cliques', anchor: ctx.anchor, day: ctx.day, set: 'ceremony', room: kit.ROOM_NAME.ceremony, cam: 4, time: '10:00',
     kicker: 'Cam 04 · Living room', title: over ? (act.style === 'captains' ? 'Teams Over' : 'Cliques Over') : 'The Cliques', label: over ? (act.style === 'captains' ? 'Teams Over' : 'Cliques Over') : 'The Cliques', sub: over ? 'Every houseguest for themselves' : 'Sorted, not chosen',
-    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh),
+    seated: kit.seatLiving([], here.filter(n => n !== ctx.hoh), ctx.hoh), ...(over || act.style === 'captains' ? {} : { sceneful: true }),
     ...(over ? {} : { rules: [['SORTED', 'four cliques, not chosen'], ['COVERED', 'a clique is safe while one of its own is HOH']], rulesTitle: 'THE CLIQUES · HOW IT WORKS' }), steps,
   }];
 }
@@ -689,7 +692,10 @@ export function rollersRoomScreens(act, ctx, kit) {
     ...beatSteps(act, kit),
   ];
   if (!(act.entries || []).length) steps.push({ k: 'beat', t: 'Nobody walks in. The door stays open all evening, and the floor keeps its game.' });
-  return money(ctx, kit, { id: 'bb-highrollers-v', kind: 'rollers', title: "High Roller's Room", label: "High Roller's Room", sub: `${act.gameName} · ${act.price}`, time: '21:00' }, steps);
+  const inside = [...new Set((act.entries || []).map(e => e && e.name).filter(Boolean))];
+  const room = inside.length ? { set: 'kitchen', plate: 'high-rollers-room', room: "High Roller's Room", kicker: "Cam 11 · High Roller's Room", seated: null,
+    cast: inside.map((n, i, a) => [n, a.length === 1 ? 50 : Math.round(18 + 64 * i / (a.length - 1))]) } : {};
+  return money(ctx, kit, { id: 'bb-highrollers-v', kind: 'rollers', title: "High Roller's Room", label: "High Roller's Room", sub: `${act.gameName} · ${act.price}`, time: '21:00', ...room }, steps);
 }
 
 // ── Rivals: the people who walk in already knowing somebody ────────────

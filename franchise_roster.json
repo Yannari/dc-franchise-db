@@ -9852,6 +9852,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Young man in his mid twenties, General American accent with a Detroit edge. Medium pitch, bright and punchy, with a grin you can hear. Fast, bouncing rhythm, words running together when he is excited and a big laugh in the middle of sentences. Sentences end on a lift, like he is waiting for a reaction; after a loss the voice drops flat and short. Confident, showy and hungry."
+    },
+    {
+      "name": "Della",
+      "slug": "della",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 4,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 10,
+        "intuition": 5,
+        "temperament": 5
+      },
+      "voice": "Loud, warm and drawling, all \"y'all\" and \"darlin'\", laughs at her own bruises. Says yes before the question is finished. #loud #chaotic",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Young woman in her early twenties with a broad West Texas drawl. Medium pitch, bright and a little raspy, warm and open. Quick and impulsive, words tumbling out, with a big easy laugh that cuts into her sentences. Sentences stretch at the ends; under pressure she gets louder and faster, never quieter. Fearless, friendly and reckless."
     }
   ]
 }

@@ -1477,6 +1477,12 @@
           "show": "global",
           "label": "Profile default",
           "file": "joel.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "joel-ch-look-1.png"
         }
       ]
     },

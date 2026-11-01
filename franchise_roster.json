@@ -9962,6 +9962,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Adult woman in her early thirties, General American accent with a light Puerto Rican lilt, warmer on names and Spanish words. Medium-low pitch, smooth and warm, slightly smoky. Relaxed, rhythmic pace, a professional calm with a teasing smile in it. Sentences curl up playfully at the end; under pressure she gets cooler and more precise, never rattled. Amused, flirtatious and unflappable."
+    },
+    {
+      "name": "Kieran",
+      "slug": "kieran",
+      "gender": "m",
+      "sexuality": "gay",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 9,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "voice": "Quick, cheeky and charming, with a Dublin accent and a joke for every awkward moment. Flirts without thinking; goes quiet and honest when he has hurt somebody. #flirty #goofy",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Young man in his early twenties with a Dublin Irish accent. Medium pitch, light and bright, with a cheeky, smiling quality. Quick, musical rhythm, running sentences together and dropping into a laugh. Sentences lift at the end like a question he already knows the answer to; when he is caught out the voice drops and slows, suddenly sincere. Charming, playful and a little reckless."
     }
   ]
 }

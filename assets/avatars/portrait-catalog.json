@@ -1273,6 +1273,12 @@
           "show": "global",
           "label": "Profile default",
           "file": "ireland.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "Look 1",
+          "file": "ireland-ch-look-1.png"
         }
       ]
     },

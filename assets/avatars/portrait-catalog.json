@@ -2570,6 +2570,12 @@
           "show": "global",
           "label": "Profile default",
           "file": "sky.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "sky-ch-look-1.png"
         }
       ]
     },

@@ -71,6 +71,7 @@ const SOURCE_OF_TRUTH = 'js/shows.js';
 // the reason is the point of the entry — an exemption with no reason is how a
 // real duplicate gets waved through on the next pass.
 const PER_SHOW_DATA = {
+  'js/player-emoji.js':           'the crown of each show and what a player is known for there (wins, lip syncs, catfishing) — content, not identity',
   'js/player-trivia.js':          'trivia questions per show — content, not identity',
   'js/quick-setup.js':            'CONFIG_SCOPE: which config fields each show has',
   'js/ranking-boards.js':         'format → board FILE; the storage layout is this file\'s job',
@@ -492,7 +493,8 @@ describe('js/shows.js is the only show list', () => {
       'PER_SHOW_DATA has grown. Every entry is a file allowed to hold its own '
       + 'show list, so adding one narrows this rule: raise this ceiling in the '
       + 'same commit, with the reason, or read the identity from js/shows.js.')
-      .toBeLessThanOrEqual(8);
+      // 10: js/player-emoji.js, each show's crown and what a player is known for there.
+      .toBeLessThanOrEqual(10);
     for (const rel of rels) {
       const why = String(PER_SHOW_DATA[rel] || '');
       expect(why.length, `${rel}'s exemption has no reason worth reading`)

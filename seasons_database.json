@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 238,
+    "totalPlayers": 256,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -3572,6 +3572,2817 @@
             "Riza",
             "Freya",
             "Malik"
+          ]
+        }
+      ],
+      "airYear": 2027,
+      "airSlot": "summer"
+    },
+    {
+      "ratings": {
+        "v": 1,
+        "score": 66.2,
+        "tier": {
+          "key": "great",
+          "label": "Great",
+          "min": 65
+        },
+        "demos": {
+          "teens": 38.7,
+          "youngAdults": 37.9,
+          "middleAged": 48,
+          "older": 52
+        },
+        "curve": [
+          48.4,
+          60.7,
+          72.8,
+          79.6,
+          73.1,
+          72.9,
+          73,
+          77.6,
+          73.4,
+          69.2,
+          69.1,
+          66.3,
+          61.9,
+          55.4,
+          47.7
+        ]
+      },
+      "seasonNumber": 2,
+      "format": "big-brother",
+      "seasonId": "bb-2",
+      "title": "Big Brother 2: The Hotel That Counted Back",
+      "subtitle": "A season where the plan broke more often than it held, and Baxter won because the room kept choosing him before the jury did.",
+      "castSize": 18,
+      "episodeCount": 15,
+      "jurySize": 9,
+      "winner": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "vote": "Baxter 7 — Angelica 2 — Ivyna 0",
+        "runnerUp": "Angelica & Ivyna",
+        "keyStats": "Baxter won with 7 jury votes after 15 weeks, 1 HOH, 2 vetoes, 1 Block Buster, only 2 trips to the block as the target, and zero eviction votes against him all season.",
+        "strategy": "Baxter's game was not domination; it was permission. He stayed close enough to power to influence it, distant enough from power to avoid owning its blood, and socially useful enough that even people who knew he was dangerous kept needing him for one more week. His best stretch was the endgame, where he let bigger threats cut each other, used the Cloud when exposure finally caught up to him, and kept enough jury relationships intact that his betrayals read as necessary rather than malicious.",
+        "legacy": "Baxter is the prototype for the social winner in a chaotic house: rarely the loudest strategist, rarely the obvious comp threat, but almost always inside the real vote before it happened. The jury did not reward a flawless game; it rewarded the person who made the fewest people feel foolish for losing to him."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Michele",
+          "playerSlug": "michele"
+        },
+        "bestStrategic": {
+          "name": "Baxter",
+          "playerSlug": "baxter"
+        },
+        "mostChallengeWins": {
+          "name": "Angelica",
+          "playerSlug": "angelica",
+          "detail": "7 comp wins"
+        }
+      },
+      "theme": "Season 2 was a season where power rarely meant control. The measured record says the plan held only five times and broke ten, and that is the season in one sentence: HOHs nominated people, vetoes and Block Busters scrambled the board, and then the room decided what the week had actually been about. Early on, The Collective and The Front tried to become the house's operating systems, but both became public too quickly. The middle game was defined by overlapping pairs: Nina and Baxter, Lacey and Ben, Michele and Lacey, Fatima and Ivyna, Dominic and Ben, Sawyer and almost everybody. By jury, the house had stopped trusting alliance names and started trusting vote math, which is why so many exits were blindsides even when the target looked obvious. The Mastermind twist made the endgame feel authored, but the winner was still produced by the same old Big Brother question: who could sit next to the people they betrayed and make it feel like the game, not a personal insult? Angelica fought the hardest, Michele survived the most, Ben and Dominic built the cleanest loyalty, and Ivyna snuck closest to the finish. Baxter won because he was the one whose betrayals the jury could live with.",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/bb-2-cast.png",
+      "emoji": "",
+      "exitInterviews": [
+        {
+          "id": "big-brother-w1-Sabrina",
+          "show": "big-brother",
+          "week": 1,
+          "guest": "Sabrina",
+          "with": null,
+          "kind": "first-boot",
+          "mood": "denial",
+          "juror": false,
+          "placement": 18,
+          "how": "evicted",
+          "votes": {
+            "against": 15,
+            "total": 15
+          },
+          "segments": [
+            "rank-them",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.2
+            },
+            {
+              "who": "Paisley",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.96
+            },
+            {
+              "who": "Kyle",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            }
+          ],
+          "truth": {
+            "flippers": [],
+            "suspected": [
+              "Angelica",
+              "Paisley",
+              "Ben"
+            ],
+            "right": true
+          },
+          "prediction": "Kyle",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Kyle"
+          ],
+          "rivals": [
+            "Angelica"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Angelica",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Juan",
+            "Kyle",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer",
+            "Vlad",
+            "Willow"
+          ],
+          "heat": 4.1,
+          "reception": "cold",
+          "profile": {
+            "archetype": "hothead",
+            "stats": {
+              "physical": 4,
+              "endurance": 4,
+              "mental": 5,
+              "social": 3,
+              "strategic": 4,
+              "loyalty": 7,
+              "boldness": 9,
+              "intuition": 4,
+              "temperament": 2
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Sabrina": -0.56,
+              "Angelica": -0.38,
+              "Paisley": -0.23,
+              "Kyle": 0.11
+            },
+            "bonds": [
+              {
+                "a": "Kyle",
+                "b": "Sabrina",
+                "delta": 0.33,
+                "when": 2
+              },
+              {
+                "a": "Angelica",
+                "b": "Sabrina",
+                "delta": -1.1,
+                "when": 5
+              },
+              {
+                "a": "Paisley",
+                "b": "Sabrina",
+                "delta": -0.73,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Kyle",
+            "Angelica",
+            "Paisley"
+          ]
+        },
+        {
+          "id": "big-brother-w2-Kyle",
+          "show": "big-brother",
+          "week": 2,
+          "guest": "Kyle",
+          "with": null,
+          "kind": "backdoor",
+          "mood": "relieved",
+          "juror": false,
+          "placement": 17,
+          "how": "evicted",
+          "votes": {
+            "against": 12,
+            "total": 14
+          },
+          "segments": [
+            "the-tape",
+            "answer-back",
+            "message-in"
+          ],
+          "named": [
+            {
+              "who": "Vlad",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Angelica",
+              "stance": "drag",
+              "still": true,
+              "heat": 0.7
+            },
+            {
+              "who": "Dominic",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Lacey",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Sabrina",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.28
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Dominic",
+              "Lacey"
+            ],
+            "suspected": [
+              "Vlad",
+              "Angelica",
+              "Nina"
+            ],
+            "right": false
+          },
+          "prediction": "Dominic",
+          "caller": null,
+          "answerBack": [
+            {
+              "id": "big-brother-w1-Sabrina",
+              "who": "Sabrina",
+              "stance": "praise",
+              "was": "praise"
+            }
+          ],
+          "allies": [
+            "Willow"
+          ],
+          "rivals": [
+            "Angelica",
+            "Nina"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Angelica",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Juan",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer",
+            "Vlad",
+            "Willow"
+          ],
+          "heat": 6.5,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "hothead",
+            "stats": {
+              "physical": 8,
+              "endurance": 8,
+              "mental": 4,
+              "social": 4,
+              "strategic": 4,
+              "loyalty": 7,
+              "boldness": 8,
+              "intuition": 4,
+              "temperament": 3
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Kyle": 0.09,
+              "Vlad": -0.45,
+              "Angelica": -0.74,
+              "Dominic": 0.11,
+              "Lacey": 0.11
+            },
+            "bonds": [
+              {
+                "a": "Kyle",
+                "b": "Dominic",
+                "delta": -1.16,
+                "when": "recorded"
+              },
+              {
+                "a": "Kyle",
+                "b": "Lacey",
+                "delta": -1.16,
+                "when": "recorded"
+              },
+              {
+                "a": "Sabrina",
+                "b": "Kyle",
+                "delta": 0.21,
+                "when": 2
+              },
+              {
+                "a": "Angelica",
+                "b": "Kyle",
+                "delta": -0.64,
+                "when": 5
+              },
+              {
+                "a": "Vlad",
+                "b": "Kyle",
+                "delta": -0.3,
+                "when": 6
+              },
+              {
+                "a": "Dominic",
+                "b": "Kyle",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Lacey",
+                "b": "Kyle",
+                "delta": 0.07,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Sabrina",
+            "Angelica",
+            "Vlad",
+            "Dominic",
+            "Lacey"
+          ]
+        },
+        {
+          "id": "big-brother-w3-Willow",
+          "show": "big-brother",
+          "week": 3,
+          "guest": "Willow",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "gutted",
+          "juror": false,
+          "placement": 16,
+          "how": "evicted",
+          "votes": {
+            "against": 7,
+            "total": 13
+          },
+          "segments": [
+            "the-tape",
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Ben",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Lacey",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Martin",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.66
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Lacey"
+            ],
+            "suspected": [
+              "Angelica",
+              "Ben"
+            ],
+            "right": false
+          },
+          "prediction": "Ivyna",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Michele",
+            "Juan"
+          ],
+          "rivals": [
+            "Martin",
+            "Angelica"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Angelica",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Juan",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer",
+            "Vlad"
+          ],
+          "heat": 4.3,
+          "reception": "warm",
+          "profile": {
+            "archetype": "social-butterfly",
+            "stats": {
+              "physical": 4,
+              "endurance": 5,
+              "mental": 4,
+              "social": 7,
+              "strategic": 4,
+              "loyalty": 8,
+              "boldness": 8,
+              "intuition": 5,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Willow": 0.96,
+              "Angelica": -0.7,
+              "Ben": -0.7,
+              "Lacey": -0.7,
+              "Martin": -0.35
+            },
+            "bonds": [
+              {
+                "a": "Willow",
+                "b": "Lacey",
+                "delta": -1.08,
+                "when": "recorded"
+              },
+              {
+                "a": "Angelica",
+                "b": "Willow",
+                "delta": -0.57,
+                "when": 5
+              },
+              {
+                "a": "Ben",
+                "b": "Willow",
+                "delta": -0.62,
+                "when": 16
+              },
+              {
+                "a": "Lacey",
+                "b": "Willow",
+                "delta": -0.57,
+                "when": 16
+              },
+              {
+                "a": "Martin",
+                "b": "Willow",
+                "delta": -0.19,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Angelica",
+            "Ben",
+            "Lacey",
+            "Martin"
+          ]
+        },
+        {
+          "id": "big-brother-w4-Juan",
+          "show": "big-brother",
+          "week": 4,
+          "guest": "Juan",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "bitter",
+          "juror": false,
+          "placement": 15,
+          "how": "evicted",
+          "votes": {
+            "against": 9,
+            "total": 12
+          },
+          "segments": [
+            "message-in",
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Fatima",
+              "stance": "blame",
+              "still": true,
+              "heat": 1.04
+            },
+            {
+              "who": "Ben",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.3
+            },
+            {
+              "who": "Martin",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.3
+            },
+            {
+              "who": "Ivyna",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            }
+          ],
+          "truth": {
+            "flippers": [],
+            "suspected": [
+              "Fatima",
+              "Ben",
+              "Martin"
+            ],
+            "right": true
+          },
+          "prediction": "Lacey",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Ivyna"
+          ],
+          "rivals": [
+            "Ben",
+            "Martin"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Angelica",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer",
+            "Vlad"
+          ],
+          "heat": 5.7,
+          "reception": "cold",
+          "profile": {
+            "archetype": "schemer",
+            "stats": {
+              "physical": 7,
+              "endurance": 6,
+              "mental": 4,
+              "social": 9,
+              "strategic": 8,
+              "loyalty": 2,
+              "boldness": 8,
+              "intuition": 7,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Juan": -0.98,
+              "Fatima": -0.12,
+              "Ben": -0.19,
+              "Martin": -0.19,
+              "Ivyna": 0.06
+            },
+            "bonds": [
+              {
+                "a": "Fatima",
+                "b": "Juan",
+                "delta": -0.61,
+                "when": 16
+              },
+              {
+                "a": "Ben",
+                "b": "Juan",
+                "delta": -1.3,
+                "when": 16
+              },
+              {
+                "a": "Martin",
+                "b": "Juan",
+                "delta": -1.09,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Juan",
+                "delta": 0.24,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Fatima",
+            "Ben",
+            "Martin",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w5-Angelica",
+          "show": "big-brother",
+          "week": 5,
+          "guest": "Angelica",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "denial",
+          "juror": false,
+          "placement": 14,
+          "how": "evicted",
+          "votes": {
+            "against": 11,
+            "total": 11
+          },
+          "segments": [
+            "the-tape",
+            "answer-back",
+            "message-in"
+          ],
+          "named": [
+            {
+              "who": "Nina",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.96
+            },
+            {
+              "who": "Sawyer",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.2
+            },
+            {
+              "who": "Ivyna",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.96
+            },
+            {
+              "who": "Paisley",
+              "stance": "drag",
+              "still": true,
+              "heat": 1.2
+            },
+            {
+              "who": "Sabrina",
+              "stance": "drag",
+              "still": false,
+              "heat": 1.2
+            },
+            {
+              "who": "Kyle",
+              "stance": "drag",
+              "still": false,
+              "heat": 1.2
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Ivyna"
+            ],
+            "suspected": [
+              "Nina",
+              "Sawyer",
+              "Paisley"
+            ],
+            "right": false
+          },
+          "prediction": "Michele",
+          "caller": null,
+          "answerBack": [
+            {
+              "id": "big-brother-w1-Sabrina",
+              "who": "Sabrina",
+              "stance": "drag",
+              "was": "drag"
+            },
+            {
+              "id": "big-brother-w2-Kyle",
+              "who": "Kyle",
+              "stance": "drag",
+              "was": "drag"
+            }
+          ],
+          "allies": [
+            "Ivyna"
+          ],
+          "rivals": [
+            "Sawyer",
+            "Paisley"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer",
+            "Vlad"
+          ],
+          "heat": 10,
+          "reception": "cold",
+          "profile": {
+            "archetype": "mastermind",
+            "stats": {
+              "physical": 5,
+              "endurance": 6,
+              "mental": 8,
+              "social": 6,
+              "strategic": 10,
+              "loyalty": 4,
+              "boldness": 6,
+              "intuition": 8,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Angelica": -0.77,
+              "Nina": -0.96,
+              "Sawyer": -1.6,
+              "Ivyna": -0.96,
+              "Paisley": -1.6
+            },
+            "bonds": [
+              {
+                "a": "Angelica",
+                "b": "Ivyna",
+                "delta": -0.92,
+                "when": "recorded"
+              },
+              {
+                "a": "Sabrina",
+                "b": "Angelica",
+                "delta": -1.49,
+                "when": 5
+              },
+              {
+                "a": "Kyle",
+                "b": "Angelica",
+                "delta": -1.39,
+                "when": 5
+              },
+              {
+                "a": "Nina",
+                "b": "Angelica",
+                "delta": -0.73,
+                "when": 11
+              },
+              {
+                "a": "Sawyer",
+                "b": "Angelica",
+                "delta": -0.82,
+                "when": 16
+              },
+              {
+                "a": "Paisley",
+                "b": "Angelica",
+                "delta": -1.3,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Angelica",
+                "delta": -0.51,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Sabrina",
+            "Kyle",
+            "Nina",
+            "Sawyer",
+            "Paisley",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w6-Vlad",
+          "show": "big-brother",
+          "week": 6,
+          "guest": "Vlad",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 13,
+          "how": "evicted",
+          "votes": {
+            "against": 7,
+            "total": 10
+          },
+          "segments": [
+            "the-tape",
+            "answer-back",
+            "message-in"
+          ],
+          "named": [
+            {
+              "who": "Fatima",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Ben",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Baxter",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Lacey",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Kyle",
+              "stance": "respect",
+              "still": false,
+              "heat": 0.22
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Baxter",
+              "Lacey",
+              "Sawyer"
+            ],
+            "suspected": [
+              "Fatima",
+              "Ben",
+              "Nina"
+            ],
+            "right": false
+          },
+          "prediction": "Baxter",
+          "caller": null,
+          "answerBack": [
+            {
+              "id": "big-brother-w2-Kyle",
+              "who": "Kyle",
+              "stance": "respect",
+              "was": "blame"
+            }
+          ],
+          "allies": [
+            "Michele",
+            "Dominic"
+          ],
+          "rivals": [
+            "Fatima",
+            "Ben"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Alexander",
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer"
+          ],
+          "heat": 4.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "underdog",
+            "stats": {
+              "physical": 6,
+              "endurance": 7,
+              "mental": 7,
+              "social": 3,
+              "strategic": 6,
+              "loyalty": 6,
+              "boldness": 3,
+              "intuition": 7,
+              "temperament": 8
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Vlad": 0.64,
+              "Fatima": -0.56,
+              "Ben": -0.56,
+              "Baxter": 0.28,
+              "Lacey": 0.28
+            },
+            "bonds": [
+              {
+                "a": "Vlad",
+                "b": "Baxter",
+                "delta": -0.76,
+                "when": "recorded"
+              },
+              {
+                "a": "Vlad",
+                "b": "Lacey",
+                "delta": -0.76,
+                "when": "recorded"
+              },
+              {
+                "a": "Vlad",
+                "b": "Sawyer",
+                "delta": -0.76,
+                "when": "recorded"
+              },
+              {
+                "a": "Kyle",
+                "b": "Vlad",
+                "delta": 0.09,
+                "when": 6
+              },
+              {
+                "a": "Fatima",
+                "b": "Vlad",
+                "delta": -0.13,
+                "when": 16
+              },
+              {
+                "a": "Ben",
+                "b": "Vlad",
+                "delta": -0.16,
+                "when": 16
+              },
+              {
+                "a": "Lacey",
+                "b": "Vlad",
+                "delta": 0.07,
+                "when": 16
+              },
+              {
+                "a": "Baxter",
+                "b": "Vlad",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Kyle",
+            "Fatima",
+            "Ben",
+            "Lacey",
+            "Baxter"
+          ]
+        },
+        {
+          "id": "big-brother-w7-Alexander",
+          "show": "big-brother",
+          "week": 7,
+          "guest": "Alexander",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 12,
+          "how": "evicted",
+          "votes": {
+            "against": 9,
+            "total": 9
+          },
+          "segments": [
+            "the-tape",
+            "caller",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Paisley",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Sawyer",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Ivyna",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Ivyna"
+            ],
+            "suspected": [
+              "Paisley",
+              "Sawyer",
+              "Nina"
+            ],
+            "right": false
+          },
+          "prediction": "Paisley",
+          "caller": "Sabrina",
+          "answerBack": [],
+          "allies": [
+            "Ivyna"
+          ],
+          "rivals": [
+            "Sawyer",
+            "Paisley"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Paisley",
+            "Sawyer"
+          ],
+          "heat": 2.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "villain",
+            "stats": {
+              "physical": 3,
+              "endurance": 3,
+              "mental": 8,
+              "social": 2,
+              "strategic": 7,
+              "loyalty": 2,
+              "boldness": 9,
+              "intuition": 4,
+              "temperament": 3
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Alexander": 0.56,
+              "Paisley": -0.31,
+              "Sawyer": -0.31,
+              "Ivyna": 0.15
+            },
+            "bonds": [
+              {
+                "a": "Alexander",
+                "b": "Ivyna",
+                "delta": -1.16,
+                "when": "recorded"
+              },
+              {
+                "a": "Paisley",
+                "b": "Alexander",
+                "delta": -0.17,
+                "when": 16
+              },
+              {
+                "a": "Sawyer",
+                "b": "Alexander",
+                "delta": -0.11,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Alexander",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Paisley",
+            "Sawyer",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w8-Paisley",
+          "show": "big-brother",
+          "week": 8,
+          "guest": "Paisley",
+          "with": null,
+          "kind": "seen-it-coming",
+          "mood": "relieved",
+          "juror": true,
+          "placement": 12,
+          "how": "evicted",
+          "votes": {
+            "against": 8,
+            "total": 8
+          },
+          "segments": [
+            "the-tape",
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Dominic",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Ben",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Fatima",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Ivyna",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Fatima",
+              "Ivyna",
+              "Nina",
+              "Sawyer"
+            ],
+            "suspected": [
+              "Dominic",
+              "Ben",
+              "Baxter"
+            ],
+            "right": false
+          },
+          "prediction": "Fatima",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Fatima",
+            "Nina"
+          ],
+          "rivals": [
+            "Alexander",
+            "Juan"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Fatima",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Sawyer",
+            "Angelica"
+          ],
+          "heat": 2.5,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "chaos-agent",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 8,
+              "social": 5,
+              "strategic": 6,
+              "loyalty": 4,
+              "boldness": 7,
+              "intuition": 4,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Paisley": 0.1,
+              "Dominic": -0.43,
+              "Ben": -0.43,
+              "Fatima": 0.11,
+              "Ivyna": 0.11
+            },
+            "bonds": [
+              {
+                "a": "Paisley",
+                "b": "Fatima",
+                "delta": -1.08,
+                "when": "recorded"
+              },
+              {
+                "a": "Paisley",
+                "b": "Ivyna",
+                "delta": -1.08,
+                "when": "recorded"
+              },
+              {
+                "a": "Paisley",
+                "b": "Nina",
+                "delta": -1.08,
+                "when": "recorded"
+              },
+              {
+                "a": "Paisley",
+                "b": "Sawyer",
+                "delta": -1.08,
+                "when": "recorded"
+              },
+              {
+                "a": "Dominic",
+                "b": "Paisley",
+                "delta": -0.33,
+                "when": 16
+              },
+              {
+                "a": "Ben",
+                "b": "Paisley",
+                "delta": -0.39,
+                "when": 16
+              },
+              {
+                "a": "Fatima",
+                "b": "Paisley",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Paisley",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Dominic",
+            "Ben",
+            "Fatima",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w9-Fatima",
+          "show": "big-brother",
+          "week": 9,
+          "guest": "Fatima",
+          "with": null,
+          "kind": "blindside",
+          "mood": "gracious",
+          "juror": true,
+          "placement": 11,
+          "how": "evicted",
+          "votes": {
+            "against": 6,
+            "total": 8
+          },
+          "segments": [
+            "the-tape",
+            "message-in",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Michele",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Ben",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Dominic",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Ben",
+              "Dominic",
+              "Nina",
+              "Sawyer"
+            ],
+            "suspected": [
+              "Angelica",
+              "Michele"
+            ],
+            "right": false
+          },
+          "prediction": "Ivyna",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Ivyna",
+            "Martin"
+          ],
+          "rivals": [
+            "Vlad",
+            "Angelica"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Ivyna",
+            "Lacey",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Sawyer",
+            "Angelica"
+          ],
+          "heat": 4.1,
+          "reception": "warm",
+          "profile": {
+            "archetype": "perceptive-player",
+            "stats": {
+              "physical": 3,
+              "endurance": 4,
+              "mental": 9,
+              "social": 5,
+              "strategic": 3,
+              "loyalty": 9,
+              "boldness": 6,
+              "intuition": 8,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Fatima": 0.8,
+              "Angelica": -0.65,
+              "Michele": 0.32,
+              "Ben": 0.32,
+              "Dominic": 0.32
+            },
+            "bonds": [
+              {
+                "a": "Fatima",
+                "b": "Ben",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Fatima",
+                "b": "Dominic",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Fatima",
+                "b": "Nina",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Fatima",
+                "b": "Sawyer",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Michele",
+                "b": "Fatima",
+                "delta": 0.07,
+                "when": 16
+              },
+              {
+                "a": "Ben",
+                "b": "Fatima",
+                "delta": 0.08,
+                "when": 16
+              },
+              {
+                "a": "Dominic",
+                "b": "Fatima",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Fatima",
+                "delta": -0.14,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Michele",
+            "Ben",
+            "Dominic",
+            "Angelica"
+          ]
+        },
+        {
+          "id": "big-brother-w10-Lacey",
+          "show": "big-brother",
+          "week": 10,
+          "guest": "Lacey",
+          "with": null,
+          "kind": "blindside",
+          "mood": "relieved",
+          "juror": true,
+          "placement": 10,
+          "how": "evicted",
+          "votes": {
+            "against": 4,
+            "total": 7
+          },
+          "segments": [
+            "the-tape",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Baxter",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Dominic",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Alexander",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.42
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Dominic"
+            ],
+            "suspected": [
+              "Angelica",
+              "Baxter"
+            ],
+            "right": false
+          },
+          "prediction": "Martin",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Sawyer",
+            "Ivyna"
+          ],
+          "rivals": [
+            "Angelica",
+            "Alexander"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Ivyna",
+            "Martin",
+            "Michele",
+            "Nina",
+            "Sawyer",
+            "Angelica"
+          ],
+          "heat": 4.8,
+          "reception": "warm",
+          "profile": {
+            "archetype": "showmancer",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 7,
+              "social": 7,
+              "strategic": 6,
+              "loyalty": 7,
+              "boldness": 4,
+              "intuition": 6,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Lacey": 0.96,
+              "Angelica": -1.58,
+              "Baxter": -1.58,
+              "Dominic": 0.39
+            },
+            "bonds": [
+              {
+                "a": "Lacey",
+                "b": "Dominic",
+                "delta": -0.92,
+                "when": "recorded"
+              },
+              {
+                "a": "Alexander",
+                "b": "Lacey",
+                "delta": -0.17,
+                "when": 10
+              },
+              {
+                "a": "Dominic",
+                "b": "Lacey",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Lacey",
+                "delta": -0.36,
+                "when": 16
+              },
+              {
+                "a": "Baxter",
+                "b": "Lacey",
+                "delta": -0.33,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Alexander",
+            "Dominic",
+            "Angelica",
+            "Baxter"
+          ]
+        },
+        {
+          "id": "big-brother-w11-Martin",
+          "show": "big-brother",
+          "week": 11,
+          "guest": "Martin",
+          "with": null,
+          "kind": "blindside",
+          "mood": "gracious",
+          "juror": true,
+          "placement": 8,
+          "how": "evicted",
+          "votes": {
+            "against": 5,
+            "total": 5
+          },
+          "segments": [
+            "the-tape",
+            "fan-mail",
+            "rank-them"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Baxter",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Dominic",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Juan",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Baxter",
+              "Dominic",
+              "Ivyna",
+              "Michele",
+              "Sawyer"
+            ],
+            "suspected": [
+              "Angelica"
+            ],
+            "right": false
+          },
+          "prediction": "Sawyer",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Sawyer",
+            "Dominic"
+          ],
+          "rivals": [
+            "Juan",
+            "Angelica"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Ivyna",
+            "Michele",
+            "Sawyer",
+            "Angelica"
+          ],
+          "heat": 4.3,
+          "reception": "warm",
+          "profile": {
+            "archetype": "floater",
+            "stats": {
+              "physical": 3,
+              "endurance": 5,
+              "mental": 8,
+              "social": 4,
+              "strategic": 7,
+              "loyalty": 8,
+              "boldness": 3,
+              "intuition": 6,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Martin": 0.72,
+              "Angelica": -0.34,
+              "Baxter": 0.17,
+              "Dominic": 0.17
+            },
+            "bonds": [
+              {
+                "a": "Martin",
+                "b": "Baxter",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Martin",
+                "b": "Dominic",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Martin",
+                "b": "Ivyna",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Martin",
+                "b": "Michele",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Martin",
+                "b": "Sawyer",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Juan",
+                "b": "Martin",
+                "delta": -0.16,
+                "when": 11
+              },
+              {
+                "a": "Dominic",
+                "b": "Martin",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Martin",
+                "delta": -0.14,
+                "when": 16
+              },
+              {
+                "a": "Baxter",
+                "b": "Martin",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Juan",
+            "Dominic",
+            "Angelica",
+            "Baxter"
+          ]
+        },
+        {
+          "id": "big-brother-w11-Nina",
+          "show": "big-brother",
+          "week": 11,
+          "guest": "Nina",
+          "with": "Angelica",
+          "kind": "lost-challenge",
+          "mood": "bitter",
+          "juror": true,
+          "placement": 9,
+          "how": "lost-challenge",
+          "votes": null,
+          "segments": [
+            "answer-back",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Alexander",
+              "stance": "drag",
+              "still": false,
+              "heat": 1.3
+            },
+            {
+              "who": "Dominic",
+              "stance": "miss",
+              "still": true,
+              "heat": 0.65
+            },
+            {
+              "who": "Sawyer",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.52
+            },
+            {
+              "who": "Angelica",
+              "stance": "drag",
+              "still": false,
+              "heat": 1.3
+            }
+          ],
+          "truth": null,
+          "prediction": "Michele",
+          "caller": null,
+          "answerBack": [
+            {
+              "id": "big-brother-w5-Angelica",
+              "who": "Angelica",
+              "stance": "drag",
+              "was": "blame"
+            }
+          ],
+          "allies": [
+            "Dominic",
+            "Sawyer"
+          ],
+          "rivals": [
+            "Alexander",
+            "Angelica"
+          ],
+          "partner": "Dominic",
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Ivyna",
+            "Michele",
+            "Sawyer",
+            "Angelica"
+          ],
+          "heat": 6.8,
+          "reception": "cold",
+          "profile": {
+            "archetype": "wildcard",
+            "stats": {
+              "physical": 6,
+              "endurance": 6,
+              "mental": 6,
+              "social": 7,
+              "strategic": 5,
+              "loyalty": 8,
+              "boldness": 9,
+              "intuition": 7,
+              "temperament": 4
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Nina": -0.84,
+              "Dominic": 0.83,
+              "Sawyer": 1.33
+            },
+            "bonds": [
+              {
+                "a": "Alexander",
+                "b": "Nina",
+                "delta": -1.51,
+                "when": 12
+              },
+              {
+                "a": "Dominic",
+                "b": "Nina",
+                "delta": 0.27,
+                "when": 16
+              },
+              {
+                "a": "Sawyer",
+                "b": "Nina",
+                "delta": 0.21,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Nina",
+                "delta": -1.2,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Alexander",
+            "Dominic",
+            "Sawyer",
+            "Angelica"
+          ]
+        },
+        {
+          "id": "big-brother-w12-Sawyer",
+          "show": "big-brother",
+          "week": 12,
+          "guest": "Sawyer",
+          "with": null,
+          "kind": "blindside",
+          "mood": "gutted",
+          "juror": true,
+          "placement": 7,
+          "how": "evicted",
+          "votes": {
+            "against": 4,
+            "total": 4
+          },
+          "segments": [
+            "the-tape",
+            "message-in",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Dominic",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Ivyna",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.88
+            },
+            {
+              "who": "Alexander",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.66
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Dominic",
+              "Ivyna",
+              "Michele"
+            ],
+            "suspected": [
+              "Angelica"
+            ],
+            "right": false
+          },
+          "prediction": "Ben",
+          "caller": "Alexander",
+          "answerBack": [],
+          "allies": [
+            "Ben",
+            "Michele"
+          ],
+          "rivals": [
+            "Angelica",
+            "Alexander"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Dominic",
+            "Ivyna",
+            "Michele",
+            "Angelica"
+          ],
+          "heat": 6.3,
+          "reception": "warm",
+          "profile": {
+            "archetype": "hero",
+            "stats": {
+              "physical": 7,
+              "endurance": 8,
+              "mental": 4,
+              "social": 7,
+              "strategic": 3,
+              "loyalty": 9,
+              "boldness": 4,
+              "intuition": 6,
+              "temperament": 9
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Sawyer": 0.96,
+              "Angelica": -2.14,
+              "Dominic": -2.14,
+              "Ivyna": -2.14
+            },
+            "bonds": [
+              {
+                "a": "Sawyer",
+                "b": "Dominic",
+                "delta": -0.68,
+                "when": "recorded"
+              },
+              {
+                "a": "Sawyer",
+                "b": "Ivyna",
+                "delta": -0.68,
+                "when": "recorded"
+              },
+              {
+                "a": "Sawyer",
+                "b": "Michele",
+                "delta": -0.68,
+                "when": "recorded"
+              },
+              {
+                "a": "Alexander",
+                "b": "Sawyer",
+                "delta": -0.27,
+                "when": 12
+              },
+              {
+                "a": "Dominic",
+                "b": "Sawyer",
+                "delta": -0.52,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Sawyer",
+                "delta": -0.57,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Sawyer",
+                "delta": -0.47,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Alexander",
+            "Dominic",
+            "Angelica",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w13-Dominic",
+          "show": "big-brother",
+          "week": 13,
+          "guest": "Dominic",
+          "with": null,
+          "kind": "blindside",
+          "mood": "gracious",
+          "juror": true,
+          "placement": 6,
+          "how": "evicted",
+          "votes": {
+            "against": 2,
+            "total": 3
+          },
+          "segments": [
+            "the-tape",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "warn",
+              "still": true,
+              "heat": 0.45
+            },
+            {
+              "who": "Baxter",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.22
+            },
+            {
+              "who": "Juan",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            },
+            {
+              "who": "Ben",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.3
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Baxter"
+            ],
+            "suspected": [
+              "Angelica"
+            ],
+            "right": false
+          },
+          "prediction": "Baxter",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Ben",
+            "Michele"
+          ],
+          "rivals": [
+            "Angelica",
+            "Juan"
+          ],
+          "partner": "Nina",
+          "stillIn": [
+            "Baxter",
+            "Ben",
+            "Ivyna",
+            "Michele",
+            "Angelica"
+          ],
+          "heat": 4.4,
+          "reception": "warm",
+          "profile": {
+            "archetype": "challenge-beast",
+            "stats": {
+              "physical": 9,
+              "endurance": 9,
+              "mental": 4,
+              "social": 7,
+              "strategic": 5,
+              "loyalty": 8,
+              "boldness": 7,
+              "intuition": 2,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Dominic": 0.96,
+              "Angelica": -0.51,
+              "Baxter": 0.25,
+              "Ben": 0.51
+            },
+            "bonds": [
+              {
+                "a": "Dominic",
+                "b": "Baxter",
+                "delta": -0.84,
+                "when": "recorded"
+              },
+              {
+                "a": "Juan",
+                "b": "Dominic",
+                "delta": -0.16,
+                "when": 13
+              },
+              {
+                "a": "Ben",
+                "b": "Dominic",
+                "delta": 0.18,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Dominic",
+                "delta": -0.14,
+                "when": 16
+              },
+              {
+                "a": "Baxter",
+                "b": "Dominic",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Juan",
+            "Ben",
+            "Angelica",
+            "Baxter"
+          ]
+        },
+        {
+          "id": "big-brother-w14-Ben",
+          "show": "big-brother",
+          "week": 14,
+          "guest": "Ben",
+          "with": null,
+          "kind": "blindside",
+          "mood": "relieved",
+          "juror": true,
+          "placement": 5,
+          "how": "evicted",
+          "votes": {
+            "against": 2,
+            "total": 2
+          },
+          "segments": [
+            "the-tape",
+            "rank-them",
+            "who-next"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.56
+            },
+            {
+              "who": "Baxter",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Ivyna",
+              "stance": "respect",
+              "still": true,
+              "heat": 0.21
+            },
+            {
+              "who": "Juan",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.42
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Baxter",
+              "Ivyna"
+            ],
+            "suspected": [
+              "Angelica"
+            ],
+            "right": false
+          },
+          "prediction": "Ivyna",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Michele",
+            "Ivyna"
+          ],
+          "rivals": [
+            "Angelica",
+            "Juan"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ivyna",
+            "Michele",
+            "Angelica"
+          ],
+          "heat": 4.4,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "loyal-soldier",
+            "stats": {
+              "physical": 8,
+              "endurance": 8,
+              "mental": 4,
+              "social": 3,
+              "strategic": 5,
+              "loyalty": 9,
+              "boldness": 6,
+              "intuition": 3,
+              "temperament": 5
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Ben": 0.08,
+              "Angelica": -1.46,
+              "Baxter": 0.37,
+              "Ivyna": 0.37
+            },
+            "bonds": [
+              {
+                "a": "Ben",
+                "b": "Baxter",
+                "delta": -1,
+                "when": "recorded"
+              },
+              {
+                "a": "Ben",
+                "b": "Ivyna",
+                "delta": -1,
+                "when": "recorded"
+              },
+              {
+                "a": "Juan",
+                "b": "Ben",
+                "delta": -0.15,
+                "when": 14
+              },
+              {
+                "a": "Angelica",
+                "b": "Ben",
+                "delta": -0.36,
+                "when": 16
+              },
+              {
+                "a": "Baxter",
+                "b": "Ben",
+                "delta": 0.06,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Ben",
+                "delta": 0.06,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Juan",
+            "Angelica",
+            "Baxter",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w15-Michele",
+          "show": "big-brother",
+          "week": 15,
+          "guest": "Michele",
+          "with": null,
+          "kind": "blindside",
+          "mood": "denial",
+          "juror": true,
+          "placement": 4,
+          "how": "evicted",
+          "votes": {
+            "against": 1,
+            "total": 1
+          },
+          "segments": [
+            "the-tape",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Angelica",
+              "stance": "blame",
+              "still": true,
+              "heat": 0.96
+            },
+            {
+              "who": "Paisley",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.72
+            },
+            {
+              "who": "Juan",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.72
+            },
+            {
+              "who": "Ivyna",
+              "stance": "praise",
+              "still": true,
+              "heat": 0.48
+            }
+          ],
+          "truth": {
+            "flippers": [
+              "Angelica"
+            ],
+            "suspected": [],
+            "right": false
+          },
+          "prediction": "Ivyna",
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Ivyna",
+            "Baxter"
+          ],
+          "rivals": [
+            "Paisley",
+            "Juan"
+          ],
+          "partner": null,
+          "stillIn": [
+            "Baxter",
+            "Ivyna",
+            "Angelica"
+          ],
+          "heat": 7.4,
+          "reception": "cold",
+          "profile": {
+            "archetype": "social-butterfly",
+            "stats": {
+              "physical": 3,
+              "endurance": 5,
+              "mental": 6,
+              "social": 9,
+              "strategic": 6,
+              "loyalty": 8,
+              "boldness": 5,
+              "intuition": 9,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Michele": -0.98,
+              "Angelica": -5.25,
+              "Ivyna": 2.63
+            },
+            "bonds": [
+              {
+                "a": "Michele",
+                "b": "Angelica",
+                "delta": -0.92,
+                "when": "recorded"
+              },
+              {
+                "a": "Juan",
+                "b": "Michele",
+                "delta": -0.25,
+                "when": 15
+              },
+              {
+                "a": "Paisley",
+                "b": "Michele",
+                "delta": -0.27,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Michele",
+                "delta": -0.62,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Michele",
+                "delta": 0.22,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Juan",
+            "Paisley",
+            "Angelica",
+            "Ivyna"
+          ]
+        },
+        {
+          "id": "big-brother-w16-Ivyna",
+          "show": "big-brother",
+          "week": 16,
+          "guest": "Ivyna",
+          "with": null,
+          "kind": "finalist",
+          "mood": "relieved",
+          "juror": false,
+          "placement": 3,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "caller",
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Fatima",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.28
+            },
+            {
+              "who": "Michele",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.28
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Juan",
+          "answerBack": [],
+          "allies": [
+            "Fatima",
+            "Michele"
+          ],
+          "rivals": [],
+          "partner": null,
+          "stillIn": [],
+          "heat": 0.6,
+          "reception": "warm",
+          "profile": {
+            "archetype": "perceptive-player",
+            "stats": {
+              "physical": 4,
+              "endurance": 4,
+              "mental": 4,
+              "social": 8,
+              "strategic": 6,
+              "loyalty": 7,
+              "boldness": 4,
+              "intuition": 9,
+              "temperament": 8
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Ivyna": 1.04
+            },
+            "bonds": [
+              {
+                "a": "Fatima",
+                "b": "Ivyna",
+                "delta": 0.14,
+                "when": 16
+              },
+              {
+                "a": "Michele",
+                "b": "Ivyna",
+                "delta": 0.15,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Fatima",
+            "Michele"
+          ]
+        },
+        {
+          "id": "big-brother-w16-Angelica",
+          "show": "big-brother",
+          "week": 16,
+          "guest": "Angelica",
+          "with": null,
+          "kind": "finalist",
+          "mood": "gracious",
+          "juror": false,
+          "placement": 2,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "answer-back",
+            "caller"
+          ],
+          "named": [
+            {
+              "who": "Sawyer",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            },
+            {
+              "who": "Ben",
+              "stance": "warn",
+              "still": false,
+              "heat": 0.45
+            },
+            {
+              "who": "Ivyna",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.3
+            },
+            {
+              "who": "Michele",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.3
+            },
+            {
+              "who": "Willow",
+              "stance": "respect",
+              "still": false,
+              "heat": 0.22
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": "Willow",
+          "answerBack": [
+            {
+              "id": "big-brother-w3-Willow",
+              "who": "Willow",
+              "stance": "respect",
+              "was": "blame"
+            }
+          ],
+          "allies": [
+            "Ivyna",
+            "Michele"
+          ],
+          "rivals": [
+            "Sawyer",
+            "Ben"
+          ],
+          "partner": null,
+          "stillIn": [],
+          "heat": 3.2,
+          "reception": "warm",
+          "profile": {
+            "archetype": "mastermind",
+            "stats": {
+              "physical": 5,
+              "endurance": 6,
+              "mental": 8,
+              "social": 6,
+              "strategic": 10,
+              "loyalty": 4,
+              "boldness": 6,
+              "intuition": 8,
+              "temperament": 6
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Angelica": 0.88
+            },
+            "bonds": [
+              {
+                "a": "Sawyer",
+                "b": "Angelica",
+                "delta": -0.11,
+                "when": 16
+              },
+              {
+                "a": "Ben",
+                "b": "Angelica",
+                "delta": -0.16,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Angelica",
+                "delta": 0.14,
+                "when": 16
+              },
+              {
+                "a": "Michele",
+                "b": "Angelica",
+                "delta": 0.17,
+                "when": 16
+              },
+              {
+                "a": "Willow",
+                "b": "Angelica",
+                "delta": 0.08,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Sawyer",
+            "Ben",
+            "Ivyna",
+            "Michele",
+            "Willow"
+          ]
+        },
+        {
+          "id": "big-brother-w16-Baxter",
+          "show": "big-brother",
+          "week": 16,
+          "guest": "Baxter",
+          "with": null,
+          "kind": "finalist",
+          "mood": "elated",
+          "juror": false,
+          "placement": 1,
+          "how": "finalist",
+          "votes": null,
+          "segments": [
+            "fan-mail"
+          ],
+          "named": [
+            {
+              "who": "Alexander",
+              "stance": "drag",
+              "still": false,
+              "heat": 0.8
+            },
+            {
+              "who": "Angelica",
+              "stance": "drag",
+              "still": false,
+              "heat": 0.8
+            },
+            {
+              "who": "Michele",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.32
+            },
+            {
+              "who": "Ivyna",
+              "stance": "praise",
+              "still": false,
+              "heat": 0.32
+            }
+          ],
+          "truth": null,
+          "prediction": null,
+          "caller": null,
+          "answerBack": [],
+          "allies": [
+            "Michele",
+            "Ivyna"
+          ],
+          "rivals": [
+            "Alexander",
+            "Angelica"
+          ],
+          "partner": null,
+          "stillIn": [],
+          "heat": 2.2,
+          "reception": "mixed",
+          "profile": {
+            "archetype": "wildcard",
+            "stats": {
+              "physical": 4,
+              "endurance": 6,
+              "mental": 7,
+              "social": 6,
+              "strategic": 6,
+              "loyalty": 6,
+              "boldness": 5,
+              "intuition": 8,
+              "temperament": 7
+            }
+          },
+          "effects": {
+            "popularity": {
+              "Baxter": 0.11
+            },
+            "bonds": [
+              {
+                "a": "Alexander",
+                "b": "Baxter",
+                "delta": -0.93,
+                "when": 16
+              },
+              {
+                "a": "Angelica",
+                "b": "Baxter",
+                "delta": -0.74,
+                "when": 16
+              },
+              {
+                "a": "Michele",
+                "b": "Baxter",
+                "delta": 0.18,
+                "when": 16
+              },
+              {
+                "a": "Ivyna",
+                "b": "Baxter",
+                "delta": 0.15,
+                "when": 16
+              }
+            ]
+          },
+          "heard": [
+            "Alexander",
+            "Angelica",
+            "Michele",
+            "Ivyna"
           ]
         }
       ],

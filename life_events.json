@@ -12525,6 +12525,1822 @@
       "afterSeason": "pm-1",
       "seq": 243,
       "status": "approved"
+    },
+    {
+      "player": "alejandro",
+      "kind": "dream-job",
+      "afterSeason": "bb-2",
+      "seq": 1,
+      "status": "approved"
+    },
+    {
+      "player": "amy",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 2,
+      "status": "approved"
+    },
+    {
+      "player": "b",
+      "kind": "haircut",
+      "afterSeason": "bb-2",
+      "seq": 3,
+      "status": "approved"
+    },
+    {
+      "player": "beardo",
+      "kind": "marathon",
+      "afterSeason": "bb-2",
+      "seq": 4,
+      "status": "approved"
+    },
+    {
+      "player": "beth",
+      "kind": "haircut",
+      "afterSeason": "bb-2",
+      "seq": 5,
+      "status": "approved"
+    },
+    {
+      "player": "blaineley",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 6,
+      "status": "approved"
+    },
+    {
+      "player": "brick",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 7,
+      "status": "approved"
+    },
+    {
+      "player": "bridgette",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 8,
+      "status": "approved"
+    },
+    {
+      "player": "brody",
+      "kind": "wedding",
+      "afterSeason": "bb-2",
+      "seq": 9,
+      "status": "approved",
+      "whom": "mary"
+    },
+    {
+      "player": "brody",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 10,
+      "status": "approved"
+    },
+    {
+      "player": "brody",
+      "kind": "watch-party",
+      "afterSeason": "bb-2",
+      "seq": 11,
+      "status": "approved",
+      "whom": "owen"
+    },
+    {
+      "player": "cameron",
+      "kind": "moved-in",
+      "afterSeason": "bb-2",
+      "seq": 12,
+      "status": "approved",
+      "whom": "sky"
+    },
+    {
+      "player": "cody",
+      "kind": "moved-in",
+      "afterSeason": "bb-2",
+      "seq": 13,
+      "status": "approved",
+      "whom": "carrie"
+    },
+    {
+      "player": "cody",
+      "kind": "pottery",
+      "afterSeason": "bb-2",
+      "seq": 14,
+      "status": "approved"
+    },
+    {
+      "player": "cody",
+      "kind": "reunion",
+      "afterSeason": "bb-2",
+      "seq": 15,
+      "status": "approved"
+    },
+    {
+      "player": "cody",
+      "kind": "holiday",
+      "afterSeason": "bb-2",
+      "seq": 16,
+      "status": "approved",
+      "whom": "carrie"
+    },
+    {
+      "player": "courtney",
+      "kind": "garden",
+      "afterSeason": "bb-2",
+      "seq": 17,
+      "status": "approved"
+    },
+    {
+      "player": "dakota",
+      "kind": "quit-job",
+      "afterSeason": "bb-2",
+      "seq": 18,
+      "status": "approved"
+    },
+    {
+      "player": "dave",
+      "kind": "pottery",
+      "afterSeason": "bb-2",
+      "seq": 19,
+      "status": "approved"
+    },
+    {
+      "player": "dawn",
+      "kind": "moved-back",
+      "afterSeason": "bb-2",
+      "seq": 20,
+      "status": "approved"
+    },
+    {
+      "player": "dj",
+      "kind": "volunteering",
+      "afterSeason": "bb-2",
+      "seq": 21,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 22,
+      "status": "approved",
+      "whom": "gwen"
+    },
+    {
+      "player": "duncan",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 23,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "pottery",
+      "afterSeason": "bb-2",
+      "seq": 24,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "presented-award",
+      "afterSeason": "bb-2",
+      "seq": 25,
+      "status": "approved"
+    },
+    {
+      "player": "duncan",
+      "kind": "band",
+      "afterSeason": "bb-2",
+      "seq": 26,
+      "status": "approved"
+    },
+    {
+      "player": "dwayne",
+      "kind": "hobby",
+      "afterSeason": "bb-2",
+      "seq": 27,
+      "status": "approved"
+    },
+    {
+      "player": "ella",
+      "kind": "officiated",
+      "afterSeason": "bb-2",
+      "seq": 28,
+      "status": "approved"
+    },
+    {
+      "player": "emma",
+      "kind": "clapback",
+      "afterSeason": "bb-2",
+      "seq": 29,
+      "status": "approved"
+    },
+    {
+      "player": "emma",
+      "kind": "solo-trip",
+      "afterSeason": "bb-2",
+      "seq": 30,
+      "status": "approved"
+    },
+    {
+      "player": "ennui",
+      "kind": "quit-job",
+      "afterSeason": "bb-2",
+      "seq": 31,
+      "status": "approved"
+    },
+    {
+      "player": "ennui",
+      "kind": "came-into-money",
+      "afterSeason": "bb-2",
+      "seq": 32,
+      "status": "approved"
+    },
+    {
+      "player": "eva",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 33,
+      "status": "approved"
+    },
+    {
+      "player": "ezekiel",
+      "kind": "housewarming",
+      "afterSeason": "bb-2",
+      "seq": 34,
+      "status": "approved"
+    },
+    {
+      "player": "geoff",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 35,
+      "status": "approved"
+    },
+    {
+      "player": "gwen",
+      "kind": "marathon",
+      "afterSeason": "bb-2",
+      "seq": 36,
+      "status": "approved"
+    },
+    {
+      "player": "gwen",
+      "kind": "moved",
+      "afterSeason": "bb-2",
+      "seq": 37,
+      "status": "approved"
+    },
+    {
+      "player": "harold",
+      "kind": "side-hustle",
+      "afterSeason": "bb-2",
+      "seq": 38,
+      "status": "approved"
+    },
+    {
+      "player": "harold",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 39,
+      "status": "approved"
+    },
+    {
+      "player": "izzy",
+      "kind": "tattoo",
+      "afterSeason": "bb-2",
+      "seq": 40,
+      "status": "approved"
+    },
+    {
+      "player": "jacques",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 41,
+      "status": "approved",
+      "whom": "tom"
+    },
+    {
+      "player": "jacques",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 42,
+      "status": "approved"
+    },
+    {
+      "player": "jay",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 43,
+      "status": "approved",
+      "whom": "kitty"
+    },
+    {
+      "player": "jay",
+      "kind": "moved-city",
+      "afterSeason": "bb-2",
+      "seq": 44,
+      "status": "approved"
+    },
+    {
+      "player": "jo",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 45,
+      "status": "approved"
+    },
+    {
+      "player": "josee",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 46,
+      "status": "approved",
+      "whom": "mickey"
+    },
+    {
+      "player": "josee",
+      "kind": "new-language",
+      "afterSeason": "bb-2",
+      "seq": 47,
+      "status": "approved"
+    },
+    {
+      "player": "junior",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 48,
+      "status": "approved"
+    },
+    {
+      "player": "justin",
+      "kind": "housewarming",
+      "afterSeason": "bb-2",
+      "seq": 49,
+      "status": "approved"
+    },
+    {
+      "player": "justin",
+      "kind": "acting-role",
+      "afterSeason": "bb-2",
+      "seq": 50,
+      "status": "approved"
+    },
+    {
+      "player": "katie",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 51,
+      "status": "approved"
+    },
+    {
+      "player": "katie",
+      "kind": "started-business",
+      "afterSeason": "bb-2",
+      "seq": 52,
+      "status": "approved"
+    },
+    {
+      "player": "leonard",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 53,
+      "status": "approved"
+    },
+    {
+      "player": "leonard",
+      "kind": "interview",
+      "afterSeason": "bb-2",
+      "seq": 54,
+      "status": "approved"
+    },
+    {
+      "player": "leonard",
+      "kind": "new-job",
+      "afterSeason": "bb-2",
+      "seq": 55,
+      "status": "approved"
+    },
+    {
+      "player": "leshawna",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 56,
+      "status": "approved"
+    },
+    {
+      "player": "leshawna",
+      "kind": "award",
+      "afterSeason": "bb-2",
+      "seq": 57,
+      "status": "approved"
+    },
+    {
+      "player": "lightning",
+      "kind": "learned",
+      "afterSeason": "bb-2",
+      "seq": 58,
+      "status": "approved"
+    },
+    {
+      "player": "lightning",
+      "kind": "hosted-comp",
+      "afterSeason": "bb-2",
+      "seq": 59,
+      "status": "approved"
+    },
+    {
+      "player": "lindsay",
+      "kind": "moved-city",
+      "afterSeason": "bb-2",
+      "seq": 60,
+      "status": "approved"
+    },
+    {
+      "player": "mary",
+      "kind": "quit-job",
+      "afterSeason": "bb-2",
+      "seq": 61,
+      "status": "approved"
+    },
+    {
+      "player": "mary",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 62,
+      "status": "approved"
+    },
+    {
+      "player": "mickey",
+      "kind": "return-rumour",
+      "afterSeason": "bb-2",
+      "seq": 63,
+      "status": "approved"
+    },
+    {
+      "player": "mike",
+      "kind": "boxing",
+      "afterSeason": "bb-2",
+      "seq": 64,
+      "status": "approved"
+    },
+    {
+      "player": "noah",
+      "kind": "moved-city",
+      "afterSeason": "bb-2",
+      "seq": 65,
+      "status": "approved"
+    },
+    {
+      "player": "noah",
+      "kind": "tax-bill",
+      "afterSeason": "bb-2",
+      "seq": 66,
+      "status": "approved"
+    },
+    {
+      "player": "owen",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 67,
+      "status": "approved"
+    },
+    {
+      "player": "owen",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 68,
+      "status": "approved"
+    },
+    {
+      "player": "rodney",
+      "kind": "solo-trip",
+      "afterSeason": "bb-2",
+      "seq": 69,
+      "status": "approved"
+    },
+    {
+      "player": "ryan",
+      "kind": "pet-died",
+      "afterSeason": "bb-2",
+      "seq": 70,
+      "status": "approved"
+    },
+    {
+      "player": "ryan",
+      "kind": "presented-award",
+      "afterSeason": "bb-2",
+      "seq": 71,
+      "status": "approved"
+    },
+    {
+      "player": "ryan",
+      "kind": "turned-down-offer",
+      "afterSeason": "bb-2",
+      "seq": 72,
+      "status": "approved"
+    },
+    {
+      "player": "ryan",
+      "kind": "donated-kidney",
+      "afterSeason": "bb-2",
+      "seq": 73,
+      "status": "approved"
+    },
+    {
+      "player": "sam",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 74,
+      "status": "approved"
+    },
+    {
+      "player": "samey",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 75,
+      "status": "approved"
+    },
+    {
+      "player": "scarlett",
+      "kind": "moved",
+      "afterSeason": "bb-2",
+      "seq": 76,
+      "status": "approved"
+    },
+    {
+      "player": "scarlett",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 77,
+      "status": "approved"
+    },
+    {
+      "player": "scott",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 78,
+      "status": "approved",
+      "whom": "zoey"
+    },
+    {
+      "player": "scott",
+      "kind": "new-job",
+      "afterSeason": "bb-2",
+      "seq": 79,
+      "status": "approved"
+    },
+    {
+      "player": "shawn",
+      "kind": "business-partners",
+      "afterSeason": "bb-2",
+      "seq": 80,
+      "status": "approved",
+      "whom": "scott"
+    },
+    {
+      "player": "staci",
+      "kind": "quit-job",
+      "afterSeason": "bb-2",
+      "seq": 81,
+      "status": "approved"
+    },
+    {
+      "player": "sugar",
+      "kind": "back-with-parents",
+      "afterSeason": "bb-2",
+      "seq": 82,
+      "status": "approved"
+    },
+    {
+      "player": "sugar",
+      "kind": "new-job",
+      "afterSeason": "bb-2",
+      "seq": 83,
+      "status": "approved"
+    },
+    {
+      "player": "tammy",
+      "kind": "cat",
+      "afterSeason": "bb-2",
+      "seq": 84,
+      "status": "approved"
+    },
+    {
+      "player": "topher",
+      "kind": "band",
+      "afterSeason": "bb-2",
+      "seq": 85,
+      "status": "approved"
+    },
+    {
+      "player": "trent",
+      "kind": "laid-off",
+      "afterSeason": "bb-2",
+      "seq": 86,
+      "status": "approved"
+    },
+    {
+      "player": "tyler",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 87,
+      "status": "approved"
+    },
+    {
+      "player": "zoey",
+      "kind": "production-fallout",
+      "afterSeason": "bb-2",
+      "seq": 88,
+      "status": "approved"
+    },
+    {
+      "player": "zoey",
+      "kind": "pet-died",
+      "afterSeason": "bb-2",
+      "seq": 89,
+      "status": "approved"
+    },
+    {
+      "player": "carrie",
+      "kind": "dream-job",
+      "afterSeason": "bb-2",
+      "seq": 90,
+      "status": "approved"
+    },
+    {
+      "player": "carrie",
+      "kind": "band",
+      "afterSeason": "bb-2",
+      "seq": 91,
+      "status": "approved"
+    },
+    {
+      "player": "devin",
+      "kind": "kicked-habit",
+      "afterSeason": "bb-2",
+      "seq": 92,
+      "status": "approved"
+    },
+    {
+      "player": "laurie",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 93,
+      "status": "approved"
+    },
+    {
+      "player": "lorenzo",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 94,
+      "status": "approved"
+    },
+    {
+      "player": "macarthur",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 95,
+      "status": "approved",
+      "whom": "sanders"
+    },
+    {
+      "player": "macarthur",
+      "kind": "new-language",
+      "afterSeason": "bb-2",
+      "seq": 96,
+      "status": "approved"
+    },
+    {
+      "player": "macarthur",
+      "kind": "first-aid",
+      "afterSeason": "bb-2",
+      "seq": 97,
+      "status": "approved"
+    },
+    {
+      "player": "spud",
+      "kind": "dream-job",
+      "afterSeason": "bb-2",
+      "seq": 98,
+      "status": "approved"
+    },
+    {
+      "player": "tom",
+      "kind": "flatmates",
+      "afterSeason": "bb-2",
+      "seq": 99,
+      "status": "approved",
+      "whom": "jacques"
+    },
+    {
+      "player": "chet",
+      "kind": "side-hustle",
+      "afterSeason": "bb-2",
+      "seq": 100,
+      "status": "approved"
+    },
+    {
+      "player": "gerry",
+      "kind": "business-partners",
+      "afterSeason": "bb-2",
+      "seq": 101,
+      "status": "approved",
+      "whom": "miles"
+    },
+    {
+      "player": "miles",
+      "kind": "boxing",
+      "afterSeason": "bb-2",
+      "seq": 102,
+      "status": "approved"
+    },
+    {
+      "player": "rock",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 103,
+      "status": "approved"
+    },
+    {
+      "player": "sanders",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 104,
+      "status": "approved"
+    },
+    {
+      "player": "sanders",
+      "kind": "pet-died",
+      "afterSeason": "bb-2",
+      "seq": 105,
+      "status": "approved"
+    },
+    {
+      "player": "sanders",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 106,
+      "status": "approved"
+    },
+    {
+      "player": "axel",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 107,
+      "status": "approved",
+      "whom": "ripper"
+    },
+    {
+      "player": "axel",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 108,
+      "status": "approved"
+    },
+    {
+      "player": "axel",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 109,
+      "status": "approved"
+    },
+    {
+      "player": "brightly",
+      "kind": "road-trip",
+      "afterSeason": "bb-2",
+      "seq": 110,
+      "status": "approved",
+      "whom": "emmah"
+    },
+    {
+      "player": "caleb",
+      "kind": "boxing",
+      "afterSeason": "bb-2",
+      "seq": 111,
+      "status": "approved"
+    },
+    {
+      "player": "chase",
+      "kind": "first-aid",
+      "afterSeason": "bb-2",
+      "seq": 112,
+      "status": "approved"
+    },
+    {
+      "player": "emmah",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 113,
+      "status": "approved"
+    },
+    {
+      "player": "hicks",
+      "kind": "holiday",
+      "afterSeason": "bb-2",
+      "seq": 114,
+      "status": "approved",
+      "whom": "emmah"
+    },
+    {
+      "player": "julia",
+      "kind": "bought-home",
+      "afterSeason": "bb-2",
+      "seq": 115,
+      "status": "approved"
+    },
+    {
+      "player": "julia",
+      "kind": "fan-meetup",
+      "afterSeason": "bb-2",
+      "seq": 116,
+      "status": "approved"
+    },
+    {
+      "player": "julia",
+      "kind": "climbing",
+      "afterSeason": "bb-2",
+      "seq": 117,
+      "status": "approved"
+    },
+    {
+      "player": "millie",
+      "kind": "small-town",
+      "afterSeason": "bb-2",
+      "seq": 118,
+      "status": "approved"
+    },
+    {
+      "player": "nichelle",
+      "kind": "cat",
+      "afterSeason": "bb-2",
+      "seq": 119,
+      "status": "approved"
+    },
+    {
+      "player": "priya",
+      "kind": "open-mic",
+      "afterSeason": "bb-2",
+      "seq": 120,
+      "status": "approved"
+    },
+    {
+      "player": "priya",
+      "kind": "released-song",
+      "afterSeason": "bb-2",
+      "seq": 121,
+      "status": "approved"
+    },
+    {
+      "player": "raj",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 122,
+      "status": "approved"
+    },
+    {
+      "player": "ripper",
+      "kind": "pay-rise",
+      "afterSeason": "bb-2",
+      "seq": 123,
+      "status": "approved"
+    },
+    {
+      "player": "scary-girl",
+      "kind": "climbing",
+      "afterSeason": "bb-2",
+      "seq": 124,
+      "status": "approved"
+    },
+    {
+      "player": "wayne",
+      "kind": "red-carpet",
+      "afterSeason": "bb-2",
+      "seq": 125,
+      "status": "approved"
+    },
+    {
+      "player": "zee",
+      "kind": "bought-home",
+      "afterSeason": "bb-2",
+      "seq": 126,
+      "status": "approved"
+    },
+    {
+      "player": "jake",
+      "kind": "moved-city",
+      "afterSeason": "bb-2",
+      "seq": 127,
+      "status": "approved"
+    },
+    {
+      "player": "miriam",
+      "kind": "rewatch-podcast",
+      "afterSeason": "bb-2",
+      "seq": 128,
+      "status": "approved"
+    },
+    {
+      "player": "miriam",
+      "kind": "cooking",
+      "afterSeason": "bb-2",
+      "seq": 129,
+      "status": "approved"
+    },
+    {
+      "player": "grett",
+      "kind": "bought-home",
+      "afterSeason": "bb-2",
+      "seq": 130,
+      "status": "approved"
+    },
+    {
+      "player": "dan",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 131,
+      "status": "approved"
+    },
+    {
+      "player": "drew",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 132,
+      "status": "approved"
+    },
+    {
+      "player": "gabby",
+      "kind": "first-aid",
+      "afterSeason": "bb-2",
+      "seq": 133,
+      "status": "approved"
+    },
+    {
+      "player": "sterling",
+      "kind": "officiated",
+      "afterSeason": "bb-2",
+      "seq": 134,
+      "status": "approved"
+    },
+    {
+      "player": "eureka",
+      "kind": "break-in",
+      "afterSeason": "bb-2",
+      "seq": 135,
+      "status": "approved"
+    },
+    {
+      "player": "will",
+      "kind": "learned",
+      "afterSeason": "bb-2",
+      "seq": 136,
+      "status": "approved"
+    },
+    {
+      "player": "will",
+      "kind": "scammed",
+      "afterSeason": "bb-2",
+      "seq": 137,
+      "status": "approved"
+    },
+    {
+      "player": "seraphine",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 138,
+      "status": "approved"
+    },
+    {
+      "player": "fiore",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 139,
+      "status": "approved"
+    },
+    {
+      "player": "nick",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 140,
+      "status": "approved"
+    },
+    {
+      "player": "wix",
+      "kind": "side-hustle",
+      "afterSeason": "bb-2",
+      "seq": 141,
+      "status": "approved"
+    },
+    {
+      "player": "lill",
+      "kind": "moved",
+      "afterSeason": "bb-2",
+      "seq": 142,
+      "status": "approved"
+    },
+    {
+      "player": "james",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 143,
+      "status": "approved"
+    },
+    {
+      "player": "james",
+      "kind": "back-with-parents",
+      "afterSeason": "bb-2",
+      "seq": 144,
+      "status": "approved"
+    },
+    {
+      "player": "maggy",
+      "kind": "moved-back",
+      "afterSeason": "bb-2",
+      "seq": 145,
+      "status": "approved"
+    },
+    {
+      "player": "kai",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 146,
+      "status": "approved"
+    },
+    {
+      "player": "riya",
+      "kind": "travelling",
+      "afterSeason": "bb-2",
+      "seq": 147,
+      "status": "approved"
+    },
+    {
+      "player": "riya",
+      "kind": "acting-role",
+      "afterSeason": "bb-2",
+      "seq": 148,
+      "status": "approved"
+    },
+    {
+      "player": "aiden",
+      "kind": "open-mic",
+      "afterSeason": "bb-2",
+      "seq": 149,
+      "status": "approved"
+    },
+    {
+      "player": "hunter",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 150,
+      "status": "approved"
+    },
+    {
+      "player": "hunter",
+      "kind": "volunteering",
+      "afterSeason": "bb-2",
+      "seq": 151,
+      "status": "approved"
+    },
+    {
+      "player": "lake",
+      "kind": "garden",
+      "afterSeason": "bb-2",
+      "seq": 152,
+      "status": "approved"
+    },
+    {
+      "player": "lake",
+      "kind": "interview",
+      "afterSeason": "bb-2",
+      "seq": 153,
+      "status": "approved"
+    },
+    {
+      "player": "tess",
+      "kind": "laid-off",
+      "afterSeason": "bb-2",
+      "seq": 154,
+      "status": "approved"
+    },
+    {
+      "player": "oliver",
+      "kind": "back-with-parents",
+      "afterSeason": "bb-2",
+      "seq": 155,
+      "status": "approved"
+    },
+    {
+      "player": "diego",
+      "kind": "tattoo",
+      "afterSeason": "bb-2",
+      "seq": 156,
+      "status": "approved"
+    },
+    {
+      "player": "benji",
+      "kind": "band",
+      "afterSeason": "bb-2",
+      "seq": 157,
+      "status": "approved"
+    },
+    {
+      "player": "zaid",
+      "kind": "climbing",
+      "afterSeason": "bb-2",
+      "seq": 158,
+      "status": "approved"
+    },
+    {
+      "player": "zaid",
+      "kind": "bereavement",
+      "afterSeason": "bb-2",
+      "seq": 159,
+      "status": "approved"
+    },
+    {
+      "player": "lynda",
+      "kind": "reading",
+      "afterSeason": "bb-2",
+      "seq": 160,
+      "status": "approved"
+    },
+    {
+      "player": "anastasia",
+      "kind": "travelling",
+      "afterSeason": "bb-2",
+      "seq": 161,
+      "status": "approved"
+    },
+    {
+      "player": "ted",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 162,
+      "status": "approved"
+    },
+    {
+      "player": "alessio",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 163,
+      "status": "approved"
+    },
+    {
+      "player": "logan",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 164,
+      "status": "approved"
+    },
+    {
+      "player": "logan",
+      "kind": "garden",
+      "afterSeason": "bb-2",
+      "seq": 165,
+      "status": "approved"
+    },
+    {
+      "player": "logan",
+      "kind": "hospital-stay",
+      "afterSeason": "bb-2",
+      "seq": 166,
+      "status": "approved"
+    },
+    {
+      "player": "richard",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 167,
+      "status": "approved"
+    },
+    {
+      "player": "richard",
+      "kind": "break-in",
+      "afterSeason": "bb-2",
+      "seq": 168,
+      "status": "approved"
+    },
+    {
+      "player": "misha",
+      "kind": "pet",
+      "afterSeason": "bb-2",
+      "seq": 169,
+      "status": "approved"
+    },
+    {
+      "player": "misha",
+      "kind": "presented-award",
+      "afterSeason": "bb-2",
+      "seq": 170,
+      "status": "approved"
+    },
+    {
+      "player": "jules",
+      "kind": "promoted",
+      "afterSeason": "bb-2",
+      "seq": 171,
+      "status": "approved"
+    },
+    {
+      "player": "joel",
+      "kind": "business-partners",
+      "afterSeason": "bb-2",
+      "seq": 172,
+      "status": "approved",
+      "whom": "felipe"
+    },
+    {
+      "player": "jane",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 173,
+      "status": "approved"
+    },
+    {
+      "player": "felipe",
+      "kind": "boxing",
+      "afterSeason": "bb-2",
+      "seq": 174,
+      "status": "approved"
+    },
+    {
+      "player": "natasha",
+      "kind": "broke-up",
+      "afterSeason": "bb-2",
+      "seq": 175,
+      "status": "approved",
+      "whom": "zella"
+    },
+    {
+      "player": "dylon",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 176,
+      "status": "approved"
+    },
+    {
+      "player": "nico",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 177,
+      "status": "approved"
+    },
+    {
+      "player": "nico",
+      "kind": "learned",
+      "afterSeason": "bb-2",
+      "seq": 178,
+      "status": "approved"
+    },
+    {
+      "player": "hasan",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 179,
+      "status": "approved"
+    },
+    {
+      "player": "zella",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 180,
+      "status": "approved"
+    },
+    {
+      "player": "harriett",
+      "kind": "boxing",
+      "afterSeason": "bb-2",
+      "seq": 181,
+      "status": "approved"
+    },
+    {
+      "player": "stella",
+      "kind": "year-off",
+      "afterSeason": "bb-2",
+      "seq": 182,
+      "status": "approved"
+    },
+    {
+      "player": "sharon-needles",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 183,
+      "status": "approved"
+    },
+    {
+      "player": "riot",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 184,
+      "status": "approved"
+    },
+    {
+      "player": "quin",
+      "kind": "volunteering",
+      "afterSeason": "bb-2",
+      "seq": 185,
+      "status": "approved"
+    },
+    {
+      "player": "quin",
+      "kind": "live-posting",
+      "afterSeason": "bb-2",
+      "seq": 186,
+      "status": "approved"
+    },
+    {
+      "player": "quin",
+      "kind": "sports-league",
+      "afterSeason": "bb-2",
+      "seq": 187,
+      "status": "approved"
+    },
+    {
+      "player": "paige-turner",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 188,
+      "status": "approved"
+    },
+    {
+      "player": "paige-turner",
+      "kind": "fan-meetup",
+      "afterSeason": "bb-2",
+      "seq": 189,
+      "status": "approved"
+    },
+    {
+      "player": "minnie-skurr",
+      "kind": "turned-down-offer",
+      "afterSeason": "bb-2",
+      "seq": 190,
+      "status": "approved"
+    },
+    {
+      "player": "minnie-skurr",
+      "kind": "moved-abroad",
+      "afterSeason": "bb-2",
+      "seq": 191,
+      "status": "approved"
+    },
+    {
+      "player": "marge-stache",
+      "kind": "laid-off",
+      "afterSeason": "bb-2",
+      "seq": 192,
+      "status": "approved"
+    },
+    {
+      "player": "ginger-hollywood",
+      "kind": "pay-rise",
+      "afterSeason": "bb-2",
+      "seq": 193,
+      "status": "approved"
+    },
+    {
+      "player": "gigi-cherie",
+      "kind": "birth",
+      "afterSeason": "bb-2",
+      "seq": 194,
+      "status": "approved"
+    },
+    {
+      "player": "gigi-cherie",
+      "kind": "climbing",
+      "afterSeason": "bb-2",
+      "seq": 195,
+      "status": "approved"
+    },
+    {
+      "player": "cheryl-hole",
+      "kind": "laid-off",
+      "afterSeason": "bb-2",
+      "seq": 196,
+      "status": "approved"
+    },
+    {
+      "player": "autumnatic",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 197,
+      "status": "approved"
+    },
+    {
+      "player": "autumnatic",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 198,
+      "status": "approved"
+    },
+    {
+      "player": "anita-crown-davenport",
+      "kind": "year-off",
+      "afterSeason": "bb-2",
+      "seq": 199,
+      "status": "approved"
+    },
+    {
+      "player": "ara",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 200,
+      "status": "approved"
+    },
+    {
+      "player": "dunia",
+      "kind": "donated-kidney",
+      "afterSeason": "bb-2",
+      "seq": 201,
+      "status": "approved"
+    },
+    {
+      "player": "finn",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 202,
+      "status": "approved"
+    },
+    {
+      "player": "finn",
+      "kind": "bought-home",
+      "afterSeason": "bb-2",
+      "seq": 203,
+      "status": "approved"
+    },
+    {
+      "player": "manu",
+      "kind": "pottery",
+      "afterSeason": "bb-2",
+      "seq": 204,
+      "status": "approved"
+    },
+    {
+      "player": "nura",
+      "kind": "old-car",
+      "afterSeason": "bb-2",
+      "seq": 205,
+      "status": "approved"
+    },
+    {
+      "player": "nura",
+      "kind": "clapback",
+      "afterSeason": "bb-2",
+      "seq": 206,
+      "status": "approved"
+    },
+    {
+      "player": "oliwia",
+      "kind": "award",
+      "afterSeason": "bb-2",
+      "seq": 207,
+      "status": "approved"
+    },
+    {
+      "player": "ren",
+      "kind": "hobby",
+      "afterSeason": "bb-2",
+      "seq": 208,
+      "status": "approved"
+    },
+    {
+      "player": "sami",
+      "kind": "solo-trip",
+      "afterSeason": "bb-2",
+      "seq": 209,
+      "status": "approved"
+    },
+    {
+      "player": "sami",
+      "kind": "burnout",
+      "afterSeason": "bb-2",
+      "seq": 210,
+      "status": "approved"
+    },
+    {
+      "player": "lila",
+      "kind": "promoted",
+      "afterSeason": "bb-2",
+      "seq": 211,
+      "status": "approved"
+    },
+    {
+      "player": "lila",
+      "kind": "talk-show",
+      "afterSeason": "bb-2",
+      "seq": 212,
+      "status": "approved"
+    },
+    {
+      "player": "derek",
+      "kind": "flatmates",
+      "afterSeason": "bb-2",
+      "seq": 213,
+      "status": "approved",
+      "whom": "sasha"
+    },
+    {
+      "player": "elijah",
+      "kind": "went-public",
+      "afterSeason": "bb-2",
+      "seq": 214,
+      "status": "approved",
+      "whom": "hector"
+    },
+    {
+      "player": "mateo",
+      "kind": "open-mic",
+      "afterSeason": "bb-2",
+      "seq": 215,
+      "status": "approved"
+    },
+    {
+      "player": "domingo",
+      "kind": "back-with-parents",
+      "afterSeason": "bb-2",
+      "seq": 216,
+      "status": "approved"
+    },
+    {
+      "player": "lorraine",
+      "kind": "award",
+      "afterSeason": "bb-2",
+      "seq": 217,
+      "status": "approved"
+    },
+    {
+      "player": "dr-ines",
+      "kind": "side-hustle",
+      "afterSeason": "bb-2",
+      "seq": 218,
+      "status": "approved"
+    },
+    {
+      "player": "anais",
+      "kind": "bought-home",
+      "afterSeason": "bb-2",
+      "seq": 219,
+      "status": "approved"
+    },
+    {
+      "player": "ruth",
+      "kind": "graduated",
+      "afterSeason": "bb-2",
+      "seq": 220,
+      "status": "approved"
+    },
+    {
+      "player": "ruth",
+      "kind": "solo-trip",
+      "afterSeason": "bb-2",
+      "seq": 221,
+      "status": "approved"
+    },
+    {
+      "player": "ruth",
+      "kind": "came-into-money",
+      "afterSeason": "bb-2",
+      "seq": 222,
+      "status": "approved"
+    },
+    {
+      "player": "sean",
+      "kind": "marathon",
+      "afterSeason": "bb-2",
+      "seq": 223,
+      "status": "approved"
+    },
+    {
+      "player": "sean",
+      "kind": "coached-rookie",
+      "afterSeason": "bb-2",
+      "seq": 224,
+      "status": "approved"
+    },
+    {
+      "player": "freya",
+      "kind": "flatmates",
+      "afterSeason": "bb-2",
+      "seq": 225,
+      "status": "approved",
+      "whom": "sean"
+    },
+    {
+      "player": "freya",
+      "kind": "cameo",
+      "afterSeason": "bb-2",
+      "seq": 226,
+      "status": "approved"
+    },
+    {
+      "player": "riza",
+      "kind": "pottery",
+      "afterSeason": "bb-2",
+      "seq": 227,
+      "status": "approved"
+    },
+    {
+      "player": "zara",
+      "kind": "open-mic",
+      "afterSeason": "bb-2",
+      "seq": 228,
+      "status": "approved"
+    },
+    {
+      "player": "malik",
+      "kind": "started-business",
+      "afterSeason": "bb-2",
+      "seq": 229,
+      "status": "approved"
+    },
+    {
+      "player": "ayesha",
+      "kind": "hobby",
+      "afterSeason": "bb-2",
+      "seq": 230,
+      "status": "approved"
+    },
+    {
+      "player": "rafael",
+      "kind": "holiday",
+      "afterSeason": "bb-2",
+      "seq": 231,
+      "status": "approved",
+      "whom": "lucia"
+    },
+    {
+      "player": "lucia",
+      "kind": "moved-city",
+      "afterSeason": "bb-2",
+      "seq": 232,
+      "status": "approved"
+    },
+    {
+      "player": "dante",
+      "kind": "moved-in",
+      "afterSeason": "bb-2",
+      "seq": 233,
+      "status": "approved",
+      "whom": "valentina"
+    },
+    {
+      "player": "valentina",
+      "kind": "scammed",
+      "afterSeason": "bb-2",
+      "seq": 234,
+      "status": "approved"
+    },
+    {
+      "player": "anna",
+      "kind": "travelling",
+      "afterSeason": "bb-2",
+      "seq": 235,
+      "status": "approved"
+    },
+    {
+      "player": "callum",
+      "kind": "officiated",
+      "afterSeason": "bb-2",
+      "seq": 236,
+      "status": "approved"
+    },
+    {
+      "player": "amara",
+      "kind": "year-off",
+      "afterSeason": "bb-2",
+      "seq": 237,
+      "status": "approved"
+    },
+    {
+      "player": "amara",
+      "kind": "career-change",
+      "afterSeason": "bb-2",
+      "seq": 238,
+      "status": "approved"
+    },
+    {
+      "player": "antwon",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 239,
+      "status": "approved"
+    },
+    {
+      "player": "elias",
+      "kind": "back-with-parents",
+      "afterSeason": "bb-2",
+      "seq": 240,
+      "status": "approved"
+    },
+    {
+      "player": "makaio",
+      "kind": "garden",
+      "afterSeason": "bb-2",
+      "seq": 241,
+      "status": "approved"
+    },
+    {
+      "player": "imani",
+      "kind": "haircut",
+      "afterSeason": "bb-2",
+      "seq": 242,
+      "status": "approved"
+    },
+    {
+      "player": "imani",
+      "kind": "new-language",
+      "afterSeason": "bb-2",
+      "seq": 243,
+      "status": "approved"
+    },
+    {
+      "player": "angelica",
+      "kind": "skydive",
+      "afterSeason": "bb-2",
+      "seq": 244,
+      "status": "approved"
+    },
+    {
+      "player": "michele",
+      "kind": "enrolled",
+      "afterSeason": "bb-2",
+      "seq": 245,
+      "status": "approved"
+    },
+    {
+      "player": "michele",
+      "kind": "travelling",
+      "afterSeason": "bb-2",
+      "seq": 246,
+      "status": "approved"
+    },
+    {
+      "player": "ben",
+      "kind": "quit-job",
+      "afterSeason": "bb-2",
+      "seq": 247,
+      "status": "approved"
+    },
+    {
+      "player": "sawyer",
+      "kind": "haircut",
+      "afterSeason": "bb-2",
+      "seq": 248,
+      "status": "approved"
+    },
+    {
+      "player": "nina",
+      "kind": "officiated",
+      "afterSeason": "bb-2",
+      "seq": 249,
+      "status": "approved"
+    },
+    {
+      "player": "lacey",
+      "kind": "freelance",
+      "afterSeason": "bb-2",
+      "seq": 250,
+      "status": "approved"
+    },
+    {
+      "player": "fatima",
+      "kind": "pet",
+      "afterSeason": "bb-2",
+      "seq": 251,
+      "status": "approved"
+    },
+    {
+      "player": "paisley",
+      "kind": "laid-off",
+      "afterSeason": "bb-2",
+      "seq": 252,
+      "status": "approved"
+    },
+    {
+      "player": "vlad",
+      "kind": "promoted",
+      "afterSeason": "bb-2",
+      "seq": 253,
+      "status": "approved"
+    },
+    {
+      "player": "juan",
+      "kind": "tattoo",
+      "afterSeason": "bb-2",
+      "seq": 254,
+      "status": "approved"
+    },
+    {
+      "player": "willow",
+      "kind": "first-aid",
+      "afterSeason": "bb-2",
+      "seq": 255,
+      "status": "approved"
+    },
+    {
+      "player": "sabrina",
+      "kind": "learned",
+      "afterSeason": "bb-2",
+      "seq": 256,
+      "status": "approved"
     }
   ]
 }

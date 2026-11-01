@@ -1,0 +1,6795 @@
+{
+  "seasonNumber": 2,
+  "format": "big-brother",
+  "seasonId": "bb-2",
+  "title": "Big Brother 2: The Hotel That Counted Back",
+  "subtitle": "A season where the plan broke more often than it held, and Baxter won because the room kept choosing him before the jury did.",
+  "castSize": 18,
+  "episodeCount": 15,
+  "jurySize": 9,
+  "winner": {
+    "name": "Baxter",
+    "playerSlug": "baxter",
+    "vote": "Baxter 7 — Angelica 2 — Ivyna 0",
+    "runnerUp": "Angelica & Ivyna",
+    "keyStats": "Baxter won with 7 jury votes after 15 weeks, 1 HOH, 2 vetoes, 1 Block Buster, only 2 trips to the block as the target, and zero eviction votes against him all season.",
+    "strategy": "Baxter's game was not domination; it was permission. He stayed close enough to power to influence it, distant enough from power to avoid owning its blood, and socially useful enough that even people who knew he was dangerous kept needing him for one more week. His best stretch was the endgame, where he let bigger threats cut each other, used the Cloud when exposure finally caught up to him, and kept enough jury relationships intact that his betrayals read as necessary rather than malicious.",
+    "legacy": "Baxter is the prototype for the social winner in a chaotic house: rarely the loudest strategist, rarely the obvious comp threat, but almost always inside the real vote before it happened. The jury did not reward a flawless game; it rewarded the person who made the fewest people feel foolish for losing to him."
+  },
+  "finalists": [
+    {
+      "name": "Baxter",
+      "playerSlug": "baxter",
+      "placement": 1
+    },
+    {
+      "name": "Angelica",
+      "playerSlug": "angelica",
+      "placement": 2
+    },
+    {
+      "name": "Ivyna",
+      "playerSlug": "ivyna",
+      "placement": 3
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Baxter",
+      "playerSlug": "baxter",
+      "status": "Winner",
+      "votesReceived": 0,
+      "popularity": 137.88000000000002,
+      "juryVotes": 7,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 6.9,
+      "notes": "Baxter won because he made himself useful to every structure, then let the jury credit him for surviving all of them.",
+      "story": "Baxter's record is the difference between looking passive and being insulated. He voted with the house 12 of 13 times, took zero eviction votes, and still had enough agency to form, leave, and re-form power around himself without becoming the permanent target. His early Front positioning gave him numbers, his relationships with Nina and later Michele gave him cover, and the Cloud bought him the one week where the room was ready to put a clean shot on him. The danger in his game was that he kept making promises he could not all keep: Martin, Ben, Ivyna and Michele all eventually had reason to feel used. But he managed the exits better than Angelica did, and the jury saw a person who let others take the visible heat while he kept landing on the right side of the vote. His final win was not about a résumé line; it was about the jury deciding his social survival was a strategy, not an accident.",
+      "gameplayStyle": "social insulation, selective betrayal",
+      "keyMoments": [
+        "Week 2: built The Front and pulled Nina and Ben into a structure before most of the house had one",
+        "Week 5: became publicly tied to Nina, then started learning the cost of being seen as a pair",
+        "Week 10: played the Cloud and dodged a nomination round that could have exposed him earlier",
+        "Week 12: survived the Sawyer vote 4-0 when the room was told a different name",
+        "Week 13: cut Ben despite a final-three promise and still kept the jury path alive",
+        "Week 14: won HOH at final four and nominated Angelica and Ivyna, forcing the last real endgame split",
+        "Finale: reached the end beside Angelica and won 7-2"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Baxter could honestly argue that he was almost never on the wrong side of the house, never took an eviction vote, survived the one week he was exposed by using the Cloud, and maintained enough relationships that people he betrayed still respected the move. His case was social positioning with selective, late betrayals rather than week-to-week control.",
+      "demise": "Baxter's last real threat was the final-three structure between Angelica and Ivyna. If Angelica had treated jury math correctly or if Ivyna had won Part Three, Baxter likely loses the seat. That threat died when Angelica won the final HOH and chose to evict Ivyna, giving Baxter the jury matchup he could actually win.",
+      "demiseKind": "won-the-game",
+      "optimalLine": "Baxter's correct line was mostly the one he played: avoid being the face of early power, keep comp threats in front of him, and spend his social capital only when the numbers got small. The only cleaner version is owning a few betrayals earlier so the jury did not have to drag the truth out of him at finale.",
+      "ceiling": "won-it",
+      "alliances": [
+        "The Wire",
+        "The Backbone"
+      ],
+      "rivalries": [
+        "Alexander",
+        "Angelica",
+        "Juan"
+      ],
+      "showmance": "Nina",
+      "showmanceEnded": "broken",
+      "showmanceStrength": 0.27,
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 2,
+        "blockBusterWins": 1,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 1,
+        "timesNominated": 2,
+        "timesOnBlock": 1,
+        "timesSaved": 1,
+        "powersWon": 1,
+        "powersPlayed": 1,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 9.2
+    },
+    {
+      "placement": 2,
+      "name": "Angelica",
+      "playerSlug": "angelica",
+      "status": "Finalist",
+      "votesReceived": 11,
+      "popularity": 35.63999999999998,
+      "juryVotes": 2,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 7.3,
+      "notes": "Angelica played the biggest, loudest survival game of the season, but the jury punished how visible and exhausting that survival became.",
+      "story": "Angelica's season was a contradiction: she was both the best competitor in the house and the person everyone kept targeting. She won 3 HOHs, 4 vetoes and 3 Block Busters, with 4 wins coming under direct threat, which is an absurd survival record. Strategically, she understood leverage early, using the premiere relic, lying to Sawyer on her first HOH, and constantly testing where votes were landing. The problem was that she had to play from danger so often that her game became public property; by midseason everyone had a story about Angelica promising, redirecting or withholding information. Her late run was impressive, especially surviving repeated target weeks and winning the final HOH, but cutting Ivyna to take Baxter was the wrong read of the jury. The jury respected the fight, but only Michele and Ivyna wanted to reward the person who made them feel controlled.",
+      "gameplayStyle": "relentless comp survivalist",
+      "keyMoments": [
+        "Week 1: used the relic to choose the HOH field, won HOH, and immediately made enemies with the Sawyer plan",
+        "Week 2: won veto while targeted and kept herself in the game",
+        "Week 5: returned as the obvious house target and still kept reentering the vote structure",
+        "Week 10: won veto on Ben's HOH and forced Sawyer onto the block",
+        "Week 11: won the White Locust sequence and became HOH during the Mastermind turn",
+        "Week 13: won HOH and sent Ben out after surviving his shot",
+        "Finale: won Parts One and Three, cut Ivyna, and lost to Baxter 7-2"
+      ],
+      "gameArchetype": "comp-beast",
+      "resume": "Angelica's case was the clearest competition résumé in the cast: repeated HOHs, repeated vetoes, multiple Block Busters, and several wins with her back against the wall. She could also claim she never stopped playing and directly removed major threats. The weakness was that almost every juror could point to a promise, lie or unnecessary burn attached to those moves.",
+      "demise": "Angelica lost the jury before the final vote, but the decisive mistake was finale night: she won the final HOH and chose Baxter over Ivyna despite Baxter having a stronger social case. The jurors who respected her game still preferred Baxter's cleaner relationship management, and the seven votes were effectively locked once she sat next to him.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Angelica did not need to win less; she needed to manage the exits better. The correct line was to own the blood as strategy earlier and take Ivyna to the end, where her competition record and clearer agency had a better chance to matter.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Foxhole"
+      ],
+      "rivalries": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Juan",
+        "Kyle",
+        "Lacey",
+        "Martin",
+        "Nina",
+        "Paisley",
+        "Sabrina",
+        "Sawyer"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 3,
+        "vetoWins": 4,
+        "blockBusterWins": 3,
+        "blockBusterPlayed": 4,
+        "blockBusterStreak": 2,
+        "timesNominated": 7,
+        "timesOnBlock": 1,
+        "timesSaved": 4,
+        "powersWon": 1,
+        "powersPlayed": 1,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 8.1
+    },
+    {
+      "placement": 3,
+      "name": "Ivyna",
+      "playerSlug": "ivyna",
+      "status": "Finalist",
+      "votesReceived": 3,
+      "popularity": 135.83999999999995,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 3,
+      "notes": "Ivyna reached the final three through quiet positioning and timely relationships, but the jury never saw her as the author of the season.",
+      "story": "Ivyna's game was built on being near the decision without always being blamed for it. She had real relationships with Fatima, Baxter, Angelica and Michele at different points, and she repeatedly fed the right names into the right ears. Her weakness is in the record: only 67% voting alignment, two blindsides, no veto wins, and several stretches where she was in the room but not steering it. She did win a crucial late HOH and survived a season where more obvious targets went before her, which is not nothing. But by finale week, her pitch depended on people crediting subtle influence they had often experienced as passivity. Angelica cutting her at final three was emotionally brutal, but strategically understandable: Ivyna was easier for Angelica to respect than for the jury to reward.",
+      "gameplayStyle": "quiet relational opportunist",
+      "keyMoments": [
+        "Week 1: formed a real final two with Fatima before most people had structure",
+        "Week 3: redirected Juan toward Michele and showed how well she could seed a name",
+        "Week 6: protected Fatima's interests while still staying off the main target list",
+        "Week 10: sat as Ben's pawn and had to trust votes she did not control",
+        "Week 12: won HOH in the double cycle and took the first real endgame shot",
+        "Week 13: survived the Ben vote while her overlapping promises became visible",
+        "Finale: lost Part Three to Angelica and was cut one step short"
+      ],
+      "gameArchetype": "under-the-radar",
+      "resume": "Ivyna could argue that she survived through reads, not brute force: she built durable relationships, kept herself useful across alliances, won the HOH she needed late, and reached final three with minimal competition résumé. The problem is that her case required jurors to infer control rather than remember being controlled.",
+      "demise": "Angelica ended Ivyna's game at the final three after winning the final HOH. It became final when Angelica decided Ivyna's relationship and honesty would not help Angelica beat Baxter, even though the jury math said otherwise. Ivyna's inability to win Part Three left the decision in someone else's hands.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Ivyna's best line was to sharpen ownership earlier: when she seeded names or redirected votes, she needed jurors to know it was her work. At final three, her only real agency was winning Part Three; short of that, she was relying on Angelica making a mistake in her favor.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Collective",
+        "The Foxhole",
+        "The Wire"
+      ],
+      "rivalries": [],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 1,
+        "blockBusterStreak": 0,
+        "timesNominated": 3,
+        "timesOnBlock": 2,
+        "timesSaved": 1,
+        "powersWon": 1,
+        "powersPlayed": 0,
+        "powersWasted": 1,
+        "powersHeld": 0
+      },
+      "strategicRank": 6.5
+    },
+    {
+      "placement": 4,
+      "name": "Michele",
+      "playerSlug": "michele",
+      "status": "Jury",
+      "votesReceived": 5,
+      "popularity": 186.82000000000002,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 8.3,
+      "notes": "Michele was the season's best underdog résumé, surviving a ridiculous amount of danger while quietly shaping more votes than her finish suggests.",
+      "story": "Michele's record looks chaotic because she was always in danger: 10 times on the block, 7 times as the target, and four vote survivals. But she was not just a pawn; she built The Bond, managed Lacey and Nina, held side deals with Vlad and Baxter, and repeatedly used social closeness to stay one round longer. Her 2 vetoes and 3 Block Busters mattered because they were often wins under actual threat, not vanity wins from safety. The flaw was visibility. By the end everyone knew Michele had relationships everywhere, and once the cast got small, there was nowhere to hide the Baxter connection or the jury threat. She was cut at final four because both strategy and emotion finally aligned against her.",
+      "gameplayStyle": "warmth, chaos, resilience",
+      "keyMoments": [
+        "Week 3: won veto and killed Juan's intended backdoor structure",
+        "Week 5: survived Nina's HOH era and built deeper bonds with Lacey and Nina",
+        "Week 6: became Fatima's target because of the Vlad connection but fought through it",
+        "Week 9: won veto after Martin nominated her as the strategic target",
+        "Week 10: was exposed with Baxter as a pair, changing her endgame threat level",
+        "Week 12: won the Block Buster off the block and voted out Sawyer anyway",
+        "Week 14: lost the final four veto, leaving Angelica with the vote to evict her"
+      ],
+      "gameArchetype": "pawn-shield",
+      "resume": "Michele's case would have been that she survived the block more than anyone, won when she had to, built the season's most emotionally durable bonds, and had her fingerprints on several vote shifts. It was a strong finalist case if she reached the chairs, especially against anyone perceived as passive.",
+      "demise": "Michele's game ended when Angelica won the final four veto. Baxter's HOH could not protect her once the veto gave Angelica the sole vote, and Michele's threat level as a jury favorite and Baxter's partner made the cut obvious. The decision was made by Angelica, but the groundwork was laid by everyone finally recognizing Michele's social reach.",
+      "demiseKind": "exposed",
+      "optimalLine": "Michele's correct play was to cut either Baxter or Angelica before final four, not try to carry both a public pair and a major comp threat into the smallest endgame. Once she reached final four without veto, she had no defensive mechanism left.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Bond",
+        "The Backbone"
+      ],
+      "rivalries": [
+        "Alexander",
+        "Juan",
+        "Paisley"
+      ],
+      "showmance": "Baxter",
+      "showmanceEnded": "intact",
+      "showmanceStrength": 0.89,
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 2,
+        "blockBusterWins": 3,
+        "blockBusterPlayed": 5,
+        "blockBusterStreak": 1,
+        "timesNominated": 9,
+        "timesOnBlock": 5,
+        "timesSaved": 2,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 8.2
+    },
+    {
+      "placement": 5,
+      "name": "Ben",
+      "playerSlug": "ben",
+      "status": "Jury",
+      "votesReceived": 4,
+      "popularity": 87.03999999999999,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.3,
+      "notes": "Ben was a loyal, well-liked power player whose endgame collapsed because everyone could see his promises before he was ready to break them.",
+      "story": "Ben's game had real structure: The Collective, The Front, the Lifeline with Dominic, later endgame deals with Sawyer and Ivyna. He voted with the house 89% of the time and was rarely blindsided, which says he usually knew where the vote was going. His issue was not inactivity; it was over-loyalty and threat leakage. He protected Dominic for too long, got emotionally tangled with Lacey, and by the final stretch had too many people reading him as connected to everyone. His HOH shots were not bad in isolation, but the Angelica miss and the later Baxter pawn decision both left people in the house who could punish him. When Baxter and Ivyna cut him at five, it was because Ben had become the person everyone liked enough to fear.",
+      "gameplayStyle": "loyal connector, late threat",
+      "keyMoments": [
+        "Week 1: helped form The Collective and created his first real power base",
+        "Week 3: became publicly linked to dominant voting structures after the Kyle blindside",
+        "Week 8: won HOH and targeted the Paisley/Fatima/Lacey block structure",
+        "Week 10: won HOH, had Baxter use the Cloud, and put up Michele, Ivyna and Angelica",
+        "Week 12: won HOH again and used Baxter as a pawn next to Angelica and Michele",
+        "Week 13: trusted final-three promises that Baxter did not keep",
+        "Week 13: was evicted 2-0 after the veto reshuffle"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Ben could argue that he was inside almost every major alliance, won two HOHs, kept his allies protected longer than they should have lasted, and stayed socially valuable even as the house fractured. His weakness is that he often chose loyalty over the move that maximized his own win equity.",
+      "demise": "Ben was ended by Baxter and Ivyna recognizing that keeping him gave too much power to the remnants of his relationships. Baxter won veto, pulled Ivyna down, and forced Michele into the chair; then Baxter and Ivyna voted Ben out together. It became two votes when Baxter decided the final-three promise was less valuable than removing a jury-respected ally.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Ben needed to cut Dominic or visibly separate from the Lifeline earlier, then make the Angelica shot stick when he had power. His actual loyalty was admirable, but by final five it gave everyone a clean reason to remove him.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Front",
+        "The Marshmallow Pact",
+        "The Lifeline"
+      ],
+      "rivalries": [
+        "Angelica",
+        "Juan",
+        "Vlad"
+      ],
+      "showmance": "Lacey",
+      "showmanceEnded": "intact",
+      "showmanceStrength": 0.51,
+      "bb": {
+        "hohWins": 2,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 0,
+        "timesNominated": 3,
+        "timesOnBlock": 3,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 8
+    },
+    {
+      "placement": 6,
+      "name": "Dominic",
+      "playerSlug": "dominic",
+      "status": "Jury",
+      "votesReceived": 2,
+      "popularity": 59.12999999999999,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.6,
+      "notes": "Dominic played a strong middle game around comps and tight allies, but his control was always more visible than his jury story could support.",
+      "story": "Dominic was rarely on the block and usually near the conversations that mattered. His HOH at the start of jury removed Paisley and protected his immediate structure, and his veto use on Nina earlier bought him real loyalty. The Lifeline with Ben gave him a stable path, but it also made him readable. He trained for comps, talked through votes, and often stood in the middle of plans without being the one to take the ugliest public shot. That worked until the endgame, when people like Baxter, Ivyna and Michele could all point to Dominic as someone with too many connections and not enough shields. His eviction came because the house finally stopped mistaking his calm for harmlessness.",
+      "gameplayStyle": "athletic middle broker",
+      "keyMoments": [
+        "Week 1: became a core Collective member with Ben and Juan",
+        "Week 4: deepened the Ben final two and made loyalty a real part of his game",
+        "Week 7: won veto and used it on Nina, creating a debt that mattered",
+        "Week 8: won HOH and nominated Paisley, Fatima and Lacey",
+        "Week 8: called a house meeting that weakened his social capital even while his plan worked",
+        "Week 12 double cycle: lost the endgame vote as Baxter and Ivyna reorganized around him",
+        "Week 12: became a jury member after his closest structures cracked"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Dominic could claim he was central to multiple votes, won both HOH and veto, protected key allies, and avoided the block almost the entire season. His issue would have been proving he made the hard calls rather than merely stood near them.",
+      "demise": "Dominic was taken out when Ivyna's anti-Dominic plan found enough traction with Baxter and the endgame room. His closeness to Ben and his comp preparation made him too dangerous to drag further. Once the small house compared notes, Dominic no longer had the votes to hide behind.",
+      "demiseKind": "exposed",
+      "optimalLine": "Dominic needed to either own his strategic control more aggressively or recede earlier from Ben. Trying to be both a comp threat and a quiet loyalist left him visible without giving him full credit.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Collective",
+        "The Velvet Rope",
+        "The Lifeline"
+      ],
+      "rivalries": [
+        "Angelica",
+        "Juan"
+      ],
+      "showmance": "Nina",
+      "showmanceEnded": "intact",
+      "showmanceStrength": 0.93,
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 1,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 0,
+        "blockBusterStreak": 0,
+        "timesNominated": 1,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7.6
+    },
+    {
+      "placement": 7,
+      "name": "Sawyer",
+      "playerSlug": "sawyer",
+      "status": "Jury",
+      "votesReceived": 4,
+      "popularity": 83.70999999999998,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.2,
+      "notes": "Sawyer's loyalty and veto wins made him powerful, but also made him the perfect late sacrifice once nobody wanted to sit beside him.",
+      "story": "Sawyer was a high-alignment player with a strong competition record: 3 vetoes, 2 wins under threat, and a 91% voting record. Early, he turned Angelica's broken promise into both motivation and a long-term feud, which helped define his game but also narrowed it. He built real bonds with Nina, Paisley, Lacey, Ben and Michele, yet those bonds became overlapping obligations that could not all survive the endgame. His veto wins kept him alive, but they also made him a visible threat once the house started counting jury stories. The 4-0 eviction is brutal because everyone told a different version of the vote, and several people who owed him chose the same knife. He left as a respected juror, but not as someone the house could allow to keep competing.",
+      "gameplayStyle": "loyal veto fighter",
+      "keyMoments": [
+        "Week 1: won veto while nominated and ruined Angelica's first HOH plan",
+        "Week 2: formed the Nina/Paisley/Sawyer final three",
+        "Week 5: kept the Angelica feud alive until it became part of his identity",
+        "Week 7: joined The Bond and deepened his endgame options",
+        "Week 8: won veto and used it on Lacey, reshaping Dominic's week",
+        "Week 11: won veto while on the block under Angelica's HOH",
+        "Week 12: was blindsided 4-0 after Michele, Ivyna and Dominic all moved against what he expected"
+      ],
+      "gameArchetype": "comp-beast",
+      "resume": "Sawyer's finalist case would have been loyalty plus clutch vetoes: he saved himself when targeted, protected allies, and stayed aligned with the house most of the season. The problem is that his threat level was obvious, and by the time he could make that case, everyone else had already decided not to let him.",
+      "demise": "Sawyer was ended by a coordinated late pivot from people who had promised him safety or partnership. Michele and Dominic both walked in saying Baxter and voted Sawyer, while Ivyna and Angelica were already there. It became 4-0 once the room agreed his veto résumé and jury respect were more dangerous than Baxter's social mess.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Sawyer needed to cut one of his loyalty bonds earlier and stop assuming his word-based game would be returned in kind. Keeping Lacey and Nina close was good; believing that Michele and Ivyna would honor late deals over endgame math was not.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Front",
+        "The Bond"
+      ],
+      "rivalries": [
+        "Alexander",
+        "Angelica",
+        "Juan"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 3,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 1,
+        "blockBusterStreak": 0,
+        "timesNominated": 3,
+        "timesOnBlock": 1,
+        "timesSaved": 2,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7.4
+    },
+    {
+      "placement": 8,
+      "name": "Martin",
+      "playerSlug": "martin",
+      "status": "Jury",
+      "votesReceived": 11,
+      "popularity": 35.900000000000006,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 7.5,
+      "notes": "Martin played an excellent alignment game from the background, but his one HOH exposed how much he needed other people's structures to hold.",
+      "story": "Martin is the best example this season of a floater game that was real. He voted with the house every time he voted, stayed off the block until deep into the game, and made himself the person nobody needed to waste a shot on. His social approach was small but effective: cook, listen, sit near power, and let bigger personalities collide. When he finally won HOH, he correctly identified Michele as a structural threat, but the execution left him dependent on outcomes he could not control. His post-HOH safety evaporated quickly because the people he had floated beside now had reasons to compare notes. Baxter cutting their final two was the emotional end, but the strategic end came when Martin's quiet game became visible without him having a comp streak to back it up.",
+      "gameplayStyle": "adaptive low-visibility floater",
+      "keyMoments": [
+        "Week 1: chose not to chase HOH rooms early, making absence part of his strategy",
+        "Week 3: survived Juan's HOH after Michele's veto changed the week",
+        "Week 5: became a deeper piece inside The Front while still looking unthreatening",
+        "Week 7: made a final two with Nina and kept himself relevant socially",
+        "Week 9: won HOH and targeted Michele as the way into The Front",
+        "Week 9: watched Michele win veto and his week collapse into Fatima leaving",
+        "Week 11: was evicted 5-0 after Baxter abandoned their final two"
+      ],
+      "gameArchetype": "floater",
+      "resume": "Martin could argue that he was almost always in the vote, rarely touched the block, and navigated the middle better than louder players. His case required the jury to value subtle survival more than agency, which is difficult unless he reached the end with goats.",
+      "demise": "Martin was ended by Angelica's HOH and a unanimous vote after Sawyer saved himself. Baxter's betrayal mattered emotionally because of their final two, but the five votes formed because Martin had become the easy removable piece once bigger targets were protected or immune.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Martin's best line was to take a cleaner shot during his HOH or build a visible endgame pair he could own. Floating worked beautifully until he needed credit and protection at the same time.",
+      "ceiling": "could-have-won",
+      "alliances": [],
+      "rivalries": [
+        "Angelica",
+        "Juan"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 0,
+        "timesNominated": 2,
+        "timesOnBlock": 2,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7.1
+    },
+    {
+      "placement": 9,
+      "name": "Nina",
+      "playerSlug": "nina",
+      "status": "Jury",
+      "specialExit": {
+        "how": "white-locust",
+        "week": 11
+      },
+      "votesReceived": 0,
+      "popularity": 78.11,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 6.3,
+      "notes": "Nina had one of the strongest midgames in the house, but the Mastermind twist removed her before the vote structure could save her.",
+      "story": "Nina was much better than her ninth-place finish. She had an HOH, a veto, no eviction votes against her, and an 89% voting record, which says she was usually in the room. Her social power sat in overlapping bonds: Baxter early, Sawyer and Paisley, then The Bond with Lacey and Michele. She also took the HOH through the Interrogation twist and used that week to protect her side while putting Angelica in danger. Her flaw was that her connections became too visible, and she often wanted information without giving people clean answers back. Still, she was not voted out; she lost a timed task in the White Locust Resort. That matters, because her game was cut by format at the exact point where her social web was still playable.",
+      "gameplayStyle": "sharp social vote-reader",
+      "keyMoments": [
+        "Week 2: won the Interrogation power and secretly took Michele's HOH",
+        "Week 3: helped expose Ben and Dominic's structure in front of the house",
+        "Week 5: used HOH to target Angelica and protect The Front",
+        "Week 6: broke publicly with Baxter as the couple became too visible",
+        "Week 7: was saved by Dominic's veto, creating a major debt",
+        "Week 8: lost Paisley as an ally after the 8-0 vote",
+        "Week 11: lost the White Locust timed task and left with no eviction vote"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Nina could have argued she knew where the votes were, built multiple overlapping groups, secretly took power, and survived nominations without taking eviction votes. Her case would have been strong if the jury believed her influence was intentional rather than messy.",
+      "demise": "Nina's game ended in the White Locust Resort when Angelica called her out and she failed the towel-fold task against the clock. No alliance could save her, and no campaign existed. The twist severed a player whose danger was social, not immediate competition exposure.",
+      "demiseKind": "collateral",
+      "optimalLine": "Nina's correct play before the twist was to lower the visibility of her pairs, especially after Baxter and Lacey became public issues. But there was no reasonable strategic counter to the specific White Locust elimination once she was called.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Front",
+        "The Bond"
+      ],
+      "rivalries": [
+        "Alexander",
+        "Angelica"
+      ],
+      "showmance": "Baxter",
+      "showmanceEnded": "broken",
+      "showmanceStrength": 0.27,
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 1,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 0,
+        "blockBusterStreak": 0,
+        "timesNominated": 2,
+        "timesOnBlock": 0,
+        "timesSaved": 1,
+        "powersWon": 1,
+        "powersPlayed": 1,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7.8
+    },
+    {
+      "placement": 10,
+      "name": "Lacey",
+      "playerSlug": "lacey",
+      "status": "Jury",
+      "votesReceived": 6,
+      "popularity": 96.61,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 7,
+      "notes": "Lacey was a social glue player who survived the block over and over until her own side decided she was too useful to keep.",
+      "story": "Lacey had no HOH or veto wins, but her 100% voting alignment and repeated survival from the block prove she was not just drifting. She was in The Front, The Bond, and a secret connection with Ben, and she often knew where votes were moving before more decorated players did. Her game was built on being the person people told things to, which is powerful until everyone realizes it at once. Being nominated six times made her look expendable, but it also made her a shield for people like Nina, Michele and Sawyer. Her fatal problem was jury optics and redundancy: by the time Ben won HOH, the house saw Lacey as connected to too many people and impossible to sit beside cleanly. The 4-3 vote was close because her social work mattered; it failed because her threat level finally caught up.",
+      "gameplayStyle": "social glue, vote counter",
+      "keyMoments": [
+        "Week 2: survived Vlad's nominations by turning the block week into relationships",
+        "Week 3: joined The Front and then The Bond, increasing both security and exposure",
+        "Week 4: helped expose Paisley's rumor network in a house meeting",
+        "Week 6: survived Fatima's HOH through pitches and Block Buster safety",
+        "Week 7: built a final two with Sawyer while still managing Ben",
+        "Week 8: became an obvious showmance pair with Ben",
+        "Week 10: was evicted 4-3 after Angelica's veto win reshaped Ben's HOH"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Lacey could have argued that she was always in the vote, survived repeated nominations, and built the social bridges that kept major alliances functioning. Her case depended on reaching the end with someone whose résumé looked messier than hers.",
+      "demise": "Lacey was ended on Ben's HOH after Angelica saved herself and Lacey became the replacement. The people who had used Lacey as a connector now saw her as a jury threat and a vote broker. The 4-3 margin formed when enough of the room decided the safest social player was no longer safe to keep.",
+      "demiseKind": "exposed",
+      "optimalLine": "Lacey needed to choose between Ben and The Bond earlier. Trying to keep both made her look like everyone's second option and nobody's clean final plan.",
+      "ceiling": "could-have-won",
+      "alliances": [
+        "The Front",
+        "The Bond",
+        "The Marshmallow Pact"
+      ],
+      "rivalries": [
+        "Alexander",
+        "Angelica"
+      ],
+      "showmance": "Ben",
+      "showmanceEnded": "intact",
+      "showmanceStrength": 0.51,
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 0,
+        "blockBusterWins": 2,
+        "blockBusterPlayed": 5,
+        "blockBusterStreak": 1,
+        "timesNominated": 6,
+        "timesOnBlock": 3,
+        "timesSaved": 1,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7.2
+    },
+    {
+      "placement": 11,
+      "name": "Fatima",
+      "playerSlug": "fatima",
+      "status": "Jury",
+      "votesReceived": 6,
+      "popularity": 70.29999999999998,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4,
+      "notes": "Fatima had power, reads and loyalty, but she built too many honest bonds in a house that punished them.",
+      "story": "Fatima won 2 HOHs and a Block Buster, so her game had more force than her eleventh-place finish suggests. Her first major success was taking out Juan, a move that showed she could count and execute. She also had one of the season's truest relationships with Ivyna and a surprisingly important late bond with Martin. But Fatima's game suffered from the same thing that made people trust her: she was emotionally legible. People could tell when she was hiding something, when she was loyal, and when she was hurt. Dominic's HOH used that against her by putting her next to Paisley and Lacey, forcing her to fight while others controlled the vote. Once the jury opened, she became the first juror because enough people decided her combination of wins and loyalty would age well with a jury.",
+      "gameplayStyle": "direct, loyal, perceptive",
+      "keyMoments": [
+        "Week 1: formed the Fatima/Ivyna final two that shaped both games",
+        "Week 4: won HOH and removed Juan after his messy power week",
+        "Week 6: won HOH again and targeted the Vlad/Michele connection",
+        "Week 6: put Vlad, Michele and Lacey up, exposing her willingness to swing big",
+        "Week 8: was nominated by Dominic as the voice who would fight for Paisley",
+        "Week 8: campaigned through Martin, Ivyna and Nina but could not flip the room",
+        "Week 9: became the first juror"
+      ],
+      "gameArchetype": "alliance-hub",
+      "resume": "Fatima could claim two HOH wins, a successful Juan eviction, a loyal core with Ivyna, and strong reads on who was actually moving the house. Her issue was that several of her moves created enemies who reached jury before she could explain them.",
+      "demise": "Dominic ended Fatima's game by nominating her beside Paisley and Lacey, then allowing the room to choose the person with the strongest combination of loyalty and win equity. It became six votes once Ben and the social middle decided Fatima was harder to manage later than the remaining nominees.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Fatima needed to separate her personal loyalty from her voting structure before jury. Keeping Ivyna close was right, but she needed at least one shield outside that pair who would campaign for her when she hit the block.",
+      "ceiling": "could-have-won",
+      "alliances": [],
+      "rivalries": [
+        "Angelica",
+        "Juan",
+        "Vlad"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 2,
+        "vetoWins": 0,
+        "blockBusterWins": 1,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 1,
+        "timesNominated": 2,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 7
+    },
+    {
+      "placement": 12,
+      "name": "Paisley",
+      "playerSlug": "paisley",
+      "status": "Jury",
+      "votesReceived": 8,
+      "popularity": 29.740000000000002,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4,
+      "notes": "Paisley had power, nerve and reads, but her game collapsed because people stopped trusting which version of the story they were hearing.",
+      "story": "Paisley played aggressively for someone with only one HOH and one veto. She won an early secret power, built real bonds with Nina and Sawyer, and used her HOH to remove Alexander, which was a clean strategic success. But Paisley also created too many rumor trails. Her instinct was to turn the lights on, call things out and force people to answer, but that style made her an easy person to compare notes about. By the time Dominic won HOH, several people had stories about Paisley that did not match. She was the first juror because Dominic's side and the anti-Paisley votes found each other at the exact wrong time for her. She had a path, but it required people to trust her enough to follow her through chaos, and they did not.",
+      "gameplayStyle": "public pressure, messy reads",
+      "keyMoments": [
+        "Week 2: won the Mystery Veto power and kept it quiet",
+        "Week 3: deepened the final three with Nina and Sawyer",
+        "Week 4: targeted Lacey as the way to weaken The Front",
+        "Week 6: won veto but left Fatima's nominations intact",
+        "Week 7: won HOH and removed Alexander after keeping him calm all week",
+        "Week 8: was nominated by Dominic and failed to repair enough trust",
+        "Week 8: left unanimously and became the first juror"
+      ],
+      "gameArchetype": "wildcard",
+      "resume": "Paisley could argue she won power, took out Alexander on her HOH, and saw several alliances before they were publicly confirmed. The counterargument is that her information game was too messy for people to trust at the end.",
+      "demise": "Dominic nominated Paisley with Fatima and Lacey after deciding her stories no longer held up under comparison. Once Sawyer won veto and the nominations stayed dangerous, the vote consolidated around Paisley as the least reliable long-term partner. The unanimous vote formed because even her allies saw her as too volatile for jury phase.",
+      "demiseKind": "exposed",
+      "optimalLine": "Paisley should have narrowed her information lanes after her HOH. She could not keep playing public accuser and secret ally at the same time once jury began.",
+      "ceiling": "could-have-won",
+      "alliances": [],
+      "rivalries": [
+        "Alexander",
+        "Angelica",
+        "Juan",
+        "Michele"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 1,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 1,
+        "blockBusterStreak": 0,
+        "timesNominated": 1,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 2,
+        "powersPlayed": 1,
+        "powersWasted": 1,
+        "powersHeld": 0
+      },
+      "strategicRank": 6.3
+    },
+    {
+      "placement": 13,
+      "name": "Alexander",
+      "playerSlug": "alexander",
+      "status": "Pre-Jury",
+      "votesReceived": 12,
+      "popularity": 40.900000000000006,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.3,
+      "notes": "Alexander had instincts and influence, but he turned every grudge into a billboard and gave the house too many reasons to agree on him.",
+      "story": "Alexander was never passive. He saw structures early, tried to manipulate perception, and survived the vote twice as a target. But he played with too much visible friction: the Sawyer feud, the public callouts, the pranks gone wrong, and the repeated sense that he was always stirring the next room. His lack of comp wins meant he needed social subtlety, and that was not his strength. The record shows he was nominated three times as the target, which means people were not accidentally landing on him; they were hunting him. Paisley's HOH gave the house the clean shot it had been circling for weeks. By the time he tried to explain himself, even correct reads sounded like more Alexander chaos.",
+      "gameplayStyle": "provocateur, rumor operator",
+      "keyMoments": [
+        "Week 1: clashed with Sawyer over food and trust, creating the season's longest feud",
+        "Week 2: became an easy consensus threat in backyard conversations",
+        "Week 4: sat on Fatima's block and watched the room choose Juan instead",
+        "Week 5: was nominated by Nina and survived as Angelica left",
+        "Week 7: was nominated by Paisley after being falsely reassured",
+        "Week 7: tried to redirect suspicion toward Nina and Sawyer",
+        "Week 7: left 9-0 after the house unified around him"
+      ],
+      "gameArchetype": "wildcard",
+      "resume": "Alexander's only real case would have been that he survived multiple target weeks and correctly identified several house structures before others admitted them. He did not have the relationships or comp record to make that a winning case.",
+      "demise": "Paisley ended Alexander's game by nominating him next to Lacey and Nina while keeping him calm enough that he could not campaign effectively. The rest of the house already had weeks of reasons to vote him out, and after Dominic used veto elsewhere, the vote became unanimous.",
+      "demiseKind": "exposed",
+      "optimalLine": "Alexander needed to stop making correct reads in the most public, personal way possible. His optimal line was to weaponize information through allies, not through confrontations that made him the easiest target in the room.",
+      "ceiling": "best-realistic-finish",
+      "alliances": [],
+      "rivalries": [
+        "Baxter",
+        "Juan",
+        "Lacey",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 3,
+        "blockBusterStreak": 0,
+        "timesNominated": 3,
+        "timesOnBlock": 3,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 4.7
+    },
+    {
+      "placement": 14,
+      "name": "Vlad",
+      "playerSlug": "vlad",
+      "status": "Pre-Jury",
+      "votesReceived": 7,
+      "popularity": 64.57000000000001,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 3.8,
+      "notes": "Vlad had early power and a real Michele bond, but his game became too dependent on winning safety at the exact moment people were comparing notes.",
+      "story": "Vlad's early HOH gave him legitimacy, and his Michele final two was one of the more sincere early deals. He also won a veto and a Block Buster, including a key save under threat. But his voting alignment was only 50%, which is the clearest sign that the house kept moving without him. He often knew something was wrong, but knew it too late or could not convert the read into numbers. Fatima's HOH exposed his connection to Michele and made him the primary target, and although he won the veto once, he could not keep outrunning the room. His eviction is the classic comp-dependent collapse: safe when winning, exposed when not.",
+      "gameplayStyle": "proud comp-dependent outsider",
+      "keyMoments": [
+        "Week 2: won HOH and tried to target Nina, but his week produced Kyle instead",
+        "Week 2: formed a sincere final two with Michele",
+        "Week 4: was nominated by Fatima as the primary threat",
+        "Week 4: won veto under threat and forced Fatima into a backup plan",
+        "Week 6: was nominated again with Michele and Lacey, revealing the pair",
+        "Week 6: lost the safety path and left 7-3",
+        "Week 6: became an early jury-style warning about exposed duos"
+      ],
+      "gameArchetype": "comp-beast",
+      "resume": "Vlad could point to an HOH, a veto, a Block Buster, and surviving a direct shot from Fatima. But he had little evidence that he controlled votes, and his low alignment would hurt badly with a jury.",
+      "demise": "Fatima's second HOH put Vlad and Michele up together to force their bond into the open. Paisley did not use the veto, and once Vlad failed to win the remaining safety, the house chose to remove the comp-capable half of the pair. The seven votes formed because even people who liked him saw the danger in letting him keep playing.",
+      "demiseKind": "comp-dependent",
+      "optimalLine": "Vlad needed to use his HOH to build a broader structure instead of a narrow Michele bond. Once that pair was visible, he needed to cut a public deal before Fatima's HOH rather than relying on winning out.",
+      "ceiling": "best-realistic-finish",
+      "alliances": [
+        "The Collective",
+        "The Velvet Rope"
+      ],
+      "rivalries": [
+        "Ben",
+        "Fatima"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 1,
+        "blockBusterWins": 1,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 1,
+        "timesNominated": 3,
+        "timesOnBlock": 1,
+        "timesSaved": 1,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 5.6
+    },
+    {
+      "placement": 15,
+      "name": "Juan",
+      "playerSlug": "juan",
+      "status": "Pre-Jury",
+      "votesReceived": 9,
+      "popularity": 4.119999999999999,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 6.3,
+      "notes": "Juan played hard, won power, and understood the house, but his HOH exposed him as someone the room could not trust.",
+      "story": "Juan had influence early through The Collective and his bond with Willow, then won HOH at a point where he could have reset his position. Instead, his week became a case study in overhandling. He lied to Michele, pawned Willow, floated lists, held a failed house meeting, and left too many people feeling managed rather than included. He did identify real threats, but his delivery made the house compare notes against him. Fatima's HOH then gave the room the chance to punish both his power week and his social mess. The fact that he left 9-3 after thinking he had numbers tells you exactly how badly the room had moved away from him.",
+      "gameplayStyle": "overactive social schemer",
+      "keyMoments": [
+        "Week 1: helped form The Collective and positioned himself as a friendly connector",
+        "Week 3: won HOH and targeted Michele while using Willow as a pawn",
+        "Week 3: held a house meeting that backfired and made him look unstable",
+        "Week 3: lost control when Michele won veto and Willow became vulnerable",
+        "Week 4: was nominated by Fatima next to Vlad and Alexander",
+        "Week 4: was denied the HOH room pitch publicly, signaling lost status",
+        "Week 4: left 9-3 after believing he still had the numbers"
+      ],
+      "gameArchetype": "social-manipulator",
+      "resume": "Juan could argue he won HOH, had early alliances, and made active strategic attempts rather than coasting. The problem is that his biggest week ended in his pawn leaving and the house distrusting him.",
+      "demise": "Fatima nominated Juan after his HOH damaged too many relationships, and the vote became a referendum on whether anyone trusted him with power again. The seven-plus votes against him formed once former allies realized keeping him meant living through another overmanaged week.",
+      "demiseKind": "outplayed",
+      "optimalLine": "Juan needed to simplify his HOH: pick one target, tell fewer lies, and never use Willow as a pawn if he could not guarantee the vote. The correct move was boring control, not constant motion.",
+      "ceiling": "could-have-won",
+      "alliances": [],
+      "rivalries": [
+        "Alexander",
+        "Angelica",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Martin",
+        "Michele",
+        "Paisley",
+        "Sawyer"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 1,
+        "vetoWins": 0,
+        "blockBusterWins": 1,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 1,
+        "timesNominated": 1,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 5.4
+    },
+    {
+      "placement": 16,
+      "name": "Willow",
+      "playerSlug": "willow",
+      "status": "Pre-Jury",
+      "votesReceived": 7,
+      "popularity": 30.68,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4,
+      "notes": "Willow's game was more twist and proximity than control, and she left because she accepted pawn danger in a house that loved flipping pawns.",
+      "story": "Willow mattered more to the season's texture than to its strategy. As the saboteur, she completed two jobs and created distrust, but that did not translate into a durable game structure. Socially, she had Juan and pieces of The Collective, yet she was never positioned as someone the whole house needed. Her fatal decision was accepting the pawn role on Juan's HOH. Once Michele won veto and the vote started moving, Willow did not have the agency or comp record to stop the room from turning her into the safer eviction. She left early enough that most of her strategic identity is still theoretical.",
+      "gameplayStyle": "secret chaos, pawn trust",
+      "keyMoments": [
+        "Week 1: accepted the saboteur mission to rig a competition",
+        "Week 2: accepted another saboteur job and leaned into the hidden-role paranoia",
+        "Week 2: became part of The Collective's early structure",
+        "Week 3: made a real final two with Juan and trusted him deeply",
+        "Week 3: accepted pawn status on Juan's HOH",
+        "Week 3: denied voting against the house but could not stop suspicion",
+        "Week 3: left in a 7-6 blindside"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Willow had no meaningful finale case. She could point to hidden saboteur work and some early relationships, but not to a controlled vote or a path to the end.",
+      "demise": "Willow was ended by Juan's pawn decision and the house's willingness to punish his week through her. Michele's veto killed the intended plan, and once the vote flipped, Willow lacked the leverage to pull it back. Juan put her in danger; the room finished the job.",
+      "demiseKind": "collateral",
+      "optimalLine": "Willow should have refused the pawn spot or demanded a more public voting guarantee before accepting it. From what she knew, saying yes to Juan felt loyal, but pawns were already proving disposable.",
+      "ceiling": "overperformed",
+      "alliances": [],
+      "rivalries": [],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 1,
+        "blockBusterStreak": 0,
+        "timesNominated": 1,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 3.6
+    },
+    {
+      "placement": 17,
+      "name": "Kyle",
+      "playerSlug": "kyle",
+      "status": "Pre-Jury",
+      "votesReceived": 12,
+      "popularity": 26.66,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.6,
+      "notes": "Kyle looked like a physical force early, but he was out before he could build anything stable enough to survive the first blindside.",
+      "story": "Kyle's game is mostly a cautionary tale about being visible too early. He was nominated twice in two weeks, first as a target and then as a renom, and never won the arena when he needed it. He had bonds with Sabrina, Lacey, Dominic and pieces of The Collective, but the house already saw him as combustible and potentially dangerous. His short campaign was not bad; he picked up conversations and believed he had numbers. But the room was already shifting away from him, and four votes moved after the ceremony. In a season where the plan broke constantly, Kyle became the first person to learn that being sure was not the same as being safe.",
+      "gameplayStyle": "early physical lightning rod",
+      "keyMoments": [
+        "Week 1: was nominated by Angelica as the backup target",
+        "Week 1: survived the unanimous Sabrina vote",
+        "Week 1: built a short-lived final two with Sabrina",
+        "Week 2: became the renom after Angelica won veto",
+        "Week 2: believed he had votes to stay after campaigning to Vlad and others",
+        "Week 2: was blindsided 12-2"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Kyle had no finale case. Surviving the first vote is not enough, and he left before he could win power or control a decision.",
+      "demise": "Kyle was collateral in Vlad's HOH after Angelica saved herself with veto and Ben's nomination did not hold as the eviction target. The vote moved late because the house saw Kyle as easier to cut than the bigger structures forming around Ben and Dominic.",
+      "demiseKind": "never-had-a-path",
+      "optimalLine": "Kyle needed to lower his threat level immediately after surviving week one and stop acting like the house would reward directness. Realistically, with two early nominations and no safety win, his path was already very narrow.",
+      "ceiling": "best-realistic-finish",
+      "alliances": [],
+      "rivalries": [
+        "Angelica"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 2,
+        "blockBusterStreak": 0,
+        "timesNominated": 2,
+        "timesOnBlock": 2,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 2.7
+    },
+    {
+      "placement": 18,
+      "name": "Sabrina",
+      "playerSlug": "sabrina",
+      "status": "Pre-Jury",
+      "votesReceived": 15,
+      "popularity": 5.9399999999999995,
+      "juryVotes": 0,
+      "emoji": "[AI_FILL]",
+      "strategicScore": 4.8,
+      "notes": "Sabrina never got enough time to turn personality into position, and week one punished her for being the safest person to sacrifice.",
+      "story": "Sabrina's game was over before there was much game to evaluate. She was nominated as a pawn on Angelica's first HOH, trusted enough to be a seat-filler, and then became the casualty when Sawyer won veto and the intended plan broke. The unanimous vote against her says less about her failures than about her lack of anchored relationships. She had sparks with Baxter and Kyle, but neither had enough power or incentive to spend capital on her in week one. In a three-nominee format, someone always becomes the easy vote, and Sabrina was the one no group was willing to fight for. Calling that strategy would be inventing a game she was never allowed to play.",
+      "gameplayStyle": "loud first-week casualty",
+      "keyMoments": [
+        "Week 1: made early social noise and a possible spark with Baxter",
+        "Week 1: accepted a final two with Kyle that never had time to matter",
+        "Week 1: was nominated by Angelica as the pawn beside Kyle and Sawyer",
+        "Week 1: watched Sawyer win veto and break the intended plan",
+        "Week 1: failed to gather any dissenting votes",
+        "Week 1: left 15-0"
+      ],
+      "gameArchetype": "early-casualty",
+      "resume": "Sabrina had no case. She left before alliances, votes and jury management could become real for her.",
+      "demise": "Sabrina was ended by Angelica's week-one structure collapsing. Sawyer saved himself, Kyle remained a bigger character but not the consensus boot, and Sabrina became the nominee nobody needed to keep. The unanimous vote formed because no one wanted to reveal a side for a first-week pawn.",
+      "demiseKind": "never-had-a-path",
+      "optimalLine": "Her only realistic line was to push harder against being the pawn before nominations. Once she was sitting there after Sawyer's veto, the house had every incentive to take the easy vote.",
+      "ceiling": "best-realistic-finish",
+      "alliances": [],
+      "rivalries": [
+        "Angelica"
+      ],
+      "showmance": "",
+      "showmanceEnded": "",
+      "bb": {
+        "hohWins": 0,
+        "vetoWins": 0,
+        "blockBusterWins": 0,
+        "blockBusterPlayed": 1,
+        "blockBusterStreak": 0,
+        "timesNominated": 1,
+        "timesOnBlock": 1,
+        "timesSaved": 0,
+        "powersWon": 0,
+        "powersPlayed": 0,
+        "powersWasted": 0,
+        "powersHeld": 0
+      },
+      "strategicRank": 1.5
+    }
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "hoh": "Angelica",
+      "initialNominees": [
+        "Kyle",
+        "Sabrina",
+        "Sawyer"
+      ],
+      "vetoWinner": "Sawyer",
+      "finalNominees": [
+        "Kyle",
+        "Sabrina"
+      ],
+      "votes": {
+        "Kyle": 0,
+        "Sabrina": 15
+      },
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Sabrina",
+      "blockBeforeSafety": [
+        "Kyle",
+        "Sabrina",
+        "Juan"
+      ],
+      "safetyWinner": "Juan",
+      "ballots": [
+        {
+          "voter": "Alexander",
+          "voterSlug": "alexander",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Juan",
+          "voterSlug": "juan",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Vlad",
+          "voterSlug": "vlad",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        },
+        {
+          "voter": "Willow",
+          "voterSlug": "willow",
+          "evict": "Sabrina",
+          "evictSlug": "sabrina"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-classic-spelling",
+        "name": "Spelling Search",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Juan",
+          "Sabrina",
+          "Alexander"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-luck-draw",
+        "name": "Pure Chance",
+        "winner": "Sawyer",
+        "placements": [
+          "Sawyer",
+          "Ben",
+          "Sabrina",
+          "Angelica",
+          "Lacey"
+        ]
+      }
+    },
+    {
+      "week": 2,
+      "hoh": "Vlad",
+      "initialNominees": [
+        "Nina",
+        "Lacey",
+        "Angelica"
+      ],
+      "vetoWinner": "Angelica",
+      "finalNominees": [
+        "Ben",
+        "Kyle"
+      ],
+      "votes": {
+        "Ben": 2,
+        "Kyle": 12
+      },
+      "voteChanges": 4,
+      "tieBreak": null,
+      "evicted": "Kyle",
+      "blockBeforeSafety": [
+        "Lacey",
+        "Ben",
+        "Kyle"
+      ],
+      "safetyWinner": "Lacey",
+      "ballots": [
+        {
+          "voter": "Alexander",
+          "voterSlug": "alexander",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Kyle",
+          "evictSlug": "kyle",
+          "stated": "Ben",
+          "changed": true
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Juan",
+          "voterSlug": "juan",
+          "evict": "Ben",
+          "evictSlug": "ben"
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Kyle",
+          "evictSlug": "kyle",
+          "changed": true
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Kyle",
+          "evictSlug": "kyle",
+          "changed": true
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Kyle",
+          "evictSlug": "kyle",
+          "changed": true
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Kyle",
+          "evictSlug": "kyle"
+        },
+        {
+          "voter": "Willow",
+          "voterSlug": "willow",
+          "evict": "Ben",
+          "evictSlug": "ben"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-classic-dough",
+        "name": "Rollin' in the Dough",
+        "winner": "Vlad",
+        "placements": [
+          "Vlad",
+          "Juan",
+          "Paisley",
+          "Ivyna",
+          "Kyle"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-classic-in-the-balance",
+        "name": "In The Balance",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Lacey",
+          "Michele",
+          "Ivyna",
+          "Vlad"
+        ]
+      }
+    },
+    {
+      "week": 3,
+      "hoh": "Juan",
+      "initialNominees": [
+        "Angelica",
+        "Willow",
+        "Michele"
+      ],
+      "vetoWinner": "Michele",
+      "finalNominees": [
+        "Willow",
+        "Martin"
+      ],
+      "votes": {
+        "Willow": 7,
+        "Martin": 6
+      },
+      "voteChanges": 6,
+      "tieBreak": null,
+      "evicted": "Willow",
+      "blockBeforeSafety": [
+        "Angelica",
+        "Willow",
+        "Martin"
+      ],
+      "safetyWinner": "Angelica",
+      "ballots": [
+        {
+          "voter": "Alexander",
+          "voterSlug": "alexander",
+          "evict": "Willow",
+          "evictSlug": "willow",
+          "changed": true
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Willow",
+          "evictSlug": "willow",
+          "changed": true
+        },
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Willow",
+          "evictSlug": "willow"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Willow",
+          "evictSlug": "willow",
+          "stated": "Martin",
+          "changed": true
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Martin",
+          "evictSlug": "martin",
+          "changed": true
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Willow",
+          "evictSlug": "willow",
+          "changed": true
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Willow",
+          "evictSlug": "willow"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Martin",
+          "evictSlug": "martin",
+          "stated": "Willow",
+          "changed": true
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Willow",
+          "evictSlug": "willow"
+        },
+        {
+          "voter": "Vlad",
+          "voterSlug": "vlad",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-social-drink-or-bluff",
+        "name": "To Drink or to Bluff",
+        "winner": "Juan",
+        "placements": [
+          "Juan",
+          "Michele",
+          "Nina",
+          "Paisley",
+          "Willow"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-luck-draw",
+        "name": "Pure Chance",
+        "winner": "Michele",
+        "placements": [
+          "Michele",
+          "Dominic",
+          "Angelica",
+          "Nina",
+          "Juan"
+        ]
+      }
+    },
+    {
+      "week": 4,
+      "hoh": "Fatima",
+      "initialNominees": [
+        "Vlad",
+        "Alexander",
+        "Juan"
+      ],
+      "vetoWinner": "Vlad",
+      "finalNominees": [
+        "Alexander",
+        "Juan"
+      ],
+      "votes": {
+        "Alexander": 3,
+        "Juan": 9
+      },
+      "voteChanges": 4,
+      "tieBreak": null,
+      "evicted": "Juan",
+      "blockBeforeSafety": [
+        "Angelica",
+        "Alexander",
+        "Juan"
+      ],
+      "safetyWinner": "Angelica",
+      "ballots": [
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Alexander",
+          "evictSlug": "alexander",
+          "changed": true
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Juan",
+          "evictSlug": "juan"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Alexander",
+          "evictSlug": "alexander",
+          "changed": true
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Juan",
+          "evictSlug": "juan",
+          "changed": true
+        },
+        {
+          "voter": "Vlad",
+          "voterSlug": "vlad",
+          "evict": "Alexander",
+          "evictSlug": "alexander",
+          "changed": true
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-classic-hanoi",
+        "name": "Tower of Hanoi",
+        "winner": "Fatima",
+        "placements": [
+          "Fatima",
+          "Michele",
+          "Angelica",
+          "Alexander",
+          "Ben"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-hand-water-rescue",
+        "name": "Water Rescue",
+        "winner": "Vlad",
+        "placements": [
+          "Vlad",
+          "Fatima",
+          "Alexander",
+          "Dominic",
+          "Ivyna"
+        ]
+      }
+    },
+    {
+      "week": 5,
+      "hoh": "Nina",
+      "initialNominees": [
+        "Angelica",
+        "Vlad",
+        "Alexander"
+      ],
+      "vetoWinner": "Nina",
+      "finalNominees": [
+        "Angelica",
+        "Alexander"
+      ],
+      "votes": {
+        "Angelica": 11,
+        "Alexander": 0
+      },
+      "voteChanges": 1,
+      "tieBreak": null,
+      "evicted": "Angelica",
+      "blockBeforeSafety": [
+        "Angelica",
+        "Vlad",
+        "Alexander"
+      ],
+      "safetyWinner": "Vlad",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Angelica",
+          "evictSlug": "angelica",
+          "changed": true
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        },
+        {
+          "voter": "Vlad",
+          "voterSlug": "vlad",
+          "evict": "Angelica",
+          "evictSlug": "angelica"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-mental-knockout",
+        "name": "Knockout",
+        "winner": "Michele",
+        "placements": [
+          "Michele",
+          "Baxter",
+          "Paisley",
+          "Nina",
+          "Vlad"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-sig-otev",
+        "name": "OTEV",
+        "winner": "Nina",
+        "placements": [
+          "Nina",
+          "Vlad",
+          "Paisley",
+          "Angelica",
+          "Fatima"
+        ]
+      }
+    },
+    {
+      "week": 6,
+      "hoh": "Fatima",
+      "initialNominees": [
+        "Vlad",
+        "Michele",
+        "Lacey"
+      ],
+      "vetoWinner": "Paisley",
+      "finalNominees": [
+        "Vlad",
+        "Michele"
+      ],
+      "votes": {
+        "Vlad": 7,
+        "Michele": 3
+      },
+      "voteChanges": 2,
+      "tieBreak": null,
+      "evicted": "Vlad",
+      "blockBeforeSafety": [
+        "Vlad",
+        "Michele",
+        "Lacey"
+      ],
+      "safetyWinner": "Lacey",
+      "ballots": [
+        {
+          "voter": "Alexander",
+          "voterSlug": "alexander",
+          "evict": "Michele",
+          "evictSlug": "michele"
+        },
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Michele",
+          "evictSlug": "michele"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Michele",
+          "evictSlug": "michele",
+          "changed": true
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        },
+        {
+          "voter": "Paisley",
+          "voterSlug": "paisley",
+          "evict": "Vlad",
+          "evictSlug": "vlad",
+          "changed": true
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Vlad",
+          "evictSlug": "vlad"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-duress-black-box",
+        "name": "The Black Box",
+        "winner": "Fatima",
+        "placements": [
+          "Fatima",
+          "Michele",
+          "Ben",
+          "Paisley",
+          "Martin"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-mental-quiz",
+        "name": "Majority Rules",
+        "winner": "Paisley",
+        "placements": [
+          "Paisley",
+          "Ben",
+          "Vlad",
+          "Lacey",
+          "Fatima"
+        ]
+      }
+    },
+    {
+      "week": 7,
+      "hoh": "Paisley",
+      "initialNominees": [
+        "Alexander",
+        "Lacey",
+        "Nina"
+      ],
+      "vetoWinner": "Dominic",
+      "finalNominees": [
+        "Alexander",
+        "Lacey"
+      ],
+      "votes": {
+        "Alexander": 9,
+        "Lacey": 0
+      },
+      "voteChanges": 2,
+      "tieBreak": null,
+      "evicted": "Alexander",
+      "blockBeforeSafety": [
+        "Alexander",
+        "Lacey",
+        "Michele"
+      ],
+      "safetyWinner": "Michele",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Alexander",
+          "evictSlug": "alexander",
+          "changed": true
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Alexander",
+          "evictSlug": "alexander",
+          "changed": true
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Alexander",
+          "evictSlug": "alexander"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-classic-ready-set-woah",
+        "name": "Ready, Set, Woah",
+        "winner": "Paisley",
+        "placements": [
+          "Paisley",
+          "Sawyer",
+          "Ben",
+          "Ivyna",
+          "Michele"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-grip-pole",
+        "name": "Get A Grip",
+        "winner": "Dominic",
+        "placements": [
+          "Dominic",
+          "Alexander",
+          "Nina",
+          "Lacey",
+          "Paisley"
+        ]
+      }
+    },
+    {
+      "week": 8,
+      "hoh": "Dominic",
+      "initialNominees": [
+        "Paisley",
+        "Fatima",
+        "Lacey"
+      ],
+      "vetoWinner": "Sawyer",
+      "finalNominees": [
+        "Paisley",
+        "Michele"
+      ],
+      "votes": {
+        "Paisley": 8,
+        "Michele": 0
+      },
+      "voteChanges": 2,
+      "tieBreak": null,
+      "evicted": "Paisley",
+      "blockBeforeSafety": [
+        "Paisley",
+        "Fatima",
+        "Michele"
+      ],
+      "safetyWinner": "Fatima",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        },
+        {
+          "voter": "Fatima",
+          "voterSlug": "fatima",
+          "evict": "Paisley",
+          "evictSlug": "paisley",
+          "changed": true
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Paisley",
+          "evictSlug": "paisley",
+          "changed": true
+        },
+        {
+          "voter": "Lacey",
+          "voterSlug": "lacey",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Paisley",
+          "evictSlug": "paisley"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-sig-the-wall",
+        "name": "The Wall",
+        "winner": "Dominic",
+        "placements": [
+          "Dominic",
+          "Ben",
+          "Michele",
+          "Baxter",
+          "Fatima"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-physical-slide",
+        "name": "Slippery Slope",
+        "winner": "Sawyer",
+        "placements": [
+          "Sawyer",
+          "Dominic",
+          "Lacey",
+          "Baxter",
+          "Paisley"
+        ]
+      }
+    },
+    {
+      "week": 9,
+      "hoh": "Martin",
+      "initialNominees": [
+        "Michele",
+        "Fatima",
+        "Angelica"
+      ],
+      "vetoWinner": "Michele",
+      "finalNominees": [
+        "Lacey",
+        "Fatima"
+      ],
+      "votes": {
+        "Lacey": 2,
+        "Fatima": 6
+      },
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Fatima",
+      "blockBeforeSafety": [
+        "Lacey",
+        "Fatima",
+        "Angelica"
+      ],
+      "safetyWinner": "Angelica",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Lacey",
+          "evictSlug": "lacey"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Lacey",
+          "evictSlug": "lacey"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Fatima",
+          "evictSlug": "fatima"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-classic-stay-or-fold",
+        "name": "Stay or Fold",
+        "winner": "Martin",
+        "placements": [
+          "Martin",
+          "Michele",
+          "Ivyna",
+          "Sawyer",
+          "Fatima"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-social-zingbot",
+        "name": "Zingbot Competition",
+        "winner": "Michele",
+        "placements": [
+          "Michele",
+          "Martin",
+          "Fatima",
+          "Angelica",
+          "Baxter"
+        ]
+      }
+    },
+    {
+      "week": 10,
+      "hoh": "Ben",
+      "initialNominees": [
+        "Michele",
+        "Ivyna",
+        "Angelica"
+      ],
+      "vetoWinner": "Angelica",
+      "finalNominees": [
+        "Ivyna",
+        "Lacey"
+      ],
+      "votes": {
+        "Ivyna": 3,
+        "Lacey": 4
+      },
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Lacey",
+      "blockBeforeSafety": [
+        "Michele",
+        "Ivyna",
+        "Lacey"
+      ],
+      "safetyWinner": "Michele",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Lacey",
+          "evictSlug": "lacey",
+          "stated": "Ivyna"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Lacey",
+          "evictSlug": "lacey"
+        },
+        {
+          "voter": "Martin",
+          "voterSlug": "martin",
+          "evict": "Lacey",
+          "evictSlug": "lacey"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Ivyna",
+          "evictSlug": "ivyna"
+        },
+        {
+          "voter": "Nina",
+          "voterSlug": "nina",
+          "evict": "Ivyna",
+          "evictSlug": "ivyna"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Ivyna",
+          "evictSlug": "ivyna"
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Lacey",
+          "evictSlug": "lacey",
+          "stated": "Ivyna"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-physical-precision",
+        "name": "Bowlerina",
+        "winner": "Ben",
+        "placements": [
+          "Ben",
+          "Nina",
+          "Sawyer",
+          "Angelica",
+          "Dominic"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-sig-bb-comics",
+        "name": "BB Comics",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Baxter",
+          "Ben",
+          "Michele",
+          "Ivyna"
+        ]
+      }
+    },
+    {
+      "week": 11,
+      "hoh": "Angelica",
+      "initialNominees": [
+        "Martin",
+        "Ben",
+        "Sawyer"
+      ],
+      "vetoWinner": "Sawyer",
+      "finalNominees": [
+        "Martin",
+        "Ben"
+      ],
+      "votes": {
+        "Martin": 5,
+        "Ben": 0
+      },
+      "voteChanges": 2,
+      "tieBreak": null,
+      "evicted": "Martin",
+      "specialExits": [
+        {
+          "name": "Nina",
+          "playerSlug": "nina",
+          "how": "white-locust",
+          "label": "Failed the White Locust Resort call-out chain"
+        }
+      ],
+      "blockBeforeSafety": [
+        "Martin",
+        "Ben",
+        "Baxter"
+      ],
+      "safetyWinner": "Baxter",
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Martin",
+          "evictSlug": "martin",
+          "changed": true
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Martin",
+          "evictSlug": "martin"
+        },
+        {
+          "voter": "Sawyer",
+          "voterSlug": "sawyer",
+          "evict": "Martin",
+          "evictSlug": "martin",
+          "changed": true
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": null,
+      "vetoComp": {
+        "id": "bb-grip-dominoes",
+        "name": "Domino Effect",
+        "winner": "Sawyer",
+        "placements": [
+          "Sawyer",
+          "Martin",
+          "Michele",
+          "Baxter",
+          "Angelica"
+        ]
+      }
+    },
+    {
+      "week": 12,
+      "hoh": "Ben",
+      "initialNominees": [
+        "Angelica",
+        "Baxter",
+        "Michele"
+      ],
+      "vetoWinner": "Angelica",
+      "finalNominees": [
+        "Sawyer",
+        "Baxter"
+      ],
+      "votes": {
+        "Sawyer": 4,
+        "Baxter": 0
+      },
+      "voteChanges": 2,
+      "tieBreak": null,
+      "evicted": "Sawyer",
+      "blockBeforeSafety": [
+        "Sawyer",
+        "Baxter",
+        "Michele"
+      ],
+      "safetyWinner": "Michele",
+      "ballots": [
+        {
+          "voter": "Dominic",
+          "voterSlug": "dominic",
+          "evict": "Sawyer",
+          "evictSlug": "sawyer",
+          "stated": "Baxter",
+          "changed": true
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Sawyer",
+          "evictSlug": "sawyer"
+        },
+        {
+          "voter": "Michele",
+          "voterSlug": "michele",
+          "evict": "Sawyer",
+          "evictSlug": "sawyer",
+          "stated": "Baxter",
+          "changed": true
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Sawyer",
+          "evictSlug": "sawyer"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-grip-tightrope",
+        "name": "Tightrope",
+        "winner": "Ben",
+        "placements": [
+          "Ben",
+          "Ivyna",
+          "Sawyer",
+          "Dominic",
+          "Baxter"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-classic-tumblin-dice",
+        "name": "Tumblin' Dice",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Ivyna",
+          "Baxter",
+          "Sawyer",
+          "Ben"
+        ]
+      }
+    },
+    {
+      "week": 12,
+      "secondEviction": true,
+      "hoh": "Ivyna",
+      "initialNominees": [
+        "Michele",
+        "Baxter"
+      ],
+      "vetoWinner": "Baxter",
+      "finalNominees": [
+        "Michele",
+        "Dominic"
+      ],
+      "votes": {
+        "Michele": 1,
+        "Dominic": 2
+      },
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Dominic",
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Dominic",
+          "evictSlug": "dominic"
+        },
+        {
+          "voter": "Ben",
+          "voterSlug": "ben",
+          "evict": "Michele",
+          "evictSlug": "michele"
+        },
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Dominic",
+          "evictSlug": "dominic"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-stamina-dizzy-discs",
+        "name": "Dizzy Discs",
+        "winner": "Ivyna",
+        "placements": [
+          "Ivyna",
+          "Baxter",
+          "Michele",
+          "Dominic",
+          "Angelica"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-classic-rollerball",
+        "name": "Rollerball",
+        "winner": "Baxter",
+        "placements": [
+          "Baxter",
+          "Ivyna",
+          "Dominic",
+          "Angelica",
+          "Ben"
+        ]
+      }
+    },
+    {
+      "week": 13,
+      "hoh": "Angelica",
+      "initialNominees": [
+        "Ben",
+        "Ivyna"
+      ],
+      "vetoWinner": "Baxter",
+      "finalNominees": [
+        "Ben",
+        "Michele"
+      ],
+      "votes": {
+        "Ben": 2,
+        "Michele": 0
+      },
+      "voteChanges": 1,
+      "tieBreak": null,
+      "evicted": "Ben",
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [
+        {
+          "voter": "Baxter",
+          "voterSlug": "baxter",
+          "evict": "Ben",
+          "evictSlug": "ben"
+        },
+        {
+          "voter": "Ivyna",
+          "voterSlug": "ivyna",
+          "evict": "Ben",
+          "evictSlug": "ben",
+          "changed": true
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": true,
+      "hohComp": {
+        "id": "bb-sig-pressure-cooker",
+        "name": "Pressure Cooker",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Baxter",
+          "Ben",
+          "Michele"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-hand-caged-eggs",
+        "name": "Caged Eggs",
+        "winner": "Baxter",
+        "placements": [
+          "Baxter",
+          "Angelica",
+          "Michele",
+          "Ivyna",
+          "Ben"
+        ]
+      }
+    },
+    {
+      "week": 14,
+      "hoh": "Baxter",
+      "initialNominees": [
+        "Angelica",
+        "Ivyna"
+      ],
+      "vetoWinner": "Angelica",
+      "finalNominees": [
+        "Michele",
+        "Ivyna"
+      ],
+      "votes": {
+        "Michele": 1,
+        "Ivyna": 0
+      },
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Michele",
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Michele",
+          "evictSlug": "michele"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": {
+        "id": "bb-stamina-hold-up",
+        "name": "What's The Hold Up",
+        "winner": "Baxter",
+        "placements": [
+          "Baxter",
+          "Ivyna",
+          "Michele"
+        ]
+      },
+      "vetoComp": {
+        "id": "bb-grip-pole",
+        "name": "Get A Grip",
+        "winner": "Angelica",
+        "placements": [
+          "Angelica",
+          "Michele",
+          "Ivyna",
+          "Baxter"
+        ]
+      }
+    },
+    {
+      "week": 15,
+      "finale": true,
+      "hoh": "Angelica",
+      "initialNominees": [],
+      "vetoWinner": null,
+      "finalNominees": [],
+      "votes": {},
+      "voteChanges": 0,
+      "tieBreak": null,
+      "evicted": "Ivyna",
+      "blockBeforeSafety": null,
+      "safetyWinner": null,
+      "ballots": [
+        {
+          "voter": "Angelica",
+          "voterSlug": "angelica",
+          "evict": "Ivyna",
+          "evictSlug": "ivyna"
+        }
+      ],
+      "tieBreakVote": null,
+      "haveNots": [],
+      "publicVote": false,
+      "hohComp": null,
+      "vetoComp": null,
+      "juryVote": "Baxter 7 — Angelica 2",
+      "juryBallots": [
+        {
+          "juror": "Fatima",
+          "jurorSlug": "fatima",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Lacey",
+          "jurorSlug": "lacey",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Nina",
+          "jurorSlug": "nina",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Martin",
+          "jurorSlug": "martin",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Sawyer",
+          "jurorSlug": "sawyer",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Dominic",
+          "jurorSlug": "dominic",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Ben",
+          "jurorSlug": "ben",
+          "votedFor": "Baxter"
+        },
+        {
+          "juror": "Michele",
+          "jurorSlug": "michele",
+          "votedFor": "Angelica"
+        },
+        {
+          "juror": "Ivyna",
+          "jurorSlug": "ivyna",
+          "votedFor": "Angelica"
+        }
+      ],
+      "finalTwo": [
+        "Angelica",
+        "Baxter"
+      ],
+      "jury": [
+        "Fatima",
+        "Lacey",
+        "Nina",
+        "Martin",
+        "Sawyer",
+        "Dominic",
+        "Ben",
+        "Michele",
+        "Ivyna"
+      ]
+    }
+  ],
+  "showmances": [
+    {
+      "players": [
+        "Nina",
+        "Baxter"
+      ],
+      "playerSlugs": [
+        "nina",
+        "baxter"
+      ],
+      "phase": "broken",
+      "startEpisode": 2,
+      "endEpisode": 6,
+      "endedBy": "faded",
+      "origin": "organic",
+      "episodesActive": 4
+    },
+    {
+      "players": [
+        "Lacey",
+        "Ben"
+      ],
+      "playerSlugs": [
+        "lacey",
+        "ben"
+      ],
+      "phase": "broken-up",
+      "startEpisode": 6,
+      "endEpisode": 10,
+      "endedBy": "separated",
+      "origin": "instant-chemistry",
+      "episodesActive": 3
+    },
+    {
+      "players": [
+        "Baxter",
+        "Michele"
+      ],
+      "playerSlugs": [
+        "baxter",
+        "michele"
+      ],
+      "phase": "broken-up",
+      "startEpisode": 8,
+      "endEpisode": 15,
+      "endedBy": "separated",
+      "origin": null,
+      "episodesActive": 6
+    },
+    {
+      "players": [
+        "Dominic",
+        "Nina"
+      ],
+      "playerSlugs": [
+        "dominic",
+        "nina"
+      ],
+      "phase": "spark",
+      "startEpisode": 10,
+      "endEpisode": null,
+      "endedBy": null,
+      "origin": "organic",
+      "episodesActive": 1
+    }
+  ],
+  "alliances": [
+    {
+      "name": "The Collective",
+      "members": [
+        "Dominic",
+        "Ivyna",
+        "Vlad"
+      ],
+      "memberSlugs": [
+        "dominic",
+        "ivyna",
+        "vlad"
+      ],
+      "formedEpisode": 1,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Front",
+      "members": [
+        "Ben",
+        "Nina",
+        "Sawyer",
+        "Lacey"
+      ],
+      "memberSlugs": [
+        "ben",
+        "nina",
+        "sawyer",
+        "lacey"
+      ],
+      "formedEpisode": 2,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Bond",
+      "members": [
+        "Nina",
+        "Lacey",
+        "Michele",
+        "Sawyer"
+      ],
+      "memberSlugs": [
+        "nina",
+        "lacey",
+        "michele",
+        "sawyer"
+      ],
+      "formedEpisode": 4,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Foxhole",
+      "members": [
+        "Angelica",
+        "Ivyna"
+      ],
+      "memberSlugs": [
+        "angelica",
+        "ivyna"
+      ],
+      "formedEpisode": 5,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Velvet Rope",
+      "members": [
+        "Dominic",
+        "Vlad"
+      ],
+      "memberSlugs": [
+        "dominic",
+        "vlad"
+      ],
+      "formedEpisode": 6,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Marshmallow Pact",
+      "members": [
+        "Ben",
+        "Lacey"
+      ],
+      "memberSlugs": [
+        "ben",
+        "lacey"
+      ],
+      "formedEpisode": 7,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Lifeline",
+      "members": [
+        "Ben",
+        "Dominic"
+      ],
+      "memberSlugs": [
+        "ben",
+        "dominic"
+      ],
+      "formedEpisode": 8,
+      "active": false,
+      "betrayals": []
+    },
+    {
+      "name": "The Wire",
+      "members": [
+        "Baxter",
+        "Ivyna"
+      ],
+      "memberSlugs": [
+        "baxter",
+        "ivyna"
+      ],
+      "formedEpisode": 14,
+      "active": true,
+      "betrayals": []
+    },
+    {
+      "name": "The Backbone",
+      "members": [
+        "Baxter",
+        "Michele"
+      ],
+      "memberSlugs": [
+        "baxter",
+        "michele"
+      ],
+      "formedEpisode": 15,
+      "active": false,
+      "betrayals": []
+    }
+  ],
+  "rivalries": [
+    {
+      "players": [
+        "Alexander",
+        "Baxter"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "baxter"
+      ],
+      "source": "bad-blood",
+      "bond": -7.9117430800700035
+    },
+    {
+      "players": [
+        "Alexander",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -6.195741719782213
+    },
+    {
+      "players": [
+        "Alexander",
+        "Lacey"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "lacey"
+      ],
+      "source": "bad-blood",
+      "bond": -6.285478936946223
+    },
+    {
+      "players": [
+        "Alexander",
+        "Michele"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "michele"
+      ],
+      "source": "bad-blood",
+      "bond": -7.646553834430273
+    },
+    {
+      "players": [
+        "Alexander",
+        "Nina"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "nina"
+      ],
+      "source": "bad-blood",
+      "bond": -9.379919340805264
+    },
+    {
+      "players": [
+        "Alexander",
+        "Paisley"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "paisley"
+      ],
+      "source": "bad-blood",
+      "bond": -9.351088664034764
+    },
+    {
+      "players": [
+        "Alexander",
+        "Sawyer"
+      ],
+      "playerSlugs": [
+        "alexander",
+        "sawyer"
+      ],
+      "source": "bad-blood",
+      "bond": -10
+    },
+    {
+      "players": [
+        "Angelica",
+        "Baxter"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "baxter"
+      ],
+      "source": "bad-blood",
+      "bond": -7.59135191105536
+    },
+    {
+      "players": [
+        "Angelica",
+        "Ben"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "ben"
+      ],
+      "source": "bad-blood",
+      "bond": -10
+    },
+    {
+      "players": [
+        "Angelica",
+        "Dominic"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "dominic"
+      ],
+      "source": "bad-blood",
+      "bond": -6.468621296097396
+    },
+    {
+      "players": [
+        "Angelica",
+        "Fatima"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "fatima"
+      ],
+      "source": "bad-blood",
+      "bond": -6.17935868000866
+    },
+    {
+      "players": [
+        "Angelica",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -6.135728343367679
+    },
+    {
+      "players": [
+        "Angelica",
+        "Kyle"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "kyle"
+      ],
+      "source": "bad-blood",
+      "bond": -6.26184
+    },
+    {
+      "players": [
+        "Angelica",
+        "Lacey"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "lacey"
+      ],
+      "source": "bad-blood",
+      "bond": -7.828850386079863
+    },
+    {
+      "players": [
+        "Angelica",
+        "Martin"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "martin"
+      ],
+      "source": "bad-blood",
+      "bond": -8.895140064686714
+    },
+    {
+      "players": [
+        "Angelica",
+        "Nina"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "nina"
+      ],
+      "source": "bad-blood",
+      "bond": -8.918273268929411
+    },
+    {
+      "players": [
+        "Angelica",
+        "Paisley"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "paisley"
+      ],
+      "source": "bad-blood",
+      "bond": -7.705031913818371
+    },
+    {
+      "players": [
+        "Angelica",
+        "Sabrina"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "sabrina"
+      ],
+      "source": "bad-blood",
+      "bond": -6.806602496
+    },
+    {
+      "players": [
+        "Angelica",
+        "Sawyer"
+      ],
+      "playerSlugs": [
+        "angelica",
+        "sawyer"
+      ],
+      "source": "bad-blood",
+      "bond": -10
+    },
+    {
+      "players": [
+        "Baxter",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "baxter",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -6.178974025523758
+    },
+    {
+      "players": [
+        "Ben",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "ben",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -10
+    },
+    {
+      "players": [
+        "Ben",
+        "Vlad"
+      ],
+      "playerSlugs": [
+        "ben",
+        "vlad"
+      ],
+      "source": "bad-blood",
+      "bond": -8.175793783565661
+    },
+    {
+      "players": [
+        "Dominic",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "dominic",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -5.50941984
+    },
+    {
+      "players": [
+        "Fatima",
+        "Juan"
+      ],
+      "playerSlugs": [
+        "fatima",
+        "juan"
+      ],
+      "source": "bad-blood",
+      "bond": -6.4965033216000005
+    },
+    {
+      "players": [
+        "Fatima",
+        "Vlad"
+      ],
+      "playerSlugs": [
+        "fatima",
+        "vlad"
+      ],
+      "source": "bad-blood",
+      "bond": -8.580490136839543
+    },
+    {
+      "players": [
+        "Juan",
+        "Martin"
+      ],
+      "playerSlugs": [
+        "juan",
+        "martin"
+      ],
+      "source": "bad-blood",
+      "bond": -9.584152438732083
+    },
+    {
+      "players": [
+        "Juan",
+        "Michele"
+      ],
+      "playerSlugs": [
+        "juan",
+        "michele"
+      ],
+      "source": "bad-blood",
+      "bond": -8.08471199616093
+    },
+    {
+      "players": [
+        "Juan",
+        "Paisley"
+      ],
+      "playerSlugs": [
+        "juan",
+        "paisley"
+      ],
+      "source": "bad-blood",
+      "bond": -8.95992867714042
+    },
+    {
+      "players": [
+        "Juan",
+        "Sawyer"
+      ],
+      "playerSlugs": [
+        "juan",
+        "sawyer"
+      ],
+      "source": "bad-blood",
+      "bond": -5.280315520000002
+    },
+    {
+      "players": [
+        "Michele",
+        "Paisley"
+      ],
+      "playerSlugs": [
+        "michele",
+        "paisley"
+      ],
+      "source": "bad-blood",
+      "bond": -8.159332947930027
+    }
+  ],
+  "twists": [
+    {
+      "id": "bb-premiere-mystery",
+      "name": "Premiere Night Mystery",
+      "emoji": "🗝️",
+      "desc": "Nobody has unpacked and the host has already been taken, along with the Head of Household relic. The house is split in two and sent looking — one half for the relic, one half for the host — and each half is playing for a prize it has not been told the shape of. Whoever recovers the relic gets to name the four houseguests allowed to compete for the first crown, out loud, in front of the twelve who are not. Whoever finds the host wins ten thousand dollars in public and is told in private what the money is actually for: spent once, before the jury, it takes them off the block and forces the Head of Household to name somebody else on the spot. The house spends a fortnight watching the loud prize.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        1
+      ]
+    },
+    {
+      "id": "bb-secret-power-comp",
+      "name": "Secret Power Competition",
+      "emoji": "🎭",
+      "desc": "Three powers are hidden inside this week's Head of Household competition, and before a single houseguest plays they decide in private what they are actually competing for: the crown, or one of the three. Not both. The outgoing Head of Household cannot win the crown back and so plays only for a power, which is the one week their exclusion is worth something. Somebody out there is about to post the best score of the afternoon and not be Head of Household, because that was never what they were running for — and the house will spend weeks not understanding why. Winners are told alone and nothing is announced. Every power won here dies the moment the jury opens, which is why they are allowed to be this strong.",
+      "category": "advantages",
+      "inCatalog": true,
+      "episodes": [
+        2
+      ]
+    },
+    {
+      "id": "bb-battle-back",
+      "name": "Battle Back",
+      "emoji": "🚪",
+      "desc": "The evicted houseguests are not gone. After this week's eviction they compete for the right to walk back in — as a gauntlet, where the first evictee must beat every person who followed them out, or as a Showdown, where the survivor still has to get past a champion the house elects to hold the door shut. The winner re-enters with no immunity and a complete memory of who voted them out.",
+      "category": "returns",
+      "inCatalog": true,
+      "episodes": [
+        8
+      ]
+    },
+    {
+      "id": "bb-white-locust",
+      "name": "White Locust Resort",
+      "emoji": "🏨",
+      "desc": "The house checks into a resort for the week, and the resort is quite clear that not everybody is checking out of it. Everybody plays for safety first; whoever wins is safe and has to call somebody out. That person gets a task and a clock, and if the clock beats them they are gone on the spot — no nominations, no campaign, no vote. Survive it and the pin passes to you: you call out the next person, who gets the same rules and less time than you had. It runs until somebody fails. Whoever came through their turn fastest is the new Head of Household, so the week still has a reign at the end of it — and then runs a normal eviction on top, which is the part that makes this a week nobody forgets.",
+      "category": "ceremony",
+      "inCatalog": true,
+      "episodes": [
+        11
+      ]
+    },
+    {
+      "id": "bb-double-eviction",
+      "name": "Double Eviction",
+      "emoji": "⏩",
+      "desc": "Two evictions in one night. The week plays normally, and the moment the first houseguest walks out the house runs a second, compressed cycle live: new Head of Household, nominations, veto and vote with no time to campaign properly. Two people leave.",
+      "category": "elim",
+      "inCatalog": true,
+      "episodes": [
+        12
+      ]
+    },
+    {
+      "id": "bb-sanctum-week",
+      "name": "The Sanctum",
+      "emoji": "🕯️",
+      "desc": "The house is called down to a room it has not been shown before, and the week is run out of it. There is no secret ballot: the voters are handed a doll for every houseguest still playing, and they evict by walking to the table and pushing a pin into one, in front of the room, in front of the nominees, one at a time and in an order somebody else chose. Everybody watches everybody vote. There is nothing to work out afterwards, no count that will not reconcile and nobody to wrongly suspect — every alliance learns exactly who broke it at the moment it breaks, and the last voters cast into a result they can already see coming.",
+      "category": "ceremony",
+      "inCatalog": true,
+      "episodes": [
+        13
+      ]
+    }
+  ],
+  "ratings": {
+    "v": 1,
+    "score": 66.2,
+    "tier": {
+      "key": "great",
+      "label": "Great",
+      "min": 65
+    },
+    "demos": {
+      "teens": 38.7,
+      "youngAdults": 37.9,
+      "middleAged": 48,
+      "older": 52
+    },
+    "curve": [
+      48.4,
+      60.7,
+      72.8,
+      79.6,
+      73.1,
+      72.9,
+      73,
+      77.6,
+      73.4,
+      69.2,
+      69.1,
+      66.3,
+      61.9,
+      55.4,
+      47.7
+    ]
+  },
+  "seasonNarrative": "Season 2 was a season where power rarely meant control. The measured record says the plan held only five times and broke ten, and that is the season in one sentence: HOHs nominated people, vetoes and Block Busters scrambled the board, and then the room decided what the week had actually been about. Early on, The Collective and The Front tried to become the house's operating systems, but both became public too quickly. The middle game was defined by overlapping pairs: Nina and Baxter, Lacey and Ben, Michele and Lacey, Fatima and Ivyna, Dominic and Ben, Sawyer and almost everybody. By jury, the house had stopped trusting alliance names and started trusting vote math, which is why so many exits were blindsides even when the target looked obvious. The Mastermind twist made the endgame feel authored, but the winner was still produced by the same old Big Brother question: who could sit next to the people they betrayed and make it feel like the game, not a personal insult? Angelica fought the hardest, Michele survived the most, Ben and Dominic built the cleanest loyalty, and Ivyna snuck closest to the finish. Baxter won because he was the one whose betrayals the jury could live with.",
+  "awards": {
+    "bestStrategic": {
+      "name": "Baxter",
+      "playerSlug": "baxter",
+      "description": "Baxter's strategy was social insulation: stay in the vote, avoid being the face of the vote, and make the person with power feel better with him still in the house."
+    },
+    "bestSocial": {
+      "name": "Michele",
+      "playerSlug": "michele",
+      "description": "Michele turned constant danger into affection. Even people targeting her kept comforting her, comparing notes with her, or apologizing to her afterward."
+    },
+    "bestPhysical": {
+      "name": "Angelica",
+      "playerSlug": "angelica",
+      "description": "Angelica's combined HOH, veto and Block Buster record made her the season's clearest competition force, especially because so many wins came while she was the target.",
+      "wins": 10
+    },
+    "mostClutch": {
+      "name": "Angelica",
+      "playerSlug": "angelica",
+      "description": "Angelica repeatedly won when the week was aimed at her, including veto and Block Buster moments where losing meant immediate danger."
+    },
+    "mostLoyal": {
+      "name": "Ben",
+      "playerSlug": "ben",
+      "description": "Ben's loyalty to Dominic and his people was often strategically costly, but it was real. He would rather lose with his word intact than win by cutting too early."
+    },
+    "bestUnderdog": {
+      "name": "Michele",
+      "playerSlug": "michele",
+      "description": "Michele spent the season nominated, targeted, renominated and counted out, then kept surviving anyway."
+    },
+    "biggestVillain": {
+      "name": "Angelica",
+      "playerSlug": "angelica",
+      "description": "Angelica was not cruel for cruelty's sake, but she lied cleanly, broke promises when they stopped helping, and owned enough of it to become the season's strategic antagonist."
+    },
+    "mostChaotic": {
+      "name": "Paisley",
+      "playerSlug": "paisley",
+      "description": "Paisley could win power, start a rumor, hold a house meeting in spirit, and change her mind three times before breakfast."
+    },
+    "quietestThreat": {
+      "name": "Nina",
+      "playerSlug": "nina",
+      "description": "Nina's exit came by clock, not vote, which says everything: the house had not yet cleanly solved how to remove her social web."
+    },
+    "seasonMVP": {
+      "name": "Baxter",
+      "playerSlug": "baxter",
+      "description": "Baxter best represents the season's core skill: reading a moving room quickly enough that the vote changed around him, not onto him."
+    },
+    "mostTragic": {
+      "name": "Sawyer",
+      "playerSlug": "sawyer",
+      "description": "Sawyer built a game on trust and left 4-0 after multiple allies decided trust was exactly why he had to go."
+    },
+    "mostUnlucky": {
+      "name": "Sabrina",
+      "playerSlug": "sabrina",
+      "description": "Sabrina was the first casualty of a broken week-one plan, before there was enough game for her to counter it."
+    },
+    "ironPerson": {
+      "name": "Michele",
+      "playerSlug": "michele",
+      "description": "Ten trips to the block or arena danger, multiple saves, and a final-four finish make Michele the season's endurance story."
+    },
+    "biggestMeltdown": {
+      "name": "Juan",
+      "playerSlug": "juan",
+      "description": "Juan's week-three house meeting was meant to restore control and instead proved to everyone that he did not have it.",
+      "episode": 3
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "description": "Won the season by combining positioning, timing and jury management better than anyone else."
+      },
+      "silver": {
+        "name": "Angelica",
+        "playerSlug": "angelica",
+        "description": "Drove the season's competitive and strategic tension, even though the jury preferred Baxter's cleaner social path."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Michele",
+        "playerSlug": "michele",
+        "description": "The audience-facing heart of the season: funny under pressure, emotionally available, and somehow still dangerous."
+      },
+      "silver": {
+        "name": "Ben",
+        "playerSlug": "ben",
+        "description": "Ben's loyalty and emotional honesty made him the season's cleanest moral counterweight to all the knife work."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Angelica",
+        "playerSlug": "angelica",
+        "description": "Angelica made the promises, broke them when useful, and still forced people to respect the game behind it."
+      },
+      "silver": {
+        "name": "Alexander",
+        "playerSlug": "alexander",
+        "description": "Alexander stirred conflict early and often, sometimes with good reads and sometimes just with bad timing."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Angelica",
+        "playerSlug": "angelica",
+        "description": "No one matched Angelica's total competition résumé or her number of wins under threat."
+      },
+      "silver": {
+        "name": "Michele",
+        "playerSlug": "michele",
+        "description": "Michele's veto and Block Buster wins repeatedly came when she actually needed them."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "description": "Baxter's social game was why he took no eviction votes and still won after betraying half the jury."
+      },
+      "silver": {
+        "name": "Michele",
+        "playerSlug": "michele",
+        "description": "Michele made people feel seen, which kept her alive long after the numbers said she should be gone."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "description": "His best moves were often invisible until the jury compared notes: he let louder players own the danger and kept the benefit."
+      },
+      "silver": {
+        "name": "Angelica",
+        "playerSlug": "angelica",
+        "description": "Angelica's strategic mind was undeniable; the flaw was that everyone could see it working."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Nina",
+        "playerSlug": "nina",
+        "description": "No vote, no campaign, no social defense — just the White Locust clock taking out one of the season's best-positioned players."
+      },
+      "silver": {
+        "name": "Sawyer",
+        "playerSlug": "sawyer",
+        "description": "Sawyer's unanimous blindside hurt because the people he counted on looked away while voting him out."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "description": "The Cloud was the perfect Baxter advantage: hidden, quiet, and deployed exactly when exposure finally arrived."
+      },
+      "silver": {
+        "name": "Nina",
+        "playerSlug": "nina",
+        "description": "Nina's Interrogation power reshaped an HOH week and let her take control without the house fully understanding how."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Michele",
+        "playerSlug": "michele",
+        "description": "Michele had a finalist-level story of survival, social influence and clutch wins, but lost the one veto round where no one else could save her."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Baxter",
+        "playerSlug": "baxter",
+        "description": "Baxter did not answer every question perfectly, but he gave the jury enough ownership, remorse and strategy to make voting for him feel justified."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Angelica",
+        "playerSlug": "angelica",
+        "description": "Angelica had the bigger competition résumé and more visible agency, but the jury valued Baxter's relationships over her survival war."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Alexander",
+        "Sawyer"
+      ],
+      "description": "What began with food, jokes and hurt feelings became a season-long proxy war about respect, trust and who was allowed to call something 'banter.'"
+    },
+    "biggestBetrayal": {
+      "betrayer": "Angelica",
+      "betrayed": "Ivyna",
+      "episode": 15,
+      "description": "Angelica cut Ivyna at the final three after a late-game bond that both of them treated as real, choosing the opponent she believed she could beat."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Baxter",
+      "betrayed": "Ben",
+      "episode": 13,
+      "description": "Baxter helped end Ben after a final-three promise, proving that the endgame version of Baxter would choose the seat over the relationship."
+    },
+    "legacyMoment": {
+      "name": "The White Locust Clock Takes Nina",
+      "episode": 11,
+      "description": "Nina leaving without a vote turned the season from a house vote game into the Mastermind's endgame and reminded everyone that social capital cannot beat a timer."
+    },
+    "fanFavorite": {
+      "name": "Michele",
+      "playerSlug": "michele",
+      "description": "Michele was voted the house's favourite by the audience."
+    }
+  },
+  "emoji": "[AI_FILL]",
+  "exitInterviews": [
+    {
+      "id": "big-brother-w1-Sabrina",
+      "show": "big-brother",
+      "week": 1,
+      "guest": "Sabrina",
+      "with": null,
+      "kind": "first-boot",
+      "mood": "denial",
+      "juror": false,
+      "placement": 18,
+      "how": "evicted",
+      "votes": {
+        "against": 15,
+        "total": 15
+      },
+      "segments": [
+        "rank-them",
+        "who-next"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "drag",
+          "still": true,
+          "heat": 1.2
+        },
+        {
+          "who": "Paisley",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.96
+        },
+        {
+          "who": "Kyle",
+          "stance": "praise",
+          "still": true,
+          "heat": 0.48
+        }
+      ],
+      "truth": {
+        "flippers": [],
+        "suspected": [
+          "Angelica",
+          "Paisley",
+          "Ben"
+        ],
+        "right": true
+      },
+      "prediction": "Kyle",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Kyle"
+      ],
+      "rivals": [
+        "Angelica"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Angelica",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Juan",
+        "Kyle",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer",
+        "Vlad",
+        "Willow"
+      ],
+      "heat": 4.1,
+      "reception": "cold",
+      "profile": {
+        "archetype": "hothead",
+        "stats": {
+          "physical": 4,
+          "endurance": 4,
+          "mental": 5,
+          "social": 3,
+          "strategic": 4,
+          "loyalty": 7,
+          "boldness": 9,
+          "intuition": 4,
+          "temperament": 2
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Sabrina": -0.56,
+          "Angelica": -0.38,
+          "Paisley": -0.23,
+          "Kyle": 0.11
+        },
+        "bonds": [
+          {
+            "a": "Kyle",
+            "b": "Sabrina",
+            "delta": 0.33,
+            "when": 2
+          },
+          {
+            "a": "Angelica",
+            "b": "Sabrina",
+            "delta": -1.1,
+            "when": 5
+          },
+          {
+            "a": "Paisley",
+            "b": "Sabrina",
+            "delta": -0.73,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Kyle",
+        "Angelica",
+        "Paisley"
+      ]
+    },
+    {
+      "id": "big-brother-w2-Kyle",
+      "show": "big-brother",
+      "week": 2,
+      "guest": "Kyle",
+      "with": null,
+      "kind": "backdoor",
+      "mood": "relieved",
+      "juror": false,
+      "placement": 17,
+      "how": "evicted",
+      "votes": {
+        "against": 12,
+        "total": 14
+      },
+      "segments": [
+        "the-tape",
+        "answer-back",
+        "message-in"
+      ],
+      "named": [
+        {
+          "who": "Vlad",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Angelica",
+          "stance": "drag",
+          "still": true,
+          "heat": 0.7
+        },
+        {
+          "who": "Dominic",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Lacey",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Sabrina",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.28
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Dominic",
+          "Lacey"
+        ],
+        "suspected": [
+          "Vlad",
+          "Angelica",
+          "Nina"
+        ],
+        "right": false
+      },
+      "prediction": "Dominic",
+      "caller": null,
+      "answerBack": [
+        {
+          "id": "big-brother-w1-Sabrina",
+          "who": "Sabrina",
+          "stance": "praise",
+          "was": "praise"
+        }
+      ],
+      "allies": [
+        "Willow"
+      ],
+      "rivals": [
+        "Angelica",
+        "Nina"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Angelica",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Juan",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer",
+        "Vlad",
+        "Willow"
+      ],
+      "heat": 6.5,
+      "reception": "mixed",
+      "profile": {
+        "archetype": "hothead",
+        "stats": {
+          "physical": 8,
+          "endurance": 8,
+          "mental": 4,
+          "social": 4,
+          "strategic": 4,
+          "loyalty": 7,
+          "boldness": 8,
+          "intuition": 4,
+          "temperament": 3
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Kyle": 0.09,
+          "Vlad": -0.45,
+          "Angelica": -0.74,
+          "Dominic": 0.11,
+          "Lacey": 0.11
+        },
+        "bonds": [
+          {
+            "a": "Kyle",
+            "b": "Dominic",
+            "delta": -1.16,
+            "when": "recorded"
+          },
+          {
+            "a": "Kyle",
+            "b": "Lacey",
+            "delta": -1.16,
+            "when": "recorded"
+          },
+          {
+            "a": "Sabrina",
+            "b": "Kyle",
+            "delta": 0.21,
+            "when": 2
+          },
+          {
+            "a": "Angelica",
+            "b": "Kyle",
+            "delta": -0.64,
+            "when": 5
+          },
+          {
+            "a": "Vlad",
+            "b": "Kyle",
+            "delta": -0.3,
+            "when": 6
+          },
+          {
+            "a": "Dominic",
+            "b": "Kyle",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Lacey",
+            "b": "Kyle",
+            "delta": 0.07,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Sabrina",
+        "Angelica",
+        "Vlad",
+        "Dominic",
+        "Lacey"
+      ]
+    },
+    {
+      "id": "big-brother-w3-Willow",
+      "show": "big-brother",
+      "week": 3,
+      "guest": "Willow",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "gutted",
+      "juror": false,
+      "placement": 16,
+      "how": "evicted",
+      "votes": {
+        "against": 7,
+        "total": 13
+      },
+      "segments": [
+        "the-tape",
+        "rank-them"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Ben",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Lacey",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Martin",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.66
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Lacey"
+        ],
+        "suspected": [
+          "Angelica",
+          "Ben"
+        ],
+        "right": false
+      },
+      "prediction": "Ivyna",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Michele",
+        "Juan"
+      ],
+      "rivals": [
+        "Martin",
+        "Angelica"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Angelica",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Juan",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer",
+        "Vlad"
+      ],
+      "heat": 4.3,
+      "reception": "warm",
+      "profile": {
+        "archetype": "social-butterfly",
+        "stats": {
+          "physical": 4,
+          "endurance": 5,
+          "mental": 4,
+          "social": 7,
+          "strategic": 4,
+          "loyalty": 8,
+          "boldness": 8,
+          "intuition": 5,
+          "temperament": 4
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Willow": 0.96,
+          "Angelica": -0.7,
+          "Ben": -0.7,
+          "Lacey": -0.7,
+          "Martin": -0.35
+        },
+        "bonds": [
+          {
+            "a": "Willow",
+            "b": "Lacey",
+            "delta": -1.08,
+            "when": "recorded"
+          },
+          {
+            "a": "Angelica",
+            "b": "Willow",
+            "delta": -0.57,
+            "when": 5
+          },
+          {
+            "a": "Ben",
+            "b": "Willow",
+            "delta": -0.62,
+            "when": 16
+          },
+          {
+            "a": "Lacey",
+            "b": "Willow",
+            "delta": -0.57,
+            "when": 16
+          },
+          {
+            "a": "Martin",
+            "b": "Willow",
+            "delta": -0.19,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Angelica",
+        "Ben",
+        "Lacey",
+        "Martin"
+      ]
+    },
+    {
+      "id": "big-brother-w4-Juan",
+      "show": "big-brother",
+      "week": 4,
+      "guest": "Juan",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "bitter",
+      "juror": false,
+      "placement": 15,
+      "how": "evicted",
+      "votes": {
+        "against": 9,
+        "total": 12
+      },
+      "segments": [
+        "message-in",
+        "rank-them"
+      ],
+      "named": [
+        {
+          "who": "Fatima",
+          "stance": "blame",
+          "still": true,
+          "heat": 1.04
+        },
+        {
+          "who": "Ben",
+          "stance": "drag",
+          "still": true,
+          "heat": 1.3
+        },
+        {
+          "who": "Martin",
+          "stance": "drag",
+          "still": true,
+          "heat": 1.3
+        },
+        {
+          "who": "Ivyna",
+          "stance": "praise",
+          "still": true,
+          "heat": 0.52
+        }
+      ],
+      "truth": {
+        "flippers": [],
+        "suspected": [
+          "Fatima",
+          "Ben",
+          "Martin"
+        ],
+        "right": true
+      },
+      "prediction": "Lacey",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Ivyna"
+      ],
+      "rivals": [
+        "Ben",
+        "Martin"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Angelica",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer",
+        "Vlad"
+      ],
+      "heat": 5.7,
+      "reception": "cold",
+      "profile": {
+        "archetype": "schemer",
+        "stats": {
+          "physical": 7,
+          "endurance": 6,
+          "mental": 4,
+          "social": 9,
+          "strategic": 8,
+          "loyalty": 2,
+          "boldness": 8,
+          "intuition": 7,
+          "temperament": 5
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Juan": -0.98,
+          "Fatima": -0.12,
+          "Ben": -0.19,
+          "Martin": -0.19,
+          "Ivyna": 0.06
+        },
+        "bonds": [
+          {
+            "a": "Fatima",
+            "b": "Juan",
+            "delta": -0.61,
+            "when": 16
+          },
+          {
+            "a": "Ben",
+            "b": "Juan",
+            "delta": -1.3,
+            "when": 16
+          },
+          {
+            "a": "Martin",
+            "b": "Juan",
+            "delta": -1.09,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Juan",
+            "delta": 0.24,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Fatima",
+        "Ben",
+        "Martin",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w5-Angelica",
+      "show": "big-brother",
+      "week": 5,
+      "guest": "Angelica",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "denial",
+      "juror": false,
+      "placement": 14,
+      "how": "evicted",
+      "votes": {
+        "against": 11,
+        "total": 11
+      },
+      "segments": [
+        "the-tape",
+        "answer-back",
+        "message-in"
+      ],
+      "named": [
+        {
+          "who": "Nina",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.96
+        },
+        {
+          "who": "Sawyer",
+          "stance": "drag",
+          "still": true,
+          "heat": 1.2
+        },
+        {
+          "who": "Ivyna",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.96
+        },
+        {
+          "who": "Paisley",
+          "stance": "drag",
+          "still": true,
+          "heat": 1.2
+        },
+        {
+          "who": "Sabrina",
+          "stance": "drag",
+          "still": false,
+          "heat": 1.2
+        },
+        {
+          "who": "Kyle",
+          "stance": "drag",
+          "still": false,
+          "heat": 1.2
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Ivyna"
+        ],
+        "suspected": [
+          "Nina",
+          "Sawyer",
+          "Paisley"
+        ],
+        "right": false
+      },
+      "prediction": "Michele",
+      "caller": null,
+      "answerBack": [
+        {
+          "id": "big-brother-w1-Sabrina",
+          "who": "Sabrina",
+          "stance": "drag",
+          "was": "drag"
+        },
+        {
+          "id": "big-brother-w2-Kyle",
+          "who": "Kyle",
+          "stance": "drag",
+          "was": "drag"
+        }
+      ],
+      "allies": [
+        "Ivyna"
+      ],
+      "rivals": [
+        "Sawyer",
+        "Paisley"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer",
+        "Vlad"
+      ],
+      "heat": 10,
+      "reception": "cold",
+      "profile": {
+        "archetype": "mastermind",
+        "stats": {
+          "physical": 5,
+          "endurance": 6,
+          "mental": 8,
+          "social": 6,
+          "strategic": 10,
+          "loyalty": 4,
+          "boldness": 6,
+          "intuition": 8,
+          "temperament": 6
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Angelica": -0.77,
+          "Nina": -0.96,
+          "Sawyer": -1.6,
+          "Ivyna": -0.96,
+          "Paisley": -1.6
+        },
+        "bonds": [
+          {
+            "a": "Angelica",
+            "b": "Ivyna",
+            "delta": -0.92,
+            "when": "recorded"
+          },
+          {
+            "a": "Sabrina",
+            "b": "Angelica",
+            "delta": -1.49,
+            "when": 5
+          },
+          {
+            "a": "Kyle",
+            "b": "Angelica",
+            "delta": -1.39,
+            "when": 5
+          },
+          {
+            "a": "Nina",
+            "b": "Angelica",
+            "delta": -0.73,
+            "when": 11
+          },
+          {
+            "a": "Sawyer",
+            "b": "Angelica",
+            "delta": -0.82,
+            "when": 16
+          },
+          {
+            "a": "Paisley",
+            "b": "Angelica",
+            "delta": -1.3,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Angelica",
+            "delta": -0.51,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Sabrina",
+        "Kyle",
+        "Nina",
+        "Sawyer",
+        "Paisley",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w6-Vlad",
+      "show": "big-brother",
+      "week": 6,
+      "guest": "Vlad",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "gracious",
+      "juror": false,
+      "placement": 13,
+      "how": "evicted",
+      "votes": {
+        "against": 7,
+        "total": 10
+      },
+      "segments": [
+        "the-tape",
+        "answer-back",
+        "message-in"
+      ],
+      "named": [
+        {
+          "who": "Fatima",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Ben",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Baxter",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Lacey",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Kyle",
+          "stance": "respect",
+          "still": false,
+          "heat": 0.22
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Baxter",
+          "Lacey",
+          "Sawyer"
+        ],
+        "suspected": [
+          "Fatima",
+          "Ben",
+          "Nina"
+        ],
+        "right": false
+      },
+      "prediction": "Baxter",
+      "caller": null,
+      "answerBack": [
+        {
+          "id": "big-brother-w2-Kyle",
+          "who": "Kyle",
+          "stance": "respect",
+          "was": "blame"
+        }
+      ],
+      "allies": [
+        "Michele",
+        "Dominic"
+      ],
+      "rivals": [
+        "Fatima",
+        "Ben"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Alexander",
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer"
+      ],
+      "heat": 4.1,
+      "reception": "warm",
+      "profile": {
+        "archetype": "underdog",
+        "stats": {
+          "physical": 6,
+          "endurance": 7,
+          "mental": 7,
+          "social": 3,
+          "strategic": 6,
+          "loyalty": 6,
+          "boldness": 3,
+          "intuition": 7,
+          "temperament": 8
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Vlad": 0.64,
+          "Fatima": -0.56,
+          "Ben": -0.56,
+          "Baxter": 0.28,
+          "Lacey": 0.28
+        },
+        "bonds": [
+          {
+            "a": "Vlad",
+            "b": "Baxter",
+            "delta": -0.76,
+            "when": "recorded"
+          },
+          {
+            "a": "Vlad",
+            "b": "Lacey",
+            "delta": -0.76,
+            "when": "recorded"
+          },
+          {
+            "a": "Vlad",
+            "b": "Sawyer",
+            "delta": -0.76,
+            "when": "recorded"
+          },
+          {
+            "a": "Kyle",
+            "b": "Vlad",
+            "delta": 0.09,
+            "when": 6
+          },
+          {
+            "a": "Fatima",
+            "b": "Vlad",
+            "delta": -0.13,
+            "when": 16
+          },
+          {
+            "a": "Ben",
+            "b": "Vlad",
+            "delta": -0.16,
+            "when": 16
+          },
+          {
+            "a": "Lacey",
+            "b": "Vlad",
+            "delta": 0.07,
+            "when": 16
+          },
+          {
+            "a": "Baxter",
+            "b": "Vlad",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Kyle",
+        "Fatima",
+        "Ben",
+        "Lacey",
+        "Baxter"
+      ]
+    },
+    {
+      "id": "big-brother-w7-Alexander",
+      "show": "big-brother",
+      "week": 7,
+      "guest": "Alexander",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "gracious",
+      "juror": false,
+      "placement": 12,
+      "how": "evicted",
+      "votes": {
+        "against": 9,
+        "total": 9
+      },
+      "segments": [
+        "the-tape",
+        "caller",
+        "who-next"
+      ],
+      "named": [
+        {
+          "who": "Paisley",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Sawyer",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Ivyna",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Ivyna"
+        ],
+        "suspected": [
+          "Paisley",
+          "Sawyer",
+          "Nina"
+        ],
+        "right": false
+      },
+      "prediction": "Paisley",
+      "caller": "Sabrina",
+      "answerBack": [],
+      "allies": [
+        "Ivyna"
+      ],
+      "rivals": [
+        "Sawyer",
+        "Paisley"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Paisley",
+        "Sawyer"
+      ],
+      "heat": 2.1,
+      "reception": "warm",
+      "profile": {
+        "archetype": "villain",
+        "stats": {
+          "physical": 3,
+          "endurance": 3,
+          "mental": 8,
+          "social": 2,
+          "strategic": 7,
+          "loyalty": 2,
+          "boldness": 9,
+          "intuition": 4,
+          "temperament": 3
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Alexander": 0.56,
+          "Paisley": -0.31,
+          "Sawyer": -0.31,
+          "Ivyna": 0.15
+        },
+        "bonds": [
+          {
+            "a": "Alexander",
+            "b": "Ivyna",
+            "delta": -1.16,
+            "when": "recorded"
+          },
+          {
+            "a": "Paisley",
+            "b": "Alexander",
+            "delta": -0.17,
+            "when": 16
+          },
+          {
+            "a": "Sawyer",
+            "b": "Alexander",
+            "delta": -0.11,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Alexander",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Paisley",
+        "Sawyer",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w8-Paisley",
+      "show": "big-brother",
+      "week": 8,
+      "guest": "Paisley",
+      "with": null,
+      "kind": "seen-it-coming",
+      "mood": "relieved",
+      "juror": true,
+      "placement": 12,
+      "how": "evicted",
+      "votes": {
+        "against": 8,
+        "total": 8
+      },
+      "segments": [
+        "the-tape",
+        "rank-them"
+      ],
+      "named": [
+        {
+          "who": "Dominic",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Ben",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Fatima",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Ivyna",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Fatima",
+          "Ivyna",
+          "Nina",
+          "Sawyer"
+        ],
+        "suspected": [
+          "Dominic",
+          "Ben",
+          "Baxter"
+        ],
+        "right": false
+      },
+      "prediction": "Fatima",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Fatima",
+        "Nina"
+      ],
+      "rivals": [
+        "Alexander",
+        "Juan"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Fatima",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Sawyer",
+        "Angelica"
+      ],
+      "heat": 2.5,
+      "reception": "mixed",
+      "profile": {
+        "archetype": "chaos-agent",
+        "stats": {
+          "physical": 6,
+          "endurance": 6,
+          "mental": 8,
+          "social": 5,
+          "strategic": 6,
+          "loyalty": 4,
+          "boldness": 7,
+          "intuition": 4,
+          "temperament": 4
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Paisley": 0.1,
+          "Dominic": -0.43,
+          "Ben": -0.43,
+          "Fatima": 0.11,
+          "Ivyna": 0.11
+        },
+        "bonds": [
+          {
+            "a": "Paisley",
+            "b": "Fatima",
+            "delta": -1.08,
+            "when": "recorded"
+          },
+          {
+            "a": "Paisley",
+            "b": "Ivyna",
+            "delta": -1.08,
+            "when": "recorded"
+          },
+          {
+            "a": "Paisley",
+            "b": "Nina",
+            "delta": -1.08,
+            "when": "recorded"
+          },
+          {
+            "a": "Paisley",
+            "b": "Sawyer",
+            "delta": -1.08,
+            "when": "recorded"
+          },
+          {
+            "a": "Dominic",
+            "b": "Paisley",
+            "delta": -0.33,
+            "when": 16
+          },
+          {
+            "a": "Ben",
+            "b": "Paisley",
+            "delta": -0.39,
+            "when": 16
+          },
+          {
+            "a": "Fatima",
+            "b": "Paisley",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Paisley",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Dominic",
+        "Ben",
+        "Fatima",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w9-Fatima",
+      "show": "big-brother",
+      "week": 9,
+      "guest": "Fatima",
+      "with": null,
+      "kind": "blindside",
+      "mood": "gracious",
+      "juror": true,
+      "placement": 11,
+      "how": "evicted",
+      "votes": {
+        "against": 6,
+        "total": 8
+      },
+      "segments": [
+        "the-tape",
+        "message-in",
+        "who-next"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Michele",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Ben",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Dominic",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Ben",
+          "Dominic",
+          "Nina",
+          "Sawyer"
+        ],
+        "suspected": [
+          "Angelica",
+          "Michele"
+        ],
+        "right": false
+      },
+      "prediction": "Ivyna",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Ivyna",
+        "Martin"
+      ],
+      "rivals": [
+        "Vlad",
+        "Angelica"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Ivyna",
+        "Lacey",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Sawyer",
+        "Angelica"
+      ],
+      "heat": 4.1,
+      "reception": "warm",
+      "profile": {
+        "archetype": "perceptive-player",
+        "stats": {
+          "physical": 3,
+          "endurance": 4,
+          "mental": 9,
+          "social": 5,
+          "strategic": 3,
+          "loyalty": 9,
+          "boldness": 6,
+          "intuition": 8,
+          "temperament": 7
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Fatima": 0.8,
+          "Angelica": -0.65,
+          "Michele": 0.32,
+          "Ben": 0.32,
+          "Dominic": 0.32
+        },
+        "bonds": [
+          {
+            "a": "Fatima",
+            "b": "Ben",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Fatima",
+            "b": "Dominic",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Fatima",
+            "b": "Nina",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Fatima",
+            "b": "Sawyer",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Michele",
+            "b": "Fatima",
+            "delta": 0.07,
+            "when": 16
+          },
+          {
+            "a": "Ben",
+            "b": "Fatima",
+            "delta": 0.08,
+            "when": 16
+          },
+          {
+            "a": "Dominic",
+            "b": "Fatima",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Fatima",
+            "delta": -0.14,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Michele",
+        "Ben",
+        "Dominic",
+        "Angelica"
+      ]
+    },
+    {
+      "id": "big-brother-w10-Lacey",
+      "show": "big-brother",
+      "week": 10,
+      "guest": "Lacey",
+      "with": null,
+      "kind": "blindside",
+      "mood": "relieved",
+      "juror": true,
+      "placement": 10,
+      "how": "evicted",
+      "votes": {
+        "against": 4,
+        "total": 7
+      },
+      "segments": [
+        "the-tape",
+        "fan-mail"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Baxter",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Dominic",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Alexander",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.42
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Dominic"
+        ],
+        "suspected": [
+          "Angelica",
+          "Baxter"
+        ],
+        "right": false
+      },
+      "prediction": "Martin",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Sawyer",
+        "Ivyna"
+      ],
+      "rivals": [
+        "Angelica",
+        "Alexander"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Ivyna",
+        "Martin",
+        "Michele",
+        "Nina",
+        "Sawyer",
+        "Angelica"
+      ],
+      "heat": 4.8,
+      "reception": "warm",
+      "profile": {
+        "archetype": "showmancer",
+        "stats": {
+          "physical": 6,
+          "endurance": 6,
+          "mental": 7,
+          "social": 7,
+          "strategic": 6,
+          "loyalty": 7,
+          "boldness": 4,
+          "intuition": 6,
+          "temperament": 6
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Lacey": 0.96,
+          "Angelica": -1.58,
+          "Baxter": -1.58,
+          "Dominic": 0.39
+        },
+        "bonds": [
+          {
+            "a": "Lacey",
+            "b": "Dominic",
+            "delta": -0.92,
+            "when": "recorded"
+          },
+          {
+            "a": "Alexander",
+            "b": "Lacey",
+            "delta": -0.17,
+            "when": 10
+          },
+          {
+            "a": "Dominic",
+            "b": "Lacey",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Lacey",
+            "delta": -0.36,
+            "when": 16
+          },
+          {
+            "a": "Baxter",
+            "b": "Lacey",
+            "delta": -0.33,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Alexander",
+        "Dominic",
+        "Angelica",
+        "Baxter"
+      ]
+    },
+    {
+      "id": "big-brother-w11-Martin",
+      "show": "big-brother",
+      "week": 11,
+      "guest": "Martin",
+      "with": null,
+      "kind": "blindside",
+      "mood": "gracious",
+      "juror": true,
+      "placement": 8,
+      "how": "evicted",
+      "votes": {
+        "against": 5,
+        "total": 5
+      },
+      "segments": [
+        "the-tape",
+        "fan-mail",
+        "rank-them"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Baxter",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Dominic",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Juan",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.45
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Baxter",
+          "Dominic",
+          "Ivyna",
+          "Michele",
+          "Sawyer"
+        ],
+        "suspected": [
+          "Angelica"
+        ],
+        "right": false
+      },
+      "prediction": "Sawyer",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Sawyer",
+        "Dominic"
+      ],
+      "rivals": [
+        "Juan",
+        "Angelica"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Ivyna",
+        "Michele",
+        "Sawyer",
+        "Angelica"
+      ],
+      "heat": 4.3,
+      "reception": "warm",
+      "profile": {
+        "archetype": "floater",
+        "stats": {
+          "physical": 3,
+          "endurance": 5,
+          "mental": 8,
+          "social": 4,
+          "strategic": 7,
+          "loyalty": 8,
+          "boldness": 3,
+          "intuition": 6,
+          "temperament": 7
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Martin": 0.72,
+          "Angelica": -0.34,
+          "Baxter": 0.17,
+          "Dominic": 0.17
+        },
+        "bonds": [
+          {
+            "a": "Martin",
+            "b": "Baxter",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Martin",
+            "b": "Dominic",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Martin",
+            "b": "Ivyna",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Martin",
+            "b": "Michele",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Martin",
+            "b": "Sawyer",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Juan",
+            "b": "Martin",
+            "delta": -0.16,
+            "when": 11
+          },
+          {
+            "a": "Dominic",
+            "b": "Martin",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Martin",
+            "delta": -0.14,
+            "when": 16
+          },
+          {
+            "a": "Baxter",
+            "b": "Martin",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Juan",
+        "Dominic",
+        "Angelica",
+        "Baxter"
+      ]
+    },
+    {
+      "id": "big-brother-w11-Nina",
+      "show": "big-brother",
+      "week": 11,
+      "guest": "Nina",
+      "with": "Angelica",
+      "kind": "lost-challenge",
+      "mood": "bitter",
+      "juror": true,
+      "placement": 9,
+      "how": "lost-challenge",
+      "votes": null,
+      "segments": [
+        "answer-back",
+        "who-next"
+      ],
+      "named": [
+        {
+          "who": "Alexander",
+          "stance": "drag",
+          "still": false,
+          "heat": 1.3
+        },
+        {
+          "who": "Dominic",
+          "stance": "miss",
+          "still": true,
+          "heat": 0.65
+        },
+        {
+          "who": "Sawyer",
+          "stance": "praise",
+          "still": true,
+          "heat": 0.52
+        },
+        {
+          "who": "Angelica",
+          "stance": "drag",
+          "still": false,
+          "heat": 1.3
+        }
+      ],
+      "truth": null,
+      "prediction": "Michele",
+      "caller": null,
+      "answerBack": [
+        {
+          "id": "big-brother-w5-Angelica",
+          "who": "Angelica",
+          "stance": "drag",
+          "was": "blame"
+        }
+      ],
+      "allies": [
+        "Dominic",
+        "Sawyer"
+      ],
+      "rivals": [
+        "Alexander",
+        "Angelica"
+      ],
+      "partner": "Dominic",
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Ivyna",
+        "Michele",
+        "Sawyer",
+        "Angelica"
+      ],
+      "heat": 6.8,
+      "reception": "cold",
+      "profile": {
+        "archetype": "wildcard",
+        "stats": {
+          "physical": 6,
+          "endurance": 6,
+          "mental": 6,
+          "social": 7,
+          "strategic": 5,
+          "loyalty": 8,
+          "boldness": 9,
+          "intuition": 7,
+          "temperament": 4
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Nina": -0.84,
+          "Dominic": 0.83,
+          "Sawyer": 1.33
+        },
+        "bonds": [
+          {
+            "a": "Alexander",
+            "b": "Nina",
+            "delta": -1.51,
+            "when": 12
+          },
+          {
+            "a": "Dominic",
+            "b": "Nina",
+            "delta": 0.27,
+            "when": 16
+          },
+          {
+            "a": "Sawyer",
+            "b": "Nina",
+            "delta": 0.21,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Nina",
+            "delta": -1.2,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Alexander",
+        "Dominic",
+        "Sawyer",
+        "Angelica"
+      ]
+    },
+    {
+      "id": "big-brother-w12-Sawyer",
+      "show": "big-brother",
+      "week": 12,
+      "guest": "Sawyer",
+      "with": null,
+      "kind": "blindside",
+      "mood": "gutted",
+      "juror": true,
+      "placement": 7,
+      "how": "evicted",
+      "votes": {
+        "against": 4,
+        "total": 4
+      },
+      "segments": [
+        "the-tape",
+        "message-in",
+        "caller"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Dominic",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Ivyna",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.88
+        },
+        {
+          "who": "Alexander",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.66
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Dominic",
+          "Ivyna",
+          "Michele"
+        ],
+        "suspected": [
+          "Angelica"
+        ],
+        "right": false
+      },
+      "prediction": "Ben",
+      "caller": "Alexander",
+      "answerBack": [],
+      "allies": [
+        "Ben",
+        "Michele"
+      ],
+      "rivals": [
+        "Angelica",
+        "Alexander"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Dominic",
+        "Ivyna",
+        "Michele",
+        "Angelica"
+      ],
+      "heat": 6.3,
+      "reception": "warm",
+      "profile": {
+        "archetype": "hero",
+        "stats": {
+          "physical": 7,
+          "endurance": 8,
+          "mental": 4,
+          "social": 7,
+          "strategic": 3,
+          "loyalty": 9,
+          "boldness": 4,
+          "intuition": 6,
+          "temperament": 9
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Sawyer": 0.96,
+          "Angelica": -2.14,
+          "Dominic": -2.14,
+          "Ivyna": -2.14
+        },
+        "bonds": [
+          {
+            "a": "Sawyer",
+            "b": "Dominic",
+            "delta": -0.68,
+            "when": "recorded"
+          },
+          {
+            "a": "Sawyer",
+            "b": "Ivyna",
+            "delta": -0.68,
+            "when": "recorded"
+          },
+          {
+            "a": "Sawyer",
+            "b": "Michele",
+            "delta": -0.68,
+            "when": "recorded"
+          },
+          {
+            "a": "Alexander",
+            "b": "Sawyer",
+            "delta": -0.27,
+            "when": 12
+          },
+          {
+            "a": "Dominic",
+            "b": "Sawyer",
+            "delta": -0.52,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Sawyer",
+            "delta": -0.57,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Sawyer",
+            "delta": -0.47,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Alexander",
+        "Dominic",
+        "Angelica",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w13-Dominic",
+      "show": "big-brother",
+      "week": 13,
+      "guest": "Dominic",
+      "with": null,
+      "kind": "blindside",
+      "mood": "gracious",
+      "juror": true,
+      "placement": 6,
+      "how": "evicted",
+      "votes": {
+        "against": 2,
+        "total": 3
+      },
+      "segments": [
+        "the-tape",
+        "fan-mail"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "warn",
+          "still": true,
+          "heat": 0.45
+        },
+        {
+          "who": "Baxter",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.22
+        },
+        {
+          "who": "Juan",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.45
+        },
+        {
+          "who": "Ben",
+          "stance": "praise",
+          "still": true,
+          "heat": 0.3
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Baxter"
+        ],
+        "suspected": [
+          "Angelica"
+        ],
+        "right": false
+      },
+      "prediction": "Baxter",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Ben",
+        "Michele"
+      ],
+      "rivals": [
+        "Angelica",
+        "Juan"
+      ],
+      "partner": "Nina",
+      "stillIn": [
+        "Baxter",
+        "Ben",
+        "Ivyna",
+        "Michele",
+        "Angelica"
+      ],
+      "heat": 4.4,
+      "reception": "warm",
+      "profile": {
+        "archetype": "challenge-beast",
+        "stats": {
+          "physical": 9,
+          "endurance": 9,
+          "mental": 4,
+          "social": 7,
+          "strategic": 5,
+          "loyalty": 8,
+          "boldness": 7,
+          "intuition": 2,
+          "temperament": 7
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Dominic": 0.96,
+          "Angelica": -0.51,
+          "Baxter": 0.25,
+          "Ben": 0.51
+        },
+        "bonds": [
+          {
+            "a": "Dominic",
+            "b": "Baxter",
+            "delta": -0.84,
+            "when": "recorded"
+          },
+          {
+            "a": "Juan",
+            "b": "Dominic",
+            "delta": -0.16,
+            "when": 13
+          },
+          {
+            "a": "Ben",
+            "b": "Dominic",
+            "delta": 0.18,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Dominic",
+            "delta": -0.14,
+            "when": 16
+          },
+          {
+            "a": "Baxter",
+            "b": "Dominic",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Juan",
+        "Ben",
+        "Angelica",
+        "Baxter"
+      ]
+    },
+    {
+      "id": "big-brother-w14-Ben",
+      "show": "big-brother",
+      "week": 14,
+      "guest": "Ben",
+      "with": null,
+      "kind": "blindside",
+      "mood": "relieved",
+      "juror": true,
+      "placement": 5,
+      "how": "evicted",
+      "votes": {
+        "against": 2,
+        "total": 2
+      },
+      "segments": [
+        "the-tape",
+        "rank-them",
+        "who-next"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.56
+        },
+        {
+          "who": "Baxter",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Ivyna",
+          "stance": "respect",
+          "still": true,
+          "heat": 0.21
+        },
+        {
+          "who": "Juan",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.42
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Baxter",
+          "Ivyna"
+        ],
+        "suspected": [
+          "Angelica"
+        ],
+        "right": false
+      },
+      "prediction": "Ivyna",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Michele",
+        "Ivyna"
+      ],
+      "rivals": [
+        "Angelica",
+        "Juan"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ivyna",
+        "Michele",
+        "Angelica"
+      ],
+      "heat": 4.4,
+      "reception": "mixed",
+      "profile": {
+        "archetype": "loyal-soldier",
+        "stats": {
+          "physical": 8,
+          "endurance": 8,
+          "mental": 4,
+          "social": 3,
+          "strategic": 5,
+          "loyalty": 9,
+          "boldness": 6,
+          "intuition": 3,
+          "temperament": 5
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Ben": 0.08,
+          "Angelica": -1.46,
+          "Baxter": 0.37,
+          "Ivyna": 0.37
+        },
+        "bonds": [
+          {
+            "a": "Ben",
+            "b": "Baxter",
+            "delta": -1,
+            "when": "recorded"
+          },
+          {
+            "a": "Ben",
+            "b": "Ivyna",
+            "delta": -1,
+            "when": "recorded"
+          },
+          {
+            "a": "Juan",
+            "b": "Ben",
+            "delta": -0.15,
+            "when": 14
+          },
+          {
+            "a": "Angelica",
+            "b": "Ben",
+            "delta": -0.36,
+            "when": 16
+          },
+          {
+            "a": "Baxter",
+            "b": "Ben",
+            "delta": 0.06,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Ben",
+            "delta": 0.06,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Juan",
+        "Angelica",
+        "Baxter",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w15-Michele",
+      "show": "big-brother",
+      "week": 15,
+      "guest": "Michele",
+      "with": null,
+      "kind": "blindside",
+      "mood": "denial",
+      "juror": true,
+      "placement": 4,
+      "how": "evicted",
+      "votes": {
+        "against": 1,
+        "total": 1
+      },
+      "segments": [
+        "the-tape",
+        "fan-mail"
+      ],
+      "named": [
+        {
+          "who": "Angelica",
+          "stance": "blame",
+          "still": true,
+          "heat": 0.96
+        },
+        {
+          "who": "Paisley",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.72
+        },
+        {
+          "who": "Juan",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.72
+        },
+        {
+          "who": "Ivyna",
+          "stance": "praise",
+          "still": true,
+          "heat": 0.48
+        }
+      ],
+      "truth": {
+        "flippers": [
+          "Angelica"
+        ],
+        "suspected": [],
+        "right": false
+      },
+      "prediction": "Ivyna",
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Ivyna",
+        "Baxter"
+      ],
+      "rivals": [
+        "Paisley",
+        "Juan"
+      ],
+      "partner": null,
+      "stillIn": [
+        "Baxter",
+        "Ivyna",
+        "Angelica"
+      ],
+      "heat": 7.4,
+      "reception": "cold",
+      "profile": {
+        "archetype": "social-butterfly",
+        "stats": {
+          "physical": 3,
+          "endurance": 5,
+          "mental": 6,
+          "social": 9,
+          "strategic": 6,
+          "loyalty": 8,
+          "boldness": 5,
+          "intuition": 9,
+          "temperament": 6
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Michele": -0.98,
+          "Angelica": -5.25,
+          "Ivyna": 2.63
+        },
+        "bonds": [
+          {
+            "a": "Michele",
+            "b": "Angelica",
+            "delta": -0.92,
+            "when": "recorded"
+          },
+          {
+            "a": "Juan",
+            "b": "Michele",
+            "delta": -0.25,
+            "when": 15
+          },
+          {
+            "a": "Paisley",
+            "b": "Michele",
+            "delta": -0.27,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Michele",
+            "delta": -0.62,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Michele",
+            "delta": 0.22,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Juan",
+        "Paisley",
+        "Angelica",
+        "Ivyna"
+      ]
+    },
+    {
+      "id": "big-brother-w16-Ivyna",
+      "show": "big-brother",
+      "week": 16,
+      "guest": "Ivyna",
+      "with": null,
+      "kind": "finalist",
+      "mood": "relieved",
+      "juror": false,
+      "placement": 3,
+      "how": "finalist",
+      "votes": null,
+      "segments": [
+        "caller",
+        "fan-mail"
+      ],
+      "named": [
+        {
+          "who": "Fatima",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.28
+        },
+        {
+          "who": "Michele",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.28
+        }
+      ],
+      "truth": null,
+      "prediction": null,
+      "caller": "Juan",
+      "answerBack": [],
+      "allies": [
+        "Fatima",
+        "Michele"
+      ],
+      "rivals": [],
+      "partner": null,
+      "stillIn": [],
+      "heat": 0.6,
+      "reception": "warm",
+      "profile": {
+        "archetype": "perceptive-player",
+        "stats": {
+          "physical": 4,
+          "endurance": 4,
+          "mental": 4,
+          "social": 8,
+          "strategic": 6,
+          "loyalty": 7,
+          "boldness": 4,
+          "intuition": 9,
+          "temperament": 8
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Ivyna": 1.04
+        },
+        "bonds": [
+          {
+            "a": "Fatima",
+            "b": "Ivyna",
+            "delta": 0.14,
+            "when": 16
+          },
+          {
+            "a": "Michele",
+            "b": "Ivyna",
+            "delta": 0.15,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Fatima",
+        "Michele"
+      ]
+    },
+    {
+      "id": "big-brother-w16-Angelica",
+      "show": "big-brother",
+      "week": 16,
+      "guest": "Angelica",
+      "with": null,
+      "kind": "finalist",
+      "mood": "gracious",
+      "juror": false,
+      "placement": 2,
+      "how": "finalist",
+      "votes": null,
+      "segments": [
+        "answer-back",
+        "caller"
+      ],
+      "named": [
+        {
+          "who": "Sawyer",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.45
+        },
+        {
+          "who": "Ben",
+          "stance": "warn",
+          "still": false,
+          "heat": 0.45
+        },
+        {
+          "who": "Ivyna",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.3
+        },
+        {
+          "who": "Michele",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.3
+        },
+        {
+          "who": "Willow",
+          "stance": "respect",
+          "still": false,
+          "heat": 0.22
+        }
+      ],
+      "truth": null,
+      "prediction": null,
+      "caller": "Willow",
+      "answerBack": [
+        {
+          "id": "big-brother-w3-Willow",
+          "who": "Willow",
+          "stance": "respect",
+          "was": "blame"
+        }
+      ],
+      "allies": [
+        "Ivyna",
+        "Michele"
+      ],
+      "rivals": [
+        "Sawyer",
+        "Ben"
+      ],
+      "partner": null,
+      "stillIn": [],
+      "heat": 3.2,
+      "reception": "warm",
+      "profile": {
+        "archetype": "mastermind",
+        "stats": {
+          "physical": 5,
+          "endurance": 6,
+          "mental": 8,
+          "social": 6,
+          "strategic": 10,
+          "loyalty": 4,
+          "boldness": 6,
+          "intuition": 8,
+          "temperament": 6
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Angelica": 0.88
+        },
+        "bonds": [
+          {
+            "a": "Sawyer",
+            "b": "Angelica",
+            "delta": -0.11,
+            "when": 16
+          },
+          {
+            "a": "Ben",
+            "b": "Angelica",
+            "delta": -0.16,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Angelica",
+            "delta": 0.14,
+            "when": 16
+          },
+          {
+            "a": "Michele",
+            "b": "Angelica",
+            "delta": 0.17,
+            "when": 16
+          },
+          {
+            "a": "Willow",
+            "b": "Angelica",
+            "delta": 0.08,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Sawyer",
+        "Ben",
+        "Ivyna",
+        "Michele",
+        "Willow"
+      ]
+    },
+    {
+      "id": "big-brother-w16-Baxter",
+      "show": "big-brother",
+      "week": 16,
+      "guest": "Baxter",
+      "with": null,
+      "kind": "finalist",
+      "mood": "elated",
+      "juror": false,
+      "placement": 1,
+      "how": "finalist",
+      "votes": null,
+      "segments": [
+        "fan-mail"
+      ],
+      "named": [
+        {
+          "who": "Alexander",
+          "stance": "drag",
+          "still": false,
+          "heat": 0.8
+        },
+        {
+          "who": "Angelica",
+          "stance": "drag",
+          "still": false,
+          "heat": 0.8
+        },
+        {
+          "who": "Michele",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.32
+        },
+        {
+          "who": "Ivyna",
+          "stance": "praise",
+          "still": false,
+          "heat": 0.32
+        }
+      ],
+      "truth": null,
+      "prediction": null,
+      "caller": null,
+      "answerBack": [],
+      "allies": [
+        "Michele",
+        "Ivyna"
+      ],
+      "rivals": [
+        "Alexander",
+        "Angelica"
+      ],
+      "partner": null,
+      "stillIn": [],
+      "heat": 2.2,
+      "reception": "mixed",
+      "profile": {
+        "archetype": "wildcard",
+        "stats": {
+          "physical": 4,
+          "endurance": 6,
+          "mental": 7,
+          "social": 6,
+          "strategic": 6,
+          "loyalty": 6,
+          "boldness": 5,
+          "intuition": 8,
+          "temperament": 7
+        }
+      },
+      "effects": {
+        "popularity": {
+          "Baxter": 0.11
+        },
+        "bonds": [
+          {
+            "a": "Alexander",
+            "b": "Baxter",
+            "delta": -0.93,
+            "when": 16
+          },
+          {
+            "a": "Angelica",
+            "b": "Baxter",
+            "delta": -0.74,
+            "when": 16
+          },
+          {
+            "a": "Michele",
+            "b": "Baxter",
+            "delta": 0.18,
+            "when": 16
+          },
+          {
+            "a": "Ivyna",
+            "b": "Baxter",
+            "delta": 0.15,
+            "when": 16
+          }
+        ]
+      },
+      "heard": [
+        "Alexander",
+        "Angelica",
+        "Michele",
+        "Ivyna"
+      ]
+    }
+  ],
+  "villainBoard": {
+    "read": "Fatima did the most to other people this season, and Ivyna was not far behind.",
+    "sources": [
+      "the record",
+      "the edit"
+    ],
+    "board": [
+      {
+        "name": "Fatima",
+        "slug": "fatima",
+        "score": 26,
+        "deeds": {
+          "brokenWord": 4,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 2,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Told the room Ben and wrote down Kyle in week 2.",
+          "Moved their vote onto Martin in week 3.",
+          "Held the power in week 4; Juan went home.",
+          "Held the power in week 6; Vlad went home.",
+          "Moved their vote onto Alexander in week 7.",
+          "Moved their vote onto Paisley in week 8.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan.",
+          "Openly at war with Vlad."
+        ]
+      },
+      {
+        "name": "Ivyna",
+        "slug": "ivyna",
+        "score": 26,
+        "deeds": {
+          "brokenWord": 6,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 0,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Alexander in week 4.",
+          "Moved their vote onto Michele in week 6.",
+          "Moved their vote onto Alexander in week 7.",
+          "Moved their vote onto Paisley in week 8.",
+          "Moved their vote onto Martin in week 11.",
+          "Held the power in week 12; Dominic went home.",
+          "Moved their vote onto Ben in week 13."
+        ]
+      },
+      {
+        "name": "Paisley",
+        "slug": "paisley",
+        "score": 26,
+        "deeds": {
+          "brokenWord": 4,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 4,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Kyle in week 2.",
+          "Told the room Willow and wrote down Martin in week 3.",
+          "Moved their vote onto Alexander in week 4.",
+          "Moved their vote onto Vlad in week 6.",
+          "Held the power in week 7; Alexander went home.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan.",
+          "Openly at war with Michele."
+        ]
+      },
+      {
+        "name": "Angelica",
+        "slug": "angelica",
+        "score": 25,
+        "deeds": {
+          "brokenWord": 2,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 1,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 4,
+          "ranTheWeek": 3,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Held the power in week 1; Sabrina went home.",
+          "Moved their vote onto Willow in week 3.",
+          "Told the room Ivyna and wrote down Lacey in week 10.",
+          "Held the power in week 11; Martin went home.",
+          "Held the power in week 13; Ben went home.",
+          "Cut Ivyna at the final three and chose who to sit beside.",
+          "Openly at war with Baxter.",
+          "Openly at war with Ben.",
+          "Openly at war with Dominic.",
+          "Openly at war with Fatima."
+        ]
+      },
+      {
+        "name": "Baxter",
+        "slug": "baxter",
+        "score": 19,
+        "deeds": {
+          "brokenWord": 2,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 1,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Angelica in week 5.",
+          "Told the room Ivyna and wrote down Lacey in week 10.",
+          "Won the veto in week 13 and left Michele in the chair.",
+          "Held the power in week 14; Michele went home.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan."
+        ]
+      },
+      {
+        "name": "Sawyer",
+        "slug": "sawyer",
+        "score": 17,
+        "deeds": {
+          "brokenWord": 2,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 1,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Juan in week 4.",
+          "Won the veto in week 8 and left Michele in the chair.",
+          "Moved their vote onto Martin in week 11.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan."
+        ]
+      },
+      {
+        "name": "Ben",
+        "slug": "ben",
+        "score": 14,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 2,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Told the room Martin and wrote down Willow in week 3.",
+          "Held the power in week 10; Lacey went home.",
+          "Held the power in week 12; Sawyer went home.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan.",
+          "Openly at war with Vlad."
+        ]
+      },
+      {
+        "name": "Dominic",
+        "slug": "dominic",
+        "score": 13,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 1,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Won the veto in week 7 and left Michele in the chair.",
+          "Held the power in week 8; Paisley went home.",
+          "Told the room Baxter and wrote down Sawyer in week 12.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan."
+        ]
+      },
+      {
+        "name": "Michele",
+        "slug": "michele",
+        "score": 13,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 1,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 3,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Told the room Baxter and wrote down Sawyer in week 12.",
+          "Voted out Sawyer, who they were aligned with, in week 12.",
+          "Openly at war with Alexander.",
+          "Openly at war with Juan.",
+          "Openly at war with Paisley."
+        ]
+      },
+      {
+        "name": "Alexander",
+        "slug": "alexander",
+        "score": 12,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 4,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Willow in week 3.",
+          "Openly at war with Baxter.",
+          "Openly at war with Juan.",
+          "Openly at war with Lacey.",
+          "Openly at war with Michele."
+        ]
+      },
+      {
+        "name": "Lacey",
+        "slug": "lacey",
+        "score": 12,
+        "deeds": {
+          "brokenWord": 2,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Kyle in week 2.",
+          "Moved their vote onto Willow in week 3.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica."
+        ]
+      },
+      {
+        "name": "Juan",
+        "slug": "juan",
+        "score": 10,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 4,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Held the power in week 3; Willow went home.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica.",
+          "Openly at war with Baxter.",
+          "Openly at war with Ben."
+        ]
+      },
+      {
+        "name": "Martin",
+        "slug": "martin",
+        "score": 10,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Moved their vote onto Kyle in week 2.",
+          "Held the power in week 9; Fatima went home.",
+          "Openly at war with Angelica.",
+          "Openly at war with Juan."
+        ]
+      },
+      {
+        "name": "Vlad",
+        "slug": "vlad",
+        "score": 10,
+        "deeds": {
+          "brokenWord": 1,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Held the power in week 2; Kyle went home.",
+          "Moved their vote onto Alexander in week 4.",
+          "Openly at war with Ben.",
+          "Openly at war with Fatima."
+        ]
+      },
+      {
+        "name": "Nina",
+        "slug": "nina",
+        "score": 6,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 2,
+          "ranTheWeek": 1,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Held the power in week 5; Angelica went home.",
+          "Openly at war with Alexander.",
+          "Openly at war with Angelica."
+        ]
+      },
+      {
+        "name": "Kyle",
+        "slug": "kyle",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 1,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Openly at war with Angelica."
+        ]
+      },
+      {
+        "name": "Sabrina",
+        "slug": "sabrina",
+        "score": 2,
+        "deeds": {
+          "brokenWord": 0,
+          "villainScene": 0,
+          "cutAnAlly": 0,
+          "finalCut": 0,
+          "vetoAsWeapon": 0,
+          "decidingVote": 0,
+          "rivalry": 1,
+          "ranTheWeek": 0,
+          "sabotage": 0,
+          "stole": 0,
+          "deceived": 0,
+          "cruelty": 0,
+          "calledOut": 0
+        },
+        "evidence": [
+          "Openly at war with Angelica."
+        ]
+      }
+    ]
+  }
+}

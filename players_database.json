@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 15,
-    "totalPlayers": 238,
+    "totalPlayers": 256,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -20602,6 +20602,1410 @@
       "totalVetoWins": 0,
       "emoji": "🥀",
       "autoEmoji": "🥀"
+    },
+    {
+      "id": "baxter",
+      "name": "Baxter",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 7,
+      "totalHohWins": 1,
+      "totalVetoWins": 2,
+      "tier": "",
+      "badges": [
+        "BB2 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 1,
+          "status": "Winner",
+          "challengeWins": 3,
+          "votesReceived": 0,
+          "juryVotes": 7,
+          "popularity": 137.88000000000002,
+          "strategicScore": 6.9,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 2,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 1,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Baxter won because he made himself useful to every structure, then let the jury credit him for surviving all of them."
+          ],
+          "gameplayStyle": "social insulation, selective betrayal",
+          "keyMoments": [
+            "Week 2: built The Front and pulled Nina and Ben into a structure before most of the house had one",
+            "Week 5: became publicly tied to Nina, then started learning the cost of being seen as a pair",
+            "Week 10: played the Cloud and dodged a nomination round that could have exposed him earlier",
+            "Week 12: survived the Sawyer vote 4-0 when the room was told a different name",
+            "Week 13: cut Ben despite a final-three promise and still kept the jury path alive",
+            "Week 14: won HOH at final four and nominated Angelica and Ivyna, forcing the last real endgame split",
+            "Finale: reached the end beside Angelica and won 7-2"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 1,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 3,
+          "hohWins": 1,
+          "vetoWins": 2,
+          "blockBusterWins": 1,
+          "timesNominated": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🔑",
+      "autoEmoji": "🔑"
+    },
+    {
+      "id": "angelica",
+      "name": "Angelica",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 7,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 11,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 2,
+      "totalHohWins": 3,
+      "totalVetoWins": 4,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 2,
+          "status": "Finalist",
+          "challengeWins": 7,
+          "votesReceived": 11,
+          "juryVotes": 2,
+          "popularity": 35.63999999999998,
+          "strategicScore": 7.3,
+          "bb": {
+            "hohWins": 3,
+            "vetoWins": 4,
+            "blockBusterWins": 3,
+            "blockBusterPlayed": 4,
+            "blockBusterStreak": 2,
+            "blockBusterWeeks": [],
+            "timesNominated": 7,
+            "timesOnBlock": 1,
+            "timesSaved": 4
+          },
+          "notes": [
+            "Angelica played the biggest, loudest survival game of the season, but the jury punished how visible and exhausting that survival became."
+          ],
+          "gameplayStyle": "relentless comp survivalist",
+          "keyMoments": [
+            "Week 1: used the relic to choose the HOH field, won HOH, and immediately made enemies with the Sawyer plan",
+            "Week 2: won veto while targeted and kept herself in the game",
+            "Week 5: returned as the obvious house target and still kept reentering the vote structure",
+            "Week 10: won veto on Ben's HOH and forced Sawyer onto the block",
+            "Week 11: won the White Locust sequence and became HOH during the Mastermind turn",
+            "Week 13: won HOH and sent Ben out after surviving his shot",
+            "Finale: won Parts One and Three, cut Ivyna, and lost to Baxter 7-2"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 3,
+      "totalBlockBusterPlayed": 4,
+      "bestBlockBusterStreak": 2,
+      "avgPlacement": 2,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 7,
+          "hohWins": 3,
+          "vetoWins": 4,
+          "blockBusterWins": 3,
+          "timesNominated": 7
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "👑",
+      "autoEmoji": "👑"
+    },
+    {
+      "id": "ivyna",
+      "name": "Ivyna",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 3,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 3,
+          "status": "Finalist",
+          "challengeWins": 1,
+          "votesReceived": 3,
+          "juryVotes": 0,
+          "popularity": 135.83999999999995,
+          "strategicScore": 3,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 2,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Ivyna reached the final three through quiet positioning and timely relationships, but the jury never saw her as the author of the season."
+          ],
+          "gameplayStyle": "quiet relational opportunist",
+          "keyMoments": [
+            "Week 1: formed a real final two with Fatima before most people had structure",
+            "Week 3: redirected Juan toward Michele and showed how well she could seed a name",
+            "Week 6: protected Fatima's interests while still staying off the main target list",
+            "Week 10: sat as Ben's pawn and had to trust votes she did not control",
+            "Week 12: won HOH in the double cycle and took the first real endgame shot",
+            "Week 13: survived the Ben vote while her overlapping promises became visible",
+            "Finale: lost Part Three to Angelica and was cut one step short"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 3,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 1,
+          "hohWins": 1,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🥉",
+      "autoEmoji": "🥉"
+    },
+    {
+      "id": "michele",
+      "name": "Michele",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 2,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 4,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 5,
+          "juryVotes": 0,
+          "popularity": 186.82000000000002,
+          "strategicScore": 8.3,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 2,
+            "blockBusterWins": 3,
+            "blockBusterPlayed": 5,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 9,
+            "timesOnBlock": 5,
+            "timesSaved": 2
+          },
+          "notes": [
+            "Michele was the season's best underdog résumé, surviving a ridiculous amount of danger while quietly shaping more votes than her finish suggests."
+          ],
+          "gameplayStyle": "warmth, chaos, resilience",
+          "keyMoments": [
+            "Week 3: won veto and killed Juan's intended backdoor structure",
+            "Week 5: survived Nina's HOH era and built deeper bonds with Lacey and Nina",
+            "Week 6: became Fatima's target because of the Vlad connection but fought through it",
+            "Week 9: won veto after Martin nominated her as the strategic target",
+            "Week 10: was exposed with Baxter as a pair, changing her endgame threat level",
+            "Week 12: won the Block Buster off the block and voted out Sawyer anyway",
+            "Week 14: lost the final four veto, leaving Angelica with the vote to evict her"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 3,
+      "totalBlockBusterPlayed": 5,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 4,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 0,
+          "vetoWins": 2,
+          "blockBusterWins": 3,
+          "timesNominated": 9
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🔓",
+      "autoEmoji": "🔓"
+    },
+    {
+      "id": "ben",
+      "name": "Ben",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 2,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 5,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 4,
+          "juryVotes": 0,
+          "popularity": 87.03999999999999,
+          "strategicScore": 4.3,
+          "bb": {
+            "hohWins": 2,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 3,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Ben was a loyal, well-liked power player whose endgame collapsed because everyone could see his promises before he was ready to break them."
+          ],
+          "gameplayStyle": "loyal connector, late threat",
+          "keyMoments": [
+            "Week 1: helped form The Collective and created his first real power base",
+            "Week 3: became publicly linked to dominant voting structures after the Kyle blindside",
+            "Week 8: won HOH and targeted the Paisley/Fatima/Lacey block structure",
+            "Week 10: won HOH, had Baxter use the Cloud, and put up Michele, Ivyna and Angelica",
+            "Week 12: won HOH again and used Baxter as a pawn next to Angelica and Michele",
+            "Week 13: trusted final-three promises that Baxter did not keep",
+            "Week 13: was evicted 2-0 after the veto reshuffle"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 5,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 2,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🏠",
+      "autoEmoji": "🏠"
+    },
+    {
+      "id": "dominic",
+      "name": "Dominic",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 6,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 2,
+          "juryVotes": 0,
+          "popularity": 59.12999999999999,
+          "strategicScore": 4.6,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 0,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Dominic played a strong middle game around comps and tight allies, but his control was always more visible than his jury story could support."
+          ],
+          "gameplayStyle": "athletic middle broker",
+          "keyMoments": [
+            "Week 1: became a core Collective member with Ben and Juan",
+            "Week 4: deepened the Ben final two and made loyalty a real part of his game",
+            "Week 7: won veto and used it on Nina, creating a debt that mattered",
+            "Week 8: won HOH and nominated Paisley, Fatima and Lacey",
+            "Week 8: called a house meeting that weakened his social capital even while his plan worked",
+            "Week 12 double cycle: lost the endgame vote as Baxter and Ivyna reorganized around him",
+            "Week 12: became a jury member after his closest structures cracked"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 0,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 6,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "blockBusterWins": 0,
+          "timesNominated": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🦅",
+      "autoEmoji": "🦅"
+    },
+    {
+      "id": "sawyer",
+      "name": "Sawyer",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 3,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 7,
+          "status": "Jury",
+          "challengeWins": 3,
+          "votesReceived": 4,
+          "juryVotes": 0,
+          "popularity": 83.70999999999998,
+          "strategicScore": 4.2,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 3,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 1,
+            "timesSaved": 2
+          },
+          "notes": [
+            "Sawyer's loyalty and veto wins made him powerful, but also made him the perfect late sacrifice once nobody wanted to sit beside him."
+          ],
+          "gameplayStyle": "loyal veto fighter",
+          "keyMoments": [
+            "Week 1: won veto while nominated and ruined Angelica's first HOH plan",
+            "Week 2: formed the Nina/Paisley/Sawyer final three",
+            "Week 5: kept the Angelica feud alive until it became part of his identity",
+            "Week 7: joined The Bond and deepened his endgame options",
+            "Week 8: won veto and used it on Lacey, reshaping Dominic's week",
+            "Week 11: won veto while on the block under Angelica's HOH",
+            "Week 12: was blindsided 4-0 after Michele, Ivyna and Dominic all moved against what he expected"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 7,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 3,
+          "hohWins": 0,
+          "vetoWins": 3,
+          "blockBusterWins": 0,
+          "timesNominated": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🛡️",
+      "autoEmoji": "🛡️"
+    },
+    {
+      "id": "martin",
+      "name": "Martin",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 11,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 8,
+          "status": "Jury",
+          "challengeWins": 1,
+          "votesReceived": 11,
+          "juryVotes": 0,
+          "popularity": 35.900000000000006,
+          "strategicScore": 7.5,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Martin played an excellent alignment game from the background, but his one HOH exposed how much he needed other people's structures to hold."
+          ],
+          "gameplayStyle": "adaptive low-visibility floater",
+          "keyMoments": [
+            "Week 1: chose not to chase HOH rooms early, making absence part of his strategy",
+            "Week 3: survived Juan's HOH after Michele's veto changed the week",
+            "Week 5: became a deeper piece inside The Front while still looking unthreatening",
+            "Week 7: made a final two with Nina and kept himself relevant socially",
+            "Week 9: won HOH and targeted Michele as the way into The Front",
+            "Week 9: watched Michele win veto and his week collapse into Fatima leaving",
+            "Week 11: was evicted 5-0 after Baxter abandoned their final two"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 8,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 1,
+          "hohWins": 1,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🪁",
+      "autoEmoji": "🪁"
+    },
+    {
+      "id": "nina",
+      "name": "Nina",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 9,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 0,
+          "juryVotes": 0,
+          "popularity": 78.11,
+          "strategicScore": 6.3,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 0,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 0,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Nina had one of the strongest midgames in the house, but the Mastermind twist removed her before the vote structure could save her."
+          ],
+          "gameplayStyle": "sharp social vote-reader",
+          "keyMoments": [
+            "Week 2: won the Interrogation power and secretly took Michele's HOH",
+            "Week 3: helped expose Ben and Dominic's structure in front of the house",
+            "Week 5: used HOH to target Angelica and protect The Front",
+            "Week 6: broke publicly with Baxter as the couple became too visible",
+            "Week 7: was saved by Dominic's veto, creating a major debt",
+            "Week 8: lost Paisley as an ally after the 8-0 vote",
+            "Week 11: lost the White Locust timed task and left with no eviction vote"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 0,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 9,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "blockBusterWins": 0,
+          "timesNominated": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🍀",
+      "autoEmoji": "🍀"
+    },
+    {
+      "id": "lacey",
+      "name": "Lacey",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 10,
+          "status": "Jury",
+          "challengeWins": 0,
+          "votesReceived": 6,
+          "juryVotes": 0,
+          "popularity": 96.61,
+          "strategicScore": 7,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 2,
+            "blockBusterPlayed": 5,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 6,
+            "timesOnBlock": 3,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Lacey was a social glue player who survived the block over and over until her own side decided she was too useful to keep."
+          ],
+          "gameplayStyle": "social glue, vote counter",
+          "keyMoments": [
+            "Week 2: survived Vlad's nominations by turning the block week into relationships",
+            "Week 3: joined The Front and then The Bond, increasing both security and exposure",
+            "Week 4: helped expose Paisley's rumor network in a house meeting",
+            "Week 6: survived Fatima's HOH through pitches and Block Buster safety",
+            "Week 7: built a final two with Sawyer while still managing Ben",
+            "Week 8: became an obvious showmance pair with Ben",
+            "Week 10: was evicted 4-3 after Angelica's veto win reshaped Ben's HOH"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 2,
+      "totalBlockBusterPlayed": 5,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 10,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "blockBusterWins": 2,
+          "timesNominated": 6
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🧱",
+      "autoEmoji": "🧱"
+    },
+    {
+      "id": "fatima",
+      "name": "Fatima",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 2,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 11,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 6,
+          "juryVotes": 0,
+          "popularity": 70.29999999999998,
+          "strategicScore": 4,
+          "bb": {
+            "hohWins": 2,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Fatima had power, reads and loyalty, but she built too many honest bonds in a house that punished them."
+          ],
+          "gameplayStyle": "direct, loyal, perceptive",
+          "keyMoments": [
+            "Week 1: formed the Fatima/Ivyna final two that shaped both games",
+            "Week 4: won HOH and removed Juan after his messy power week",
+            "Week 6: won HOH again and targeted the Vlad/Michele connection",
+            "Week 6: put Vlad, Michele and Lacey up, exposing her willingness to swing big",
+            "Week 8: was nominated by Dominic as the voice who would fight for Paisley",
+            "Week 8: campaigned through Martin, Ivyna and Nina but could not flip the room",
+            "Week 9: became the first juror"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 11,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 2,
+          "vetoWins": 0,
+          "blockBusterWins": 1,
+          "timesNominated": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🎲",
+      "autoEmoji": "🎲"
+    },
+    {
+      "id": "paisley",
+      "name": "Paisley",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 12,
+          "status": "Jury",
+          "challengeWins": 2,
+          "votesReceived": 8,
+          "juryVotes": 0,
+          "popularity": 29.740000000000002,
+          "strategicScore": 4,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Paisley had power, nerve and reads, but her game collapsed because people stopped trusting which version of the story they were hearing."
+          ],
+          "gameplayStyle": "public pressure, messy reads",
+          "keyMoments": [
+            "Week 2: won the Mystery Veto power and kept it quiet",
+            "Week 3: deepened the final three with Nina and Sawyer",
+            "Week 4: targeted Lacey as the way to weaken The Front",
+            "Week 6: won veto but left Fatima's nominations intact",
+            "Week 7: won HOH and removed Alexander after keeping him calm all week",
+            "Week 8: was nominated by Dominic and failed to repair enough trust",
+            "Week 8: left unanimously and became the first juror"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 12,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "blockBusterWins": 0,
+          "timesNominated": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🌀",
+      "autoEmoji": "🌀"
+    },
+    {
+      "id": "alexander",
+      "name": "Alexander",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 13,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 12,
+          "juryVotes": 0,
+          "popularity": 40.900000000000006,
+          "strategicScore": 4.3,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 3,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 3,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Alexander had instincts and influence, but he turned every grudge into a billboard and gave the house too many reasons to agree on him."
+          ],
+          "gameplayStyle": "provocateur, rumor operator",
+          "keyMoments": [
+            "Week 1: clashed with Sawyer over food and trust, creating the season's longest feud",
+            "Week 2: became an easy consensus threat in backyard conversations",
+            "Week 4: sat on Fatima's block and watched the room choose Juan instead",
+            "Week 5: was nominated by Nina and survived as Angelica left",
+            "Week 7: was nominated by Paisley after being falsely reassured",
+            "Week 7: tried to redirect suspicion toward Nina and Sawyer",
+            "Week 7: left 9-0 after the house unified around him"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 3,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 13,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🐝",
+      "autoEmoji": "🐝"
+    },
+    {
+      "id": "vlad",
+      "name": "Vlad",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 1,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 14,
+          "status": "Pre-Jury",
+          "challengeWins": 2,
+          "votesReceived": 7,
+          "juryVotes": 0,
+          "popularity": 64.57000000000001,
+          "strategicScore": 3.8,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 1,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 3,
+            "timesOnBlock": 1,
+            "timesSaved": 1
+          },
+          "notes": [
+            "Vlad had early power and a real Michele bond, but his game became too dependent on winning safety at the exact moment people were comparing notes."
+          ],
+          "gameplayStyle": "proud comp-dependent outsider",
+          "keyMoments": [
+            "Week 2: won HOH and tried to target Nina, but his week produced Kyle instead",
+            "Week 2: formed a sincere final two with Michele",
+            "Week 4: was nominated by Fatima as the primary threat",
+            "Week 4: won veto under threat and forced Fatima into a backup plan",
+            "Week 6: was nominated again with Michele and Lacey, revealing the pair",
+            "Week 6: lost the safety path and left 7-3",
+            "Week 6: became an early jury-style warning about exposed duos"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 14,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 2,
+          "hohWins": 1,
+          "vetoWins": 1,
+          "blockBusterWins": 1,
+          "timesNominated": 3
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🍂",
+      "autoEmoji": "🍂"
+    },
+    {
+      "id": "juan",
+      "name": "Juan",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 9,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 1,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 15,
+          "status": "Pre-Jury",
+          "challengeWins": 1,
+          "votesReceived": 9,
+          "juryVotes": 0,
+          "popularity": 4.119999999999999,
+          "strategicScore": 6.3,
+          "bb": {
+            "hohWins": 1,
+            "vetoWins": 0,
+            "blockBusterWins": 1,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 1,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Juan played hard, won power, and understood the house, but his HOH exposed him as someone the room could not trust."
+          ],
+          "gameplayStyle": "overactive social schemer",
+          "keyMoments": [
+            "Week 1: helped form The Collective and positioned himself as a friendly connector",
+            "Week 3: won HOH and targeted Michele while using Willow as a pawn",
+            "Week 3: held a house meeting that backfired and made him look unstable",
+            "Week 3: lost control when Michele won veto and Willow became vulnerable",
+            "Week 4: was nominated by Fatima next to Vlad and Alexander",
+            "Week 4: was denied the HOH room pitch publicly, signaling lost status",
+            "Week 4: left 9-3 after believing he still had the numbers"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 1,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 1,
+      "avgPlacement": 15,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 1,
+          "hohWins": 1,
+          "vetoWins": 0,
+          "blockBusterWins": 1,
+          "timesNominated": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🥀",
+      "autoEmoji": "🥀"
+    },
+    {
+      "id": "willow",
+      "name": "Willow",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 16,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 7,
+          "juryVotes": 0,
+          "popularity": 30.68,
+          "strategicScore": 4,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Willow's game was more twist and proximity than control, and she left because she accepted pawn danger in a house that loved flipping pawns."
+          ],
+          "gameplayStyle": "secret chaos, pawn trust",
+          "keyMoments": [
+            "Week 1: accepted the saboteur mission to rig a competition",
+            "Week 2: accepted another saboteur job and leaned into the hidden-role paranoia",
+            "Week 2: became part of The Collective's early structure",
+            "Week 3: made a real final two with Juan and trusted him deeply",
+            "Week 3: accepted pawn status on Juan's HOH",
+            "Week 3: denied voting against the house but could not stop suspicion",
+            "Week 3: left in a 7-6 blindside"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 16,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🚪",
+      "autoEmoji": "🚪"
+    },
+    {
+      "id": "kyle",
+      "name": "Kyle",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 17,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 17,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 12,
+          "juryVotes": 0,
+          "popularity": 26.66,
+          "strategicScore": 4.6,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 2,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 2,
+            "timesOnBlock": 2,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Kyle looked like a physical force early, but he was out before he could build anything stable enough to survive the first blindside."
+          ],
+          "gameplayStyle": "early physical lightning rod",
+          "keyMoments": [
+            "Week 1: was nominated by Angelica as the backup target",
+            "Week 1: survived the unanimous Sabrina vote",
+            "Week 1: built a short-lived final two with Sabrina",
+            "Week 2: became the renom after Angelica won veto",
+            "Week 2: believed he had votes to stay after campaigning to Vlad and others",
+            "Week 2: was blindsided 12-2"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 2,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 17,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 2
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🌫️",
+      "autoEmoji": "🌫️"
+    },
+    {
+      "id": "sabrina",
+      "name": "Sabrina",
+      "seasons": [
+        2
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 15,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "totalHohWins": 0,
+      "totalVetoWins": 0,
+      "tier": "",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "avatarId": null,
+          "avatarFile": "",
+          "placement": 18,
+          "status": "Pre-Jury",
+          "challengeWins": 0,
+          "votesReceived": 15,
+          "juryVotes": 0,
+          "popularity": 5.9399999999999995,
+          "strategicScore": 4.8,
+          "bb": {
+            "hohWins": 0,
+            "vetoWins": 0,
+            "blockBusterWins": 0,
+            "blockBusterPlayed": 1,
+            "blockBusterStreak": 0,
+            "blockBusterWeeks": [],
+            "timesNominated": 1,
+            "timesOnBlock": 1,
+            "timesSaved": 0
+          },
+          "notes": [
+            "Sabrina never got enough time to turn personality into position, and week one punished her for being the safest person to sacrifice."
+          ],
+          "gameplayStyle": "loud first-week casualty",
+          "keyMoments": [
+            "Week 1: made early social noise and a possible spark with Baxter",
+            "Week 1: accepted a final two with Kyle that never had time to matter",
+            "Week 1: was nominated by Angelica as the pawn beside Kyle and Sawyer",
+            "Week 1: watched Sawyer win veto and break the intended plan",
+            "Week 1: failed to gather any dissenting votes",
+            "Week 1: left 15-0"
+          ],
+          "format": "big-brother",
+          "seasonId": "bb-2"
+        }
+      ],
+      "totalBlockBusterWins": 0,
+      "totalBlockBusterPlayed": 1,
+      "bestBlockBusterStreak": 0,
+      "avgPlacement": 18,
+      "hallOfFame": [],
+      "byShow": {
+        "big-brother": {
+          "seasons": 1,
+          "totalCompWins": 0,
+          "hohWins": 0,
+          "vetoWins": 0,
+          "blockBusterWins": 0,
+          "timesNominated": 1
+        }
+      },
+      "latestAvatarFile": "",
+      "emoji": "🕊️",
+      "autoEmoji": "🕊️"
     }
   ]
 }

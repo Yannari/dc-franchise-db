@@ -3387,6 +3387,25 @@
           "file": "cole-ch-look-1.png"
         }
       ]
+    },
+    "dash": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dash.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "dash-ch-look-1.png"
+        }
+      ]
     }
   }
 }

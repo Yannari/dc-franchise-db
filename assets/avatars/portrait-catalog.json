@@ -3406,6 +3406,25 @@
           "file": "dash-ch-look-1.png"
         }
       ]
+    },
+    "della": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "della.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "della-ch-look-1.png"
+        }
+      ]
     }
   }
 }

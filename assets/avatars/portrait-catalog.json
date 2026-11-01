@@ -2761,6 +2761,12 @@
           "show": "total-drama",
           "label": "Returning-player look",
           "file": "thom-returnee.png"
+        },
+        {
+          "id": "look-2",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "thom-ch-look-2.png"
         }
       ]
     },

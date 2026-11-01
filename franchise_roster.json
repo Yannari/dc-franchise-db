@@ -8771,7 +8771,24 @@
       "occupation": "Luxury real estate broker",
       "descriptor": "The Snob",
       "backstory": "Alexander grew up in Greenwich, Connecticut, the only son of a hedge fund manager and a socialite who sent him to boarding school at eight, and he has treated the world like a staff that disappointed him ever since. He sells luxury real estate for his uncle's firm, which he describes as running an empire. He was voted most likely to be sued in his senior yearbook and had it framed. He has watched every competition show ever made, mostly to point out how stupid everyone on them is, and he wrote and laminated his own strategy guide. He applied because he is certain he is the smartest person ever to walk into a house like this, and he would like a million dollars and a national audience to agree.",
-      "personality": "Alexander is arrogant, petty and gleefully mean, a villain who seems to have learned the job from cartoons. He schemes constantly and out loud, gives everyone a nickname, insults people to their faces and then wonders why nobody wants to work with him. His plans are genuinely clever on paper, but he cannot resist announcing them, and his cruelty makes enemies faster than his strategy makes allies. He is far more bark than bite: he wants to be feared, and mostly he is mocked. Under the sneer he is desperate to be taken seriously, and a little lonely. His weakness is that he is impossible to like, and in a game decided by votes that matters more than any plan."
+      "personality": "Alexander is arrogant, petty and gleefully mean, a villain who seems to have learned the job from cartoons. He schemes constantly and out loud, gives everyone a nickname, insults people to their faces and then wonders why nobody wants to work with him. His plans are genuinely clever on paper, but he cannot resist announcing them, and his cruelty makes enemies faster than his strategy makes allies. He is far more bark than bite: he wants to be feared, and mostly he is mocked. Under the sneer he is desperate to be taken seriously, and a little lonely. His weakness is that he is impossible to like, and in a game decided by votes that matters more than any plan.",
+      "secret": {
+        "text": "I am a national arm-wrestling champion",
+        "kind": "record",
+        "clues": [
+          "an elbow pad",
+          "a chalk bag",
+          "two hands clasped, drawn",
+          "the word \"grip\""
+        ],
+        "tells": [
+          "challenges people at the table for fun",
+          "handshake like a vice"
+        ],
+        "difficulty": 0.4,
+        "id": "arm-wrestling",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Angelica",
@@ -8800,7 +8817,24 @@
       "occupation": "Business student and model",
       "descriptor": "The Ice Queen",
       "backstory": "Angelica grew up in Chester County, Pennsylvania, the only daughter of a property developer who owns more houses than he visits and a mother who left when she was nine. She learned early that charm opened doors and that people said the most when they thought she wasn't listening. She finished a business degree at twenty-one, models on the side and lives alone in one of her father's houses. She has no time for boys and less for mess. She arrived with a plan already typed into her tablet: divide the house, plant the seeds, let the others become targets and walk out with the money. Her motto: if at first you don't succeed, pack your bags.",
-      "personality": "Angelica is intelligent, controlled and quietly ruthless, the prime example of perfect with a side of wicked. She covers her words with polite gestures and flawless manners, but nobody who watches her for long believes she means them. She plays up her charm, plays down her mind, keeps mental notes on everyone and believes drama is only chaos waiting for someone to steer it. She almost never gets her hands dirty in public; she lets other people say what she planted. The few people she trusts get a fierce loyalty. Her weakness is pride: being underestimated is useful to her, being disrespected is not, and she cannot always let it go."
+      "personality": "Angelica is intelligent, controlled and quietly ruthless, the prime example of perfect with a side of wicked. She covers her words with polite gestures and flawless manners, but nobody who watches her for long believes she means them. She plays up her charm, plays down her mind, keeps mental notes on everyone and believes drama is only chaos waiting for someone to steer it. She almost never gets her hands dirty in public; she lets other people say what she planted. The few people she trusts get a fierce loyalty. Her weakness is pride: being underestimated is useful to her, being disrespected is not, and she cannot always let it go.",
+      "secret": {
+        "text": "I was the bodyguard of a very famous person",
+        "kind": "job",
+        "clues": [
+          "an earpiece",
+          "dark glasses",
+          "a guest list",
+          "the word \"shadow\""
+        ],
+        "tells": [
+          "always sits facing the door",
+          "notices everybody who comes in"
+        ],
+        "difficulty": 0.45,
+        "id": "bodyguard",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Baxter",
@@ -8829,7 +8863,24 @@
       "occupation": "Artist",
       "descriptor": "The Artist",
       "backstory": "Ian Baxter, who has answered to Baxter since school, is a painter from Plattsmouth, Nebraska, a river town where he was the only openly gay man most of his neighbours had ever met. He left for art school, came back to look after his grandmother and stayed. He paints barns, grain silos and the people who work in them, sells canvases at the state fair and teaches a Thursday night class at the library. His grandmother, who is ninety and still ruthless at bingo, made him apply. He is older than most of the house and expects to be underestimated by people who think an artist from Nebraska cannot play a game.",
-      "personality": "Baxter is eccentric, gentle and much sharper than his rambling suggests. He sees the house the way he sees a painting, noticing who stands next to whom and who looks away, and he files it all behind a dreamy smile. He is funny in a dry, unexpected way and gets on with the misfits better than the popular crowd. He is a survivor: put him on the block and he will talk, joke and charm his way off it again. He follows his gut and changes his mind when it tells him to, which makes him hard to count on and hard to target. His flaw is that he hates holding power, and he wobbles when it is finally his turn."
+      "personality": "Baxter is eccentric, gentle and much sharper than his rambling suggests. He sees the house the way he sees a painting, noticing who stands next to whom and who looks away, and he files it all behind a dreamy smile. He is funny in a dry, unexpected way and gets on with the misfits better than the popular crowd. He is a survivor: put him on the block and he will talk, joke and charm his way off it again. He follows his gut and changes his mind when it tells him to, which makes him hard to count on and hard to target. His flaw is that he hates holding power, and he wobbles when it is finally his turn.",
+      "secret": {
+        "text": "I spent three years in a convent",
+        "kind": "job",
+        "clues": [
+          "a rosary",
+          "a candle",
+          "a bell",
+          "the word \"silence\""
+        ],
+        "tells": [
+          "up before everybody for a quiet minute",
+          "knows hymns by heart"
+        ],
+        "difficulty": 0.6,
+        "id": "nun",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Ben",
@@ -8865,7 +8916,24 @@
       "occupation": "Basic training instructor",
       "descriptor": "The Drill Sergeant",
       "backstory": "Ben is a basic training instructor from Fort Worth, Texas, and the third generation of a military family; his grandfather and father both expected him to enlist, and he never considered anything else. He has spent years turning frightened eighteen-year-olds into soldiers, and he is very good at it and very bad at everything that happens after the shift ends. He drives an old truck, lives alone, and his last girlfriend said living with him was like living in a barracks. He applied because he knew someone tough would create drama, and because leading people is the one thing he is sure he does well. Asked what he would bring into the house, he said that was classified.",
-      "personality": "Ben is disciplined, hard-working and closed off. He is strong, blunt and observant, and he takes command of any group without a leader, because he does not believe anyone else is capable. He finds it hard to connect with strangers and has no patience for emotions, gossip or what he calls childish drama. Once someone earns his trust, though, he is fiercely and quietly loyal, and he will sit on the block before he breaks his word. He respects people who stand up to him more than people who agree with him. His blind spot is feelings, other people's and his own, and he does not see a betrayal coming until it is done."
+      "personality": "Ben is disciplined, hard-working and closed off. He is strong, blunt and observant, and he takes command of any group without a leader, because he does not believe anyone else is capable. He finds it hard to connect with strangers and has no patience for emotions, gossip or what he calls childish drama. Once someone earns his trust, though, he is fiercely and quietly loyal, and he will sit on the block before he breaks his word. He respects people who stand up to him more than people who agree with him. His blind spot is feelings, other people's and his own, and he does not see a betrayal coming until it is done.",
+      "secret": {
+        "text": "I sing opera at a professional level",
+        "kind": "talent",
+        "clues": [
+          "a music stand",
+          "a scarf around a bottle",
+          "the word \"aria\"",
+          "a high note drawn as a mountain"
+        ],
+        "tells": [
+          "warms up their voice in the shower",
+          "protects their throat from the cold"
+        ],
+        "difficulty": 0.45,
+        "id": "opera",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Dominic",
@@ -8894,7 +8962,24 @@
       "occupation": "College student and personal trainer",
       "descriptor": "The Golden Boy",
       "backstory": "Dominic grew up in Miami in a crowded apartment with his mother, his grandmother and three younger sisters, in a family that came from Puerto Rico before he was born. He has never been, and every Christmas he promises his abuela he will take her. He has been the same height since he was thirteen, which made him the kid every coach wanted and every teacher gave up on. He is on his third try at a college degree, paying for it as a personal trainer, and he dreams of opening his own gym. He applied because a client told him he would win every competition on the show, and he believed her.",
-      "personality": "Dominic is kind, competitive and far less simple than he lets people think. He is a natural athlete who treats every challenge like a final and celebrates every win at full volume, but he is the first to help the loser up afterwards. He hates drama, calls it a buzzkill and walks away from shouting matches. He is self-conscious about school and covers it with jokes about being dumb, so people underestimate how closely he is watching. He is loyal to whoever is loyal to him and falls hard when he likes someone. His blind spot is believing that winning is enough, and forgetting that the people who vote are keeping score too."
+      "personality": "Dominic is kind, competitive and far less simple than he lets people think. He is a natural athlete who treats every challenge like a final and celebrates every win at full volume, but he is the first to help the loser up afterwards. He hates drama, calls it a buzzkill and walks away from shouting matches. He is self-conscious about school and covers it with jokes about being dumb, so people underestimate how closely he is watching. He is loyal to whoever is loyal to him and falls hard when he likes someone. His blind spot is believing that winning is enough, and forgetting that the people who vote are keeping score too.",
+      "secret": {
+        "text": "I sleepwalk, and I have done strange things asleep",
+        "kind": "belief",
+        "clues": [
+          "a pillow",
+          "a moon",
+          "a pair of slippers on the wrong feet",
+          "the word \"night\""
+        ],
+        "tells": [
+          "found somewhere else in the morning",
+          "locks their own door at night"
+        ],
+        "difficulty": 0.55,
+        "id": "sleepwalker",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Fatima",
@@ -8930,7 +9015,24 @@
       "occupation": "Doctor",
       "descriptor": "The Doctor",
       "backstory": "Fatima Kalantar is a doctor at a teaching hospital in Cambridge, Massachusetts, the daughter of Iranian immigrants who ran a corner pharmacy and expected nothing less than medical school. At forty-four she has spent twenty years working nights, raising two teenagers with her husband, a professor, and running the hospital's free clinic at weekends. She is the oldest woman in the house and doesn't mind saying so. She applied on a dare from her daughter, who said she had never done one spontaneous thing in her life, and because the prize would pay for the clinic's new wing. She is not sure she knows how to lie, and not sure she wants to learn.",
-      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game."
+      "personality": "Fatima is principled, caring and direct. She mothers the house without being asked, checking on anyone who is sick, reminding people to eat and telling them exactly what she thinks of their choices. She is honest to a fault, believes in fairness and will stand up for anyone she thinks is being treated badly, even when it costs her. Younger players find her either comforting or exhausting: she lectures, and she does not always notice she is doing it. She is loyal to the people who share her values. Her weakness is that she runs the house like a ward that should be run sensibly, and nobody in it wants a sensible game.",
+      "secret": {
+        "text": "I gave a kidney to my brother",
+        "kind": "body",
+        "clues": [
+          "a bean",
+          "two names on one card",
+          "a gift ribbon",
+          "the word \"half\""
+        ],
+        "tells": [
+          "protective of their side in contact games",
+          "talks about their brother constantly"
+        ],
+        "difficulty": 0.5,
+        "id": "one-kidney",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Ivyna",
@@ -8959,7 +9061,24 @@
       "occupation": "Hair salon owner",
       "descriptor": "The Steel Magnolia",
       "backstory": "Ivy Everette owns a hair salon in Roswell, Georgia, and has spent twelve years behind the chair listening to women tell her everything: their marriages, their feuds, the secrets they would never tell their pastor. The daughter of a preacher and a church organist, she learned to read a congregation before she could read a book, and she opened her salon at twenty on a loan nobody thought she would repay. She is divorced, with no regrets. She is older than most of the house and was almost not cast at all; the call came at the last minute. She applied because she has heard every kind of game played out in her chair and wanted to play one herself.",
-      "personality": "Ivy is patient, perceptive and warmer than most strategists, which is exactly what makes her dangerous. She listens far more than she talks, and people tell her things they never meant to say, just as they do in her salon. She does not rush: she watches, lets the house settle and then picks her side carefully. She is loyal to a small circle and protects them quietly. She is polite in every situation and almost impossible to provoke, though she keeps a sharp tongue for anyone who disrespects her. Her weakness is patience itself: she can wait so long for the perfect moment that the moment passes."
+      "personality": "Ivy is patient, perceptive and warmer than most strategists, which is exactly what makes her dangerous. She listens far more than she talks, and people tell her things they never meant to say, just as they do in her salon. She does not rush: she watches, lets the house settle and then picks her side carefully. She is loyal to a small circle and protects them quietly. She is polite in every situation and almost impossible to provoke, though she keeps a sharp tongue for anyone who disrespects her. Her weakness is patience itself: she can wait so long for the perfect moment that the moment passes.",
+      "secret": {
+        "text": "I live with the heart of somebody else",
+        "kind": "body",
+        "clues": [
+          "a heart drawn in two colours",
+          "a hospital bracelet",
+          "a thank-you letter",
+          "the word \"beat\""
+        ],
+        "tells": [
+          "careful with the hardest physical games",
+          "very emotional about strangers being kind"
+        ],
+        "difficulty": 0.6,
+        "id": "transplant",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Juan",
@@ -8988,7 +9107,24 @@
       "occupation": "Bartender and salsa instructor",
       "descriptor": "The Charmer",
       "backstory": "Juan grew up in San Antonio, Texas, the youngest son of a Mexican American family that runs a taqueria two blocks from the river, and he learned to charm customers at the counter before he could see over it. He tends bar at a downtown hotel and teaches salsa at weekends, two jobs that taught him how to make anyone feel like the only person in the room. He has had a lot of girlfriends and kept none of them, and his mother keeps a list of the ones she liked. He applied because he believes that in a house full of strangers, the one everybody wants is the one nobody votes out, and he intends to be wanted.",
-      "personality": "Juan is charming, confident and quietly calculating. He reads attraction the way other players read votes and uses it as his main weapon: he chooses partners for what they bring, makes them feel chosen and collects their loyalty, their secrets and their votes in return. He is warm, funny and great company, and even people who suspect him find it hard to stay angry. He is careful never to look like he is playing, and he lets his showmances fight his battles. He does care about people, just not more than he cares about winning. His weakness is that charm runs out when people compare notes, and everyone he has charmed eventually talks to each other."
+      "personality": "Juan is charming, confident and quietly calculating. He reads attraction the way other players read votes and uses it as his main weapon: he chooses partners for what they bring, makes them feel chosen and collects their loyalty, their secrets and their votes in return. He is warm, funny and great company, and even people who suspect him find it hard to stay angry. He is careful never to look like he is playing, and he lets his showmances fight his battles. He does care about people, just not more than he cares about winning. His weakness is that charm runs out when people compare notes, and everyone he has charmed eventually talks to each other.",
+      "secret": {
+        "text": "I was born with twelve fingers",
+        "kind": "body",
+        "clues": [
+          "a glove with six fingers",
+          "the number 12",
+          "a ring",
+          "a hand drawn on paper"
+        ],
+        "tells": [
+          "keeps their hands in their pockets",
+          "hates having their hands photographed"
+        ],
+        "difficulty": 0.55,
+        "id": "twelve-fingers",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Kyle",
@@ -9024,7 +9160,24 @@
       "occupation": "Police officer",
       "descriptor": "The Cop",
       "backstory": "Kyle Brady has been a police officer in Pensacola, Florida, for twenty-four years, and he still runs five miles before every shift to prove he can keep up with the rookies. He grew up on the Gulf Coast, joined the force at twenty-two and raised his son Don mostly on his own after the divorce; Don is in college now and calls him every Sunday. Kyle is old-fashioned, plain-spoken and proud of it. He applied because his son said he would not last a week in a house full of twenty-somethings, and Kyle has never turned down a challenge in his life. He plans to win the first competition and show every one of them.",
-      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct."
+      "personality": "Kyle is competitive, stubborn and protective. He is in better shape than men half his age, wants everyone to know it and treats every competition like a fitness test. He likes order and rules and has little patience for what he calls whining or for causes he does not understand, which puts him on a collision course with anyone who lectures him. He is loyal to the people he respects, mostly the athletes and anyone straight with him, and he would rather lose a fight than back down from one. Under the gruffness he is a proud dad who misses his kid. His blind spot is thinking a house works like a precinct.",
+      "secret": {
+        "text": "I gave away all the money I had won",
+        "kind": "money",
+        "clues": [
+          "an open hand drawn on paper",
+          "a charity receipt",
+          "a piggy bank, broken",
+          "the word \"share\""
+        ],
+        "tells": [
+          "generous with the kitty",
+          "not tempted by money dilemmas"
+        ],
+        "difficulty": 0.5,
+        "id": "gave-away",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Lacey",
@@ -9053,7 +9206,24 @@
       "occupation": "City hall intern",
       "descriptor": "The Future Mayor",
       "backstory": "Lacey McAdams is a twenty-one-year-old intern at Bloomington city hall in Indiana, where she files permits, answers the phone and tells anyone who will listen that she will be mayor one day. She is the eldest of three, the daughter of a schoolteacher and a mail carrier, and she has been running for something, class president, homecoming court, student council, since she was ten. She keeps a five-year plan in a notebook and a romantic streak she pretends not to have. She applied because a reality show is a campaign with better lighting, and she has always wanted to know if she could win one.",
-      "personality": "Lacey is ambitious, warm and sincere. She is a natural politician, friendly to everyone, good with names and keen to be liked, though she still blushes when she is caught campaigning. She takes the game seriously and wants to make a big move herself rather than be carried. She falls for people fast and completely, and once she has picked someone she is all in, which makes her loyal and a little blind. She is braver than she looks and will use power when she gets it. Her weakness is that she is young and every feeling shows on her face, so the house always knows where she stands and who she stands with."
+      "personality": "Lacey is ambitious, warm and sincere. She is a natural politician, friendly to everyone, good with names and keen to be liked, though she still blushes when she is caught campaigning. She takes the game seriously and wants to make a big move herself rather than be carried. She falls for people fast and completely, and once she has picked someone she is all in, which makes her loyal and a little blind. She is braver than she looks and will use power when she gets it. Her weakness is that she is young and every feeling shows on her face, so the house always knows where she stands and who she stands with.",
+      "secret": {
+        "text": "I can imitate any voice I hear",
+        "kind": "talent",
+        "clues": [
+          "a microphone",
+          "a parrot feather",
+          "a cassette with the label torn off",
+          "a mirror"
+        ],
+        "tells": [
+          "slips into other people's accents",
+          "repeats lines from the confessional too well"
+        ],
+        "difficulty": 0.5,
+        "id": "voice",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Martin",
@@ -9082,7 +9252,24 @@
       "occupation": "Comic book store employee",
       "descriptor": "The Superfan",
       "backstory": "Martin Rivera works at a comic book store in San Jose, California, where he runs Friday tabletop night and knows every regular's pull list by heart. He grew up the only boy in a Mexican American family of five, the kid reading under the table at family parties while his cousins played football in the yard. He has watched every season of every big reality competition and keeps a spreadsheet of the best moves ever made. He lives with his parents to save money and has never had a girlfriend for longer than a month. He applied because he has spent half his life knowing exactly what everyone on screen should have done, and he wants to find out if he can do it himself.",
-      "personality": "Martin is sweet, anxious and an encyclopaedia of other people's games. He talks strategy constantly, casts everyone in the house as a superhero or a villain and gets genuinely excited when somebody makes a big move, even against him. He is loyal to the first people who treat him as an equal and hurt badly when they don't. Under pressure he freezes, stammers and overthinks, and the athletes intimidate him. He is far more resilient than he looks and keeps coming back from the block with a new plan. His blind spot is that knowing the game in theory is not the same as playing it in the room."
+      "personality": "Martin is sweet, anxious and an encyclopaedia of other people's games. He talks strategy constantly, casts everyone in the house as a superhero or a villain and gets genuinely excited when somebody makes a big move, even against him. He is loyal to the first people who treat him as an equal and hurt badly when they don't. Under pressure he freezes, stammers and overthinks, and the athletes intimidate him. He is far more resilient than he looks and keeps coming back from the block with a new plan. His blind spot is that knowing the game in theory is not the same as playing it in the room.",
+      "secret": {
+        "text": "I proposed on live television and was refused",
+        "kind": "love",
+        "clues": [
+          "a ring box, empty",
+          "a microphone",
+          "a red rose",
+          "the word \"no\""
+        ],
+        "tells": [
+          "awkward whenever anybody mentions proposals",
+          "romantic but careful"
+        ],
+        "difficulty": 0.5,
+        "id": "engaged-tv",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Michele",
@@ -9111,7 +9298,24 @@
       "occupation": "Blogger",
       "descriptor": "The Vlogger",
       "backstory": "Michele grew up in Denver, the middle child of a big, loud family, and started filming herself at fourteen because nobody at the dinner table let her finish a sentence. Nine years later she has more than half a million subscribers on ViewTube, for a channel about her life, her outfits and her two dogs, Nova and Dash, and a boyfriend, Dwayne, who films, edits and keeps her grounded. She moved to Los Angeles for the channel and misses her family more than she says on camera. A lifelong reality TV fan, she applied to prove she can make real friends off a screen. She plans to keep her following a secret in case it makes her a target.",
-      "personality": "Michele is upbeat, sociable and tougher than she looks. She talks to everyone, remembers everyone's birthday and makes people feel like the most interesting person in the room, and it is mostly not an act. She is not athletic and knows it, so her game is friendships, and she keeps them even when the numbers say she shouldn't. She hates conflict and gets tearful in arguments, but she does not break: put her on the block five times and she will campaign five times, smiling. She talks about Dwayne her dog constantly. Her flaw is that she narrates her own life, and people sometimes wonder which Michele is the real one."
+      "personality": "Michele is upbeat, sociable and tougher than she looks. She talks to everyone, remembers everyone's birthday and makes people feel like the most interesting person in the room, and it is mostly not an act. She is not athletic and knows it, so her game is friendships, and she keeps them even when the numbers say she shouldn't. She hates conflict and gets tearful in arguments, but she does not break: put her on the block five times and she will campaign five times, smiling. She talks about Dwayne her dog constantly. Her flaw is that she narrates her own life, and people sometimes wonder which Michele is the real one.",
+      "secret": {
+        "text": "I used to teach people how to lie",
+        "kind": "job",
+        "clues": [
+          "a polygraph needle",
+          "a smiling mask",
+          "a deck of cards with two jokers",
+          "the word \"tell\""
+        ],
+        "tells": [
+          "spots everybody else's lies",
+          "never looks away when talking"
+        ],
+        "difficulty": 0.6,
+        "id": "spy-school",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Nina",
@@ -9140,7 +9344,24 @@
       "occupation": "DJ",
       "descriptor": "The DJ",
       "backstory": "Nina Jonae grew up in Hoboken, New Jersey, the youngest of four sisters, in an apartment where the radio was never off. She started DJing at sixteen at her cousin's parties, worked her way into clubs across the river, and now plays weddings on Saturdays and nightclubs until four on Sunday mornings. She knows how to read a crowd and how to win one back, and she thinks a house full of strangers is just a crowd with a cash prize. Her family is her whole world; the cousin who taught her to beat-match has never let her forget it. She applied because her sisters dared her to.",
-      "personality": "Nina is confident, outspoken and fun, the person who turns a quiet kitchen into a party. She has no filter and does not want one: if she thinks you are lying she will say so, laugh, and still share her snacks with you. She is fiercely loyal to the misfits and outsiders she adopts and has no time for cliques or for people who think they are better than everyone else. She reads people well, but she reacts before she thinks, and her mouth starts fights her head could have avoided. When she wins power she uses it boldly. Her weakness is that she cannot pretend, and in this house sometimes you have to."
+      "personality": "Nina is confident, outspoken and fun, the person who turns a quiet kitchen into a party. She has no filter and does not want one: if she thinks you are lying she will say so, laugh, and still share her snacks with you. She is fiercely loyal to the misfits and outsiders she adopts and has no time for cliques or for people who think they are better than everyone else. She reads people well, but she reacts before she thinks, and her mouth starts fights her head could have avoided. When she wins power she uses it boldly. Her weakness is that she cannot pretend, and in this house sometimes you have to.",
+      "secret": {
+        "text": "I won a national spelling contest as a child",
+        "kind": "record",
+        "clues": [
+          "a dictionary with one page folded",
+          "a trophy shaped like a letter",
+          "the letters \"B-E-E\"",
+          "a buzzer"
+        ],
+        "tells": [
+          "corrects everybody's words",
+          "spells words out under their breath"
+        ],
+        "difficulty": 0.5,
+        "id": "spelling",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Paisley",
@@ -9169,7 +9390,24 @@
       "occupation": "Public relations associate",
       "descriptor": "The Debutante",
       "backstory": "Paisley grew up in Scottsdale, Arizona, the daughter of a car dealership owner and a former pageant queen, and she has been competing, campaigning and smiling for cameras since she could walk. She was first runner-up for Miss Teen Arizona, president of her college's Young Republicans and the author of a blog about faith, fitness and family values. She does public relations for her father's dealerships and has a five-year plan that includes a husband, a ranch house and a run for the state legislature. She applied because she thinks America needs to see someone with real values on television, and because she is sure everyone will love her once they get to know her.",
-      "personality": "Paisley is polished, confident and completely unaware of how she comes across. She is never mean on purpose; she genuinely believes she is helping when she corrects someone's grammar, critiques their diet or explains why their opinion is wrong. Her politics come out at the worst possible moments, and she cannot understand why people get upset when she is only being honest. She is upbeat, organised and generous, always offering to plan, host or take charge, which is part of the problem. She is loyal and sincere, and it would hurt her to learn that half the house finds her exhausting. Her blind spot is herself: she never notices the room going quiet."
+      "personality": "Paisley is polished, confident and completely unaware of how she comes across. She is never mean on purpose; she genuinely believes she is helping when she corrects someone's grammar, critiques their diet or explains why their opinion is wrong. Her politics come out at the worst possible moments, and she cannot understand why people get upset when she is only being honest. She is upbeat, organised and generous, always offering to plan, host or take charge, which is part of the problem. She is loyal and sincere, and it would hurt her to learn that half the house finds her exhausting. Her blind spot is herself: she never notices the room going quiet.",
+      "secret": {
+        "text": "I escaped from a cult",
+        "kind": "past",
+        "clues": [
+          "a white robe",
+          "a broken necklace",
+          "a closed door",
+          "the word \"free\""
+        ],
+        "tells": [
+          "suspicious of anybody who leads a group",
+          "hates chanting games"
+        ],
+        "difficulty": 0.6,
+        "id": "cult",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Sabrina",
@@ -9198,7 +9436,24 @@
       "occupation": "Non-profit event organiser",
       "descriptor": "The Activist",
       "backstory": "Sabrina Jackson organises events for an environmental non-profit in Quechee, Vermont, and you can find her at almost every rally, march and protest in New England. She grew up in a family that argued about politics at every meal and learned to win by being the loudest and the most certain. She is vegan, an animal rights campaigner and proudly confrontational, and she has been asked to leave two farmers' markets for arguing with the vendors. She applied because a national audience is a platform, and she believes the right message, shouted loudly enough, can change minds. She does not plan to make friends with people whose values she cannot respect.",
-      "personality": "Sabrina is passionate, principled and combative. She genuinely wants to make the world better and genuinely believes she knows how, but she attacks people for their habits and beliefs instead of persuading them, and she does not notice when her own choices contradict her speeches. She takes criticism as an attack and answers it with louder accusations, quick to call her opponents sexist or ignorant. She is loyal and loving to the few friends who share her causes. Under the noise she is lonely and suspects people are laughing at her. Her weakness is that she cannot pick her battles: every fight is the most important one, so she fights everyone."
+      "personality": "Sabrina is passionate, principled and combative. She genuinely wants to make the world better and genuinely believes she knows how, but she attacks people for their habits and beliefs instead of persuading them, and she does not notice when her own choices contradict her speeches. She takes criticism as an attack and answers it with louder accusations, quick to call her opponents sexist or ignorant. She is loyal and loving to the few friends who share her causes. Under the noise she is lonely and suspects people are laughing at her. Her weakness is that she cannot pick her battles: every fight is the most important one, so she fights everyone.",
+      "secret": {
+        "text": "I throw knives in a travelling show",
+        "kind": "talent",
+        "clues": [
+          "a target with one hole",
+          "a blindfold",
+          "a red balloon",
+          "the word \"aim\""
+        ],
+        "tells": [
+          "juggles cutlery",
+          "never misses the bin from across the room"
+        ],
+        "difficulty": 0.55,
+        "id": "knives",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Sawyer",
@@ -9227,7 +9482,24 @@
       "occupation": "Farmhand",
       "descriptor": "The Southern Gent",
       "backstory": "Sawyer is a farmhand outside Nashville, Tennessee, who looks after twenty-seven animals, holds licences for more machines than he can name and has never been outside the state. He grew up on the farm he now works, raised by his grandparents, and was a mechanical bull riding champion three years running. He has a partner back home, Caleb, a vet he met when his baby goat Buckley got sick, and he would have brought Buckley into the house if they had let him. He would rather nobody assumed the farm makes him money, because it doesn't. He applied because a show like this needs an outsider, a breath of fresh farm air. His motto is eat clean and eat green.",
-      "personality": "Sawyer is calm, kind and empathetic. He hates confrontation and does everything he can to defuse a fight, usually with a story about a stubborn animal. He listens more than he talks, notices when someone is struggling and is the person people cry in front of. He is honest and finds lying physically uncomfortable, which makes him a poor strategist and a very good friend. His game is finding the people he connects with and sticking with them. He has a quiet stubborn streak, though, and push him hard enough and the bull rider shows. His weakness is that he trusts too easily, and the house learns it fast."
+      "personality": "Sawyer is calm, kind and empathetic. He hates confrontation and does everything he can to defuse a fight, usually with a story about a stubborn animal. He listens more than he talks, notices when someone is struggling and is the person people cry in front of. He is honest and finds lying physically uncomfortable, which makes him a poor strategist and a very good friend. His game is finding the people he connects with and sticking with them. He has a quiet stubborn streak, though, and push him hard enough and the bull rider shows. His weakness is that he trusts too easily, and the house learns it fast.",
+      "secret": {
+        "text": "I have won the lottery twice",
+        "kind": "belief",
+        "clues": [
+          "a four-leaf clover",
+          "two tickets",
+          "a horseshoe",
+          "the number 7"
+        ],
+        "tells": [
+          "insanely lucky at every game of chance",
+          "superstitious about everything"
+        ],
+        "difficulty": 0.55,
+        "id": "lucky",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Vlad",
@@ -9256,7 +9528,24 @@
       "occupation": "Guitarist",
       "descriptor": "The Lone Wolf",
       "backstory": "Vlad plays electric guitar, and sometimes bass, in a Seattle band called And Inside that has been almost famous for ten years. He grew up in the rain with a father who repaired amplifiers and a mother who taught piano, and he learned to say what he felt through a guitar instead of out loud. The band shares every songwriting credit and every unpaid bill, and the prize money would finally pay for the album they keep promising. He applied because he thought he fit a stereotype the casting people wanted, and he was right. He does not want to be friends with anyone in the house, and he would never admit he volunteers at an animal shelter on weekends.",
-      "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind."
+      "personality": "Vlad is stoic, private and far more observant than his silence suggests. His plan is to lie low, and he is very good at it: he never campaigns, never shouts and never gives anyone a reason to write his name down. He keeps to himself, writes in his music journal and answers questions with a shrug or a single word. People find him either cool or rude, and he does not care which. Under it he is gentle, loyal once won over, and has a dark, dry humour that slips out at the worst moments. His motto is that melancholy is the happiness of being sad. His flaw is that hiding works only until the house runs out of people to hide behind.",
+      "secret": {
+        "text": "My father is a famous athlete",
+        "kind": "family",
+        "clues": [
+          "a whistle",
+          "a signed shirt with the name cut out",
+          "a trophy",
+          "the word \"legacy\""
+        ],
+        "tells": [
+          "knows far too much about one sport",
+          "goes quiet when anybody talks about famous families"
+        ],
+        "difficulty": 0.45,
+        "id": "famous-parent",
+        "firstSeason": "ss-2"
+      }
     },
     {
       "name": "Willow",
@@ -9285,7 +9574,24 @@
       "occupation": "Actress",
       "descriptor": "The Actress",
       "backstory": "Willow Guvera is an actress from New York City who has been almost famous for fifteen years. She grew up in Washington Heights, the daughter of a Puerto Rican seamstress who sewed costumes for off-Broadway shows, and she spent her childhood backstage. She has played three nurses, two murder victims and a talking cereal box, and she waits tables between parts. At thirty-four she is tired of hearing she is too old, too loud or too much. She cares passionately about animals and the environment and will march for either. She applied because no casting director can tell her she is wrong for the part if the part is herself.",
-      "personality": "Willow is dramatic, warm-hearted and impossible to ignore. She treats the house like a stage and every conversation like a scene, and she is genuinely lovely to the people she likes, generous with compliments, hugs and advice nobody asked for. She feels everything deeply and shows all of it, laughing loudly and crying openly, which some people find charming and others exhausting. She is loyal to her friends to the point of recklessness and will defend them long after it has stopped being smart. She is not much of a strategist and knows it. Her weakness is that she performs even when she is sincere, so people are never sure when to believe her."
+      "personality": "Willow is dramatic, warm-hearted and impossible to ignore. She treats the house like a stage and every conversation like a scene, and she is genuinely lovely to the people she likes, generous with compliments, hugs and advice nobody asked for. She feels everything deeply and shows all of it, laughing loudly and crying openly, which some people find charming and others exhausting. She is loyal to her friends to the point of recklessness and will defend them long after it has stopped being smart. She is not much of a strategist and knows it. Her weakness is that she performs even when she is sincere, so people are never sure when to believe her.",
+      "secret": {
+        "text": "I was raised by a circus family",
+        "kind": "family",
+        "clues": [
+          "a red nose",
+          "a tent peg",
+          "a tightrope",
+          "the word \"travel\""
+        ],
+        "tells": [
+          "can balance on anything",
+          "has lived in a hundred towns"
+        ],
+        "difficulty": 0.55,
+        "id": "adopted-by-circus",
+        "firstSeason": "ss-2"
+      }
     }
   ]
 }

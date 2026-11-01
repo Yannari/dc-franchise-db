@@ -3330,6 +3330,25 @@
           "file": "beck-ch-look-1.png"
         }
       ]
+    },
+    "brie": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "brie.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "CH",
+          "file": "brie-look-1.png"
+        }
+      ]
     }
   }
 }

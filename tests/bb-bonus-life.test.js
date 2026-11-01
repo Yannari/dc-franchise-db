@@ -176,7 +176,7 @@ describe('the competition', () => {
     expect(gs.bb.weeks[0].evictionReversed).toBe(true);
     // And they arrive knowing whose ballots had their name on.
     expect(act.grudges).toEqual(expect.arrayContaining(['Chase', 'Scary']));
-    expect(getBond('Bowie', 'Chase')).toBeLessThan(0);
+    expect(getPerceivedBond('Bowie', 'Chase')).toBeLessThan(getPerceivedBond('Chase', 'Bowie'));
   });
 
   it('a loss is final and the power is spent', () => {

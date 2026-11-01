@@ -234,11 +234,22 @@ describe('a season of play can move you off your finish', () => {
     expect(winner).toBeGreaterThan(decorated);
   });
 
-  it('keeps a one-season winner short of the franchise ceiling', () => {
-    // S+ is for careers. Doubling the competition weights must not hand it to
-    // anyone who wins once with a good comp record.
-    const winner = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3 }));
-    expect(S.scoreTier(winner)).toBe('S');
+  it('opens S+ to a house winner who earned it, and only to a winner', () => {
+    // The user, 2026-10-31: "let some players get to s+ and s if they deserve
+    // well". A winner who ran the competitions reaches S+; one who won with
+    // little else stays in S; a runner-up with any résumé stops under S+.
+    const dominant = S.computeScore(blank(S, 1, { immWins: 2, rewWins: 4, alliances: 3 }));
+    expect(S.scoreTier(dominant)).toBe('S+');
+    const quiet = S.computeScore(blank(S, 1, { alliances: 1 }));
+    expect(S.scoreTier(quiet)).toBe('S');
+    const runnerUp = S.computeScore(blank(S, 2, { immWins: 5, rewWins: 5, nonWinFinals: 1, juryVotes: 4 }));
+    expect(runnerUp).toBeLessThan(90);
+    expect(S.scoreTier(runnerUp)).toBe('S');
+  });
+
+  it('keeps Total Drama on the curve it has always had', () => {
+    const td = { ...blank(S, 1, { alliances: 3 }), format: 'total-drama' };
+    expect(S.computeScore(td)).toBeLessThan(S.computeScore(blank(S, 1, { alliances: 3 })));
   });
 
   it('does not score the first boot as barely a franchise player', () => {

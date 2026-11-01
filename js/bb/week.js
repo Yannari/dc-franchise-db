@@ -2985,10 +2985,16 @@ export function simulateBBWeek(options = {}) {
           eventId: 'relic-gatekeeper', category: 'power', location: 'backyard',
         }],
       }, { players: [relic.holder] }));
-      // Being locked out of a crown is not forgotten by the people locked out.
+      // Being locked out of a crown is not forgotten by the people who ASKED
+      // for a place and were told no. It was everybody locked out, which is
+      // a dozen people the power can never let in: on BB2 it cost the relic's
+      // finder 1.6 with all nine future jurors on night one, for using the
+      // power the only way it works (the user, 2026-10-31: fix the relic
+      // penalty). Somebody who never asked lost nothing they were offered.
+      const refused = new Set(lobby.filter(l => !l.won).map(l => l.asker));
       for (const n of house) {
-        if (hohPlayers.includes(n) || n === relic.holder) continue;
-        try { addBond(n, relic.holder, -1.6); } catch { /* fine */ }
+        if (hohPlayers.includes(n) || n === relic.holder || !refused.has(n)) continue;
+        try { addBond(n, relic.holder, -1.1); } catch { /* fine */ }
       }
     }
   } catch { /* the yard stands as it was */ }

@@ -63,12 +63,12 @@
       "playerId": "misha",
       "name": "Misha",
       "rank": 1,
-      "tier": "S",
-      "score": 89,
+      "tier": "S+",
+      "score": 93,
       "wins": 1,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        89
+        93
       ],
       "placements": [
         1
@@ -89,12 +89,12 @@
       "playerId": "baxter",
       "name": "Baxter",
       "rank": 2,
-      "tier": "S",
-      "score": 87.2,
+      "tier": "S+",
+      "score": 91.2,
       "wins": 1,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        87.2
+        91.2
       ],
       "placements": [
         1
@@ -116,11 +116,11 @@
       "name": "Angelica",
       "rank": 3,
       "tier": "S",
-      "score": 87.1,
+      "score": 89.9,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        87.1
+        89.9
       ],
       "placements": [
         2
@@ -142,11 +142,11 @@
       "name": "Jules",
       "rank": 4,
       "tier": "S",
-      "score": 84.2,
+      "score": 87.1,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        84.2
+        87.1
       ],
       "placements": [
         2
@@ -167,12 +167,12 @@
       "playerId": "joel",
       "name": "Joel",
       "rank": 5,
-      "tier": "A",
-      "score": 79.4,
+      "tier": "S",
+      "score": 83,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        79.4
+        83
       ],
       "placements": [
         3
@@ -194,11 +194,11 @@
       "name": "Michele",
       "rank": 6,
       "tier": "A",
-      "score": 73.8,
+      "score": 77.2,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        73.8
+        77.2
       ],
       "placements": [
         4
@@ -220,11 +220,11 @@
       "name": "Tobias",
       "rank": 7,
       "tier": "A",
-      "score": 71.7,
+      "score": 75.2,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        71.7
+        75.2
       ],
       "placements": [
         4
@@ -242,41 +242,15 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "ireland",
-      "name": "Ireland",
-      "rank": 8,
-      "tier": "B",
-      "score": 70.3,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        70.3
-      ],
-      "placements": [
-        10
-      ],
-      "avgPlacement": 10,
-      "challengeWins": 7,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "A tenth-place juror with a finalist’s competition résumé. Ireland won HOH, vetoes, and Block Busters whenever the game put her in danger, and her Week 2 power steal was the kind of move that can flip a season — but it also made her the person the house could point to every time things got scary. Once she finally lost the arena to Natasha, there was no vote structure left behind the wins, and the eviction was unanimous.",
-      "strengths": [],
-      "weaknesses": [],
-      "votesAgainst": 0
-    },
-    {
       "playerId": "ivyna",
       "name": "Ivyna",
-      "rank": 9,
-      "tier": "B",
-      "score": 69.8,
+      "rank": 8,
+      "tier": "A",
+      "score": 73.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        69.8
+        73.4
       ],
       "placements": [
         3
@@ -294,15 +268,41 @@
       "weaknesses": []
     },
     {
-      "playerId": "jane",
-      "name": "Jane",
-      "rank": 10,
-      "tier": "B",
-      "score": 69.4,
+      "playerId": "ireland",
+      "name": "Ireland",
+      "rank": 9,
+      "tier": "A",
+      "score": 72.7,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        69.4
+        72.7
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 7,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A tenth-place juror with a finalist’s competition résumé. Ireland won HOH, vetoes, and Block Busters whenever the game put her in danger, and her Week 2 power steal was the kind of move that can flip a season — but it also made her the person the house could point to every time things got scary. Once she finally lost the arena to Natasha, there was no vote structure left behind the wins, and the eviction was unanimous.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "jane",
+      "name": "Jane",
+      "rank": 10,
+      "tier": "A",
+      "score": 72.6,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        72.6
       ],
       "placements": [
         5
@@ -323,12 +323,12 @@
       "playerId": "ben",
       "name": "Ben",
       "rank": 11,
-      "tier": "B",
-      "score": 67.7,
+      "tier": "A",
+      "score": 71,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        67.7
+        71
       ],
       "placements": [
         5
@@ -350,11 +350,11 @@
       "name": "Aaron",
       "rank": 12,
       "tier": "B",
-      "score": 66.8,
+      "score": 69.9,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        66.8
+        69.9
       ],
       "placements": [
         6
@@ -376,11 +376,11 @@
       "name": "Dylon",
       "rank": 13,
       "tier": "B",
-      "score": 65.5,
+      "score": 67.7,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        65.5
+        67.7
       ],
       "placements": [
         11
@@ -402,11 +402,11 @@
       "name": "Dominic",
       "rank": 14,
       "tier": "B",
-      "score": 64.2,
+      "score": 67.3,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        64.2
+        67.3
       ],
       "placements": [
         6
@@ -428,11 +428,11 @@
       "name": "Nina",
       "rank": 15,
       "tier": "B",
-      "score": 63.9,
+      "score": 66.5,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        63.9
+        66.5
       ],
       "placements": [
         9
@@ -454,11 +454,11 @@
       "name": "Sawyer",
       "rank": 16,
       "tier": "B",
-      "score": 63.5,
+      "score": 66.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        63.5
+        66.4
       ],
       "placements": [
         7
@@ -480,11 +480,11 @@
       "name": "Martin",
       "rank": 17,
       "tier": "B",
-      "score": 62.1,
+      "score": 64.9,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        62.1
+        64.9
       ],
       "placements": [
         8
@@ -505,12 +505,12 @@
       "playerId": "gyselle",
       "name": "Gyselle",
       "rank": 18,
-      "tier": "C",
-      "score": 60.4,
+      "tier": "B",
+      "score": 63.2,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        60.4
+        63.2
       ],
       "placements": [
         7
@@ -531,12 +531,12 @@
       "playerId": "natasha",
       "name": "Natasha",
       "rank": 19,
-      "tier": "C",
-      "score": 59.8,
+      "tier": "B",
+      "score": 62.3,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        59.8
+        62.3
       ],
       "placements": [
         9
@@ -557,12 +557,12 @@
       "playerId": "felipe",
       "name": "Felipe",
       "rank": 20,
-      "tier": "C",
-      "score": 59,
+      "tier": "B",
+      "score": 61.7,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        59
+        61.7
       ],
       "placements": [
         8
@@ -583,12 +583,12 @@
       "playerId": "lacey",
       "name": "Lacey",
       "rank": 21,
-      "tier": "C",
-      "score": 58.6,
+      "tier": "B",
+      "score": 61,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        58.6
+        61
       ],
       "placements": [
         10
@@ -610,11 +610,11 @@
       "name": "Fatima",
       "rank": 22,
       "tier": "C",
-      "score": 55.5,
+      "score": 57.7,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        55.5
+        57.7
       ],
       "placements": [
         11
@@ -636,11 +636,11 @@
       "name": "Paisley",
       "rank": 23,
       "tier": "C",
-      "score": 55.4,
+      "score": 57.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        55.4
+        57.4
       ],
       "placements": [
         12
@@ -662,11 +662,11 @@
       "name": "Hasan",
       "rank": 24,
       "tier": "C",
-      "score": 54.3,
+      "score": 56,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        54.3
+        56
       ],
       "placements": [
         13
@@ -688,11 +688,11 @@
       "name": "Alexander",
       "rank": 25,
       "tier": "C",
-      "score": 51.1,
+      "score": 53,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        51.1
+        53
       ],
       "placements": [
         13
@@ -714,11 +714,11 @@
       "name": "Vlad",
       "rank": 26,
       "tier": "C",
-      "score": 51.1,
+      "score": 52.8,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        51.1
+        52.8
       ],
       "placements": [
         14
@@ -736,41 +736,15 @@
       "weaknesses": []
     },
     {
-      "playerId": "harriett",
-      "name": "Harriett",
-      "rank": 27,
-      "tier": "D",
-      "score": 50.8,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "scoreHistory": [
-        50.8
-      ],
-      "placements": [
-        15
-      ],
-      "avgPlacement": 15,
-      "challengeWins": 0,
-      "blockSurvived": 0,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "An early overplayer with a twist she never turned into safety. Harriett’s twin twist gave her an extra vote and made every conversation harder to read, but she spent that cover making too many conflicting deals instead of building a durable alliance. Her Week 4 Mystery Competitor power only put Scott into the veto draw, and when that failed during Jules’s HOH, the house compared notes and sent her out unanimously before jury.",
-      "strengths": [],
-      "weaknesses": [],
-      "votesAgainst": 0
-    },
-    {
       "playerId": "nico",
       "name": "Nico",
-      "rank": 28,
-      "tier": "D",
-      "score": 50.4,
+      "rank": 27,
+      "tier": "C",
+      "score": 52.3,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        50.4
+        52.3
       ],
       "placements": [
         12
@@ -788,15 +762,41 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "juan",
-      "name": "Juan",
-      "rank": 29,
-      "tier": "D",
-      "score": 49.4,
+      "playerId": "harriett",
+      "name": "Harriett",
+      "rank": 28,
+      "tier": "C",
+      "score": 52.2,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        49.4
+        52.2
+      ],
+      "placements": [
+        15
+      ],
+      "avgPlacement": 15,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "An early overplayer with a twist she never turned into safety. Harriett’s twin twist gave her an extra vote and made every conversation harder to read, but she spent that cover making too many conflicting deals instead of building a durable alliance. Her Week 4 Mystery Competitor power only put Scott into the veto draw, and when that failed during Jules’s HOH, the house compared notes and sent her out unanimously before jury.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "juan",
+      "name": "Juan",
+      "rank": 29,
+      "tier": "C",
+      "score": 51,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        51
       ],
       "placements": [
         15
@@ -818,11 +818,11 @@
       "name": "Zella",
       "rank": 30,
       "tier": "D",
-      "score": 48.3,
+      "score": 49.9,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        48.3
+        49.9
       ],
       "placements": [
         14
@@ -844,11 +844,11 @@
       "name": "Amberly",
       "rank": 31,
       "tier": "D",
-      "score": 44.7,
+      "score": 45.9,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        44.7
+        45.9
       ],
       "placements": [
         16
@@ -870,11 +870,11 @@
       "name": "Willow",
       "rank": 32,
       "tier": "D",
-      "score": 44.3,
+      "score": 45.6,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        44.3
+        45.6
       ],
       "placements": [
         16
@@ -896,11 +896,11 @@
       "name": "Kyle",
       "rank": 33,
       "tier": "D",
-      "score": 44.2,
+      "score": 45.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        44.2
+        45.4
       ],
       "placements": [
         17
@@ -922,11 +922,11 @@
       "name": "Stella",
       "rank": 34,
       "tier": "D",
-      "score": 43,
+      "score": 44,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        43
+        44
       ],
       "placements": [
         17
@@ -948,11 +948,11 @@
       "name": "Sabrina",
       "rank": 35,
       "tier": "D",
-      "score": 41.8,
+      "score": 42.8,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        41.8
+        42.8
       ],
       "placements": [
         18

@@ -9874,6 +9874,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Young woman in her early twenties with a broad West Texas drawl. Medium pitch, bright and a little raspy, warm and open. Quick and impulsive, words tumbling out, with a big easy laugh that cuts into her sentences. Sentences stretch at the ends; under pressure she gets louder and faster, never quieter. Fearless, friendly and reckless."
+    },
+    {
+      "name": "Emile",
+      "slug": "emile",
+      "gender": "m",
+      "sexuality": "bi",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 7,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 7
+      },
+      "voice": "Soft, slow and dry, with a tired half-smile in every sentence. Asks innocent questions at the worst possible moment and then says nothing at all. #dry #quiet",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult man in his early thirties, General American accent with a faint Detroit flatness. Low baritone, soft, slightly gravelly, as if he is always a little tired. Slow and unhurried, with long pauses and a quiet laugh under his breath. Sentences trail off downward, leaving room for someone else to react; under pressure he gets even calmer. Observant, mischievous and amused."
     }
   ]
 }

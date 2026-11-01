@@ -9530,7 +9530,8 @@
         "difficulty": 0.6,
         "id": "cult",
         "firstSeason": "ss-2"
-      }
+      },
+      "ties": []
     },
     {
       "name": "Sabrina",

@@ -8358,6 +8358,12 @@
       "sexuality": "bi",
       "voice": "Loud, sunny and blunt. Says exactly what she thinks the second she thinks it, laughs at her own jokes, and shakes up any room that gets too comfortable. #blunt  #-goofy#bossy#loud#flirty",
       "profileSources": {},
+      "ties": [
+        {
+          "name": "Anaya",
+          "kin": "siblings"
+        }
+      ],
       "age": 26,
       "birthdate": "2000-08-14",
       "ethnicity": "Black",
@@ -8366,13 +8372,7 @@
       "occupation": "Influencer",
       "descriptor": "The Firecracker",
       "backstory": "Zara grew up the middle of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
-      "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real.",
-      "ties": [
-        {
-          "name": "Anaya",
-          "kin": "siblings"
-        }
-      ]
+      "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real."
     },
     {
       "name": "Blair",
@@ -9720,7 +9720,6 @@
       "name": "Anaya",
       "slug": "anaya",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "hothead",
       "stats": {
         "physical": 8,
@@ -9733,21 +9732,30 @@
         "intuition": 5,
         "temperament": 3
       },
+      "sexuality": "straight",
       "voice": "Loud, quick and certain, a coach's voice that carries across a field. Gives instructions in short bursts, praises people by name, and goes clipped and cold when someone talks back. #bossy #competitive",
       "profileSources": {},
+      "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone.",
       "ties": [
         {
           "name": "Zara",
           "kin": "siblings"
         }
       ],
-      "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone."
+      "age": 28,
+      "birthdate": "1999-05-03",
+      "ethnicity": "Nigerian American",
+      "nationality": "American",
+      "hometown": "Houston, Texas",
+      "occupation": "High school volleyball coach",
+      "descriptor": "The Bossy Team Captain",
+      "backstory": "Amara Okafor grew up in Houston, the oldest of five, and was running the house by the time she was twelve while her parents worked double shifts at the hospital. She captained every team she ever played on, earned a volleyball scholarship to a state college, and came home to coach the girls' team at her old high school, which she took to the state semifinals in her second year. Her players love her and are slightly afraid of her. She applied because she has spent her whole life making other people better at winning and wants to find out what she can do for herself.",
+      "personality": "Amara is protective, competitive and generous. She learns everyone's name on day one, notices who is struggling and quietly fixes it, and she will give a teammate her last bottle of water. She also believes there is a right way to do things and she usually knows it. Being questioned in front of people is the one thing she cannot let go: she gets louder, then colder, and she keeps a list. She apologises when she is wrong, but it takes her a day. In a team she is the first to take charge and the last to admit she has stopped listening."
     },
     {
       "name": "Beck",
       "slug": "beck",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "floater",
       "stats": {
         "physical": 7,
@@ -9760,16 +9768,24 @@
         "intuition": 6,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "Relaxed, friendly and slow, says \"it's fine\" more than anyone, then remembers every detail word for word. Never raises his voice; when he is hurt he gets quieter and more precise. #calm #warm",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Young man in his mid twenties, General American accent with a laid-back Southern California ease. Medium pitch, smooth and a little breathy, friendly and unhurried. Slow, rolling pace with soft consonants; sentences often trail off upward like he is letting something go. Under pressure the voice drops and goes very even and precise instead of louder. Easygoing on the surface, with a quiet, careful memory underneath."
+      "speakingVoice": "Young man in his mid twenties, General American accent with a laid-back Southern California ease. Medium pitch, smooth and a little breathy, friendly and unhurried. Slow, rolling pace with soft consonants; sentences often trail off upward like he is letting something go. Under pressure the voice drops and goes very even and precise instead of louder. Easygoing on the surface, with a quiet, careful memory underneath.",
+      "age": 26,
+      "birthdate": "2001-04-11",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "San Diego, California",
+      "occupation": "Lifeguard and swim instructor",
+      "descriptor": "The Easygoing Grudge Holder",
+      "backstory": "Beckett Shaw grew up two blocks from the beach in San Diego, the middle child of a surf-shop owner and a school nurse. He swam competitively through college until a shoulder injury ended it, and now he works as a lifeguard in summer and teaches swimming to kids and nervous adults the rest of the year. Everyone at the beach knows him and nobody has ever seen him angry. He applied because a friend dared him to, and because he wants to prove he can be more than the nice guy in the background.",
+      "personality": "Beck is warm, helpful and easy to be around. He hates conflict and will say \"it's fine\" about almost anything, then go quiet and remember exactly what happened, who said it and how it made him feel. People mistake his calm for not caring; he cares a great deal and keeps score in silence. When the grudge finally comes out it is calm, specific and very hard to argue with. He is loyal to people who are straight with him and drifts away from people who are not, without ever announcing it."
     },
     {
       "name": "Brie",
       "slug": "brie",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "schemer",
       "stats": {
         "physical": 4,
@@ -9782,16 +9798,24 @@
         "intuition": 7,
         "temperament": 7
       },
+      "sexuality": "straight",
       "voice": "Sweet, bright and Southern, all compliments and \"bless your heart\", with a pause before anything she actually means. Laughs easily, especially when she is lying. #flirty #schemer",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Young woman in her mid twenties with a soft South Carolina accent. Medium-high pitch, bright and sugary, light and musical. Quick, bubbly delivery with lots of rising, friendly inflections and an easy laugh. Sentences end sweetly upward, but when she is calculating the voice drops half a step and slows down. Charming and welcoming on top, careful and measuring underneath."
+      "speakingVoice": "Young woman in her mid twenties with a soft South Carolina accent. Medium-high pitch, bright and sugary, light and musical. Quick, bubbly delivery with lots of rising, friendly inflections and an easy laugh. Sentences end sweetly upward, but when she is calculating the voice drops half a step and slows down. Charming and welcoming on top, careful and measuring underneath.",
+      "age": 25,
+      "birthdate": "2002-04-09",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Charleston, South Carolina",
+      "occupation": "Wedding planner",
+      "descriptor": "The Sweetheart Schemer",
+      "backstory": "Brielle Hart grew up in Charleston as the only daughter of a dentist and a former pageant coach, and she learned early that a smile and a handwritten thank-you note open almost any door. She ran her sorority's recruitment, planned her first wedding at twenty, and now runs a small wedding-planning business where she is very good at keeping three families happy while quietly getting her own way. She applied because she has never lost at anything social and wants to see if the same rules work when the stakes are real.",
+      "personality": "Brie loves people and loves options. She is genuinely warm, remembers birthdays and makes newcomers feel welcome, and she is also always counting: who is useful, who is fading, and who would be easiest to let go. She keeps several friendships going at once and is very good at making each person feel like her favourite. She does not think of herself as a liar; she thinks of herself as flexible. When a friend becomes inconvenient she is sad about it for about a day, and then she makes the move anyway, with a hug."
     },
     {
       "name": "Celeste",
       "slug": "celeste",
       "gender": "f",
-      "sexuality": "lesbian",
       "archetype": "perceptive-player",
       "stats": {
         "physical": 5,
@@ -9804,16 +9828,24 @@
         "intuition": 9,
         "temperament": 8
       },
+      "sexuality": "lesbian",
       "voice": "Flat, low and dry, asks short questions and lets the silence do the work. Deadpan jokes, a raised eyebrow you can hear, and a very calm \"that's not what you said yesterday.\" #dry #calm",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult woman around thirty, General American accent with a light New Mexico Spanish lilt on names. Low-medium pitch, smooth and slightly husky. Slow, even and economical, with pauses before questions. Flat deadpan intonation, sentences ending low and final; under pressure she gets slower and quieter, not louder. Patient, skeptical and quietly amused."
+      "speakingVoice": "Adult woman around thirty, General American accent with a light New Mexico Spanish lilt on names. Low-medium pitch, smooth and slightly husky. Slow, even and economical, with pauses before questions. Flat deadpan intonation, sentences ending low and final; under pressure she gets slower and quieter, not louder. Patient, skeptical and quietly amused.",
+      "age": 31,
+      "birthdate": "1996-03-06",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "Albuquerque, New Mexico",
+      "occupation": "Insurance fraud investigator",
+      "descriptor": "The Human Lie Detector",
+      "backstory": "Celeste Navarro grew up in Albuquerque with three older brothers who lied to her constantly, which she says was the best training she ever had. She studied criminal justice, spent four years as a claims adjuster and now investigates insurance fraud, which mostly means sitting across from people and waiting for their story to change. She plays poker on Thursdays and almost never loses. She applied because she wants to see if she can read a room full of people who are all lying on purpose.",
+      "personality": "Celeste is dry, patient and very hard to fool. She listens more than she talks, asks the same question twice to see if the answer changes, and notices who looks at whom when a name comes up. She is funny in a quiet, deadpan way and enjoys catching people more than she should. Her flaw is that she cannot leave a suspicion alone: one strange comment can turn into an investigation nobody asked for, and she is sometimes so sure of her read that she misses the simple explanation."
     },
     {
       "name": "Cole",
       "slug": "cole",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "social-butterfly",
       "stats": {
         "physical": 8,
@@ -9826,16 +9858,24 @@
         "intuition": 5,
         "temperament": 6
       },
+      "sexuality": "straight",
       "voice": "Big, warm and upbeat, a locker-room voice full of \"let's go\" and first names. Hypes everybody up; when he feels betrayed the smile stays and the words get careful. #warm #competitive",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult man in his late twenties, General American accent with a soft Atlanta warmth. Medium-low baritone, rich, warm and resonant. Energetic, rhythmic delivery like a captain before a game, rising on encouragement. Sentences land confidently; when he is hurt he slows down and the warmth goes polite and controlled. Encouraging, charismatic and proud."
+      "speakingVoice": "Adult man in his late twenties, General American accent with a soft Atlanta warmth. Medium-low baritone, rich, warm and resonant. Energetic, rhythmic delivery like a captain before a game, rising on encouragement. Sentences land confidently; when he is hurt he slows down and the warmth goes polite and controlled. Encouraging, charismatic and proud.",
+      "age": 28,
+      "birthdate": "1998-09-07",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Atlanta, Georgia",
+      "occupation": "Personal trainer",
+      "descriptor": "The Golden-Boy Captain",
+      "backstory": "Adrian Cole has gone by his last name since middle school football in Atlanta, where he was team captain at fourteen and has been captain of something ever since. He played receiver in college, missed the professional draft by a whisker, and built a busy personal-training business out of the people who used to come and watch him play. His mother keeps every newspaper clipping he has ever been in. He applied because he has been everybody's leader for years and wants a room where he has to earn it again.",
+      "personality": "Cole is encouraging, capable and easy to follow. He shakes everyone's hand, remembers what they are good at and makes people feel like they are on the winning side. He genuinely believes in teamwork and gives credit freely. His weak spot is trust: once he believes he has earned someone's loyalty, disagreement feels like betrayal, and he takes it personally even when it is only strategy. When he is hurt he keeps smiling for the room and goes looking for the person in private."
     },
     {
       "name": "Dash",
       "slug": "dash",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "challenge-beast",
       "stats": {
         "physical": 9,
@@ -9848,16 +9888,24 @@
         "intuition": 4,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "Fast, cocky and fun, talks about himself in highlights and laughs at his own lines. Flirts with everybody; goes quiet and serious only after a loss. #loud #competitive",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Young man in his mid twenties, General American accent with a Detroit edge. Medium pitch, bright and punchy, with a grin you can hear. Fast, bouncing rhythm, words running together when he is excited and a big laugh in the middle of sentences. Sentences end on a lift, like he is waiting for a reaction; after a loss the voice drops flat and short. Confident, showy and hungry."
+      "speakingVoice": "Young man in his mid twenties, General American accent with a Detroit edge. Medium pitch, bright and punchy, with a grin you can hear. Fast, bouncing rhythm, words running together when he is excited and a big laugh in the middle of sentences. Sentences end on a lift, like he is waiting for a reaction; after a loss the voice drops flat and short. Confident, showy and hungry.",
+      "age": 25,
+      "birthdate": "2002-01-05",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Detroit, Michigan",
+      "occupation": "College sprinter and fitness coach",
+      "descriptor": "The Walking Highlight Reel",
+      "backstory": "Darius Whitaker got the name Dash at nine, when he outran every kid on his block and then the ice-cream truck. He ran the 100 metres for a university in Ohio, posts his workouts to a large online following, and coaches sprint technique to high school athletes in Detroit on weekends. He grew up with a single mother who worked nights and came to every meet she could, and he still calls her after every race. He applied because he has always performed best with people watching, and nobody watches like a television audience.",
+      "personality": "Dash is entertaining, flirtatious and much harder working than he lets on. He celebrates loudly, talks to the cameras like old friends and loves a crowd, but he is also the first one up to train and the last to stop. He needs an audience almost as much as he needs to win, and he can lose a friend over a moment in the spotlight without noticing. Losing knocks him flat for an hour; then he wants to know exactly what went wrong and how to fix it."
     },
     {
       "name": "Della",
       "slug": "della",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "wildcard",
       "stats": {
         "physical": 7,
@@ -9870,16 +9918,24 @@
         "intuition": 5,
         "temperament": 5
       },
+      "sexuality": "straight",
       "voice": "Loud, warm and drawling, all \"y'all\" and \"darlin'\", laughs at her own bruises. Says yes before the question is finished. #loud #chaotic",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Young woman in her early twenties with a broad West Texas drawl. Medium pitch, bright and a little raspy, warm and open. Quick and impulsive, words tumbling out, with a big easy laugh that cuts into her sentences. Sentences stretch at the ends; under pressure she gets louder and faster, never quieter. Fearless, friendly and reckless."
+      "speakingVoice": "Young woman in her early twenties with a broad West Texas drawl. Medium pitch, bright and a little raspy, warm and open. Quick and impulsive, words tumbling out, with a big easy laugh that cuts into her sentences. Sentences stretch at the ends; under pressure she gets louder and faster, never quieter. Fearless, friendly and reckless.",
+      "age": 23,
+      "birthdate": "2003-09-03",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Amarillo, Texas",
+      "occupation": "Barrel racer and ranch hand",
+      "descriptor": "The Country Wild Card",
+      "backstory": "Delaney Price grew up on a cattle ranch outside Amarillo with four brothers, a houseful of dogs and a grandmother who taught her to ride before she could read. She has been barrel racing since she was eleven, breaks horses for neighbours for extra money and has broken her own arm twice doing it. She has never lived in a city or been on a plane. She applied after watching a friend's season on television and deciding she would have volunteered for every single thing those people were scared of.",
+      "personality": "Della is affectionate, fearless and impulsive. She volunteers before hearing the rules, hugs people she has just met and laughs hardest when she is hurt. She is not careless with people, only with herself, and she will defend a friend in a second without asking whether they were right. Planning bores her. She says what she thinks, changes her mind just as fast, and is genuinely surprised when somebody treats a passing comment as a promise."
     },
     {
       "name": "Emile",
       "slug": "emile",
       "gender": "m",
-      "sexuality": "bi",
       "archetype": "chaos-agent",
       "stats": {
         "physical": 5,
@@ -9892,16 +9948,24 @@
         "intuition": 8,
         "temperament": 7
       },
+      "sexuality": "bi",
       "voice": "Soft, slow and dry, with a tired half-smile in every sentence. Asks innocent questions at the worst possible moment and then says nothing at all. #dry #quiet",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult man in his early thirties, General American accent with a faint Detroit flatness. Low baritone, soft, slightly gravelly, as if he is always a little tired. Slow and unhurried, with long pauses and a quiet laugh under his breath. Sentences trail off downward, leaving room for someone else to react; under pressure he gets even calmer. Observant, mischievous and amused."
+      "speakingVoice": "Adult man in his early thirties, General American accent with a faint Detroit flatness. Low baritone, soft, slightly gravelly, as if he is always a little tired. Slow and unhurried, with long pauses and a quiet laugh under his breath. Sentences trail off downward, leaving room for someone else to react; under pressure he gets even calmer. Observant, mischievous and amused.",
+      "age": 32,
+      "birthdate": "1995-02-06",
+      "ethnicity": "Lebanese American",
+      "nationality": "American",
+      "hometown": "Dearborn, Michigan",
+      "occupation": "Hotel night manager",
+      "descriptor": "The Quiet Trouble Stirrer",
+      "backstory": "Emile Haddad grew up above his family's bakery in Dearborn, the youngest of four, and spent most of his childhood watching his older siblings argue and learning exactly which sentence would start the next one. He dropped out of a philosophy degree, drifted through restaurant jobs and now runs the night shift at a downtown hotel, where he sees everything and reports almost none of it. He applied because he gets bored easily, and a house full of competitive strangers is the least boring place he can imagine.",
+      "personality": "Emile is helpful, observant and easily bored, especially when everyone is getting along. He fixes things, makes coffee for people and remembers how everyone takes it, and he also notices every crack in every friendship. Peace makes him restless. He rarely lies; instead he asks one innocent question in front of the right person and watches what happens. He is not cruel and he does not enjoy anyone getting hurt, but he does enjoy the moment just before, and he is honest enough to admit it."
     },
     {
       "name": "Farah",
       "slug": "farah",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "mastermind",
       "stats": {
         "physical": 5,
@@ -9914,16 +9978,24 @@
         "intuition": 7,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "Smooth, warm and persuasive, every sentence an offer. Calls people \"habibi\" and \"listen\", stays calm under pressure, and never forgets what you owe her. #calm #schemer",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult woman in her late twenties, General American accent with a New Jersey snap and a light Arabic warmth on certain words. Medium-low pitch, rich, smooth and confident. Steady, persuasive pace, with friendly rising questions and firm downward closes, like a deal being signed. Under pressure she slows down and gets even smoother. Charming, controlled and shrewd."
+      "speakingVoice": "Adult woman in her late twenties, General American accent with a New Jersey snap and a light Arabic warmth on certain words. Medium-low pitch, rich, smooth and confident. Steady, persuasive pace, with friendly rising questions and firm downward closes, like a deal being signed. Under pressure she slows down and gets even smoother. Charming, controlled and shrewd.",
+      "age": 28,
+      "birthdate": "1998-09-26",
+      "ethnicity": "Palestinian American",
+      "nationality": "American",
+      "hometown": "Paterson, New Jersey",
+      "occupation": "Car dealership sales manager",
+      "descriptor": "The Smooth Negotiator",
+      "backstory": "Farah Mansour grew up in Paterson helping at her uncle's furniture store, where she learned to haggle in two languages before she was ten. She became the youngest sales manager at a large car dealership at twenty-five and is known for closing deals nobody else could. She is the family's unofficial negotiator, sent in for every rent dispute and every wedding argument. She applied because she wants to see what she can talk her way into when the prize is money she did not have to sell anybody anything for.",
+      "personality": "Farah is charming, adaptable and always working. She can make anyone feel heard, finds the thing they want and offers it to them before they know they asked. She keeps her word, and she expects others to keep theirs: she remembers every favour, done and owed, and she collects with interest. She is calm in a crisis and hard to rattle, but she has no patience for people who break deals. She would rather win a vote with a conversation than a challenge, and she usually can."
     },
     {
       "name": "Felix",
       "slug": "felix",
       "gender": "m",
-      "sexuality": "straight",
       "archetype": "underdog",
       "stats": {
         "physical": 4,
@@ -9936,16 +10008,24 @@
         "intuition": 6,
         "temperament": 6
       },
+      "sexuality": "straight",
       "voice": "Quick, eager and nerdy, starts with \"actually\" and \"okay, so\", explains everything twice. Gets excited about how things work and apologetic when he realises nobody asked. #nerdy #earnest",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult man in his late twenties, General American accent with a soft South Texas lilt. Medium-high pitch for a man, bright and slightly nasal. Fast, eager and run-on, sentences stacking up with \"and\" and \"so\" when he is excited. Sentences rise at the ends as if asking permission; under pressure the voice speeds up and goes higher. Earnest, smart and hopeful."
+      "speakingVoice": "Adult man in his late twenties, General American accent with a soft South Texas lilt. Medium-high pitch for a man, bright and slightly nasal. Fast, eager and run-on, sentences stacking up with \"and\" and \"so\" when he is excited. Sentences rise at the ends as if asking permission; under pressure the voice speeds up and goes higher. Earnest, smart and hopeful.",
+      "age": 28,
+      "birthdate": "1999-02-08",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "San Antonio, Texas",
+      "occupation": "High school robotics teacher",
+      "descriptor": "The Know-It-All Underdog",
+      "backstory": "Felix Moreno grew up in San Antonio, the son of a mechanic and a librarian, and was taking apart the family toaster at six. He won a state science fair, studied mechanical engineering on scholarship and now teaches robotics at a public high school, where his team built a robot that made the national finals. He was always picked last in gym. He applied because he believes brains win challenges more often than people think, and because his students bet him he would not.",
+      "personality": "Felix is inventive, well-meaning and eager to help. He sees how a puzzle works before anyone else and cannot stop himself from explaining it, which can turn a simple suggestion into a ten-minute lecture. He wants very badly to be useful and is hurt when people dismiss him because of how he looks. He is braver than he seems, keeps going long after he should stop, and is fiercely grateful to anyone who gives him a chance. When he is right he says so; when he is wrong he says so too, and means it."
     },
     {
       "name": "Marisol",
       "slug": "marisol",
       "gender": "f",
-      "sexuality": "straight",
       "archetype": "showmancer",
       "stats": {
         "physical": 5,
@@ -9958,16 +10038,24 @@
         "intuition": 7,
         "temperament": 8
       },
+      "sexuality": "straight",
       "voice": "Smooth, amused and teasing, a cabin-crew calm with a wink in it. Tells stories from every city, flirts for fun, and has no patience at all for grown adults making messes. #flirty #calm",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Adult woman in her early thirties, General American accent with a light Puerto Rican lilt, warmer on names and Spanish words. Medium-low pitch, smooth and warm, slightly smoky. Relaxed, rhythmic pace, a professional calm with a teasing smile in it. Sentences curl up playfully at the end; under pressure she gets cooler and more precise, never rattled. Amused, flirtatious and unflappable."
+      "speakingVoice": "Adult woman in her early thirties, General American accent with a light Puerto Rican lilt, warmer on names and Spanish words. Medium-low pitch, smooth and warm, slightly smoky. Relaxed, rhythmic pace, a professional calm with a teasing smile in it. Sentences curl up playfully at the end; under pressure she gets cooler and more precise, never rattled. Amused, flirtatious and unflappable.",
+      "age": 32,
+      "birthdate": "1994-09-15",
+      "ethnicity": "Puerto Rican",
+      "nationality": "American",
+      "hometown": "Orlando, Florida",
+      "occupation": "Flight attendant",
+      "descriptor": "The Frequent Flyer",
+      "backstory": "Marisol Vega was born in Ponce, Puerto Rico, moved to Orlando at ten and has been leaving ever since. She has worked as a flight attendant for nine years, has a story from every city on the map and a silver streak in her hair she got at twenty-six and refuses to dye. She has talked down angry passengers, delivered a baby at thirty thousand feet and been proposed to twice on board. She applied because, after nine years of serving drinks to people on their way somewhere exciting, she wants to be the one going.",
+      "personality": "Marisol is practical, flirtatious and mischievous. She is unflappable in a crisis, sizes people up in a glance and knows exactly how to calm a room or set it alight. She flirts like it is part of her uniform and enjoys the reaction more than the result, until somebody catches her attention properly. She has very limited patience for adults who expect someone else to clean up their messes. She laughs at trouble, enjoys a little chaos and is far more sentimental than she lets anyone see."
     },
     {
       "name": "Kieran",
       "slug": "kieran",
       "gender": "m",
-      "sexuality": "gay",
       "archetype": "showmancer",
       "stats": {
         "physical": 6,
@@ -9980,10 +10068,19 @@
         "intuition": 7,
         "temperament": 6
       },
+      "sexuality": "gay",
       "voice": "Quick, cheeky and charming, with a Dublin accent and a joke for every awkward moment. Flirts without thinking; goes quiet and honest when he has hurt somebody. #flirty #goofy",
       "profileSources": {},
-      "ties": [],
-      "speakingVoice": "Young man in his early twenties with a Dublin Irish accent. Medium pitch, light and bright, with a cheeky, smiling quality. Quick, musical rhythm, running sentences together and dropping into a laugh. Sentences lift at the end like a question he already knows the answer to; when he is caught out the voice drops and slows, suddenly sincere. Charming, playful and a little reckless."
+      "speakingVoice": "Young man in his early twenties with a Dublin Irish accent. Medium pitch, light and bright, with a cheeky, smiling quality. Quick, musical rhythm, running sentences together and dropping into a laugh. Sentences lift at the end like a question he already knows the answer to; when he is caught out the voice drops and slows, suddenly sincere. Charming, playful and a little reckless.",
+      "age": 24,
+      "birthdate": "2003-01-21",
+      "ethnicity": "Irish",
+      "nationality": "Irish",
+      "hometown": "Dublin, Ireland",
+      "occupation": "Drummer and bartender",
+      "descriptor": "The Charming Bad Decision",
+      "backstory": "Kieran O'Shea grew up in a council flat in Dublin with his mother and two younger sisters, and has been talking his way out of trouble since primary school. He plays drums in a band that has almost been signed three times and pays the rent pulling pints in a pub where half the customers are his friends. He moved to the United States for a summer at nineteen and stayed four years. He applied because his sisters told him he would never last a week, and he wants to send them a postcard from the final.",
+      "personality": "Kieran is funny, flirtatious and much more perceptive than he looks. He reads a room in seconds, knows what to say to make anyone laugh and has a talent for escaping consequences. He flirts with almost everyone and means most of it. Trouble comes when feelings get involved: he hates letting people down, so he avoids hard conversations until they become disasters. He is loyal to his friends, generous with whatever he has and terrible at saying no."
     }
   ]
 }

@@ -120,7 +120,7 @@ const RU_HTML = RU_CSS + `      <!-- ══════════════�
                   <th id="ru-th-adv-held" style="padding: 6px 5px; text-align: center; width: 44px; color:#a78bfa;" title="Idols/advantages HELD & never used · 0 if survived to the end · −1.8 if eliminated still holding it">Held</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" id="ru-th-allies" title="Real alliances only — Unbreakable bonds or named alliances · do NOT include casual relationships">Allies</th>
                   <th style="padding: 6px 5px; text-align: center; width: 52px; color:#a78bfa;" id="ru-th-strat" title="Strategic-gameplay score · auto-filled from season JSON">Strat</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
+                  <th id="ru-th-jury" style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" id="ru-th-social" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
                   <th style="padding: 6px 5px; text-align: center; width: 38px; color:#f87171;" title="Quit voluntarily · −6.0">Quit</th>
@@ -515,6 +515,11 @@ export const RU_ALLY = { weight: 0.25, cap: 4 };
 // "Elite Threats". The title is permanent; S has to keep being earned.
 export const RU_WINNER_FLOOR = 71;
 
+/** Who won a house season's final Head of Household, off its finale row. */
+function _bbFinalHoh(doc) {
+  return (doc?.weeks || []).find(w => w?.finale)?.hoh || null;
+}
+
 export const RU_SHOW = {
   'total-drama': {
     comp1: { label: 'Imm',  weight: 1.6, title: '+1.6 per individual immunity win' },
@@ -552,14 +557,32 @@ export const RU_SHOW = {
     }),
   },
   'big-brother': {
-    comp1: { label: 'HOH',  weight: 1.2, title: '+1.2 per Head of Household — power, and a target' },
+    // ── WHAT BIG BROTHER IS ABOUT, PRICED HIGHEST ──
+    //
+    // The Head of Household decides the week, so it pays the most: it was 1.2,
+    // under a veto, which made the power of the house the cheapest thing on
+    // the board. The final HOH (the one that picks who sits in the final two)
+    // is counted as one too: `read` adds it, because the week record stops a
+    // night before it and every exported season left it out. (The user,
+    // 2026-10-31: "the most important things of big brother should count
+    // more".) Not higher than this: at 2.0 / 1.8 S1's winner reached S+, which
+    // is for careers, after one season.
+    comp1: { label: 'HOH',  weight: 1.8, title: '+1.8 per Head of Household, the final HOH included — the power of the week' },
     comp2: { label: 'Veto', weight: 1.6, title: '+1.6 per veto — the competition that saves you' },
-    // THE THIRD COMPETITION. A house runs three kinds and this board had two
-    // columns, so every Block Buster and every arena win in a season scored
-    // exactly nothing — the one comp you win while ON THE BLOCK, which is the
-    // hardest circumstance any of them are won in.
-    comp3: { label: 'Arena', weight: 1.4,
-      title: '+1.4 per Block Buster / arena win — won while already on the block' },
+    // NO ARENA COLUMN. The Block Buster / AI Arena scored 1.4 a win, more than
+    // an HOH, and some seasons run three a week: on S1 it lifted three arena
+    // winners over people who finished above them. It is a twist that some
+    // seasons have and most do not, so it does not count (the user,
+    // 2026-10-31: "arena shouldnt be adding that much it shouldnt even be
+    // counting"). An arena save is not a block survival either: `timesOnBlock`
+    // counts only eviction nights.
+    comp3: null,
+    // JURY VOTES FOR WHOEVER LOST THE FINAL. The winner's votes are the win;
+    // a runner-up who took four of nine played a different game from one who
+    // took none.
+    jury: { weight: 0.75, title: 'Jury votes · +0.75 each for a finalist who did not win (the winner is paid by the win)' },
+    // and no first-season houseguest scores above the season's winner (see _ruWinnerOnTop)
+    winnerOnTop: true,
     // Powers are not idols, and the lifecycle words differ: you are GIVEN a
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
@@ -615,8 +638,8 @@ export const RU_SHOW = {
     // finish: you can sit at eviction night nominated three times, be kept
     // three times and still go out tenth, or win the season having never been
     // up at all. `timesOnBlock` already counts only reaching eviction night
-    // still nominated — an arena save never gets there and is scored as a
-    // competition instead, so nothing is credited twice.
+    // still nominated — an arena save never gets there, and the arena itself
+    // is not scored (see comp3).
     //
     // Capped at 4: past that it is describing a house that kept renominating a
     // pawn, which is a pattern rather than an achievement.
@@ -643,10 +666,12 @@ export const RU_SHOW = {
     // happened to Big Brother for a season, it is what the comments two blocks
     // up are about, and it looks exactly like a working board. A show declares
     // where its own numbers live; the loader reads whatever it is given.
-    read: (p, { placement } = {}) => ({
-      comp1: p.bb?.hohWins ?? p.hohWins ?? 0,
+    read: (p, { placement, doc } = {}) => ({
+      // The final HOH lives only on the season's finale row: `hohWins` is
+      // counted off the weeks, which end at the final three.
+      comp1: (p.bb?.hohWins ?? p.hohWins ?? 0) + (_bbFinalHoh(doc) === (p.name || p.playerName) ? 1 : 0),
       comp2: p.bb?.vetoWins ?? p.vetoWins ?? 0,
-      comp3: p.bb?.blockBusterWins ?? p.blockBusterWins ?? 0,
+      comp3: 0,
       // `timesOnBlock` counts reaching eviction night still nominated, so for
       // everybody but the final two one of those nights is the one that ended
       // their game and is not a survival.
@@ -1070,6 +1095,8 @@ function _ruRelabelColumns() {
     stratTh.title = (rub.strat.label ? rub.strat.label + ' · ' : 'How they actually played · ') + _stratRangeText(rub.strat)
       + (rub.strat.zeroIsScore ? ' · auto-filled from season JSON' : ' · auto-filled from season JSON — leave blank and it scores nothing');
   }
+  const juryTh = document.getElementById('ru-th-jury');
+  if (juryTh) juryTh.title = rub.jury ? rub.jury.title : 'not counted in score';
   const allyTh = document.getElementById('ru-th-allies');
   if (allyTh) {
     allyTh.title = 'Real alliances only — Unbreakable bonds or named alliances · +'
@@ -1113,7 +1140,8 @@ function _ruRenderLegend() {
   if (!el) return;
   const adv = rub.adv || {};
   const comp = [rub.comp1, rub.comp2, rub.comp3].filter(Boolean)
-    .map(c => `<span>${c.label} +${c.weight}</span>`).join('');
+    .map(c => `<span>${c.label} +${c.weight}</span>`).join('')
+    + (rub.jury ? `<span>Jury vote (losing finalist) +${rub.jury.weight}</span>` : '');
   el.innerHTML = `<span style="color:#60a5fa;">⚡ <b>COMPETITIONS</b></span>${comp}`
     + `<span style="color:#a78bfa; margin-left:8px;">🧠 <b>${adv.group || 'STRATEGIC'}</b></span>`
     + `<span>${adv.found || 'Found'} +${RU_ADV.found}</span>`
@@ -1197,6 +1225,12 @@ function _stratAdj(value, rub) {
   return spec.center != null ? (v - spec.center) * spec.weight : v * spec.weight;
 }
 
+/** Jury votes, on a show that scores them: a finalist who lost, paid per vote. */
+function _juryAdj(p, rub) {
+  if (!rub?.jury || !p.isFinalist || p.seasonWin) return 0;
+  return num(p.juryVotes) * rub.jury.weight;
+}
+
 export function computeScore(p) {
   const cp   = careerPct(p.allPcts);
   // Base 42 → 68: placement is still the spine, but a shorter one.
@@ -1267,7 +1301,7 @@ export function computeScore(p) {
     socialAdj = voteDiff > 0 ? -(voteDiff * 0.2) : -(voteDiff * 0.15); // negative diff * negative rate = positive bonus
   }
   const fanFavBonus  = p.fanFav ? 2.0 : 0;
-  const socialBonus  = fanFavBonus + socialAdj;
+  const socialBonus  = fanFavBonus + socialAdj + _juryAdj(p, _rub);
 
   const quitAdj = p.quit ? -6 : 0;
 
@@ -1425,7 +1459,7 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
       alliances:row.alliances,
       juryVotes:row.juryVotes, socialCol:row.socialCol,
       fanFav:row.fanFav, quit:row.quit,
-      override:row.override, castSize, isFinalist
+      override:row.override, castSize, isFinalist, seasonWin:isWinner
     });
 
     // Build breakdown string
@@ -1462,6 +1496,8 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
     }
     if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,RU_ALLY.cap)*RU_ALLY.weight).toFixed(1));
     if (row.fanFav)     parts.push('FanFav:+2.0');
+    const _jv = _juryAdj({ isFinalist, seasonWin: isWinner, juryVotes: row.juryVotes }, _mrub);
+    if (_jv) parts.push('Jury:+' + _jv.toFixed(1));
     const _msoc = _mrub.social || {};
     if (_msoc.kind === 'survived') {
       const kept = Math.min(row.socialCol || 0, _msoc.cap);
@@ -1504,7 +1540,32 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
       existingRef: existing, row
     });
   });
+  _ruWinnerOnTop(results, format);
   return results;
+}
+
+/**
+ * NOBODY NEW OUT-SCORES THE SEASON'S WINNER, on a show that says so.
+ *
+ * BB2's runner-up won eight competitions, the final HOH among them, and scored
+ * 92.4, S+ ("Elite Winners"), five points over the houseguest the jury chose
+ * 7-2. Winning is the most important thing in the house; a résumé can carry a
+ * player right up to the winner, not past them. Only first-season players are
+ * held: a returnee's score carries a career, which can rightly be bigger than
+ * one season's winner.
+ */
+function _ruWinnerOnTop(results, format) {
+  if (!_ruRubric(format).winnerOnTop) return;
+  const won = results.filter(r => r.isWinner).map(r => r.newScore);
+  if (!won.length) return;
+  const top = Math.min(...won);
+  for (const r of results) {
+    if (r.isWinner || !r.isNew || r.newScore < top) continue;
+    r.newScore = Math.round((top - 0.1) * 10) / 10;
+    r.newTier = scoreTier(r.newScore);
+    r.tierChanged = r.oldTier !== r.newTier;
+    r.breakdown += ' │ BelowWinner:' + r.newScore;
+  }
 }
 
 // ── Preview ───────────────────────────────────────────────
@@ -1997,7 +2058,7 @@ export function ruRowsFromDoc(json) {
     const allianceCount = Array.isArray(p.alliances) ? p.alliances.length
                         : (typeof p.alliances === 'number' ? p.alliances
                         : (p.allianceCount ?? p.namedAlliances?.length ?? 0));
-    const cols = _read(p, { placement });
+    const cols = _read(p, { placement, doc: json });
     // The shape getRows() reads off the table, so a script and the page score
     // exactly the same row.
     return {

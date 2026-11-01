@@ -3,9 +3,9 @@
     "format": "big-brother",
     "name": "📹 Big Brother Franchise Rankings",
     "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
-    "lastUpdated": "2026-08-22",
-    "totalPlayers": 17,
-    "seasons": 1
+    "lastUpdated": "2026-10-31",
+    "totalPlayers": 35,
+    "seasons": 2
   },
   "scoringSystem": {},
   "tiers": {
@@ -64,17 +64,17 @@
       "name": "Misha",
       "rank": 1,
       "tier": "S",
-      "score": 86,
+      "score": 89,
       "wins": 1,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        86
+        89
       ],
       "placements": [
         1
       ],
       "avgPlacement": 1,
-      "challengeWins": 6,
+      "challengeWins": 7,
       "blockSurvived": 0,
       "juryVotes": 5,
       "idolsFound": 0,
@@ -86,15 +86,67 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "jules",
-      "name": "Jules",
+      "playerId": "baxter",
+      "name": "Baxter",
       "rank": 2,
       "tier": "S",
-      "score": 80,
+      "score": 87.2,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        87.2
+      ],
+      "placements": [
+        1
+      ],
+      "avgPlacement": 1,
+      "challengeWins": 3,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 7,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "👑",
+      "reasoning": "Baxter won Big Brother 2 by a 7-2 jury vote. He was never the loudest player in the house, but he had a final-two deal with Ivyna and another with Michele, and he kept both until the end. He won his only Head of Household at final four and both of his vetoes in the last three weeks, played his hidden power in week 10, and survived the one eviction night he spent on the block. Angelica won more competitions; the jury chose Baxter.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "angelica",
+      "name": "Angelica",
+      "rank": 3,
+      "tier": "S",
+      "score": 87.1,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        80
+        87.1
+      ],
+      "placements": [
+        2
+      ],
+      "avgPlacement": 2,
+      "challengeWins": 8,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 2,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "The strongest competitor of Big Brother 2, and still the runner-up. Angelica won four Heads of Household, the final one included, and four vetoes, and kept winning her way off the block. The house evicted her 11-0 in week 5, and she won the Battle Back to come straight back in. At final three she won the last Head of Household, cut Ivyna, took Baxter to the final two and lost the jury vote 7-2.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "jules",
+      "name": "Jules",
+      "rank": 4,
+      "tier": "S",
+      "score": 84.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        84.2
       ],
       "placements": [
         2
@@ -114,13 +166,13 @@
     {
       "playerId": "joel",
       "name": "Joel",
-      "rank": 3,
+      "rank": 5,
       "tier": "A",
-      "score": 77.6,
+      "score": 79.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        77.6
+        79.4
       ],
       "placements": [
         3
@@ -138,21 +190,47 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "tobias",
-      "name": "Tobias",
-      "rank": 4,
+      "playerId": "michele",
+      "name": "Michele",
+      "rank": 6,
       "tier": "A",
-      "score": 73.1,
+      "score": 73.8,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        73.1
+        73.8
       ],
       "placements": [
         4
       ],
       "avgPlacement": 4,
-      "challengeWins": 1,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 4,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Michele was nominated nine times and outlasted fourteen people anyway. She won two vetoes to save herself, survived four eviction nights on the block, and built a final-two deal and a showmance with Baxter. At final four Angelica won the veto and took herself off the block, so Baxter had to put Michele up as the only one left, and Angelica cast the one vote that sent her home.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "tobias",
+      "name": "Tobias",
+      "rank": 7,
+      "tier": "A",
+      "score": 71.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        71.7
+      ],
+      "placements": [
+        4
+      ],
+      "avgPlacement": 4,
+      "challengeWins": 0,
       "blockSurvived": 3,
       "juryVotes": 0,
       "idolsFound": 0,
@@ -166,19 +244,19 @@
     {
       "playerId": "ireland",
       "name": "Ireland",
-      "rank": 5,
-      "tier": "A",
-      "score": 72.7,
+      "rank": 8,
+      "tier": "B",
+      "score": 70.3,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        72.7
+        70.3
       ],
       "placements": [
         10
       ],
       "avgPlacement": 10,
-      "challengeWins": 10,
+      "challengeWins": 7,
       "blockSurvived": 0,
       "juryVotes": 0,
       "idolsFound": 1,
@@ -190,41 +268,41 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "aaron",
-      "name": "Aaron",
-      "rank": 6,
+      "playerId": "ivyna",
+      "name": "Ivyna",
+      "rank": 9,
       "tier": "B",
-      "score": 70.4,
+      "score": 69.8,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        70.4
+        69.8
       ],
       "placements": [
-        6
+        3
       ],
-      "avgPlacement": 6,
-      "challengeWins": 5,
-      "blockSurvived": 2,
+      "avgPlacement": 3,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
       "juryVotes": 0,
-      "idolsFound": 0,
+      "idolsFound": 1,
       "title": "",
       "emoji": "⭐",
-      "reasoning": "A loyal soldier who turned survival into a real jury run. Aaron was nominated seven times, but three arena wins and a veto kept him from becoming the easy boot, while his votes usually stayed with the house. The problem was never that he lost control of a week; it was that his circle stayed too small, and at the double eviction Tobias had more reason to keep Jules than to save him.",
+      "reasoning": "Ivyna made the final three by being in the right alliances. She had the Foxhole with Angelica and the Wire with Baxter, so both people left at the end had a reason to keep her. She won one Head of Household in the double eviction and survived the block twice, but a secret power she won in week 2 ran out without being played. At final three Angelica won the last HOH and cut her, so she never got to make her case to the jury.",
       "strengths": [],
-      "weaknesses": [],
-      "votesAgainst": 0
+      "weaknesses": []
     },
     {
       "playerId": "jane",
       "name": "Jane",
-      "rank": 7,
+      "rank": 10,
       "tier": "B",
-      "score": 68.8,
+      "score": 69.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        68.8
+        69.4
       ],
       "placements": [
         5
@@ -242,15 +320,67 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "dylon",
-      "name": "Dylon",
-      "rank": 8,
+      "playerId": "ben",
+      "name": "Ben",
+      "rank": 11,
       "tier": "B",
-      "score": 64.3,
+      "score": 67.7,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        64.3
+        67.7
+      ],
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Ben won two Heads of Household and spent most of the season in the middle of the house, with the Front, a deal with Lacey and a deal with Dominic. His showmance with Lacey ended when she was evicted in week 10. He survived the block twice, but at final five Angelica nominated him, and after the veto he sat next to Michele and was voted out 2-0.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "aaron",
+      "name": "Aaron",
+      "rank": 12,
+      "tier": "B",
+      "score": 66.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        66.8
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 2,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A loyal soldier who turned survival into a real jury run. Aaron was nominated seven times, but three arena wins and a veto kept him from becoming the easy boot, while his votes usually stayed with the house. The problem was never that he lost control of a week; it was that his circle stayed too small, and at the double eviction Tobias had more reason to keep Jules than to save him.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "dylon",
+      "name": "Dylon",
+      "rank": 13,
+      "tier": "B",
+      "score": 65.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        65.5
       ],
       "placements": [
         11
@@ -268,21 +398,125 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "gyselle",
-      "name": "Gyselle",
-      "rank": 9,
+      "playerId": "dominic",
+      "name": "Dominic",
+      "rank": 14,
       "tier": "B",
-      "score": 63.2,
+      "score": 64.2,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        63.2
+        64.2
+      ],
+      "placements": [
+        6
+      ],
+      "avgPlacement": 6,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Dominic won one Head of Household and one veto, sat in three alliances, and was never in real danger until the double eviction. He was in a showmance with Nina before she left in week 11. In the second half of the double eviction he was put up as a replacement nominee next to Michele and lost 2-1, the first time all season he had been on the block on eviction night.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "nina",
+      "name": "Nina",
+      "rank": 15,
+      "tier": "B",
+      "score": 63.9,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        63.9
+      ],
+      "placements": [
+        9
+      ],
+      "avgPlacement": 9,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Nina won Head of Household and the veto in the same week (week 5) and used a secret power that week too. Her nominations sent Angelica out 11-0, before Angelica won her way back in. Nina was in the Front and the Bond, and in showmances with Baxter and then Dominic. She left in week 11 when she lost the White Locust challenge, without the house ever voting on her.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "sawyer",
+      "name": "Sawyer",
+      "rank": 16,
+      "tier": "B",
+      "score": 63.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        63.5
       ],
       "placements": [
         7
       ],
       "avgPlacement": 7,
-      "challengeWins": 2,
+      "challengeWins": 3,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Sawyer won three vetoes, the first of them to save himself in week 1, and he was in the Front and the Bond. He never sat on the block on an eviction night until the first half of the double eviction, when Ben put him up as the replacement nominee and he was blindsided 4-0.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "martin",
+      "name": "Martin",
+      "rank": 17,
+      "tier": "B",
+      "score": 62.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        62.1
+      ],
+      "placements": [
+        8
+      ],
+      "avgPlacement": 8,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Martin played without an alliance. He won Head of Household in week 9, and his nominations led to Fatima's eviction. He survived the block once, but with nobody committed to keeping him, Angelica nominated him in week 11 and the house voted him out 5-0.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "gyselle",
+      "name": "Gyselle",
+      "rank": 18,
+      "tier": "C",
+      "score": 60.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        60.4
+      ],
+      "placements": [
+        7
+      ],
+      "avgPlacement": 7,
+      "challengeWins": 0,
       "blockSurvived": 1,
       "juryVotes": 0,
       "idolsFound": 0,
@@ -296,19 +530,19 @@
     {
       "playerId": "natasha",
       "name": "Natasha",
-      "rank": 10,
-      "tier": "B",
-      "score": 61.2,
+      "rank": 19,
+      "tier": "C",
+      "score": 59.8,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        61.2
+        59.8
       ],
       "placements": [
         9
       ],
       "avgPlacement": 9,
-      "challengeWins": 1,
+      "challengeWins": 0,
       "blockSurvived": 1,
       "juryVotes": 0,
       "idolsFound": 0,
@@ -322,7 +556,7 @@
     {
       "playerId": "felipe",
       "name": "Felipe",
-      "rank": 11,
+      "rank": 20,
       "tier": "C",
       "score": 59,
       "wins": 0,
@@ -346,15 +580,93 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "hasan",
-      "name": "Hasan",
-      "rank": 12,
+      "playerId": "lacey",
+      "name": "Lacey",
+      "rank": 21,
       "tier": "C",
-      "score": 53.7,
+      "score": 58.6,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        53.7
+        58.6
+      ],
+      "placements": [
+        10
+      ],
+      "avgPlacement": 10,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Lacey was nominated six times and survived two eviction nights on the block. She was in three alliances and a showmance with Ben. In week 10 she sat next to Ivyna; Dominic voted against her and she lost 4-3.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "fatima",
+      "name": "Fatima",
+      "rank": 22,
+      "tier": "C",
+      "score": 55.5,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        55.5
+      ],
+      "placements": [
+        11
+      ],
+      "avgPlacement": 11,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Fatima won two Heads of Household (weeks 4 and 6), more than most of the people who outlasted her, but she had no alliance to protect her in the weeks she was not in power. Martin nominated her in week 9 and she was blindsided 6-2.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "paisley",
+      "name": "Paisley",
+      "rank": 23,
+      "tier": "C",
+      "score": 55.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        55.4
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 2,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Paisley won a Head of Household and a veto and was the only houseguest with two secret powers. She played one of them in week 2, and the other ran out unused. In week 8 Dominic nominated her and she was voted out 8-0.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "hasan",
+      "name": "Hasan",
+      "rank": 24,
+      "tier": "C",
+      "score": 54.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        54.3
       ],
       "placements": [
         13
@@ -372,35 +684,61 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "nico",
-      "name": "Nico",
-      "rank": 13,
+      "playerId": "alexander",
+      "name": "Alexander",
+      "rank": 25,
       "tier": "C",
-      "score": 51.8,
+      "score": 51.1,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        51.8
+        51.1
       ],
       "placements": [
-        12
+        13
       ],
-      "avgPlacement": 12,
-      "challengeWins": 1,
+      "avgPlacement": 13,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Alexander survived two eviction nights on the block (weeks 4 and 5) without winning anything. When Paisley nominated him in week 7 he had no votes left in the house and went out 9-0.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "vlad",
+      "name": "Vlad",
+      "rank": 26,
+      "tier": "C",
+      "score": 51.1,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        51.1
+      ],
+      "placements": [
+        14
+      ],
+      "avgPlacement": 14,
+      "challengeWins": 2,
+      "votesAgainst": 0,
       "blockSurvived": 0,
       "juryVotes": 0,
       "idolsFound": 0,
       "title": "",
       "emoji": "⭐",
-      "reasoning": "A solid social player whose BB1 game looked safer than it was. Nico had a stolen Head of Household, a Block Buster save, and only one official nomination before his eviction week, but that defensive record hid how little leverage he had once Ireland came off the block. His bond with Felipe was real until it became evidence Felipe needed to cut him, and Nico’s quiet exit — no real campaign, the votes assumed locked — made that betrayal land even cleaner.",
+      "reasoning": "Vlad won Head of Household in week 2 and the veto in week 4 to save himself. He had the Collective with Dominic and Ivyna, In week 6 Fatima nominated him, the votes he was counting on from Baxter, Lacey and Sawyer went the other way, and he was evicted 7-3.",
       "strengths": [],
-      "weaknesses": [],
-      "votesAgainst": 0
+      "weaknesses": []
     },
     {
       "playerId": "harriett",
       "name": "Harriett",
-      "rank": 14,
+      "rank": 27,
       "tier": "D",
       "score": 50.8,
       "wins": 0,
@@ -424,21 +762,73 @@
       "votesAgainst": 0
     },
     {
-      "playerId": "zella",
-      "name": "Zella",
-      "rank": 15,
+      "playerId": "nico",
+      "name": "Nico",
+      "rank": 28,
       "tier": "D",
-      "score": 49.7,
+      "score": 50.4,
       "wins": 0,
       "seasonsPlayed": 1,
       "scoreHistory": [
-        49.7
+        50.4
+      ],
+      "placements": [
+        12
+      ],
+      "avgPlacement": 12,
+      "challengeWins": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "A solid social player whose BB1 game looked safer than it was. Nico had a stolen Head of Household, a Block Buster save, and only one official nomination before his eviction week, but that defensive record hid how little leverage he had once Ireland came off the block. His bond with Felipe was real until it became evidence Felipe needed to cut him, and Nico’s quiet exit — no real campaign, the votes assumed locked — made that betrayal land even cleaner.",
+      "strengths": [],
+      "weaknesses": [],
+      "votesAgainst": 0
+    },
+    {
+      "playerId": "juan",
+      "name": "Juan",
+      "rank": 29,
+      "tier": "D",
+      "score": 49.4,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        49.4
+      ],
+      "placements": [
+        15
+      ],
+      "avgPlacement": 15,
+      "challengeWins": 1,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Juan won Head of Household in week 3, and his nominations ended in the closest vote of the season: Willow out 7-6. The next week Fatima nominated him, and he was evicted 9-3.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "zella",
+      "name": "Zella",
+      "rank": 30,
+      "tier": "D",
+      "score": 48.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        48.3
       ],
       "placements": [
         14
       ],
       "avgPlacement": 14,
-      "challengeWins": 1,
+      "challengeWins": 0,
       "blockSurvived": 0,
       "juryVotes": 0,
       "idolsFound": 0,
@@ -452,7 +842,7 @@
     {
       "playerId": "amberly",
       "name": "Amberly",
-      "rank": 16,
+      "rank": 31,
       "tier": "D",
       "score": 44.7,
       "wins": 0,
@@ -476,9 +866,61 @@
       "votesAgainst": 0
     },
     {
+      "playerId": "willow",
+      "name": "Willow",
+      "rank": 32,
+      "tier": "D",
+      "score": 44.3,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        44.3
+      ],
+      "placements": [
+        16
+      ],
+      "avgPlacement": 16,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Juan nominated Willow in week 3. Michele won the veto, Martin went up beside her, and Willow lost the closest vote of the season, 7-6.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
+      "playerId": "kyle",
+      "name": "Kyle",
+      "rank": 33,
+      "tier": "D",
+      "score": 44.2,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        44.2
+      ],
+      "placements": [
+        17
+      ],
+      "avgPlacement": 17,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Kyle survived the first eviction of the season 15-0 against Sabrina, then was nominated as the replacement the next week and evicted 12-2.",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "stella",
       "name": "Stella",
-      "rank": 17,
+      "rank": 34,
       "tier": "D",
       "score": 43,
       "wins": 0,
@@ -500,6 +942,32 @@
       "strengths": [],
       "weaknesses": [],
       "votesAgainst": 0
+    },
+    {
+      "playerId": "sabrina",
+      "name": "Sabrina",
+      "rank": 35,
+      "tier": "D",
+      "score": 41.8,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "scoreHistory": [
+        41.8
+      ],
+      "placements": [
+        18
+      ],
+      "avgPlacement": 18,
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "blockSurvived": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "Sabrina was the first houseguest out of Big Brother 2. Angelica nominated her in week 1 and the house voted her out 15-0.",
+      "strengths": [],
+      "weaknesses": []
     }
   ]
 }

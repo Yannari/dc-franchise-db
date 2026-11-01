@@ -9896,6 +9896,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Adult man in his early thirties, General American accent with a faint Detroit flatness. Low baritone, soft, slightly gravelly, as if he is always a little tired. Slow and unhurried, with long pauses and a quiet laugh under his breath. Sentences trail off downward, leaving room for someone else to react; under pressure he gets even calmer. Observant, mischievous and amused."
+    },
+    {
+      "name": "Farah",
+      "slug": "farah",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 9,
+        "strategic": 9,
+        "loyalty": 5,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "voice": "Smooth, warm and persuasive, every sentence an offer. Calls people \"habibi\" and \"listen\", stays calm under pressure, and never forgets what you owe her. #calm #schemer",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult woman in her late twenties, General American accent with a New Jersey snap and a light Arabic warmth on certain words. Medium-low pitch, rich, smooth and confident. Steady, persuasive pace, with friendly rising questions and firm downward closes, like a deal being signed. Under pressure she slows down and gets even smoother. Charming, controlled and shrewd."
     }
   ]
 }

@@ -224,8 +224,9 @@
         }
       },
       "tier": "B",
-      "emoji": "🦊",
-      "autoEmoji": "🦊"
+      "emoji": "🌋",
+      "autoEmoji": "🌋",
+      "autoEmojiFrom": "td-5:Juror:7"
     },
     {
       "id": "anne-maria",
@@ -988,8 +989,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌧️",
-      "autoEmoji": "🌧️"
+      "emoji": "💪",
+      "autoEmoji": "💪",
+      "autoEmojiFrom": "td-8:Pre-Merge:16"
     },
     {
       "id": "cameron",
@@ -1269,8 +1271,9 @@
           "episodes": 1
         }
       ],
-      "emoji": "🔮",
-      "autoEmoji": "🔮"
+      "emoji": "⚓",
+      "autoEmoji": "⚓",
+      "autoEmojiFrom": "td-10:Juror:7"
     },
     {
       "id": "courtney",
@@ -1845,8 +1848,9 @@
         }
       },
       "tier": "C",
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🛡️",
+      "autoEmoji": "🛡️",
+      "autoEmojiFrom": "td-1:Pre-Juror:22"
     },
     {
       "id": "duncan",
@@ -2301,8 +2305,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🍂",
-      "autoEmoji": "🍂"
+      "emoji": "💬",
+      "autoEmoji": "💬",
+      "autoEmojiFrom": "td-6:Pre-Juror:16"
     },
     {
       "id": "eva",
@@ -3226,8 +3231,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🏆",
-      "autoEmoji": "🏆"
+      "emoji": "🏅",
+      "autoEmoji": "🏅",
+      "autoEmojiFrom": "td-6:Winner:1"
     },
     {
       "id": "jasmine",
@@ -3360,8 +3366,9 @@
           "episodes": 1
         }
       ],
-      "emoji": "🏆",
-      "autoEmoji": "🏆"
+      "emoji": "👑",
+      "autoEmoji": "👑",
+      "autoEmojiFrom": "td-10:Winner:1"
     },
     {
       "id": "jay",
@@ -3429,8 +3436,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🥉",
-      "autoEmoji": "🥉"
+      "emoji": "🐕",
+      "autoEmoji": "🐕",
+      "autoEmojiFrom": "td-6:Finalist:3"
     },
     {
       "id": "jo",
@@ -3744,8 +3752,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🍀",
+      "autoEmoji": "🍀",
+      "autoEmojiFrom": "td-6:Pre-Juror:15"
     },
     {
       "id": "justin",
@@ -3989,8 +3998,9 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "🗡️",
+      "autoEmoji": "🗡️",
+      "autoEmojiFrom": "td-13:Juror:22"
     },
     {
       "id": "kitty",
@@ -4094,8 +4104,9 @@
           "totalIdolsFound": 3
         }
       },
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "🏆",
+      "autoEmoji": "🏆",
+      "autoEmojiFrom": "td-7:Juror:11"
     },
     {
       "id": "leonard",
@@ -4578,8 +4589,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "♟️",
+      "autoEmoji": "♟️",
+      "autoEmojiFrom": "td-6:Pre-Juror:14"
     },
     {
       "id": "max",
@@ -5161,8 +5173,9 @@
         }
       },
       "tier": "C",
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "⚡",
+      "autoEmoji": "⚡",
+      "autoEmojiFrom": "td-5:Pre-Juror:12"
     },
     {
       "id": "ryan",
@@ -6073,8 +6086,9 @@
           "episodes": 1
         }
       ],
-      "emoji": "🎈",
-      "autoEmoji": "🎈"
+      "emoji": "🏋️",
+      "autoEmoji": "🏋️",
+      "autoEmojiFrom": "td-8:Pre-Merge:13"
     },
     {
       "id": "staci",
@@ -6236,8 +6250,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌀",
-      "autoEmoji": "🌀"
+      "emoji": "🌋",
+      "autoEmoji": "🌋",
+      "autoEmojiFrom": "td-10:Pre-Juror:11"
     },
     {
       "id": "sugar",
@@ -6391,8 +6406,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "🤞",
+      "autoEmoji": "🤞",
+      "autoEmojiFrom": "td-6:Pre-Juror:17"
     },
     {
       "id": "topher",
@@ -6968,8 +6984,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "💬",
+      "autoEmoji": "💬",
+      "autoEmojiFrom": "td-10:Juror:6"
     },
     {
       "id": "devin",
@@ -7036,8 +7053,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "emoji": "🌹",
+      "autoEmoji": "🌹",
+      "autoEmojiFrom": "td-7:Pre-Merge:14"
     },
     {
       "id": "ellody",
@@ -7099,8 +7117,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "🧠",
+      "autoEmoji": "🧠",
+      "autoEmojiFrom": "td-7:Pre-Merge:19"
     },
     {
       "id": "laurie",
@@ -7162,8 +7181,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🍀",
-      "autoEmoji": "🍀"
+      "emoji": "💥",
+      "autoEmoji": "💥",
+      "autoEmojiFrom": "td-7:Juror:10"
     },
     {
       "id": "lorenzo",
@@ -7226,8 +7246,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "🌋",
+      "autoEmoji": "🌋",
+      "autoEmojiFrom": "td-7:Pre-Merge:16"
     },
     {
       "id": "macarthur",
@@ -7379,8 +7400,9 @@
           "totalIdolsFound": 2
         }
       },
-      "emoji": "💰",
-      "autoEmoji": "💰"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "td-7:Winner:1"
     },
     {
       "id": "pete",
@@ -7481,8 +7503,9 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🗿",
-      "autoEmoji": "🗿"
+      "emoji": "🤞",
+      "autoEmoji": "🤞",
+      "autoEmojiFrom": "td-8:Juror:8"
     },
     {
       "id": "spud",
@@ -7546,8 +7569,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🌪️",
+      "autoEmoji": "🌪️",
+      "autoEmojiFrom": "td-7:Pre-Merge:17"
     },
     {
       "id": "taylor",
@@ -7614,8 +7638,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌙",
-      "autoEmoji": "🌙"
+      "emoji": "🧩",
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "td-7:Juror:7"
     },
     {
       "id": "tom",
@@ -7684,8 +7709,9 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🌹",
-      "autoEmoji": "🌹"
+      "emoji": "🦋",
+      "autoEmoji": "🦋",
+      "autoEmojiFrom": "td-7:Juror:5"
     },
     {
       "id": "chet",
@@ -7748,8 +7774,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🐕",
+      "autoEmoji": "🐕",
+      "autoEmojiFrom": "td-8:Pre-Merge:15"
     },
     {
       "id": "gerry",
@@ -7857,8 +7884,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "👋",
-      "autoEmoji": "👋"
+      "emoji": "🪶",
+      "autoEmoji": "🪶",
+      "autoEmojiFrom": "td-13:Juror:21"
     },
     {
       "id": "jen",
@@ -7968,8 +7996,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "td-12:Juror:9"
     },
     {
       "id": "miles",
@@ -8029,8 +8058,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "⚓",
+      "autoEmoji": "⚓",
+      "autoEmojiFrom": "td-8:Pre-Merge:18"
     },
     {
       "id": "rock",
@@ -8090,8 +8120,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "🍀",
+      "autoEmoji": "🍀",
+      "autoEmojiFrom": "td-8:Pre-Merge:17"
     },
     {
       "id": "sanders",
@@ -8209,8 +8240,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌹",
-      "autoEmoji": "🌹"
+      "emoji": "🛡️",
+      "autoEmoji": "🛡️",
+      "autoEmojiFrom": "td-10:Juror:5"
     },
     {
       "id": "axel",
@@ -8279,8 +8311,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "avgPlacement": 10,
-      "emoji": "🍀",
-      "autoEmoji": "🍀"
+      "emoji": "💥",
+      "autoEmoji": "💥",
+      "autoEmojiFrom": "td-9:Juror:10"
     },
     {
       "id": "bowie",
@@ -8742,8 +8775,9 @@
       },
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🐢",
+      "autoEmoji": "🐢",
+      "autoEmojiFrom": "td-12:Pre-Merge:16"
     },
     {
       "id": "damien",
@@ -9242,8 +9276,9 @@
         }
       ],
       "latestAvatarFile": "julia-returnee.png",
-      "emoji": "🏆",
-      "autoEmoji": "🏆"
+      "emoji": "🦊",
+      "autoEmoji": "🦊",
+      "autoEmojiFrom": "td-15:Winner:1"
     },
     {
       "id": "mk",
@@ -9601,8 +9636,9 @@
       },
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🐝",
-      "autoEmoji": "🐝"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "td-10:Juror:8"
     },
     {
       "id": "raj",
@@ -9957,8 +9993,9 @@
       },
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🏆",
-      "autoEmoji": "🏆"
+      "emoji": "⚓",
+      "autoEmoji": "⚓",
+      "autoEmojiFrom": "td-13:Winner:1"
     },
     {
       "id": "zee",
@@ -10181,8 +10218,9 @@
         }
       },
       "latestAvatarFile": "thom-returnee.png",
-      "emoji": "🌹",
-      "autoEmoji": "🌹"
+      "emoji": "🦸",
+      "autoEmoji": "🦸",
+      "autoEmojiFrom": "td-15:Juror:6"
     },
     {
       "id": "jake",
@@ -10609,8 +10647,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎈",
-      "autoEmoji": "🎈"
+      "emoji": "🧠",
+      "autoEmoji": "🧠",
+      "autoEmojiFrom": "td-11:Juror:9"
     },
     {
       "id": "drew",
@@ -10938,8 +10977,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🔍",
+      "autoEmoji": "🔍",
+      "autoEmojiFrom": "td-11:Juror:6"
     },
     {
       "id": "will",
@@ -11264,8 +11304,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🦅",
-      "autoEmoji": "🦅"
+      "emoji": "♟️",
+      "autoEmoji": "♟️",
+      "autoEmojiFrom": "td-13:Juror:6"
     },
     {
       "id": "fiore",
@@ -11638,8 +11679,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🧨",
+      "autoEmoji": "🧨",
+      "autoEmojiFrom": "td-11:Pre-Merge:15"
     },
     {
       "id": "lill",
@@ -11837,8 +11879,9 @@
         }
       },
       "latestAvatarFile": "james-returnee.png",
-      "emoji": "💰",
-      "autoEmoji": "💰"
+      "emoji": "💬",
+      "autoEmoji": "💬",
+      "autoEmojiFrom": "td-12:Winner:1"
     },
     {
       "id": "maggy",
@@ -11907,8 +11950,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "💛",
+      "autoEmoji": "💛",
+      "autoEmojiFrom": "td-12:Pre-Merge:17"
     },
     {
       "id": "karol",
@@ -11989,8 +12033,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎈",
-      "autoEmoji": "🎈"
+      "emoji": "🌋",
+      "autoEmoji": "🌋",
+      "autoEmojiFrom": "td-12:Juror:11"
     },
     {
       "id": "kai",
@@ -12070,8 +12115,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌀",
-      "autoEmoji": "🌀"
+      "emoji": "🌱",
+      "autoEmoji": "🌱",
+      "autoEmojiFrom": "td-12:Pre-Merge:15"
     },
     {
       "id": "riya",
@@ -12193,8 +12239,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🧠",
+      "autoEmoji": "🧠",
+      "autoEmojiFrom": "td-13:Juror:4"
     },
     {
       "id": "rosa-maria",
@@ -12272,8 +12319,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌙",
-      "autoEmoji": "🌙"
+      "emoji": "🫶",
+      "autoEmoji": "🫶",
+      "autoEmojiFrom": "td-12:Juror:6"
     },
     {
       "id": "connor",
@@ -12342,8 +12390,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "🦁",
+      "autoEmoji": "🦁",
+      "autoEmojiFrom": "td-12:Pre-Merge:18"
     },
     {
       "id": "aiden",
@@ -12468,8 +12517,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🔮",
-      "autoEmoji": "🔮"
+      "emoji": "🧩",
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "td-13:Juror:7"
     },
     {
       "id": "hunter",
@@ -12583,8 +12633,9 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🗿",
-      "autoEmoji": "🗿"
+      "emoji": "🐕",
+      "autoEmoji": "🐕",
+      "autoEmojiFrom": "td-13:Juror:9"
     },
     {
       "id": "yul",
@@ -12703,8 +12754,9 @@
         }
       },
       "latestAvatarFile": "yul-returnee.png",
-      "emoji": "🥀",
-      "autoEmoji": "🥀"
+      "emoji": "🎙️",
+      "autoEmoji": "🎙️",
+      "autoEmojiFrom": "td-15:Pre-Merge:20"
     },
     {
       "id": "lake",
@@ -12830,8 +12882,9 @@
         }
       },
       "latestAvatarFile": "lake-returnee.png",
-      "emoji": "🔮",
-      "autoEmoji": "🔮"
+      "emoji": "⚓",
+      "autoEmoji": "⚓",
+      "autoEmojiFrom": "td-15:Juror:13"
     },
     {
       "id": "tess",
@@ -12902,8 +12955,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎲",
-      "autoEmoji": "🎲"
+      "emoji": "🍀",
+      "autoEmoji": "🍀",
+      "autoEmojiFrom": "td-12:Pre-Merge:13"
     },
     {
       "id": "ally",
@@ -13019,8 +13073,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🔥",
-      "autoEmoji": "🔥"
+      "emoji": "🦋",
+      "autoEmoji": "🦋",
+      "autoEmojiFrom": "td-13:Juror:8"
     },
     {
       "id": "oliver",
@@ -13092,8 +13147,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🐝",
-      "autoEmoji": "🐝"
+      "emoji": "🪶",
+      "autoEmoji": "🪶",
+      "autoEmojiFrom": "td-12:Pre-Merge:14"
     },
     {
       "id": "jade",
@@ -13174,8 +13230,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🏆",
-      "autoEmoji": "🏆"
+      "emoji": "🧠",
+      "autoEmoji": "🧠",
+      "autoEmojiFrom": "td-14:Winner:1"
     },
     {
       "id": "spencer",
@@ -13377,8 +13434,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🍂",
-      "autoEmoji": "🍂"
+      "emoji": "🍀",
+      "autoEmoji": "🍀",
+      "autoEmojiFrom": "td-14:Juror:16"
     },
     {
       "id": "benji",
@@ -13451,8 +13509,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "emoji": "🐢",
+      "autoEmoji": "🐢",
+      "autoEmojiFrom": "td-14:Juror:11"
     },
     {
       "id": "tristan",
@@ -13668,8 +13727,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎲",
-      "autoEmoji": "🎲"
+      "emoji": "🦋",
+      "autoEmoji": "🦋",
+      "autoEmojiFrom": "td-14:Juror:9"
     },
     {
       "id": "hannah",
@@ -13742,8 +13802,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🔥",
-      "autoEmoji": "🔥"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "td-14:Juror:4"
     },
     {
       "id": "amelie",
@@ -13809,8 +13870,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "💬",
+      "autoEmoji": "💬",
+      "autoEmojiFrom": "td-14:Juror:18"
     },
     {
       "id": "lynda",
@@ -13955,8 +14017,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "🕷️",
+      "autoEmoji": "🕷️",
+      "autoEmojiFrom": "td-14:Juror:6"
     },
     {
       "id": "natalia",
@@ -14233,8 +14296,9 @@
           "totalIdolsFound": 1
         }
       },
-      "emoji": "🏅",
-      "autoEmoji": "🏅"
+      "emoji": "🧩",
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "td-14:Juror:3"
     },
     {
       "id": "ted",
@@ -14367,8 +14431,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🥀",
-      "autoEmoji": "🥀"
+      "emoji": "🌱",
+      "autoEmoji": "🌱",
+      "autoEmojiFrom": "td-14:Juror:14"
     },
     {
       "id": "logan",
@@ -14446,8 +14511,9 @@
           "totalIdolsFound": 0
         }
       },
-      "emoji": "🥈",
-      "autoEmoji": "🥈"
+      "emoji": "💛",
+      "autoEmoji": "💛",
+      "autoEmojiFrom": "td-14:Finalist:2"
     },
     {
       "id": "richard",
@@ -15823,8 +15889,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🍀",
-      "autoEmoji": "🍀"
+      "emoji": "🌟",
+      "autoEmoji": "🌟",
+      "autoEmojiFrom": "dr-1:Sashayed away:7"
     },
     {
       "id": "taystee",
@@ -15889,8 +15956,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "👗",
+      "autoEmoji": "👗",
+      "autoEmojiFrom": "dr-1:Sashayed away:11"
     },
     {
       "id": "sharon-needles",
@@ -15955,8 +16023,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "emoji": "💀",
+      "autoEmoji": "💀",
+      "autoEmojiFrom": "dr-1:Sashayed away:9"
     },
     {
       "id": "riot",
@@ -16021,8 +16090,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🌧️",
-      "autoEmoji": "🌧️"
+      "emoji": "👑",
+      "autoEmoji": "👑",
+      "autoEmojiFrom": "dr-1:Sashayed away:12"
     },
     {
       "id": "quin",
@@ -16089,8 +16159,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "👑",
-      "autoEmoji": "👑"
+      "emoji": "💄",
+      "autoEmoji": "💄",
+      "autoEmojiFrom": "dr-1:Winner:1"
     },
     {
       "id": "paige-turner",
@@ -16155,8 +16226,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🥈",
-      "autoEmoji": "🥈"
+      "emoji": "📣",
+      "autoEmoji": "📣",
+      "autoEmojiFrom": "dr-1:Runner-up:2"
     },
     {
       "id": "minnie-skurr",
@@ -16221,8 +16293,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "💃",
-      "autoEmoji": "💃"
+      "emoji": "🩰",
+      "autoEmoji": "🩰",
+      "autoEmojiFrom": "dr-1:Sashayed away:10"
     },
     {
       "id": "marge-stache",
@@ -16287,8 +16360,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🏆",
+      "autoEmoji": "🏆",
+      "autoEmojiFrom": "dr-1:Sashayed away:14"
     },
     {
       "id": "ginger-hollywood",
@@ -16353,8 +16427,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "💎",
-      "autoEmoji": "💎"
+      "emoji": "✨",
+      "autoEmoji": "✨",
+      "autoEmojiFrom": "dr-1:Sashayed away:5"
     },
     {
       "id": "gigi-cherie",
@@ -16421,8 +16496,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🌹",
-      "autoEmoji": "🌹"
+      "emoji": "🎭",
+      "autoEmoji": "🎭",
+      "autoEmojiFrom": "dr-1:Sashayed away:4"
     },
     {
       "id": "cupcakke",
@@ -16487,8 +16563,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🎈",
-      "autoEmoji": "🎈"
+      "emoji": "🎧",
+      "autoEmoji": "🎧",
+      "autoEmojiFrom": "dr-1:Sashayed away:8"
     },
     {
       "id": "cheryl-hole",
@@ -16553,8 +16630,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🎙️",
-      "autoEmoji": "🎙️"
+      "emoji": "🥂",
+      "autoEmoji": "🥂",
+      "autoEmojiFrom": "dr-1:Sashayed away:13"
     },
     {
       "id": "autumnatic",
@@ -16621,8 +16699,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "👠",
-      "autoEmoji": "👠"
+      "emoji": "☀️",
+      "autoEmoji": "☀️",
+      "autoEmojiFrom": "dr-1:Miss Congeniality:3"
     },
     {
       "id": "anita-crown-davenport",
@@ -16689,8 +16768,9 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "hallOfFame": [],
-      "emoji": "🎤",
-      "autoEmoji": "🎤"
+      "emoji": "👠",
+      "autoEmoji": "👠",
+      "autoEmojiFrom": "dr-1:Sashayed away:6"
     },
     {
       "id": "aubrey",
@@ -16765,8 +16845,9 @@
         }
       },
       "latestAvatarFile": "aubrey.png",
-      "emoji": "🍂",
-      "autoEmoji": "🍂"
+      "emoji": "📚",
+      "autoEmoji": "📚",
+      "autoEmojiFrom": "td-15:Pre-Merge:23"
     },
     {
       "id": "ara",
@@ -16849,8 +16930,9 @@
         }
       },
       "latestAvatarFile": "ara.png",
-      "emoji": "🔥",
-      "autoEmoji": "🔥"
+      "emoji": "🤓",
+      "autoEmoji": "🤓",
+      "autoEmojiFrom": "td-15:Juror:7"
     },
     {
       "id": "bruno",
@@ -16926,8 +17008,9 @@
         }
       },
       "latestAvatarFile": "bruno.png",
-      "emoji": "🗿",
-      "autoEmoji": "🗿"
+      "emoji": "🧪",
+      "autoEmoji": "🧪",
+      "autoEmojiFrom": "td-15:Juror:12"
     },
     {
       "id": "dunia",
@@ -17002,8 +17085,9 @@
         }
       },
       "latestAvatarFile": "dunia.png",
-      "emoji": "🪶",
-      "autoEmoji": "🪶"
+      "emoji": "🃏",
+      "autoEmoji": "🃏",
+      "autoEmojiFrom": "td-15:Pre-Merge:19"
     },
     {
       "id": "ernesto",
@@ -17080,8 +17164,9 @@
         }
       },
       "latestAvatarFile": "ernesto.png",
-      "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "emoji": "🧸",
+      "autoEmoji": "🧸",
+      "autoEmojiFrom": "td-15:Pre-Merge:17"
     },
     {
       "id": "evie",
@@ -17155,8 +17240,9 @@
         }
       },
       "latestAvatarFile": "evie.png",
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "💼",
+      "autoEmoji": "💼",
+      "autoEmojiFrom": "td-15:Pre-Merge:24"
     },
     {
       "id": "finn",
@@ -17229,8 +17315,9 @@
         }
       },
       "latestAvatarFile": "finn.png",
-      "emoji": "👋",
-      "autoEmoji": "👋"
+      "emoji": "🌟",
+      "autoEmoji": "🌟",
+      "autoEmojiFrom": "td-15:Pre-Merge:22"
     },
     {
       "id": "manu",
@@ -17308,8 +17395,9 @@
         }
       },
       "latestAvatarFile": "manu.png",
-      "emoji": "🦊",
-      "autoEmoji": "🦊"
+      "emoji": "🤞",
+      "autoEmoji": "🤞",
+      "autoEmojiFrom": "td-15:Juror:9"
     },
     {
       "id": "nura",
@@ -17392,8 +17480,9 @@
         }
       },
       "latestAvatarFile": "nura.png",
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "💥",
+      "autoEmoji": "💥",
+      "autoEmojiFrom": "td-15:Juror:5"
     },
     {
       "id": "oliwia",
@@ -17472,8 +17561,9 @@
         }
       },
       "latestAvatarFile": "oliwia.png",
-      "emoji": "🌙",
-      "autoEmoji": "🌙"
+      "emoji": "🥀",
+      "autoEmoji": "🥀",
+      "autoEmojiFrom": "td-15:Juror:8"
     },
     {
       "id": "ren",
@@ -17548,8 +17638,9 @@
         }
       },
       "latestAvatarFile": "ren.png",
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "🖼️",
+      "autoEmoji": "🖼️",
+      "autoEmojiFrom": "td-15:Pre-Merge:18"
     },
     {
       "id": "sami",
@@ -17638,8 +17729,9 @@
         }
       },
       "latestAvatarFile": "sami.png",
-      "emoji": "💪",
-      "autoEmoji": "💪"
+      "emoji": "🧩",
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "td-15:Juror:4"
     },
     {
       "id": "lila",
@@ -17727,8 +17819,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "📱",
-      "autoEmoji": "📱"
+      "emoji": "🧸",
+      "autoEmoji": "🧸",
+      "autoEmojiFrom": "ci-1:Winner:1"
     },
     {
       "id": "sasha",
@@ -17800,8 +17893,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "📣",
-      "autoEmoji": "📣"
+      "emoji": "🤡",
+      "autoEmoji": "🤡",
+      "autoEmojiFrom": "ci-1:Finalist:2"
     },
     {
       "id": "derek",
@@ -17876,8 +17970,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🐟",
-      "autoEmoji": "🐟"
+      "emoji": "🧩",
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "ci-1:Finalist:3"
     },
     {
       "id": "barbie",
@@ -17965,8 +18060,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💬",
-      "autoEmoji": "💬"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "ci-1:Finalist:4"
     },
     {
       "id": "elijah",
@@ -18040,8 +18136,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎭",
-      "autoEmoji": "🎭"
+      "emoji": "✨",
+      "autoEmoji": "✨",
+      "autoEmojiFrom": "ci-1:Finalist:5"
     },
     {
       "id": "hector",
@@ -18120,8 +18217,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "⭐",
-      "autoEmoji": "⭐"
+      "emoji": "💬",
+      "autoEmoji": "💬",
+      "autoEmojiFrom": "ci-1:Blocked:6"
     },
     {
       "id": "luis",
@@ -18202,8 +18300,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "📈",
-      "autoEmoji": "📈"
+      "emoji": "💌",
+      "autoEmoji": "💌",
+      "autoEmojiFrom": "ci-1:Blocked:7"
     },
     {
       "id": "mateo",
@@ -18284,8 +18383,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "emoji": "🌹",
+      "autoEmoji": "🌹",
+      "autoEmojiFrom": "ci-1:Blocked:7"
     },
     {
       "id": "domingo",
@@ -18361,8 +18461,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🚫",
-      "autoEmoji": "🚫"
+      "emoji": "🦋",
+      "autoEmoji": "🦋",
+      "autoEmojiFrom": "ci-1:Blocked:9"
     },
     {
       "id": "lorraine",
@@ -18429,8 +18530,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "📷",
+      "autoEmoji": "📷",
+      "autoEmojiFrom": "ci-1:Blocked:10"
     },
     {
       "id": "dr-ines",
@@ -18500,8 +18602,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎲",
-      "autoEmoji": "🎲"
+      "emoji": "💘",
+      "autoEmoji": "💘",
+      "autoEmojiFrom": "ci-1:Blocked:11"
     },
     {
       "id": "wyatt",
@@ -18579,8 +18682,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "💋",
+      "autoEmoji": "💋",
+      "autoEmojiFrom": "ci-1:Blocked:12"
     },
     {
       "id": "anais",
@@ -18649,8 +18753,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🌲",
+      "autoEmoji": "🌲",
+      "autoEmojiFrom": "ci-1:Blocked:13"
     },
     {
       "id": "curtis",
@@ -18716,8 +18821,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🥀",
-      "autoEmoji": "🥀"
+      "emoji": "☀️",
+      "autoEmoji": "☀️",
+      "autoEmojiFrom": "ci-1:Blocked:14"
     },
     {
       "id": "ruth",
@@ -18783,8 +18889,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🍂",
-      "autoEmoji": "🍂"
+      "emoji": "🌶️",
+      "autoEmoji": "🌶️",
+      "autoEmojiFrom": "ci-1:Blocked:15"
     },
     {
       "id": "sean",
@@ -18861,8 +18968,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💍",
-      "autoEmoji": "💍"
+      "emoji": "☀️",
+      "autoEmoji": "☀️",
+      "autoEmojiFrom": "pm-1:Winner:1"
     },
     {
       "id": "freya",
@@ -18932,8 +19040,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💞",
-      "autoEmoji": "💞"
+      "emoji": "💛",
+      "autoEmoji": "💛",
+      "autoEmojiFrom": "pm-1:Winner:1"
     },
     {
       "id": "riza",
@@ -19008,8 +19117,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🥰",
-      "autoEmoji": "🥰"
+      "emoji": "🌹",
+      "autoEmoji": "🌹",
+      "autoEmojiFrom": "pm-1:Runner-up:2"
     },
     {
       "id": "zara",
@@ -19090,8 +19200,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💖",
-      "autoEmoji": "💖"
+      "emoji": "💥",
+      "autoEmoji": "💥",
+      "autoEmojiFrom": "pm-1:Runner-up:2"
     },
     {
       "id": "malik",
@@ -19158,8 +19269,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💑",
-      "autoEmoji": "💑"
+      "emoji": "🪩",
+      "autoEmoji": "🪩",
+      "autoEmojiFrom": "pm-1:Finalist:3"
     },
     {
       "id": "ayesha",
@@ -19229,8 +19341,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🔥",
-      "autoEmoji": "🔥"
+      "emoji": "🦉",
+      "autoEmoji": "🦉",
+      "autoEmojiFrom": "pm-1:Finalist:3"
     },
     {
       "id": "rafael",
@@ -19297,8 +19410,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "⭐",
-      "autoEmoji": "⭐"
+      "emoji": "🍀",
+      "autoEmoji": "🍀",
+      "autoEmojiFrom": "pm-1:Dumped:4"
     },
     {
       "id": "lucia",
@@ -19367,8 +19481,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎖️",
-      "autoEmoji": "🎖️"
+      "emoji": "🕷️",
+      "autoEmoji": "🕷️",
+      "autoEmojiFrom": "pm-1:Dumped:4"
     },
     {
       "id": "dante",
@@ -19441,8 +19556,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌹",
-      "autoEmoji": "🌹"
+      "emoji": "💌",
+      "autoEmoji": "💌",
+      "autoEmojiFrom": "pm-1:Dumped:6"
     },
     {
       "id": "valentina",
@@ -19509,8 +19625,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎯",
-      "autoEmoji": "🎯"
+      "emoji": "💘",
+      "autoEmoji": "💘",
+      "autoEmojiFrom": "pm-1:Dumped:6"
     },
     {
       "id": "pablo",
@@ -19579,8 +19696,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌙",
-      "autoEmoji": "🌙"
+      "emoji": "🔥",
+      "autoEmoji": "🔥",
+      "autoEmojiFrom": "pm-1:Dumped:8"
     },
     {
       "id": "anna",
@@ -19647,8 +19765,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌶️",
-      "autoEmoji": "🌶️"
+      "emoji": "♟️",
+      "autoEmoji": "♟️",
+      "autoEmojiFrom": "pm-1:Dumped:8"
     },
     {
       "id": "callum",
@@ -19722,8 +19841,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🐺",
-      "autoEmoji": "🐺"
+      "emoji": "🐢",
+      "autoEmoji": "🐢",
+      "autoEmojiFrom": "pm-1:Dumped:10"
     },
     {
       "id": "mei",
@@ -19805,8 +19925,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "💔",
-      "autoEmoji": "💔"
+      "emoji": "🔍",
+      "autoEmoji": "🔍",
+      "autoEmojiFrom": "pm-1:Dumped:10"
     },
     {
       "id": "kevin",
@@ -19864,8 +19985,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎈",
-      "autoEmoji": "🎈"
+      "emoji": "🪶",
+      "autoEmoji": "🪶",
+      "autoEmojiFrom": "pm-1:Dumped:12"
     },
     {
       "id": "amara",
@@ -19923,8 +20045,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🎲",
-      "autoEmoji": "🎲"
+      "emoji": "🎉",
+      "autoEmoji": "🎉",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "antwon",
@@ -19982,8 +20105,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "⚡",
-      "autoEmoji": "⚡"
+      "emoji": "👠",
+      "autoEmoji": "👠",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "elias",
@@ -20041,8 +20165,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "👻",
-      "autoEmoji": "👻"
+      "emoji": "🫶",
+      "autoEmoji": "🫶",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "georgia",
@@ -20100,8 +20225,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🍀",
-      "autoEmoji": "🍀"
+      "emoji": "🎲",
+      "autoEmoji": "🎲",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "makaio",
@@ -20159,8 +20285,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🫥",
-      "autoEmoji": "🫥"
+      "emoji": "🧸",
+      "autoEmoji": "🧸",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "shamar",
@@ -20219,7 +20346,8 @@
       "totalHohWins": 0,
       "totalVetoWins": 0,
       "emoji": "🧩",
-      "autoEmoji": "🧩"
+      "autoEmoji": "🧩",
+      "autoEmojiFrom": "pm-1:Dumped:13"
     },
     {
       "id": "kaylee",
@@ -20277,8 +20405,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "🎧",
+      "autoEmoji": "🎧",
+      "autoEmojiFrom": "pm-1:Dumped:19"
     },
     {
       "id": "imani",
@@ -20336,8 +20465,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌗",
-      "autoEmoji": "🌗"
+      "emoji": "💪",
+      "autoEmoji": "💪",
+      "autoEmojiFrom": "pm-1:Dumped:20"
     },
     {
       "id": "theo",
@@ -20402,8 +20532,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "😈",
-      "autoEmoji": "😈"
+      "emoji": "🌶️",
+      "autoEmoji": "🌶️",
+      "autoEmojiFrom": "pm-1:Dumped:21"
     },
     {
       "id": "arjun",
@@ -20468,8 +20599,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🚪",
-      "autoEmoji": "🚪"
+      "emoji": "🧠",
+      "autoEmoji": "🧠",
+      "autoEmojiFrom": "pm-1:Dumped:21"
     },
     {
       "id": "skye",
@@ -20534,8 +20666,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🌧️",
-      "autoEmoji": "🌧️"
+      "emoji": "🕶️",
+      "autoEmoji": "🕶️",
+      "autoEmojiFrom": "pm-1:Dumped:23"
     },
     {
       "id": "blair",
@@ -20600,8 +20733,9 @@
       "latestAvatarFile": "",
       "totalHohWins": 0,
       "totalVetoWins": 0,
-      "emoji": "🥀",
-      "autoEmoji": "🥀"
+      "emoji": "🌋",
+      "autoEmoji": "🌋",
+      "autoEmojiFrom": "pm-1:Dumped:23"
     },
     {
       "id": "baxter",
@@ -20680,8 +20814,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🔑",
-      "autoEmoji": "🔑"
+      "emoji": "🖼️",
+      "autoEmoji": "🖼️",
+      "autoEmojiFrom": "bb-2:Winner:1"
     },
     {
       "id": "angelica",
@@ -20758,8 +20893,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "👑",
-      "autoEmoji": "👑"
+      "emoji": "📣",
+      "autoEmoji": "📣",
+      "autoEmojiFrom": "bb-2:Finalist:2"
     },
     {
       "id": "ivyna",
@@ -20836,8 +20972,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🥉",
-      "autoEmoji": "🥉"
+      "emoji": "🪶",
+      "autoEmoji": "🪶",
+      "autoEmojiFrom": "bb-2:Finalist:3"
     },
     {
       "id": "michele",
@@ -20914,8 +21051,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🔓",
-      "autoEmoji": "🔓"
+      "emoji": "💛",
+      "autoEmoji": "💛",
+      "autoEmojiFrom": "bb-2:Jury:4"
     },
     {
       "id": "ben",
@@ -20992,8 +21130,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🏠",
-      "autoEmoji": "🏠"
+      "emoji": "🐕",
+      "autoEmoji": "🐕",
+      "autoEmojiFrom": "bb-2:Jury:5"
     },
     {
       "id": "dominic",
@@ -21070,8 +21209,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🦅",
-      "autoEmoji": "🦅"
+      "emoji": "🏋️",
+      "autoEmoji": "🏋️",
+      "autoEmojiFrom": "bb-2:Jury:6"
     },
     {
       "id": "sawyer",
@@ -21148,8 +21288,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🛡️",
-      "autoEmoji": "🛡️"
+      "emoji": "🤠",
+      "autoEmoji": "🤠",
+      "autoEmojiFrom": "bb-2:Jury:7"
     },
     {
       "id": "martin",
@@ -21226,8 +21367,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🪁",
-      "autoEmoji": "🪁"
+      "emoji": "🎓",
+      "autoEmoji": "🎓",
+      "autoEmojiFrom": "bb-2:Jury:8"
     },
     {
       "id": "nina",
@@ -21304,8 +21446,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🍀",
-      "autoEmoji": "🍀"
+      "emoji": "🎤",
+      "autoEmoji": "🎤",
+      "autoEmojiFrom": "bb-2:Jury:9"
     },
     {
       "id": "lacey",
@@ -21382,8 +21525,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🧱",
-      "autoEmoji": "🧱"
+      "emoji": "🤝",
+      "autoEmoji": "🤝",
+      "autoEmojiFrom": "bb-2:Jury:10"
     },
     {
       "id": "fatima",
@@ -21460,8 +21604,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🎲",
-      "autoEmoji": "🎲"
+      "emoji": "👁️",
+      "autoEmoji": "👁️",
+      "autoEmojiFrom": "bb-2:Jury:11"
     },
     {
       "id": "paisley",
@@ -21538,8 +21683,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🌀",
-      "autoEmoji": "🌀"
+      "emoji": "💎",
+      "autoEmoji": "💎",
+      "autoEmojiFrom": "bb-2:Jury:12"
     },
     {
       "id": "alexander",
@@ -21616,8 +21762,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🐝",
-      "autoEmoji": "🐝"
+      "emoji": "💥",
+      "autoEmoji": "💥",
+      "autoEmojiFrom": "bb-2:Pre-Jury:13"
     },
     {
       "id": "vlad",
@@ -21694,8 +21841,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🍂",
-      "autoEmoji": "🍂"
+      "emoji": "🧊",
+      "autoEmoji": "🧊",
+      "autoEmojiFrom": "bb-2:Pre-Jury:14"
     },
     {
       "id": "juan",
@@ -21772,8 +21920,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🥀",
-      "autoEmoji": "🥀"
+      "emoji": "🦋",
+      "autoEmoji": "🦋",
+      "autoEmojiFrom": "bb-2:Pre-Jury:15"
     },
     {
       "id": "willow",
@@ -21850,8 +21999,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🚪",
-      "autoEmoji": "🚪"
+      "emoji": "🌟",
+      "autoEmoji": "🌟",
+      "autoEmojiFrom": "bb-2:Pre-Jury:16"
     },
     {
       "id": "kyle",
@@ -21927,8 +22077,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🌫️",
-      "autoEmoji": "🌫️"
+      "emoji": "⚡",
+      "autoEmoji": "⚡",
+      "autoEmojiFrom": "bb-2:Pre-Jury:17"
     },
     {
       "id": "sabrina",
@@ -22004,8 +22155,9 @@
         }
       },
       "latestAvatarFile": "",
-      "emoji": "🕊️",
-      "autoEmoji": "🕊️"
+      "emoji": "🌶️",
+      "autoEmoji": "🌶️",
+      "autoEmojiFrom": "bb-2:Pre-Jury:18"
     }
   ]
 }

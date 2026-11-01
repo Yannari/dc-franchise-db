@@ -2275,7 +2275,7 @@ function _mergePlayersDatabase(existing, rawStats, filledSeasonData) {
   db.franchise.totalSeasons = seasonNum;
   db.franchise.totalPlayers = db.players.length;
 
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, { ...(filledSeasonData || {}), seasonNumber: seasonNum, format: DEFAULT_FORMAT });
 }
 
 /**
@@ -2643,7 +2643,7 @@ export function mergeDragSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /**
@@ -3672,7 +3672,7 @@ export function mergeTraitorsSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /**
@@ -3999,7 +3999,7 @@ export function mergePerfectMatchSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /** A villa season into seasons_database.json: the winning couple on `winners[]`. */
@@ -4186,7 +4186,7 @@ export function mergeChallengeSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /** A Challenge season into seasons_database.json: one champion a division on `winners[]`. */
@@ -4362,7 +4362,7 @@ export function mergeRaceSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /** A race season into seasons_database.json: the winning team on `winners[]`, both of them. */
@@ -4551,7 +4551,7 @@ export function mergeCircleSeason(existing, seasonDoc) {
   db.franchise = db.franchise || {};
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 /** A Circle season into seasons_database.json, dated on the franchise calendar (ADDING-A-SHOW §5.1). */
@@ -5554,7 +5554,7 @@ export function mergeBigBrotherSeason(existing, seasonDoc) {
   // season count backwards.
   db.franchise.totalSeasons = Math.max(db.franchise.totalSeasons || 0, seasonNum);
   db.franchise.totalPlayers = db.players.length;
-  return fillCareerEmoji(db);
+  return fillCareerEmoji(db, seasonDoc);
 }
 
 // ── Live season snapshot ─────────────────────────────────────────────

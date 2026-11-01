@@ -3179,6 +3179,25 @@
           "file": "zara-look-1.png"
         }
       ]
+    },
+    "domingo": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "domingo.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "domingo-ch-look-1.png"
+        }
+      ]
     }
   }
 }

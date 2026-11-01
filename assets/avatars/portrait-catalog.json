@@ -3482,6 +3482,25 @@
           "file": "felix-ch-look-1.png"
         }
       ]
+    },
+    "kieran": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "kieran.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "CH",
+          "file": "kieran-look-1.png"
+        }
+      ]
     }
   }
 }

@@ -5244,7 +5244,7 @@
         "temperament": 3
       },
       "sexuality": "bi",
-      "voice": "26, White American-Irish, bi. Las Vegas, semi-pro poker player. Reads as the coolest, most unbothered\nperson in the room — amused, wry, short answers, questions instead of\nstatements, gives away nothing. That's a poker face; underneath she's the most\nanxious person in the house and never stops calculating. Makes a slightly\ndifferent deal with everyone and means all of them. Gets people out by picking\nfights with them so the house turns on them. Cuts her own allies in real tears\nand does it anyway. Roughly twice a season the mask breaks and she floods —\nfast, looping, whole plan out loud, names and numbers, \"do you trust me, I need\nyou to say it\" — then the smirk is back and she acts like it never happened.\nOver-explains whenever she's accused, which is how she gets caught",
+      "voice": "Las Vegas, semi-pro poker player. Reads as the coolest, most unbothered\nperson in the room — amused, wry, short answers, questions instead of\nstatements, gives away nothing. That's a poker face; underneath she's the most\nanxious person in the house and never stops calculating. Makes a slightly\ndifferent deal with everyone and means all of them. Gets people out by picking\nfights with them so the house turns on them. Cuts her own allies in real tears\nand does it anyway. Roughly twice a season the mask breaks and she floods —\nfast, looping, whole plan out loud, names and numbers, \"do you trust me, I need\nyou to say it\" — then the smirk is back and she acts like it never happened.\nOver-explains whenever she's accused, which is how she gets caught",
       "age": 26,
       "birthdate": "2000-01-25",
       "ethnicity": "White",
@@ -5253,7 +5253,65 @@
       "occupation": "Poker player",
       "backstory": "Ireland was born and raised in Idaho in an abusive household. At 16, she became legally emancipated, cut contact with her family, and moved alone to Las Vegas. She has remained completely estranged from them since.\n\nIreland left school without graduating because supporting herself took priority. She worked in Las Vegas restaurants and hotels, taking whichever shifts allowed her to cover rent and remain independent.\n\nWhile working hospitality jobs connected to local poker tournaments, Ireland became interested in the game. She watched experienced players, learned tournament procedures, and studied how different players handled risk and pressure. Once she turned 21, she began competing legally in casino games.\n\nIreland now divides her time between cash games and the local tournament circuit. She considers herself semi-professional because poker provides part—but not all—of her income. During losing stretches or slow periods, she returns to hospitality work rather than risking money she cannot afford to lose.\n\nThe prize is Ireland’s primary reason for joining the show. Winning would give her a serious bankroll and allow her to stop depending on hospitality shifts between games.",
       "personality": "Ireland is cool, wry, observant, and highly calculating. She usually answers with short statements or questions, encouraging other people to keep talking while she reveals as little as possible.\n\nHer poker experience makes her comfortable with incomplete information, shifting odds, and temporary agreements. She is willing to maintain several deals at once and does not consider every overlapping promise a betrayal. Ireland can also provoke conflict intentionally when she believes another player’s reaction will provide useful information.\n\nHer calmness is partly practiced rather than effortless. When she loses control of a situation, her speech changes noticeably: she repeats names and vote counts, asks people to confirm their loyalty aloud, and overexplains why another person’s actions do not make sense.\n\nIreland’s strongest blind spot is believing she can manage the emotional consequences of every deal as long as she understands its strategic value. She reads risk well but may underestimate how personally other people interpret her flexibility.",
-      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Calm, suspicious, hungry.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I look like I’m not sweating when I absolutely am. Also, I’m a poker player from Vegas with a bad childhood and a decent smirk, so… casting probably didn’t hate that.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"No exits. In real life, if someone annoys me, I can leave, go play cards, take a shift, disappear for twelve hours. In the house, I have to keep smiling at someone who breathes too loud.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"Yes. Make everyone feel like I’m their quiet little side deal, then let them compare notes too late. I don’t need to be the loudest person in the room if I can decide who the loudest person is mad at.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m useful under pressure; I don’t panic at a bad hand. I’d like to hide how badly I want the money, because desperation has a smell and people love pretending they’re above it.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A deck of cards, because my hands need something to do besides betray me.\\n- A hoodie, because comfort is strategy if you’re dramatic enough about it.\\n- A notebook, because people think writing things down is cute until it’s their voting pattern.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"Poker, people-watching, cheap diners at weird hours, and pretending I’m just observing when I’m absolutely judging. I like games where the rules are clear and the players are not.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Useful, if it’s pointed in the right direction. Annoying, if it splashes on my shoes. I don’t start drama for fun; I start it for positioning, which is classier and worse.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Would I? Sure, I’m bi and I have eyes. But if I’m flirting, I’m probably also counting votes, so nobody should feel too special.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… don’t put money on the table you can’t afford to lose, unless you already know who’s going to blink.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"Money. Options. A life where I’m not picking up restaurant shifts every time variance decides to kick me in the teeth.\"}]"
+      "castingInterview": "[{\"key\":\"adjectives\",\"q\":\"Three adjectives that describe you:\",\"a\":\"Calm, suspicious, hungry.\"},{\"key\":\"picked\",\"q\":\"Why do you think you got picked for the show?\",\"a\":\"Because I look like I’m not sweating when I absolutely am. Also, I’m a poker player from Vegas with a bad childhood and a decent smirk, so… casting probably didn’t hate that.\"},{\"key\":\"hardest\",\"q\":\"What do you think will be the most difficult part of living in the house?\",\"a\":\"No exits. In real life, if someone annoys me, I can leave, go play cards, take a shift, disappear for twelve hours. In the house, I have to keep smiling at someone who breathes too loud.\"},{\"key\":\"strategy\",\"q\":\"Do you have a strategy for winning the game?\",\"a\":\"Yes. Make everyone feel like I’m their quiet little side deal, then let them compare notes too late. I don’t need to be the loudest person in the room if I can decide who the loudest person is mad at.\"},{\"key\":\"knownHidden\",\"q\":\"What is one thing that you want the other contestants to know about you, and one thing that you want to hide? Why?\",\"a\":\"I want them to know I’m useful under pressure; I don’t panic at a bad hand. I’d like to hide how badly I want the money, because desperation has a smell and people love pretending they’re above it.\"},{\"key\":\"threeThings\",\"q\":\"What are three things you would take into the house with you, and why?\",\"a\":\"- A deck of cards, because my hands need something to do besides betray me.\\n- A hoodie, because comfort is strategy if you’re dramatic enough about it.\\n- A notebook, because people think writing things down is cute until it’s their voting pattern.\"},{\"key\":\"activities\",\"q\":\"What are some of your favorite activities?\",\"a\":\"Poker, people-watching, cheap diners at weird hours, and pretending I’m just observing when I’m absolutely judging. I like games where the rules are clear and the players are not.\"},{\"key\":\"drama\",\"q\":\"What do you think of drama?\",\"a\":\"Useful, if it’s pointed in the right direction. Annoying, if it splashes on my shoes. I don’t start drama for fun; I start it for positioning, which is classier and worse.\"},{\"key\":\"showmance\",\"q\":\"Would you be in a showmance?\",\"a\":\"Would I? Sure, I’m bi and I have eyes. But if I’m flirting, I’m probably also counting votes, so nobody should feel too special.\"},{\"key\":\"motto\",\"q\":\"Finish this sentence: My life’s motto is…\",\"a\":\"My life’s motto is… don’t put money on the table you can’t afford to lose, unless you already know who’s going to blink.\"},{\"key\":\"hopeToGet\",\"q\":\"What do you hope to get out of this experience?\",\"a\":\"Money. Options. A life where I’m not picking up restaurant shifts every time variance decides to kick me in the teeth.\"}]",
+      "profileSources": {},
+      "ties": [],
+      "kit": {
+        "thing": "poker",
+        "alone": "is sitting at the far end of the beach, skimming stones",
+        "ground": [
+          "hard-home",
+          "estranged",
+          "left-home-young",
+          "left-school",
+          "needs-money"
+        ],
+        "bit": [
+          "You want to know what I'm thinking? Sure. What are you thinking first?",
+          "I played cards in Vegas for five years. Everybody has a tell. Yours is your left eyebrow.",
+          "I'm not worried about tonight. I'm never worried. That's the trick, you never let them see it."
+        ],
+        "tease": [
+          "Do you ever just answer a question?",
+          "My eyebrow does not do anything.",
+          "You look a little worried, actually."
+        ],
+        "reply": [
+          "Did you?",
+          "It just did.",
+          "Then you're reading the bluff. Good for you."
+        ],
+        "home": [
+          "Vegas. A one-bedroom, a deck of cards, and nobody I'm related to.",
+          "It's... not really a home thing. I left when I was sixteen. I made my own."
+        ],
+        "want": [
+          "The money. All of it. I've never had a safety net, and I'd like one.",
+          "To win a hand where nobody else even knew we were playing."
+        ],
+        "conf": [
+          "Everybody thinks I'm calm. I'm counting votes in my head every second I'm awake.",
+          "I make a slightly different deal with everybody. I mean all of them. That's the problem."
+        ],
+        "askHome": [
+          "Who's back home for you? Or is that a bad question?",
+          "You got people at home?"
+        ],
+        "askWant": [
+          "What would you do with the money? Really.",
+          "What are you playing for?"
+        ],
+        "defend": [
+          "You call it cold. I call it surviving."
+        ],
+        "deep": [
+          "I left home at sixteen. Nobody came looking. I've been playing alone ever since."
+        ],
+        "solo": [
+          "Alone is where I do my best thinking. Alone is where I've always done everything, actually.",
+          "I don't trust anybody here. I'm not sad about it. It's just how I stay standing."
+        ]
+      }
     },
     {
       "name": "Joel",

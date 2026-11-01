@@ -9729,7 +9729,12 @@
       },
       "voice": "Loud, quick and certain, a coach's voice that carries across a field. Gives instructions in short bursts, praises people by name, and goes clipped and cold when someone talks back. #bossy #competitive",
       "profileSources": {},
-      "ties": [],
+      "ties": [
+        {
+          "name": "Zara",
+          "kin": "siblings"
+        }
+      ],
       "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone."
     }
   ]

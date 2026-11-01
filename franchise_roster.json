@@ -9940,6 +9940,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Adult man in his late twenties, General American accent with a soft South Texas lilt. Medium-high pitch for a man, bright and slightly nasal. Fast, eager and run-on, sentences stacking up with \"and\" and \"so\" when he is excited. Sentences rise at the ends as if asking permission; under pressure the voice speeds up and goes higher. Earnest, smart and hopeful."
+    },
+    {
+      "name": "Marisol",
+      "slug": "marisol",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 5,
+        "endurance": 7,
+        "mental": 6,
+        "social": 9,
+        "strategic": 6,
+        "loyalty": 6,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "voice": "Smooth, amused and teasing, a cabin-crew calm with a wink in it. Tells stories from every city, flirts for fun, and has no patience at all for grown adults making messes. #flirty #calm",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult woman in her early thirties, General American accent with a light Puerto Rican lilt, warmer on names and Spanish words. Medium-low pitch, smooth and warm, slightly smoky. Relaxed, rhythmic pace, a professional calm with a teasing smile in it. Sentences curl up playfully at the end; under pressure she gets cooler and more precise, never rattled. Amused, flirtatious and unflappable."
     }
   ]
 }

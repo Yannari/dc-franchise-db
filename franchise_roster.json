@@ -9900,7 +9900,13 @@
       "occupation": "College sprinter and fitness coach",
       "descriptor": "The Walking Highlight Reel",
       "backstory": "Darius Whitaker got the name Dash at nine, when he outran every kid on his block and then the ice-cream truck. He ran the 100 metres for a university in Ohio, posts his workouts to a large online following, and coaches sprint technique to high school athletes in Detroit on weekends. He grew up with a single mother who worked nights and came to every meet she could, and he still calls her after every race. He applied because he has always performed best with people watching, and nobody watches like a television audience.",
-      "personality": "Dash is entertaining, flirtatious and much harder working than he lets on. He celebrates loudly, talks to the cameras like old friends and loves a crowd, but he is also the first one up to train and the last to stop. He needs an audience almost as much as he needs to win, and he can lose a friend over a moment in the spotlight without noticing. Losing knocks him flat for an hour; then he wants to know exactly what went wrong and how to fix it."
+      "personality": "Dash is entertaining, flirtatious and much harder working than he lets on. He celebrates loudly, talks to the cameras like old friends and loves a crowd, but he is also the first one up to train and the last to stop. He needs an audience almost as much as he needs to win, and he can lose a friend over a moment in the spotlight without noticing. Losing knocks him flat for an hour; then he wants to know exactly what went wrong and how to fix it.",
+      "ties": [
+        {
+          "name": "Malik",
+          "kin": "cousins"
+        }
+      ]
     },
     {
       "name": "Della",

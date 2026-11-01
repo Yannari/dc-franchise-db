@@ -3292,6 +3292,25 @@
           "file": "paisley-ch-look-1.png"
         }
       ]
+    },
+    "anaya": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "anaya.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "anaya-ch-look-1.png"
+        }
+      ]
     }
   }
 }

@@ -120,8 +120,11 @@ describe('battle back', () => {
     // A and B voted J out; C did not.
     expect(act.grudges).toEqual(expect.arrayContaining(['A','B']));
     expect(act.grudges).not.toContain('C');
-    expect(getBond('J','A')).toBeLessThan(0);
-    expect(getBond('J','C')).toBeGreaterThan(0);
+    expect(getPerceivedBond('J','A')).toBeLessThan(0);
+    expect(getPerceivedBond('J','C')).toBeGreaterThan(0);
+    // ...and it is J's grudge: the people who voted J out do not like J any less for it
+    expect(getPerceivedBond('A','J')).toBe(getBond('A','J'));
+    expect(getBond('J','A')).toBe(0);
   });
 
   it('needs two people to fight — an empty or single field runs nothing', () => {

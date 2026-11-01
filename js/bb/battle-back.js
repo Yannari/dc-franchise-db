@@ -26,7 +26,7 @@
 
 import { gs, seasonConfig } from '../core.js';
 import { pStats, pronouns } from '../players.js';
-import { addBond } from '../bonds.js';
+import { addBond, addLean } from '../bonds.js';
 import { aptitude, clamp } from '../bb-comps/_shared.js';
 
 export const BATTLE_BACK_STYLES = Object.freeze(['gauntlet', 'showdown']);
@@ -255,19 +255,25 @@ export function applyReturn(name, act, weekNum) {
 
   // They know who did it. The ballots are on the record, and a person who
   // fought their way back through a car park does not arrive gracious.
+  //
+  // ONE-WAY, as a lean: it is the returnee who holds the grudge. This was
+  // addBond, and a bond is shared, so the whole house that voted somebody out
+  // 11-0 also came to like THEM two points less for having been evicted. On
+  // BB2 that sat on eight of nine jurors' ballots at the finale (the user,
+  // 2026-10-31: fix the Battle Back penalty).
   const evictionWeek = (gs.bb.weeks || []).find(w => w.evicted === name);
   const votedAgainst = (evictionWeek?.ballots || []).filter(b => b.evict === name).map(b => b.voter);
   const grudges = [];
   for (const voter of votedAgainst) {
     if (!(gs.activePlayers || []).includes(voter)) continue;
-    addBond(name, voter, -2);
+    addLean(name, voter, -2);
     grudges.push(voter);
   }
-  // And the people who kept them get the other half of it.
+  // And the people who kept them get the other half of it, the same way.
   const keptThem = (evictionWeek?.ballots || [])
     .filter(b => b.evict !== name).map(b => b.voter)
     .filter(v => (gs.activePlayers || []).includes(v));
-  for (const ally of keptThem) addBond(name, ally, 1.2);
+  for (const ally of keptThem) addLean(name, ally, 1.2);
 
   act.grudges = grudges;
   act.allies = keptThem;

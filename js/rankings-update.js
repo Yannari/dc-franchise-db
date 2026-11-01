@@ -514,6 +514,8 @@ export const RU_ALLY = { weight: 0.25, cap: 4 };
 // Decided 2026-10-19: a winner can never fall below A (71), the bottom of
 // "Elite Threats". The title is permanent; S has to keep being earned.
 export const RU_WINNER_FLOOR = 71;
+/** Where S+ starts (scoreTier). A show with `sPlusNeedsWin` keeps a non-winner under it. */
+export const RU_SPLUS_FLOOR = 90;
 
 /** Who won a house season's final Head of Household, off its finale row. */
 function _bbFinalHoh(doc) {
@@ -565,8 +567,7 @@ export const RU_SHOW = {
     // is counted as one too: `read` adds it, because the week record stops a
     // night before it and every exported season left it out. (The user,
     // 2026-10-31: "the most important things of big brother should count
-    // more".) Not higher than this: at 2.0 / 1.8 S1's winner reached S+, which
-    // is for careers, after one season.
+    // more".) The top of the board is opened by `curve` below, not by these.
     comp1: { label: 'HOH',  weight: 1.8, title: '+1.8 per Head of Household, the final HOH included — the power of the week' },
     comp2: { label: 'Veto', weight: 1.6, title: '+1.6 per veto — the competition that saves you' },
     // NO ARENA COLUMN. The Block Buster / AI Arena scored 1.4 a win, more than
@@ -583,6 +584,19 @@ export const RU_SHOW = {
     jury: { weight: 0.75, title: 'Jury votes · +0.75 each for a finalist who did not win (the winner is paid by the win)' },
     // and no first-season houseguest scores above the season's winner (see _ruWinnerOnTop)
     winnerOnTop: true,
+    // ── A LITTLE MORE ROOM AT THE TOP ──
+    //
+    // 42 + 26 put the best game of BB1, a winner with seven competitions and
+    // the final HOH, at 89: nobody on the board could reach S+, and S was a
+    // handful (the user, 2026-10-31: "let some players get to s+ and s if they
+    // deserve well, increase the curve a little"). The ceiling rises four and
+    // the floor one, so a deep run gains the most and an early boot barely
+    // moves. A place is now 29/17 = 1.7 in a cast of eighteen, still about one
+    // veto.
+    curve: { floor: 43, spread: 29 },
+    // S+ is "Elite Winners": a season's résumé can carry a non-winner to the
+    // top of S, not past it.
+    sPlusNeedsWin: true,
     // Powers are not idols, and the lifecycle words differ: you are GIVEN a
     // power or you win one, you do not find it in a tree.
     adv: { group: 'POWERS', noun: 'power',
@@ -1252,7 +1266,8 @@ export function computeScore(p) {
   // not S+), and the compression comes out of the bottom, where a scale that
   // scored the first boot of a 17-person house at 30/100 was saying she was
   // barely a franchise player at all. She made the cast.
-  const base = 42 + (cp / 100) * 26;
+  const _curve = _ruRubric(p.format).curve || { floor: 42, spread: 26 };
+  const base = _curve.floor + (cp / 100) * _curve.spread;
 
   // Win bonus — the P1 placement already lifts the base, so the flat win reward is kept
   // modest to avoid a single win rocketing a mediocre-career player to near-perfect.
@@ -1309,7 +1324,8 @@ export function computeScore(p) {
   const override = Math.max(-5, Math.min(5, p.override || 0));
 
   const raw = base + winBonus + finBonus + multiBonus + physBonus + stratBonus + socialBonus + quitAdj + override;
-  const floored = p.wins > 0 ? Math.max(raw, RU_WINNER_FLOOR) : raw;
+  const floored = p.wins > 0 ? Math.max(raw, RU_WINNER_FLOOR)
+    : (_rub.sPlusNeedsWin ? Math.min(raw, RU_SPLUS_FLOOR - 0.1) : raw);
   return Math.round(Math.min(Math.max(floored, 0), 100) * 10) / 10;
 }
 
@@ -1527,6 +1543,7 @@ export function ruScoreRows(rows, { board = null, castSize, coWin = false, forma
     }
     // the receipt says when the champion's floor, not the game, set the number
     if (totalWins > 0 && newScore === RU_WINNER_FLOOR) parts.push('ChampionFloor:' + RU_WINNER_FLOOR);
+    if (!totalWins && _mrub.sPlusNeedsWin && newScore === RU_SPLUS_FLOOR - 0.1) parts.push('S+NeedsAWin:' + newScore);
     const oldTier  = existing?existing.tier:null;
     const newTier  = scoreTier(newScore);
 

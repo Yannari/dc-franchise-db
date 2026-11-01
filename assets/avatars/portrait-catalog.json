@@ -3501,6 +3501,25 @@
           "file": "kieran-look-1.png"
         }
       ]
+    },
+    "marisol": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "marisol.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "marisol-ch-look-1.png"
+        }
+      ]
     }
   }
 }

@@ -168,6 +168,12 @@
           "show": "global",
           "label": "Profile default",
           "file": "anastasia.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "anastasia-ch-look-1.png"
         }
       ]
     },

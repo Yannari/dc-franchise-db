@@ -14,12 +14,35 @@ import { resolve } from 'node:path';
 const SRC = readFileSync(resolve(process.cwd(), 'js/rankings-update.js'), 'utf8');
 
 describe('the rankings builder knows which show it is ranking', () => {
-  it('gives Big Brother its third competition', () => {
-    const bb = SRC.slice(SRC.indexOf("'big-brother': {"), SRC.indexOf('};', SRC.indexOf("'big-brother': {")));
-    expect(bb, 'no third competition column for the house').toMatch(/comp3:\s*\{/);
-    expect(bb).toMatch(/Arena|Block/i);
-    const td = SRC.slice(SRC.indexOf("'total-drama': {"), SRC.indexOf("'big-brother': {"));
-    expect(td, 'Total Drama must not gain a column it cannot fill').toMatch(/comp3:\s*null/);
+  it('does not score the arena on Big Brother', () => {
+    // The user, 2026-10-31: "arena shouldnt be adding that much it shouldnt
+    // even be counting". It scored 1.4 a win, more than an HOH.
+    expect(RU_SHOW['big-brother'].comp3, 'the arena has a column again').toBeNull();
+    expect(RU_SHOW['total-drama'].comp3, 'Total Drama must not gain a column it cannot fill').toBeNull();
+    const arena = computeScore(blank(S, 6, { comp3Wins: 3 }));
+    expect(arena, 'arena wins moved a score').toBe(computeScore(blank(S, 6)));
+  });
+
+  it('prices the Head of Household above the veto', () => {
+    const bb = RU_SHOW['big-brother'];
+    expect(bb.comp1.weight).toBeGreaterThan(bb.comp2.weight);
+  });
+
+  it('counts the final HOH, which the week record leaves out', () => {
+    const doc = { weeks: [{ hoh: 'Misha' }, { hoh: 'Joel' }, { finale: true, hoh: 'Misha' }] };
+    const read = RU_SHOW['big-brother'].read;
+    expect(read({ name: 'Misha', bb: { hohWins: 1 } }, { placement: 1, doc }).comp1).toBe(2);
+    expect(read({ name: 'Joel', bb: { hohWins: 1 } }, { placement: 3, doc }).comp1).toBe(1);
+    expect(read({ name: 'Misha', bb: { hohWins: 1 } }, { placement: 1 }).comp1, 'no season, no finale').toBe(1);
+  });
+
+  it('pays a losing finalist for jury votes, and not the winner twice', () => {
+    const two = (votes, over = {}) => computeScore(blank(S, 2, { juryVotes: votes, ...over }));
+    expect(two(4) - two(0)).toBeCloseTo(4 * RU_SHOW['big-brother'].jury.weight, 5);
+    const win = v => computeScore(blank(S, 1, { juryVotes: v, seasonWin: true, immWins: 2, rewWins: 4, alliances: 3 }));
+    expect(win(9)).toBe(win(5));
+    // a juror was not in the final; votes on them are not possible, and never paid
+    expect(computeScore(blank(S, 5, { juryVotes: 2, isFinalist: false }))).toBe(computeScore(blank(S, 5, { isFinalist: false })));
   });
 
   it('scores that third competition instead of ignoring it', () => {
@@ -34,7 +57,7 @@ describe('the rankings builder knows which show it is ranking', () => {
     const cols = RU_SHOW['big-brother'].read(
       { bb: { hohWins: 3, vetoWins: 4, blockBusterWins: 2, timesOnBlock: 3, powersWon: 1,
         powersPlayed: 1, powersWasted: 0, powersHeld: 0 } }, { placement: 10 });
-    expect(cols.comp3, 'arena wins still score nothing').toBe(2);
+    expect(cols.comp3, 'the arena is not scored').toBe(0);
     expect(cols.comp1).toBe(3);
     expect(cols.comp2).toBe(4);
     // Nominated three times, kept twice: the third is the night that ended it.

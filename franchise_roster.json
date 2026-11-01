@@ -9742,6 +9742,28 @@
         }
       ],
       "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone."
+    },
+    {
+      "name": "Beck",
+      "slug": "beck",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "floater",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 5,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 8
+      },
+      "voice": "Relaxed, friendly and slow, says \"it's fine\" more than anyone, then remembers every detail word for word. Never raises his voice; when he is hurt he gets quieter and more precise. #calm #warm",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Young man in his mid twenties, General American accent with a laid-back Southern California ease. Medium pitch, smooth and a little breathy, friendly and unhurried. Slow, rolling pace with soft consonants; sentences often trail off upward like he is letting something go. Under pressure the voice drops and goes very even and precise instead of louder. Easygoing on the surface, with a quiet, careful memory underneath."
     }
   ]
 }

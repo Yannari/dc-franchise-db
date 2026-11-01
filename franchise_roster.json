@@ -9764,6 +9764,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Young man in his mid twenties, General American accent with a laid-back Southern California ease. Medium pitch, smooth and a little breathy, friendly and unhurried. Slow, rolling pace with soft consonants; sentences often trail off upward like he is letting something go. Under pressure the voice drops and goes very even and precise instead of louder. Easygoing on the surface, with a quiet, careful memory underneath."
+    },
+    {
+      "name": "Brie",
+      "slug": "brie",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 9,
+        "strategic": 8,
+        "loyalty": 3,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 7
+      },
+      "voice": "Sweet, bright and Southern, all compliments and \"bless your heart\", with a pause before anything she actually means. Laughs easily, especially when she is lying. #flirty #schemer",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Young woman in her mid twenties with a soft South Carolina accent. Medium-high pitch, bright and sugary, light and musical. Quick, bubbly delivery with lots of rising, friendly inflections and an easy laugh. Sentences end sweetly upward, but when she is calculating the voice drops half a step and slows down. Charming and welcoming on top, careful and measuring underneath."
     }
   ]
 }

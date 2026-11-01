@@ -2320,10 +2320,9 @@
         "intuition": 7,
         "temperament": 8
       },
-      "voice": "Driven, focused athlete. Disciplined and kind, torn between competition and feelings (for Dave); earnest and competitive.",
       "sexuality": "straight",
-      "profileSources": {},
-      "ties": []
+      "voice": "Driven, focused athlete. Disciplined and kind, torn between competition and feelings (for Dave); earnest and competitive.",
+      "profileSources": {}
     },
     {
       "name": "Spud",
@@ -8048,8 +8047,7 @@
       "occupation": "Stand-up Comic",
       "descriptor": "The Bad Influence",
       "backstory": "sha grew up in Los Angeles and spent her early adulthood balancing irregular jobs with open mics. She knows which venues pay promptly, which sound systems fail, and which friendly invitations are unpaid work in disguise. Comedy began as a way to make awkward experiences usable and became something she wanted badly enough to organize her life around. She tests material on friends who do not always consent to being an audience. Financial uncertainty is a persistent pressure she disguises as an anecdote. She keeps notebooks full of observations and is far more disciplined about revision than her casual presentation suggests. Asking directly for support remains harder than making a room laugh.",
-      "personality": "Sasha reacts to tension by finding its absurd detail. She reads social contradictions quickly and often says the accurate thing in the least reassuring way. Humor lets her participate while preserving an escape route: if rejected, she can claim it was a bit. She is generous with attention when someone feels excluded, but impatient with demands for solemnity she considers performative. Boredom tempts her into provocation. She wants freedom to test boundaries and can become defensive when told that a joke had consequences. In private she revisits those moments more than she admits. Trust reveals a quieter, less polished person who needs reassurance and dislikes needing it. She respects people who challenge her specifically rather than simply asking her to be nicer.",
-      "ties": []
+      "personality": "Sasha reacts to tension by finding its absurd detail. She reads social contradictions quickly and often says the accurate thing in the least reassuring way. Humor lets her participate while preserving an escape route: if rejected, she can claim it was a bit. She is generous with attention when someone feels excluded, but impatient with demands for solemnity she considers performative. Boredom tempts her into provocation. She wants freedom to test boundaries and can become defensive when told that a joke had consequences. In private she revisits those moments more than she admits. Trust reveals a quieter, less polished person who needs reassurance and dislikes needing it. She respects people who challenge her specifically rather than simply asking her to be nicer."
     },
     {
       "name": "Wyatt",
@@ -8194,8 +8192,7 @@
       "occupation": "Personal trainer",
       "descriptor": "The Life of the Party",
       "backstory": "Malik is the youngest of three brothers from a busy flat in south London, where being the funny one was the quickest way to get noticed. His older brothers were the sporty one and the clever one, so he became the one everyone wanted at the party. He trains clients in a gym near his old school, and half of them come back for the conversation. His mum calls him every morning. He has never been single for long, but he has never been serious for long either, and a recent wedding where he was the only brother without a date made him want to find out whether he can be.",
-      "personality": "Malik is outgoing, generous and happiest in a crowd. He remembers everybody's name, hypes up whoever needs it and turns every chore into a game. He hates tension and will crack a joke to break it, which works until the moment it doesn't. He is loyal to his friends to a fault and slow to believe anyone would play him. He is not a deep planner; he goes with his gut and his heart, usually in that order. When he does get hurt he hides it behind more noise, and it takes someone close to him to notice the jokes have stopped being funny.",
-      "ties": []
+      "personality": "Malik is outgoing, generous and happiest in a crowd. He remembers everybody's name, hypes up whoever needs it and turns every chore into a game. He hates tension and will crack a joke to break it, which works until the moment it doesn't. He is loyal to his friends to a fault and slow to believe anyone would play him. He is not a deep planner; he goes with his gut and his heart, usually in that order. When he does get hurt he hides it behind more noise, and it takes someone close to him to notice the jokes have stopped being funny."
     },
     {
       "name": "Mei",
@@ -8369,8 +8366,7 @@
       "occupation": "Influencer",
       "descriptor": "The Firecracker",
       "backstory": "Zara grew up the middle of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
-      "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real.",
-      "ties": []
+      "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real."
     },
     {
       "name": "Blair",
@@ -8449,7 +8445,7 @@
       "sexuality": "straight",
       "voice": "Smooth, playful and full of lines he has used before. Tells every girl she is the only one he is thinking about, and keeps a careful count of which ones believe it. #flirty #schemer",
       "profileSources": {},
-      "age": 26,
+      "age": 27,
       "birthdate": "2000-05-19",
       "ethnicity": "Italian",
       "nationality": "Italian",
@@ -8457,8 +8453,7 @@
       "occupation": "DJ",
       "descriptor": "The Heartbreaker",
       "backstory": "Dante grew up above his family's pizzeria in Naples, the spoiled youngest son of a loud family who forgave him everything because he made them laugh. He started playing records at seventeen and now works the summer clubs up and down the coast, where he has a reputation in every town. He has never been dumped, because he has always left first. His sister says he has never been in love, only in competition. He came in as a bombshell knowing exactly what the role is for, and he intends to enjoy it.",
-      "personality": "Dante is charming, theatrical and almost entirely self-interested. He flirts with everyone, tells each woman what she most wants to hear and keeps several options open at once, and he is cunning about who knows what. He enjoys the game of seduction more than the prize, and he is quick to move on once he has won. He is not stupid about people; he reads insecurity well and uses it. He can be good company and generous with his time, and his charm is real even when his intentions aren't. The one thing he has no defence against is a woman who sees straight through him and likes him anyway.",
-      "ties": []
+      "personality": "Dante is charming, theatrical and almost entirely self-interested. He flirts with everyone, tells each woman what she most wants to hear and keeps several options open at once, and he is cunning about who knows what. He enjoys the game of seduction more than the prize, and he is quick to move on once he has won. He is not stupid about people; he reads insecurity well and uses it. He can be good company and generous with his time, and his charm is real even when his intentions aren't. The one thing he has no defence against is a woman who sees straight through him and likes him anyway."
     },
     {
       "name": "Pablo",
@@ -9101,8 +9096,7 @@
         "difficulty": 0.55,
         "id": "sleepwalker",
         "firstSeason": "ss-2"
-      },
-      "ties": []
+      }
     },
     {
       "name": "Fatima",
@@ -9530,8 +9524,7 @@
         "difficulty": 0.6,
         "id": "cult",
         "firstSeason": "ss-2"
-      },
-      "ties": []
+      }
     },
     {
       "name": "Sabrina",

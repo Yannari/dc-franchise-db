@@ -9709,6 +9709,28 @@
         "id": "adopted-by-circus",
         "firstSeason": "ss-2"
       }
+    },
+    {
+      "name": "Anaya",
+      "slug": "anaya",
+      "gender": "f",
+      "sexuality": "straight",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 6,
+        "social": 6,
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 3
+      },
+      "voice": "Loud, quick and certain, a coach's voice that carries across a field. Gives instructions in short bursts, praises people by name, and goes clipped and cold when someone talks back. #bossy #competitive",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone."
     }
   ]
 }

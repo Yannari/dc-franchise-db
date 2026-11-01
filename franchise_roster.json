@@ -9786,6 +9786,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Young woman in her mid twenties with a soft South Carolina accent. Medium-high pitch, bright and sugary, light and musical. Quick, bubbly delivery with lots of rising, friendly inflections and an easy laugh. Sentences end sweetly upward, but when she is calculating the voice drops half a step and slows down. Charming and welcoming on top, careful and measuring underneath."
+    },
+    {
+      "name": "Celeste",
+      "slug": "celeste",
+      "gender": "f",
+      "sexuality": "lesbian",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 6,
+        "strategic": 7,
+        "loyalty": 6,
+        "boldness": 5,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "voice": "Flat, low and dry, asks short questions and lets the silence do the work. Deadpan jokes, a raised eyebrow you can hear, and a very calm \"that's not what you said yesterday.\" #dry #calm",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult woman around thirty, General American accent with a light New Mexico Spanish lilt on names. Low-medium pitch, smooth and slightly husky. Slow, even and economical, with pauses before questions. Flat deadpan intonation, sentences ending low and final; under pressure she gets slower and quieter, not louder. Patient, skeptical and quietly amused."
     }
   ]
 }

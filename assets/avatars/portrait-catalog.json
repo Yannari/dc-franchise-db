@@ -3082,6 +3082,12 @@
           "show": "global",
           "label": "Casual",
           "file": "malik-look-1.png"
+        },
+        {
+          "id": "look-2",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "malik-ch-look-2.png"
         }
       ]
     },

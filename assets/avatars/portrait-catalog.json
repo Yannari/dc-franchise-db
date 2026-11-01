@@ -3349,6 +3349,25 @@
           "file": "brie-look-1.png"
         }
       ]
+    },
+    "celeste": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "celeste.png"
+        },
+        {
+          "id": "look-1",
+          "show": "the-challenge",
+          "label": "CH",
+          "file": "celeste-ch-look-1.png"
+        }
+      ]
     }
   }
 }

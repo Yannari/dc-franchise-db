@@ -3183,6 +3183,12 @@
           "show": "global",
           "label": "Casual",
           "file": "zara-look-1.png"
+        },
+        {
+          "id": "look-2",
+          "show": "global",
+          "label": "CH",
+          "file": "zara-look-2.png"
         }
       ]
     },

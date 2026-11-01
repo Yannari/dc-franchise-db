@@ -9808,6 +9808,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Adult woman around thirty, General American accent with a light New Mexico Spanish lilt on names. Low-medium pitch, smooth and slightly husky. Slow, even and economical, with pauses before questions. Flat deadpan intonation, sentences ending low and final; under pressure she gets slower and quieter, not louder. Patient, skeptical and quietly amused."
+    },
+    {
+      "name": "Cole",
+      "slug": "cole",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 6,
+        "social": 8,
+        "strategic": 6,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 6
+      },
+      "voice": "Big, warm and upbeat, a locker-room voice full of \"let's go\" and first names. Hypes everybody up; when he feels betrayed the smile stays and the words get careful. #warm #competitive",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Adult man in his late twenties, General American accent with a soft Atlanta warmth. Medium-low baritone, rich, warm and resonant. Energetic, rhythmic delivery like a captain before a game, rising on encouragement. Sentences land confidently; when he is hurt he slows down and the warmth goes polite and controlled. Encouraging, charismatic and proud."
     }
   ]
 }

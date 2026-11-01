@@ -9830,6 +9830,28 @@
       "profileSources": {},
       "ties": [],
       "speakingVoice": "Adult man in his late twenties, General American accent with a soft Atlanta warmth. Medium-low baritone, rich, warm and resonant. Energetic, rhythmic delivery like a captain before a game, rising on encouragement. Sentences land confidently; when he is hurt he slows down and the warmth goes polite and controlled. Encouraging, charismatic and proud."
+    },
+    {
+      "name": "Dash",
+      "slug": "dash",
+      "gender": "m",
+      "sexuality": "straight",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 7,
+        "mental": 5,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 5,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 5
+      },
+      "voice": "Fast, cocky and fun, talks about himself in highlights and laughs at his own lines. Flirts with everybody; goes quiet and serious only after a loss. #loud #competitive",
+      "profileSources": {},
+      "ties": [],
+      "speakingVoice": "Young man in his mid twenties, General American accent with a Detroit edge. Medium pitch, bright and punchy, with a grin you can hear. Fast, bouncing rhythm, words running together when he is excited and a big laugh in the middle of sentences. Sentences end on a lift, like he is waiting for a reaction; after a loss the voice drops flat and short. Confident, showy and hungry."
     }
   ]
 }

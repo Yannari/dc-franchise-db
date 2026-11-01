@@ -3229,6 +3229,25 @@
           "file": "sasha-ch-look-1.png"
         }
       ]
+    },
+    "dante": {
+      "defaults": {
+        "global": "base"
+      },
+      "portraits": [
+        {
+          "id": "base",
+          "show": "global",
+          "label": "Profile default",
+          "file": "dante.png"
+        },
+        {
+          "id": "look-1",
+          "show": "global",
+          "label": "CH",
+          "file": "dante-look-1.png"
+        }
+      ]
     }
   }
 }

@@ -2,10 +2,12 @@
 // designed on Inworld from each character's written speaking voice. No real actor is cloned: the only input
 // is the description and the character's own audition lines.
 //
-//   node tools/voice-design-cast.mjs design  <Characters dir> [--only slug,slug] [--redo]
-//       three takes per character -> "Voice Casting/<slug> - take N.mp3"; ids kept in "Voice Casting/_voices.json"
-//   node tools/voice-design-cast.mjs publish <Characters dir> <slug>=<take> ... [--no-lines]
-//       publishes the picked take under the character's name, then voices the three audition lines in it
+//   node tools/voice-design-cast.mjs design  <Characters dir> [--only slug,slug] [--redo | --more]
+//       three takes per character -> "Voice Casting/<slug> - take N.mp3"; ids kept in "Voice Casting/_voices.json".
+//       --more adds three more takes after the ones there (4, 5, 6), keeping every earlier take and the published one
+//   node tools/voice-design-cast.mjs publish <Characters dir> <slug>=<take>[:<Name>] ... [--no-lines]
+//       publishes the picked take under the character's name (or <Name>, for a character renamed since its file
+//       was written: amara-okafor=1:Anaya), then voices the three audition lines in it
 //       -> "Voice Casting/<slug> - line N.mp3"
 //   node tools/voice-design-cast.mjs status  <Characters dir>
 //
@@ -120,12 +122,15 @@ async function design() {
   const voiced = await existingVoices();
   for (const [slug, c] of Object.entries(cast)) {
     if (only && !only.includes(slug)) continue;
-    if (l[slug]?.takes?.length && !flag('--redo')) { console.log(`${slug}: already designed`); continue; }
+    const more = flag('--more') && l[slug]?.takes?.length;
+    if (l[slug]?.takes?.length && !flag('--redo') && !more) { console.log(`${slug}: already designed`); continue; }
     // a character the user already gave a voice keeps it
-    if (voiced.has(displayName(slug, c)) && !flag('--redo')) { console.log(`${slug}: already has an Inworld voice, skipped`); continue; }
+    if (voiced.has(displayName(slug, c)) && !flag('--redo') && !more) { console.log(`${slug}: already has an Inworld voice, skipped`); continue; }
     const previewText = script(lines[slug] || []);
     if (!previewText) { console.log(`${slug}: no audition lines in the casting sheet, skipped`); continue; }
-    const designPrompt = `${c.speakingVoice.trim()} Perfect broadcast quality audio.`.slice(0, 1000);
+    // the user, 2026-11-02: "dont make them too slow while speaking", "if the character specifically ask for a slow
+    // pace do it but not too slow"; and they want the polish of a professional animation voice actor
+    const designPrompt = `${c.speakingVoice.trim()} Even at its slowest the pace stays natural and conversational, never dragging. A polished, expressive professional voice-acting performance with a lively animated-series energy. Perfect broadcast quality audio.`.slice(0, 1000);
     let languageCode = locale(c), res;
     try {
       res = await call('/voices/v1/voices:design', { designPrompt, previewText, languageCode, voiceDesignConfig: { numberOfSamples: 3 } });
@@ -135,13 +140,14 @@ async function design() {
       languageCode = 'en-US';
       res = await call('/voices/v1/voices:design', { designPrompt, previewText, languageCode, voiceDesignConfig: { numberOfSamples: 3 } });
     }
-    const takes = [];
+    const takes = more ? [...l[slug].takes] : [];
+    const first = takes.length;
     (res.previewVoices || []).forEach((v, i) => {
       const audio = Buffer.from(v.previewAudio || '', 'base64');
-      if (audio.length) fs.writeFileSync(path.join(castDir, `${slug} - take ${i + 1}${extOf(audio)}`), audio);
+      if (audio.length) fs.writeFileSync(path.join(castDir, `${slug} - take ${first + i + 1}${extOf(audio)}`), audio);
       takes.push(v.voiceId);
     });
-    l[slug] = { name: c.name, languageCode, designPrompt, previewText, takes, published: null };
+    l[slug] = { name: c.name, languageCode, designPrompt, previewText, takes, published: more ? l[slug].published : null };
     save(l);
     console.log(`${slug}: ${takes.length} takes (${languageCode})`);
   }
@@ -158,15 +164,15 @@ function displayName(slug, c) {
 
 async function publish() {
   const cast = characters(), lines = auditionLines(), l = ledger();
-  const picks = rest.filter(a => /^[a-z0-9-]+=\d$/.test(a)).map(a => a.split('='));
+  const picks = rest.map(a => a.match(/^([a-z0-9-]+)=(\d+)(?::(.+))?$/)).filter(Boolean).map(m => [m[1], m[2], m[3]]);
   if (!picks.length) { console.log('name the takes to keep, e.g. beck=2 brie=1'); return; }
-  for (const [slug, n] of picks) {
+  for (const [slug, n, as] of picks) {
     const c = cast[slug], entry = l[slug];
     if (!c || !entry?.takes?.length) { console.log(`${slug}: not designed yet`); continue; }
     const draft = entry.takes[+n - 1];
     if (!draft) { console.log(`${slug}: there is no take ${n}`); continue; }
     if (!entry.published || entry.published.take !== +n) {
-      const name = displayName(slug, c);
+      const name = as?.trim() || displayName(slug, c);
       const v = await call(`/voices/v1/voices/${encodeURIComponent(draft)}:publish`, {
         displayName: name, description: c.speakingVoice.slice(0, 500), tags: ['dc-franchise', 'season-x'],
       });

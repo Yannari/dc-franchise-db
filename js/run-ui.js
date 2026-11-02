@@ -27,7 +27,7 @@ import { isPerfectMatchSeason, simulatePerfectMatchEpisode, perfectMatchCanRerun
   perfectMatchSlots, perfectMatchVillaCounts, perfectMatchEpisodes, perfectMatchNights, perfectMatchDrawnChallenges, perfectMatchDrawnNights, remapPerfectMatchBookings } from './pm-run.js';
 import { EPISODE_WORDS as PM_EPISODE_WORDS, SLOT_NAMES as PM_SLOT_NAMES, seasonSchedule as pmDrawSchedule, CHALLENGE_NAMES as PM_CHALLENGE_NAMES, RITUAL_NAMES as PM_RITUAL_NAMES, CHALLENGE_NIGHTS as PM_CHALLENGE_NIGHTS } from './pm/schedule.js';
 import { episodeText as pmEpisodeText, momentTitle as pmMomentTitle } from './pm/transcript.js';
-import { ssRandomDraw, SS_CARD_IDS, signatureMinCast } from './ss/schedule.js';
+import { ssRandomDraw, SS_CARD_IDS } from './ss/schedule.js';
 import { earlyExitsOf } from './bb/jury.js';
 import { circleRandomDraw, isCircleSeason, simulateCircleEpisode, circleCanRerun, lastCircleRefusal, rerunCircleEpisode,
   rewriteCircleEpisode, circlePendingChange, circleSeasonShape, circleEpisodeMap, circleTimelineDays, circleBlockShape } from './ci-run.js';
@@ -5299,15 +5299,15 @@ export function renderTwistCatalog() {
       : phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist'
       : modeBlocked ? ` ⚠️ cannot run alongside ${modeClashes.join(' and ')}` : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _rilBlocked ? ' ⚠️ requires Rescue Island enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : _taOddBlocked ? ' ⚠️ needs even player count' : _ccEvenBlocked ? ' ⚠️ needs even player count for pairs' : _bbEvenBlocked ? ' ⚠️ needs even player count for pairs' : _womEvenBlocked ? ' ⚠️ needs even player count for pairs' : '';
     return `
-    <div class="twist-card ${(canAssign || t.ssSignature) && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
+    <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
           <span class="twist-phase">${t.pmSlots ? t.pmSlots.map(s => PM_SLOT_NAMES[s]).join(' · ')
-            : t.pmOn ? t.pmOn.map(k => `${PM_EPISODE_WORDS[k] || k} nights`).join(' · ') : t.ssSignature ? 'launch night · the whole season' : t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
+            : t.pmOn ? t.pmOn.map(k => `${PM_EPISODE_WORDS[k] || k} nights`).join(' · ') : t.phase}${t.chalSeries ? ` · ${t.chalSeries === 'island' ? '🏝️ Island' : t.chalSeries === 'action' ? '🎬 Action' : t.chalSeries === 'world-tour' ? '✈️ World Tour' : t.chalSeries === 'revenge' ? '☢️ Revenge' : t.chalSeries}` : ''}${blockReason}</span>
         </div>
-        <button class="twist-add-btn" ${(canAssign || t.ssSignature) && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
+        <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>
       <p class="twist-card-desc">${t.desc}</p>
     </div>`;
@@ -5315,20 +5315,6 @@ export function renderTwistCatalog() {
 }
 
 export function assignTwist(twistId) {
-  // A SECRET STORY SIGNATURE is the season's, not a week's: it starts on launch night, so it goes on episode 1 whatever
-  // is selected, and there is one a season (it replaces the one placed before)
-  const _sig = TWIST_CATALOG.find(t => t.id === twistId);
-  if (_sig?.ssSignature) {
-    const need = signatureMinCast(_sig.ssSignature);
-    const cast = (typeof players !== 'undefined' ? players : []).length;
-    if (cast && cast < need) { alert(`${_sig.name} needs ${need} housemates or more; this cast has ${cast}.`); return; }
-    seasonConfig.twistSchedule = (seasonConfig.twistSchedule || []).filter(t => !(t && TWIST_CATALOG.find(c => c.id === t.type)?.ssSignature));
-    seasonConfig.twistSchedule.push({ id: `tw-${Date.now()}-1`, episode: 1, type: twistId });
-    if ([...selectedEpisodes].some(e => Number(e) !== 1)) alert(`${_sig.name} is the season's signature twist. It starts on launch night, so it goes on episode 1.`);
-    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
-    renderTimeline();
-    return;
-  }
   if (!selectedEpisodes.size) {
     const tl = document.getElementById('fd-timeline');
     if (tl) { tl.style.outline = '2px solid #6366f1'; setTimeout(() => tl.style.outline = '', 800); }

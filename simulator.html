@@ -810,6 +810,26 @@
                  is better filled with the shape than with invented knobs. -->
             <div id="bb-structure"></div>
 
+            <!-- SECRET STORY'S SEASON TWIST (the user, 2026-11-02: "season twist (the one that last a season) should be in
+                 SEASON STRUCTURE not in twist list and not be taken by the surprise twist"). Read by js/bb/secret-story.js
+                 on launch night: Random lets the show draw one; Surprise twists does not touch it. -->
+            <div class="form-group" id="grp-ss-signature">
+              <label class="form-label">Season twist</label>
+              <select id="cfg-ss-signature" onchange="saveConfig();ssSignatureHint()" class="form-input">
+                <option value="random" data-what="The show draws one for the season, most seasons, never the same as the last season's. Some seasons have none.">Random</option>
+                <option value="none" data-what="No season twist: everybody walks into the house on launch night, and nobody plays a secret role.">None</option>
+                <option value="secret-box" data-what="From launch night (eleven housemates or more). Three housemates never enter the house: they live inside a black glass cube in the corner of the living room. They see and hear everything, and the house has no idea anybody is in there. To get out, one of them has to find a housemate's secret and tell the Voice: if it is right, they walk into the house at the next prime and that housemate is nominated (one a week). After three weeks, whoever is still in the box walks in anyway, and one of them walks in nominated.">The Secret Box</option>
+                <option value="intruders" data-what="From launch night (eleven housemates or more). Three housemates never enter the house: they live in a second house next door, at the end of a tunnel, and the main house does not know they exist. They spy, and steal the clue off the living-room table every week. One of them comes in each week as a new housemate. If the house finds the tunnel first, they all come in at the next prime and one of them is nominated. After three weeks, whoever is left comes in.">The Intruders</option>
+                <option value="crystal-house" data-what="From launch night (eleven housemates or more). Three housemates live in a glass house in the garden, in full view of the main house, which the Voice tells about them in the first days. Every prime, the main house votes to let one of them in, and it lets in the one it likes most. After three weeks any still inside come in, and one of them comes in nominated.">The Crystal House</option>
+                <option value="hotel" data-what="From launch night (eleven housemates or more). Three housemates never enter the house: they live in the hotel next door. In the house, a gallery of two hundred portraits hides their three faces, and every week the sharpest housemate hunts for them. After two weeks the three walk in, and if the house found any of their faces, the first one found walks in nominated.">The Hotel of Secrets</option>
+                <option value="yacht" data-what="From launch night (twelve housemates or more). Four housemates live on a yacht at the pier and investigate the house from the deck. Every secret they get right puts its holder up for nomination, one a week. After two weeks the four come aboard the house.">The Yacht of Secrets</option>
+                <option value="masters" data-what="From launch night. The Voice secretly picks two housemates as the Masters of the Nominations. Every week the two of them add one more housemate to the nominations, and nobody knows who did it. The house can unmask them by naming both in the confessional: if they are right, the power ends and the two Masters are nominated themselves the next week. A wrong accusation costs the accuser up to $2,500, paid to each of the two they named.">The Masters of the Nominations</option>
+                <option value="thieves" data-what="From launch night. The Voice secretly picks two housemates as the House Thieves. They start with an empty kitty, and every week they steal money from the others' kitties. The house sees the money vanish but not who took it. Whoever names both thieves in the confessional takes everything the thieves have. A wrong accusation costs the accuser up to $2,500, paid to each of the two they named.">The House Thieves</option>
+                <option value="control-tower" data-what="All season (ten housemates or more). Twice this season, a housemate the house believes eliminated does not go home: they climb to a glass tower above the house. For two weeks they watch the house on its screens and choose one nominee every week, and the house does not know who is choosing. Then they come back down into the house.">The Control Tower</option>
+              </select>
+              <div class="hint hint-tight" id="ss-signature-what"></div>
+            </div>
+
             <!-- ── SECRET STORY: the season's identity and every housemate's secret ──
                  Scoped to the show in js/quick-setup.js. The secrets panel is drawn
                  by js/ss/setup-panel.js from the cast. -->
@@ -868,11 +888,121 @@
                   <option value="on">On: the Voice adds twists of its own in the weeks you leave empty</option>
                   <option value="off">Off: only the twists on the timeline happen</option>
                 </select>
-                <div class="hint hint-tight">Off: no split, nomination twist, prime theme, false Voice, ticket, special vote, Clan War, signature twist or fake elimination unless you put it on the timeline (or choose it here). An Arena house you picked keeps its wall.</div>
+                <div class="hint hint-tight">Off: no split, nomination twist, prime theme, false Voice, ticket, special vote, Clan War or fake elimination unless you put it on the timeline (or choose it here). An Arena house you picked keeps its wall.</div>
               </div>
               <div class="form-group">
                 <label class="form-label">The secrets</label>
                 <div class="hint hint-tight">Every housemate's secret is set in the Cast tab, on its <b>Secrets</b> view (next to Grid and Tribes).</div>
+              </div>
+            </div>
+
+            <div class="divider" id="sec-ss-house-divider"></div>
+            <div class="setup-section-label" id="sec-ss-options">HOUSE OPTIONS</div>
+            <!-- Secret Story's own (js/ss/twists.js TOOLS; seasonConfig.ssTools). Random: the season draws it, as it always did. -->
+            <div id="ss-options-body">
+              <div class="form-group">
+                <label class="form-label">The red phone</label>
+                <select id="cfg-ss-tool-phone" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="none">Never</option>
+                <option value="some">Some primes</option>
+                <option value="often">Most primes</option>
+                </select>
+                <div class="hint hint-tight">It rings in the living room during the prime. Whoever answers first gets the message: a secret card, money, a nomination, a fake clue.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">The room of truths</label>
+                <select id="cfg-ss-tool-truths" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="none">Never</option>
+                <option value="some">Some primes</option>
+                <option value="often">Most primes</option>
+                </select>
+                <div class="hint hint-tight">The housemate the house talks about most watches, live, what the others said behind their back.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Visits from home</label>
+                <select id="cfg-ss-tool-visits" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="none">Never</option>
+                <option value="some">Some primes</option>
+                <option value="often">Most primes</option>
+                </select>
+                <div class="hint hint-tight">Somebody from home comes into the house for a few minutes, live.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Dilemmas</label>
+                <select id="cfg-ss-tool-dilemmas" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="few">Few</option>
+                <option value="many">Many</option>
+                </select>
+                <div class="hint hint-tight">A choice on the prime that costs the housemate or a friend.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Party nights</label>
+                <select id="cfg-ss-tool-parties" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="some">Some weeks</option>
+                <option value="often">Most weeks</option>
+                </select>
+                <div class="hint hint-tight">A themed night in the house, with drinks and costumes. People talk more than they should.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">The store</label>
+                <select id="cfg-ss-tool-store" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="off">Off</option>
+                <option value="on">On</option>
+                </select>
+                <div class="hint hint-tight">Ninety seconds to grab the week's food, once a week. A house punishment can keep it shut.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">The eliminated's farewell power</label>
+                <select id="cfg-ss-tool-farewell" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="none">Never</option>
+                <option value="some">Some weeks</option>
+                </select>
+                <div class="hint hint-tight">From the studio, the eliminated gives $2,000 to a friend still inside and halves the kitty of the one they blame most.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">The Voice's evening games</label>
+                <select id="cfg-ss-tool-evenings" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="some">Some weeks</option>
+                <option value="often">Most weeks</option>
+                </select>
+                <div class="hint hint-tight">The Voice's games after dark: the Oops night and the mini-secrets.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">The black buzzer</label>
+                <select id="cfg-ss-tool-blackBuzzer" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="off">Off</option>
+                <option value="on">On</option>
+                </select>
+                <div class="hint hint-tight">The Voice hides it in the house. Whoever finds it is immune that week and nominates one housemate.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fake eliminations (the secret room)</label>
+                <select id="cfg-ss-secret-room" onchange="saveConfig()" class="form-input">
+                <option value="random">Random</option>
+                <option value="off">Never</option>
+                <option value="once">Once</option>
+                <option value="twice">Twice</option>
+                </select>
+                <div class="hint hint-tight">The eliminated does not go home: they hide in the secret room, watch the house, and come back. The Control Tower season twist always has two.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Walkouts and expulsions</label>
+                <select id="cfg-ss-departures" onchange="saveConfig()" class="form-input">
+                <option value="off">Off</option>
+                <option value="rare">Rare</option>
+                <option value="occasional">Occasional</option>
+                <option value="often">Often</option>
+                </select>
+                <div class="hint hint-tight">A housemate walks, or is removed. It takes that week's elimination with it.</div>
               </div>
             </div>
 

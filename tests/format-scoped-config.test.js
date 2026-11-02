@@ -237,3 +237,25 @@ describe('the castle shows only its own controls', () => {
     expect(tr.map(h => h.value)).not.toContain('Valeria');
   });
 });
+
+// the user, 2026-11-02: "its still on the big brother house options replace them with the actual secret story house
+// options", and the season twist "should be in SEASON STRUCTURE"
+describe("Secret Story's setup screen", () => {
+  it("has its own house options and season twist, never Big Brother's", () => {
+    const ss = configScopeFor('secret-story').sections;
+    const bb = configScopeFor('big-brother').sections;
+    for (const id of ['sec-bb-options', 'bb-options-body', 'sec-bb-divider']) { expect(ss).not.toContain(id); expect(bb).toContain(id); }
+    for (const id of ['sec-ss-options', 'ss-options-body', 'grp-ss-signature']) { expect(ss).toContain(id); expect(bb).not.toContain(id); }
+  });
+  it('offers every tool the season draws, the secret room, walkouts, and every season twist the show plays', async () => {
+    const fs = await import('node:fs');
+    const html = fs.readFileSync('simulator.html', 'utf8');
+    const { TOOLS, SIGNATURES } = await import('../js/ss/twists.js');
+    for (const id of Object.keys(TOOLS).filter(k => k !== 'secretRoom')) {
+      expect(html, id).toContain(`id="cfg-ss-tool-${id}"`);
+      for (const lv of TOOLS[id].levels) expect(html, `${id} ${lv}`).toMatch(new RegExp(`id="cfg-ss-tool-${id}"[\\s\\S]*?<option value="${lv}">`));
+    }
+    for (const id of ['cfg-ss-secret-room', 'cfg-ss-departures', 'cfg-ss-signature']) expect(html).toContain(`id="${id}"`);
+    for (const s of SIGNATURES.filter(x => x.built)) expect(html, s.id).toMatch(new RegExp(`<option value="${s.id}" data-what="[^"]{150,}">`));
+  });
+});

@@ -360,7 +360,6 @@ export const TWIST_CATEGORIES = [
   { id: 'ss-house', label: 'The House' },
   { id: 'ss-identity', label: 'Who Is Talking' },
   { id: 'ss-public', label: 'The Public' },
-  { id: 'ss-signature', label: 'Season Signature' },
   // The villa's dumpings: how a vote night decides who leaves (Perfect Match).
   { id: 'dumping', label: 'Dumpings' },
   // How a ratings night ends (The Circle): the Hangout, a sole influencer, ...
@@ -789,34 +788,6 @@ export const TWIST_CATALOG = [
   { id:'ss-ticket', emoji:"\ud83c\udf9f\ufe0f", name:"The Ticket", format:'secret-story', category:'ss-public', phase:'any',
     desc:"At the prime, every housemate names the one they would keep, never themselves. The most named cannot be nominated the following week.",
     engineType:'ss-ticket', incompatible:[] },
-  // THE SEASON'S SIGNATURE (the user, 2026-11-02: "secret box isnt in the list of the available twist so i dont even
-  // know what it is"). One per season, on launch night: it goes on episode 1 wherever it is placed, and replaces any
-  // other signature (run-ui.js assignTwist). Without one the show draws its own (js/ss/twists.js), and Randomize books
-  // one (js/ss/schedule.js). `ssSignature` is the engine's id; js/ss/schedule.js SS_SIGNATURE_CARDS maps them.
-  { id:'ss-sig-masters', emoji:"\ud83c\udfaf", name:"The Masters of the Nominations", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'masters',
-    desc:"Season signature, from launch night. The Voice secretly picks two housemates as the Masters of the Nominations. Every week the two of them add one more housemate to the nominations, and nobody knows who did it. The house can unmask them by naming both in the confessional: if they are right, the power ends and the two Masters are nominated themselves the next week. A wrong accusation costs the accuser up to $2,500, paid to each of the two they named.",
-    engineType:'ss-sig-masters', incompatible:[] },
-  { id:'ss-sig-thieves', emoji:"\ud83e\udd77", name:"The House Thieves", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'thieves',
-    desc:"Season signature, from launch night. The Voice secretly picks two housemates as the House Thieves. They start with an empty kitty, and every week they steal money from the others' kitties. The house sees the money vanish but not who took it. Whoever names both thieves in the confessional takes everything the thieves have. A wrong accusation costs the accuser up to $2,500, paid to each of the two they named.",
-    engineType:'ss-sig-thieves', incompatible:[] },
-  { id:'ss-sig-intruders', emoji:"\ud83d\udd73\ufe0f", name:"The Intruders", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'intruders',
-    desc:"Season signature, from launch night (eleven housemates or more). Three housemates never enter the house: they live in a second house next door, at the end of a tunnel, and the main house does not know they exist. They spy, and steal the clue off the living-room table every week. One of them comes in each week as a new housemate. If the house finds the tunnel first, they all come in at the next prime and one of them is nominated. After three weeks, whoever is left comes in.",
-    engineType:'ss-sig-intruders', incompatible:[] },
-  { id:'ss-sig-secret-box', emoji:"\ud83d\udce6", name:"The Secret Box", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'secret-box',
-    desc:"Season signature, from launch night (eleven housemates or more). Three housemates never enter the house: they live inside a black glass cube in the corner of the living room. They see and hear everything, and the house has no idea anybody is in there. To get out, one of them has to find a housemate's secret and tell the Voice: if it is right, they walk into the house at the next prime and that housemate is nominated (one a week). After three weeks, whoever is still in the box walks in anyway, and one of them walks in nominated.",
-    engineType:'ss-sig-secret-box', incompatible:[] },
-  { id:'ss-sig-hotel', emoji:"\ud83c\udfe8", name:"The Hotel of Secrets", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'hotel',
-    desc:"Season signature, from launch night (eleven housemates or more). Three housemates never enter the house: they live in the hotel next door. In the house, a gallery of two hundred portraits hides their three faces, and every week the sharpest housemate hunts for them. After two weeks the three walk in, and if the house found any of their faces, the first one found walks in nominated.",
-    engineType:'ss-sig-hotel', incompatible:[] },
-  { id:'ss-sig-crystal-house', emoji:"\ud83d\udc8e", name:"The Crystal House", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'crystal-house',
-    desc:"Season signature, from launch night (eleven housemates or more). Three housemates live in a glass house in the garden, in full view of the main house, which the Voice tells about them in the first days. Every prime, the main house votes to let one of them in, and it lets in the one it likes most. After three weeks any still inside come in, and one of them comes in nominated.",
-    engineType:'ss-sig-crystal-house', incompatible:[] },
-  { id:'ss-sig-control-tower', emoji:"\ud83d\uddfc", name:"The Control Tower", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'control-tower',
-    desc:"Season signature (ten housemates or more). Twice this season, a housemate the house believes eliminated does not go home: they climb to a glass tower above the house. For two weeks they watch the house on its screens and choose one nominee every week, and the house does not know who is choosing. Then they come back down into the house.",
-    engineType:'ss-sig-control-tower', incompatible:[] },
-  { id:'ss-sig-yacht', emoji:"\ud83d\udee5\ufe0f", name:"The Yacht of Secrets", format:'secret-story', category:'ss-signature', phase:'any', ssSignature:'yacht',
-    desc:"Season signature, from launch night (twelve housemates or more). Four housemates live on a yacht at the pier and investigate the house from the deck. Every secret they get right puts its holder up for nomination, one a week. After two weeks the four come aboard the house.",
-    engineType:'ss-sig-yacht', incompatible:[] },
   { id:'bb-duo-week', emoji:'\u26d3\ufe0f', name:'You Go, They Go', format:'big-brother',
     category:'elim', phase:'any',
     desc:'For one week the house plays in pairs. The Head of Household nominates two DUOS rather than two houseguests \u2014 four keys on the wall \u2014 and the veto pulls a whole pair down and puts a whole pair up. The house then votes normally, one name each, and whoever takes the most votes is evicted along with their partner, however few votes that partner got. Two people leave and only one of them was chosen.',

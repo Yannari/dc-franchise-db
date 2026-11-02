@@ -33,7 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { pinPublic, clueRoomWeek, settleDeals, pactBetrayed } from '../ss/clue-room.js';
-import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS, SS_SIGNATURE_CARDS, SIG_CARD_OF } from '../ss/schedule.js';
+import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS, SIG_CARD_OF } from '../ss/schedule.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -364,12 +364,11 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     try { past = Object.values(activeSeasons() || {}).map(r => r?.ssDraw).filter(Boolean); } catch { past = []; }
     // (Surprise twists off: no signature twist and no fake elimination the user did not choose)
     const off = seasonConfig?.ssSurprise === 'off';
-    // (the signature placed on the timeline wins; a season the timeline's Randomize drew plays exactly its cards, so
-    // with no signature card it has none)
-    const cards = (seasonConfig?.twistSchedule || []).filter(t => t && !t.auto);
-    const sigCard = cards.find(t => SS_SIGNATURE_CARDS[t.type]);
-    const drawn = cards.some(t => t.random && SS_CARD_IDS.has(t.type));
-    const locks = { signature: sigCard ? SS_SIGNATURE_CARDS[sigCard.type] : seasonConfig?.ssSignature || (off || drawn ? 'none' : undefined),
+    // THE SEASON TWIST is the setup screen's (SEASON STRUCTURE, the user 2026-11-02: "should be in SEASON STRUCTURE
+    // not in twist list and not be taken by the surprise twist"): a signature, 'none', or Random for the season's own
+    // draw. Surprise twists and the timeline never touch it. The house options lock each tool; Random draws it.
+    const sig = seasonConfig?.ssSignature;
+    const locks = { ...(seasonConfig?.ssTools || {}), signature: sig && sig !== 'random' ? sig : undefined,
       secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : (off ? 'off' : undefined) };
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };

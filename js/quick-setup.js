@@ -1406,15 +1406,20 @@ const CONFIG_SCOPE = {
   sections: {
     'sec-season-options':     ['total-drama'],
     'sec-settings-mechanics': ['total-drama', 'big-brother', 'traitors', 'drag-race'],  // popularity lives here
-    'sec-bb-options':         ['big-brother'],
+    // (Big Brother's own, not its spin-off's: Secret Story has its own HOUSE OPTIONS, the user 2026-11-02)
+    'sec-bb-options':         ['=big-brother'],
     'sec-ss-basics':          ['secret-story'],
     'sec-ss-divider':         ['secret-story'],
     'ss-setup-body':          ['secret-story'],
-    'sec-bb-divider':         ['big-brother'],
+    'sec-bb-divider':         ['=big-brother'],
+    'sec-ss-options':         ['secret-story'],
+    'sec-ss-house-divider':   ['secret-story'],
+    'ss-options-body':        ['secret-story'],
+    'grp-ss-signature':       ['secret-story'],
     // The container, not just its heading. The fixed-rule lines inside it are
     // not form-groups, so scoping only the individual controls left "Ties" and
     // "Endgame" sitting in the middle of a Total Drama season.
-    'bb-options-body':        ['big-brother'],
+    'bb-options-body':        ['=big-brother'],
     'sec-tribes':             ['total-drama'],
     'sec-formats-twists':          ['total-drama'],
     'sec-formats-twists-divider':  ['total-drama'],
@@ -1607,7 +1612,8 @@ function _placeRomance(fmt) {
   const acc = _g('acc-body-romance')?.closest('.accordion');
   if (!acc) return;
   if (!_romanceHome) _romanceHome = { parent: acc.parentNode, next: acc.nextSibling };
-  const houseBody = _g('bb-options-body');
+  // (Secret Story's love stories sit in its own house options)
+  const houseBody = _g(fmt === 'secret-story' ? 'ss-options-body' : 'bb-options-body');
   if (engineOf(fmt) === 'big-brother' && houseBody) {
     if (acc.parentNode !== houseBody) houseBody.appendChild(acc);
   } else if (_romanceHome.parent && acc.parentNode !== _romanceHome.parent) {

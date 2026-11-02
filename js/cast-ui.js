@@ -10,6 +10,9 @@ import { seasonFormat, engineFormat, isSpinOffSeason, formatIsRunnable, formatNa
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
+import { TOOLS as SS_TOOLS } from './ss/twists.js';
+// (the secret room has its own control: ssSecretRoom, read by planFakes)
+const SS_TOOL_IDS = Object.keys(SS_TOOLS).filter(id => id !== 'secretRoom');
 import { cloudBackupRestore, cloudBackupReady, cloudBackupInventory, cloudBackupFetch, cloudSite } from './cloud-backup.js';
 import { CIRCLE_CATEGORIES } from './ci/categories.js';
 // The drag family is derived from the same rows the tab already saves.
@@ -1606,7 +1609,8 @@ export function saveConfig() {
     ...readSeasonTwistConfig(g),
     bbSafetyStopsAt: parseInt(g('cfg-bb-safety-stops')?.value) || 9,
     bbHaveNotCount: g('cfg-bb-havenot-count')?.value || 'auto',
-    bbDepartures: g('cfg-bb-departures')?.value || 'off',
+    // (a Secret Story season has its own walkouts control, in its own house options)
+    bbDepartures: (seasonFormat(g('cfg-format')?.value) === 'secret-story' ? g('cfg-ss-departures') : g('cfg-bb-departures'))?.value || 'off',
     // Secret Story: the season's identity, and the cast screen's choices
     // (js/ss/setup-panel.js), which no control holds and so must survive a save.
     ssHouseTheme: g('cfg-ss-house')?.value || seasonConfig.ssHouseTheme || 'random',
@@ -1615,6 +1619,10 @@ export function saveConfig() {
     ssPercents: g('cfg-ss-percents')?.value || seasonConfig.ssPercents || 'end',
     ssWeekly: g('cfg-ss-weekly')?.value || seasonConfig.ssWeekly || 'random',
     ssSurprise: g('cfg-ss-surprise')?.value || seasonConfig.ssSurprise || 'on',
+    // the season twist (SEASON STRUCTURE), and the house options: Random lets the season draw it (js/ss/twists.js)
+    ssSignature: g('cfg-ss-signature')?.value || seasonConfig.ssSignature || 'random',
+    ssSecretRoom: g('cfg-ss-secret-room')?.value || seasonConfig.ssSecretRoom || 'random',
+    ssTools: Object.fromEntries(SS_TOOL_IDS.map(id => [id, g(`cfg-ss-tool-${id}`)?.value || seasonConfig.ssTools?.[id] || 'random'])),
     ssSecrets: seasonConfig.ssSecrets || {},
     ssRecognitions: seasonConfig.ssRecognitions || null,
     ssRecognitionsCast: seasonConfig.ssRecognitionsCast || '',
@@ -1851,6 +1859,17 @@ export function renderConfig() {
   set('cfg-ss-percents', seasonConfig.ssPercents || 'end');
   set('cfg-ss-surprise', seasonConfig.ssSurprise || 'on');
   set('cfg-ss-weekly', seasonConfig.ssWeekly || 'random');
+  set('cfg-ss-signature', seasonConfig.ssSignature || 'random');
+  window.ssSignatureHint?.();
+  set('cfg-ss-secret-room', seasonConfig.ssSecretRoom === 'on' ? 'once' : (seasonConfig.ssSecretRoom || 'random'));
+  for (const id of SS_TOOL_IDS) set(`cfg-ss-tool-${id}`, seasonConfig.ssTools?.[id] || 'random');
+  set('cfg-ss-departures', seasonConfig.bbDepartures || 'off');
+  // (a season twist placed on the timeline while it was briefly a card there: the setup screen chooses it now)
+  if ((seasonConfig.twistSchedule || []).some(t => t && !t.auto && /^ss-sig-/.test(t.type))) {
+    const card = seasonConfig.twistSchedule.find(t => t && !t.auto && /^ss-sig-/.test(t.type));
+    if (!seasonConfig.ssSignature || seasonConfig.ssSignature === 'random') { seasonConfig.ssSignature = card.type.replace(/^ss-sig-/, ''); set('cfg-ss-signature', seasonConfig.ssSignature); window.ssSignatureHint?.(); }
+    seasonConfig.twistSchedule = seasonConfig.twistSchedule.filter(t => !(t && !t.auto && /^ss-sig-/.test(t.type)));
+  }
   // Show only the controls this show's engine actually reads.
   window.applyFormatScope?.();
   window.renderSsSecrets?.();
@@ -2668,4 +2687,11 @@ export function drSaveOptionsUI() {
   if (box) box.style.display = sel?.value === 'tank' ? 'flex' : 'none';
   const bars = document.getElementById('cfg-dr-choc-opts');
   if (bars) bars.style.display = sel?.value === 'chocolate' ? 'flex' : 'none';
+}
+
+/** The season twist's words under its picker (simulator.html cfg-ss-signature: each option carries its own). */
+export function ssSignatureHint() {
+  const el = typeof document !== 'undefined' ? document.getElementById('cfg-ss-signature') : null;
+  const out = typeof document !== 'undefined' ? document.getElementById('ss-signature-what') : null;
+  if (el && out) out.textContent = el.selectedOptions?.[0]?.dataset?.what || '';
 }

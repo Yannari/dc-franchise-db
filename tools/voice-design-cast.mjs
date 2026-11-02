@@ -9,6 +9,10 @@
 //       -> "Voice Casting/<slug> - line N.mp3"
 //   node tools/voice-design-cast.mjs status  <Characters dir>
 //
+// A voice that is not a character file (a host: The Challenge's TJ) goes in "Voice Casting/_extra voices.json", a
+// list of { slug, name, nationality, speakingVoice, lines: [3 lines] }, so it gets takes without becoming a
+// character the Studio would import.
+//
 // The key: INWORLD_API_KEY, or the file %USERPROFILE%\.inworld-key (the Base64 key from the Inworld portal).
 // A character already designed or published is skipped, so a run that stops halfway can be started again
 // without paying twice.
@@ -43,7 +47,13 @@ function characters() {
     const c = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
     if (c.$format === 'dc-character/1' && c.slug) out[c.slug] = c;
   }
+  for (const c of extras()) out[c.slug] = c;
   return out;
+}
+
+function extras() {
+  const file = path.join(castDir, '_extra voices.json');
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')).filter(c => c.slug && c.name && c.speakingVoice) : [];
 }
 
 // the audition lines from the casting sheet: "Name  (slug) — ..." then "AUDITION LINES" then "    1. ..."
@@ -56,6 +66,7 @@ function auditionLines() {
     const after = block.split(/^AUDITION LINES\s*$/m)[1];
     if (slug && after) out[slug] = [...after.matchAll(/^\s+\d+\.\s+(.+)$/gm)].map(m => m[1].trim());
   }
+  for (const c of extras()) if (c.lines?.length) out[c.slug] = c.lines;
   return out;
 }
 

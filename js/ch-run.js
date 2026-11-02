@@ -30,6 +30,7 @@ import { DAILIES } from './ch/dailies.js';
 import { airedOf } from './ch/transcript.js';
 import { chLedgerRecord } from './ch/ledger-record.js';
 import { carriedFor } from './franchise-carry.js';
+import { buildInitialBonds } from './savestate.js';
 import { INTRO } from './ch/script/lines/intro.js';
 import { voicedLine } from './ch/script/write.js';
 import { stableRng } from './script/rng.js';
@@ -498,7 +499,24 @@ export function heardBefore(seasons = activeSeasons(), num = Number(gs?.seasonNu
   return Object.keys(heard).length ? heard : null;
 }
 
-function _inputs() { return { setup: challengeSetup(), options: challengeOptions() }; }
+// Who knew whom before the season (Setup → Relationships, and the family ties on the characters), as the
+// starting bonds every other show reads (savestate.js buildInitialBonds). The season plays in its own gs,
+// which starts every bond at zero, so without these two sisters set as Unbreakable walked in Neutral (the
+// user, 2026-11-02). Kept out of the inputs when there are none, so a season without any is not rebuilt.
+function _authoredBonds(cast = _cast()) {
+  let all = {};
+  try { all = buildInitialBonds().bonds || {}; } catch { all = {}; }
+  const out = {};
+  for (const [k, v] of Object.entries(all)) {
+    const [a, b] = k.split('||');
+    if (cast.includes(a) && cast.includes(b) && Number(v)) out[k] = Math.round(Number(v) * 100) / 100;
+  }
+  return out;
+}
+function _inputs() {
+  const bonds = _authoredBonds();
+  return { setup: challengeSetup(), options: challengeOptions(), ...(Object.keys(bonds).length ? { bonds } : {}) };
+}
 const _sig = inputs => JSON.stringify(inputs);
 const _fingerprint = r => JSON.stringify([r?.num, (r?.exits || []).map(x => x.name), r?.ch?.votedIn || []]);
 function _firstChanged(aired, rows) {
@@ -525,7 +543,7 @@ function _build(inputs, rerolls) {
   const outer = gs;
   let result, inner, record = null;
   try {
-    result = playChallengeSeason({ cast, background, divisions, carried, seed, heard, options: { ...inputs.options, rerolls } });
+    result = playChallengeSeason({ cast, background, divisions, carried, seed, heard, authored: inputs.bonds || null, options: { ...inputs.options, rerolls } });
     airSeason(result.state);
     inner = gs;
     try {

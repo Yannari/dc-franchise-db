@@ -666,8 +666,19 @@ export function buildFranchiseMeta(cast, cfg) {
   const seasonKeys = Object.keys(_seasons)
     .filter(k => _seasons[k].included !== false) // excluded seasons seed no bonds
     .sort((a, b) => seasonKeyParts(b, _seasons[b]).num - seasonKeyParts(a, _seasons[a]).num);
-  seasonKeys.forEach((key, idx) => {
-    const scale = idx === 0 ? 1 : Math.pow(W.bondOlderSeasonScale, idx);
+  // The seasons each pair played TOGETHER, most recent first. The scale is the pair's own: it was the
+  // season's place in the whole franchise, and with numbers from six shows in one list (Perfect Match 1
+  // after Total Drama 15 to 2) every other show's season came in at 0.5^16, so two sisters' broken
+  // showmance partner, or a Circle rivalry, walked into The Challenge as nothing (the user, 2026-11-02:
+  // "relationship from other shows it all appear as neutral").
+  const sharedBy = {};
+  for (const key of seasonKeys) {
+    const here = Object.keys(_seasons[key].players || {}).filter(n => inCast.has(n));
+    for (let i = 0; i < here.length; i++) for (let j = i + 1; j < here.length; j++) (sharedBy[metaBondKey(here[i], here[j])] ||= []).push(key);
+  }
+  seasonKeys.forEach(seasonAt => {
+    const scaleFor = (a, b) => Math.pow(W.bondOlderSeasonScale, Math.max(0, (sharedBy[metaBondKey(a, b)] || []).indexOf(seasonAt)));
+    const key = seasonAt;
     const season = _seasons[key];
     const { num, format: fmt } = seasonKeyParts(key, season);
     // Where it happened, in words: a Total Drama season is "Season N" as it
@@ -676,9 +687,10 @@ export function buildFranchiseMeta(cast, cfg) {
     const where = !fmt || fmt === DEFAULT_FORMAT ? `Season ${num}` : `${SHOWS[fmt]?.name || 'Season'} ${num}`;
     const add = (a, b, delta, reason, kind, directional, extra) => {
       if (!inCast.has(a) || !inCast.has(b) || a === b) return;
+      const scale = scaleFor(a, b);
       // Directional kinds (betrayal/blindside) keep each side's feeling separate;
       // symmetric kinds collapse regardless of order.
-      const key = (directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
+      const key =(directional ? a + '>>' + b : metaBondKey(a, b)) + '::' + kind;
       if (seeded[key]) { seeded[key].bondDelta += delta * scale * 0.5; return; } // stacking, diminishing
       seeded[key] = { a, b, bondDelta: delta * scale, reason: `${reason} (${where})`, kind, ...(extra || {}) };
     };

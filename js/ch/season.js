@@ -19,7 +19,7 @@
 // episode's change moves that episode and nothing before it.
 import { setGs, gs } from '../core.js';
 import { newLedger } from '../script/pick.js';
-import { addBond, getBond } from '../bonds.js';
+import { addBond, getBond, setBond } from '../bonds.js';
 import { romanticCompat } from '../players.js';
 import { streamFor } from '../dr/rng.js';
 import { newState, blankRecord, addScene, inDivision, noise, S, kinOf } from './state.js';
@@ -156,7 +156,7 @@ export function pairsFinal(opts) {
   return same ? Math.max(2, n + (n % 2)) : Math.max(2, n);
 }
 
-export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null, heard = null }) {
+export function playChallengeSeason({ cast, background = {}, divisions = {}, options = {}, seed = 1, carried = null, heard = null, authored = null }) {
   setGs({ bonds: {}, perceivedBonds: {}, relationshipDimensions: {}, activePlayers: [...cast],
     episodeHistory: [], popularity: {}, episode: 0 });
   const opts = { ...DEFAULT_OPTIONS, ...options };
@@ -210,6 +210,12 @@ export function playChallengeSeason({ cast, background = {}, divisions = {}, opt
 
   // The franchise walks in with them.
   const r0 = streamFor(seed, 'arrival');
+  // Who knew whom before the season, as the author set it (ch-run.js _authoredBonds): where a bond starts, with
+  // the franchise's history added on top, as every other show has it.
+  for (const [k, v] of Object.entries(authored || {})) {
+    const [a, b] = k.split('||');
+    if (cast.includes(a) && cast.includes(b) && Number(v)) setBond(a, b, Number(v));
+  }
   for (const s of carried?.sums || []) if (cast.includes(s.a) && cast.includes(s.b)) addBond(s.a, s.b, s.delta);
   for (const b of carried?.bonds || []) {
     if (!cast.includes(b.a) || !cast.includes(b.b) || !b.resent) continue;

@@ -96,12 +96,22 @@ async function call(url, body) {
   }
 }
 
+// the display names of the voices already in the workspace (only workspace voices, as /api/voice/voices does)
+async function existingVoices() {
+  const r = await fetch(API + '/voices/v1/voices', { headers: { Authorization: `Basic ${apiKey()}` } });
+  if (!r.ok) throw new Error(`inworld ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return new Set(((await r.json()).voices || []).filter(v => (v.voiceId || '').includes('__')).map(v => (v.displayName || '').trim()));
+}
+
 async function design() {
   const cast = characters(), lines = auditionLines(), l = ledger();
   const only = option('--only')?.split(',').map(s => s.trim());
+  const voiced = await existingVoices();
   for (const [slug, c] of Object.entries(cast)) {
     if (only && !only.includes(slug)) continue;
     if (l[slug]?.takes?.length && !flag('--redo')) { console.log(`${slug}: already designed`); continue; }
+    // a character the user already gave a voice keeps it
+    if (voiced.has(displayName(slug, c)) && !flag('--redo')) { console.log(`${slug}: already has an Inworld voice, skipped`); continue; }
     const previewText = script(lines[slug] || []);
     if (!previewText) { console.log(`${slug}: no audition lines in the casting sheet, skipped`); continue; }
     const designPrompt = `${c.speakingVoice.trim()} Perfect broadcast quality audio.`.slice(0, 1000);

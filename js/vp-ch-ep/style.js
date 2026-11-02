@@ -591,6 +591,9 @@ const CHX_CSS = `
 .chx .pbtn.big.on .i-play{display:none}
 .chx .pbtn.big.on .i-pause{display:block}
 .chx .pbtn.speed{font:400 16px/1 'Anton';letter-spacing:.04em}
+.chx .chx-mvol{flex:none;display:flex;align-items:center;gap:5px;height:40px;padding:0 10px;border:1px solid var(--cline);background:var(--cpanel);font-size:14px;cursor:pointer;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+.chx .chx-mvol input{width:84px;margin:0;accent-color:var(--fire);cursor:pointer}
+.chx .chx-mvol.zero span{opacity:.5;text-decoration:line-through}
 .chx .pbar{flex:1;min-width:200px;display:grid;gap:5px;padding:4px 0}
 .chx .pbar .segs{display:flex;gap:3px;position:relative;padding:10px 0;cursor:pointer;touch-action:none;user-select:none}
 .chx .pbar .segs i{flex:1;height:8px;border-radius:4px;background:var(--cline);position:relative;overflow:hidden;transition:height .15s,background .15s}

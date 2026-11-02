@@ -95,6 +95,7 @@ function shell(key, si, s, row, week, ctx) {
     <button type="button" class="pbtn" onclick="chxNext(this)" title="Forward one (Space or Right arrow)"><svg viewBox='0 0 24 24'><path d='M1 4v16l10.5-8zM12.5 4v16L23 12z'/></svg></button>
     <button type="button" class="pbtn speed" onclick="chxSpeed(this)" title="Playback speed">x1</button>
     <button type="button" class="pbtn intelbtn" onclick="chxIntel(this)" title="Intel: what the house doesn't know (I)">INTEL<i></i></button>
+    ${musicSlider()}
     <div class="pbar"><div class="segs"></div><span class="pt"></span></div>
   </div>
   <details class="script"><summary>Script</summary><div class="lines"></div></details>
@@ -762,6 +763,23 @@ export function chxAuto(el) {
 }
 export function chxIntel(el) { const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return; R.intelOpen = !R.intelOpen; intel(R); }
 export function chxTv() { if (typeof window.tdxTv === 'function') window.tdxTv(); }
+// The music's own level, under the voices, as Big Brother's bar has it (the user, 2026-11-02: "add an option like
+// in big brother to reduce the bg music for the challenge"): it moves only the music channel
+// (audio.setMusicLevel), so the voices and the stings keep theirs. One level for every show's music.
+const musicLevel = () => { try { const v = window.audio?.getMusicLevel?.(); return typeof v === 'number' ? v : 1; } catch { return 1; } };
+function musicSlider() {
+  const v = Math.round(musicLevel() * 100);
+  return `<label class="chx-mvol${v ? '' : ' zero'}" title="Music volume (the voices stay as they are)"><span>&#127925;</span><input type="range" min="0" max="100" step="1" value="${v}" aria-label="Music volume" oninput="chxMusicLevel(this.value)" onchange="chxMusicLevel(this.value);this.blur()"></label>`;
+}
+export function chxMusicLevel(v) {
+  const lvl = Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+  try { window.audio?.setMusicLevel?.(lvl); } catch { /* sound never breaks the bar */ }
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll('.chx-mvol').forEach(l => {
+    l.classList.toggle('zero', !lvl);
+    const inp = l.querySelector('input'); if (inp && inp !== document.activeElement) inp.value = String(Math.round(lvl * 100));
+  });
+}
 /** Switch between the stepped viewer and the readout, staying in the same part of the episode. */
 export function chxSwitchViewer(which) {
   try { localStorage.setItem('ch-vp', which === 'stepped' ? 'stepped' : 'classic'); } catch { /* a per-viewer convenience */ }
@@ -780,7 +798,7 @@ export function chxSwitchViewer(which) {
 /** The readout's way back to the stepped viewer. */
 export const CHX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="chxSwitchViewer('stepped')" style="border:1px solid #ff6a1a;background:#1a1716;color:#ff6a1a;padding:7px 12px;font:700 12px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:1px;text-transform:uppercase;cursor:pointer">&#9654; Stepped viewer</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { chxGo, chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
+if (typeof window !== 'undefined') Object.assign(window, { chxGo, chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters, chxMusicLevel });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step; leaving it stops its Auto
   document.addEventListener('vp:close', () => chVoiceStop());

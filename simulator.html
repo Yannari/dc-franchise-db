@@ -815,7 +815,7 @@
                  on launch night: Random lets the show draw one; Surprise twists does not touch it. -->
             <div class="form-group" id="grp-ss-signature">
               <label class="form-label">Season twist</label>
-              <select id="cfg-ss-signature" onchange="saveConfig();ssSignatureHint()" class="form-input">
+              <select id="cfg-ss-signature" onchange="ssSignatureHint();saveConfig()" class="form-input">
                 <option value="random" data-what="The show draws one for the season, most seasons, never the same as the last season's. Some seasons have none.">Random</option>
                 <option value="none" data-what="No season twist: everybody walks into the house on launch night, and nobody plays a secret role.">None</option>
                 <option value="secret-box" data-what="From launch night (eleven housemates or more). Three housemates never enter the house: they live inside a black glass cube in the corner of the living room. They see and hear everything, and the house has no idea anybody is in there. To get out, one of them has to find a housemate's secret and tell the Voice: if it is right, they walk into the house at the next prime and that housemate is nominated (one a week). After three weeks, whoever is still in the box walks in anyway, and one of them walks in nominated.">The Secret Box</option>
@@ -828,6 +828,12 @@
                 <option value="control-tower" data-what="All season (ten housemates or more). Twice this season, a housemate the house believes eliminated does not go home: they climb to a glass tower above the house. For two weeks they watch the house on its screens and choose one nominee every week, and the house does not know who is choosing. Then they come back down into the house.">The Control Tower</option>
               </select>
               <div class="hint hint-tight" id="ss-signature-what"></div>
+              <!-- when it starts: the options depend on the twist (js/ss/twists.js SIGNATURE_START; cast-ui ssSignatureHint) -->
+              <div id="ss-signature-start-row" style="margin-top:8px;display:none">
+                <label class="form-label">When it starts</label>
+                <select id="cfg-ss-signature-start" onchange="saveConfig();ssSignatureHint()" class="form-input"></select>
+                <div class="hint hint-tight" id="ss-signature-start-what"></div>
+              </div>
             </div>
 
             <!-- ── SECRET STORY: the season's identity and every housemate's secret ──

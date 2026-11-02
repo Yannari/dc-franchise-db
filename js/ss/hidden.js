@@ -36,21 +36,41 @@ const weighted = (pairs, rng) => { let r = rng() * pairs.reduce((t, [, w]) => t 
  * The season's fake eliminations: none, once or twice (the draw's `secretRoom` level), each with its kind,
  * its length and its role. Kept on `state.plan.fakes`; `secretRoomWeek` stays the first one's week.
  */
-export function planFakes(state, { castSize = 14, level = 'once', rng = Math.random, first = null, tower = false } = {}) {
+export function planFakes(state, { castSize = 14, level = 'once', rng = Math.random, first = null, tower = false, firstAt = null } = {}) {
   state.plan ||= {};
   // (the Control Tower, S11: the season's signature is two fake eliminations into the tower, both masters of the nominations)
   const n = tower ? 2 : level === 'twice' ? 2 : level === 'off' ? 0 : 1;
   const last = Math.max(3, castSize - 7);
   const fakes = [];
   let wk = first || (3 + Math.floor(rng() * Math.max(1, last - 2)));
-  for (let i = 0; i < n && wk <= last + 1; i++) {
+  // (a start the setup screen chose plans every one: pinFakes gives them their weeks as the house shrinks)
+  for (let i = 0; i < n && (firstAt || wk <= last + 1); i++) {
     fakes.push({ week: wk, kind: weighted([['verdict', 0.4], ['double', 0.2], ['voluntary', 0.2], ['power', 0.2]], rng),
       weeks: tower ? 2 : rng() < 0.7 ? 1 : 2, role: tower ? 'master' : weighted([['watch', 0.4], ['master', 0.3], ['remote', 0.3]], rng), ...(tower ? { space: 'tower' } : {}) });
     wk += 3 + Math.floor(rng() * 2);
   }
+  // (the setup screen's "With N left", the user 2026-11-02: the first comes the week the house is down to N, each
+  // next one as many weeks after the one before as the draw spaced them; pinFakes sets the weeks as the season goes)
+  if (firstAt && fakes.length) {
+    const gaps = fakes.map((x, i) => (i ? x.week - fakes[i - 1].week : 0));
+    fakes.forEach((x, i) => { x.week = null; if (i) x.after = gaps[i]; else x.atSize = Number(firstAt); });
+  }
   state.plan.fakes = fakes;
   state.plan.secretRoomWeek = fakes[0]?.week ?? null;
   return fakes;
+}
+/**
+ * At the start of a week: a fake elimination waiting for the house to be down to N gets this week, and the ones after
+ * it their weeks. Run once a week, before anything asks fakePlanFor.
+ */
+export function pinFakes(state, week, houseSize) {
+  const fakes = state?.plan?.fakes || [];
+  fakes.forEach((x, i) => {
+    if (x.week != null) return;
+    if (x.atSize && houseSize <= x.atSize) x.week = week;
+    else if (x.after && fakes[i - 1]?.week != null) x.week = fakes[i - 1].week + x.after;
+  });
+  if (state?.plan) state.plan.secretRoomWeek = fakes[0]?.week ?? state.plan.secretRoomWeek ?? null;
 }
 /** This week's planned fake elimination, if it can happen (nobody up there already, a house big enough). */
 export function fakePlanFor(state, week, houseSize) {

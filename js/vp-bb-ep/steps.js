@@ -2767,6 +2767,24 @@ function ssSecretsScreen(act, ctx, host = 'Josh') {
   return out;
 }
 
+// THE ROLE HANDED OUT LATER (the setup screen's "With N left", the user 2026-11-02): the week the house is down to N,
+// the Voice calls the two to the confessional, as it would have on launch night.
+function ssRoleGivenScreen(act, ctx) {
+  const [a, b] = act.pair || [];
+  const k = `${ctx.week}|ssrolegiven`;
+  const name = act.role === 'masters' ? 'The Masters of the Nominations' : 'The House Thieves';
+  return { id: `bb-ss-role-given-w${ctx.week}`, kind: 'twist', anchor: ctx.anchor, day: ctx.day, set: 'dr', room: 'Confessional', cam: CAM.dr, time: '02:00',
+    kicker: 'Cam 01 · Confessional', title: name, label: 'A Secret Role', sub: `${a} and ${b}`, cast: [[a, 35], [b, 65]],
+    steps: [
+      { k: 'beat', t: `${act.left} housemates left. The house is asleep, and the Voice has a job for two of them.`, toast: [name.toUpperCase(), '#c86bff'] },
+      ssv(`${a}, ${b}, please come to the confessional. Quietly.`),
+      { k: 'beat', t: `${a} and ${b} sit down side by side, and look at each other.` },
+      ...(ROLE_LINE[act.role] || []).map(l => ssv(l, { ahead: true })),
+      { k: 'dr', by: a, t: pickBy(["This late in the game? I'll take it.", 'Everybody thinks they have this house worked out. Not any more.'], `${k}|r1`) },
+      { k: 'dr', by: b, t: pickBy(['Nobody can know. Not even the people I like.', 'Okay. Act normal. Act very, very normal.'], `${k}|r2`) },
+    ] };
+}
+
 // THE SIGNATURE ROLE (js/ss/signatures.js): the masters' nomination, the thieves' night.
 function ssRoleScreen(act, ctx) {
   const [a, b] = act.pair || [];
@@ -6601,6 +6619,7 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
       case 'clique-returnees': flush(); for (const scr of cliqueReturneeScreen(act, ctx)) ceremony(scr); if (heldGuest) ctx.hidden.delete(heldGuest); ctx.hoh = act.returnee?.name || act.last || ctx.hoh; beatsOf(act); break;
       case 'americas-coup': flush(); ceremony(americasCoupScreen(act, ctx)); beatsOf(act); break;
       case 'ss-secrets': flush(); for (const scr of ssSecretsScreen(act, ctx, host)) ceremony(scr); break;
+      case 'ss-role-given': flush(); ceremony(ssRoleGivenScreen(act, ctx)); beatsOf(act); break;
       case 'ss-role': flush(); ceremony(ssRoleScreen(act, ctx)); beatsOf(act); break;
       case 'ss-buzz': {
         flush();

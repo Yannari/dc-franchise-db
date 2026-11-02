@@ -10,7 +10,7 @@ import { seasonFormat, engineFormat, isSpinOffSeason, formatIsRunnable, formatNa
 import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
-import { TOOLS as SS_TOOLS } from './ss/twists.js';
+import { TOOLS as SS_TOOLS, SIGNATURE_START } from './ss/twists.js';
 // (the secret room has its own control: ssSecretRoom, read by planFakes)
 const SS_TOOL_IDS = Object.keys(SS_TOOLS).filter(id => id !== 'secretRoom');
 import { cloudBackupRestore, cloudBackupReady, cloudBackupInventory, cloudBackupFetch, cloudSite } from './cloud-backup.js';
@@ -1621,6 +1621,7 @@ export function saveConfig() {
     ssSurprise: g('cfg-ss-surprise')?.value || seasonConfig.ssSurprise || 'on',
     // the season twist (SEASON STRUCTURE), and the house options: Random lets the season draw it (js/ss/twists.js)
     ssSignature: g('cfg-ss-signature')?.value || seasonConfig.ssSignature || 'random',
+    ssSignatureStart: g('cfg-ss-signature-start')?.value || seasonConfig.ssSignatureStart || 'start',
     ssSecretRoom: g('cfg-ss-secret-room')?.value || seasonConfig.ssSecretRoom || 'random',
     ssTools: Object.fromEntries(SS_TOOL_IDS.map(id => [id, g(`cfg-ss-tool-${id}`)?.value || seasonConfig.ssTools?.[id] || 'random'])),
     ssSecrets: seasonConfig.ssSecrets || {},
@@ -1860,6 +1861,7 @@ export function renderConfig() {
   set('cfg-ss-surprise', seasonConfig.ssSurprise || 'on');
   set('cfg-ss-weekly', seasonConfig.ssWeekly || 'random');
   set('cfg-ss-signature', seasonConfig.ssSignature || 'random');
+  { const sp = document.getElementById('cfg-ss-signature-start'); if (sp) sp.value = ''; }
   window.ssSignatureHint?.();
   set('cfg-ss-secret-room', seasonConfig.ssSecretRoom === 'on' ? 'once' : (seasonConfig.ssSecretRoom || 'random'));
   for (const id of SS_TOOL_IDS) set(`cfg-ss-tool-${id}`, seasonConfig.ssTools?.[id] || 'random');
@@ -2689,9 +2691,38 @@ export function drSaveOptionsUI() {
   if (bars) bars.style.display = sel?.value === 'chocolate' ? 'flex' : 'none';
 }
 
-/** The season twist's words under its picker (simulator.html cfg-ss-signature: each option carries its own). */
+/**
+ * The season twist's words under its picker (simulator.html cfg-ss-signature: each option carries its own), and its
+ * "When it starts" choices, which depend on the twist (the user, 2026-11-02: "make the option available depending of
+ * whats the twist"): a hidden group only on launch night; a role at launch or with N left; the Control Tower when the
+ * show chooses or with N left.
+ */
 export function ssSignatureHint() {
-  const el = typeof document !== 'undefined' ? document.getElementById('cfg-ss-signature') : null;
-  const out = typeof document !== 'undefined' ? document.getElementById('ss-signature-what') : null;
-  if (el && out) out.textContent = el.selectedOptions?.[0]?.dataset?.what || '';
+  if (typeof document === 'undefined') return;
+  const el = document.getElementById('cfg-ss-signature');
+  const out = document.getElementById('ss-signature-what');
+  const words = el?.selectedOptions?.[0]?.dataset?.what || '';
+  if (out) out.textContent = words;
+  const row = document.getElementById('ss-signature-start-row');
+  const pick = document.getElementById('cfg-ss-signature-start');
+  const what = document.getElementById('ss-signature-start-what');
+  if (!row || !pick) return;
+  const s = SIGNATURE_START[el?.value];
+  if (!s) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  const cast = (Array.isArray(players) ? players : []).length || 16;
+  const was = pick.value || String(seasonConfig.ssSignatureStart || '');
+  const lefts = [];
+  for (let n = cast - 1; n >= (s.min || 8); n--) lefts.push([String(n), `With ${n} left (top ${n})`]);
+  const opts = s.kind === 'launch' ? [['start', 'Launch night']]
+    : s.kind === 'role' ? [['start', 'Launch night'], ...lefts]
+      : [['auto', 'When the show chooses (the middle of the season)'], ...lefts];
+  pick.innerHTML = opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+  pick.value = opts.some(([v]) => v === was) ? was : opts[0][0];
+  pick.disabled = opts.length === 1;
+  // (a twist started later does not begin on launch night: its words say so)
+  if (out && /^[0-9]+$/.test(pick.value)) out.textContent = words.replace(/^From launch night\. /, `From the week ${pick.value} housemates are left. `);
+  if (what) what.textContent = s.kind === 'launch' ? 'This one can only start on launch night: the housemates it hides never walk into the house.'
+    : s.kind === 'role' ? 'Launch night, or the first week the house is down to that many: the Voice hands out the role then.'
+      : 'The first fake elimination comes the week the house is down to that many; the second a few weeks later.';
 }

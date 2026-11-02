@@ -129,3 +129,20 @@ export function drawSeason({ castSize = 14, past = [], locks = {}, rng = Math.ra
 
 /** The catalog entry for a signature id. */
 export const signatureOf = id => SIGNATURES.find(s => s.id === id) || null;
+
+/**
+ * WHEN A SEASON TWIST CAN START (the setup screen's "When it starts", the user 2026-11-02: "make the option available
+ * depending of whats the twist"). `kind`: 'launch' (a hidden group: its members never walk into the house, so launch
+ * night only), 'role' (launch night, or the week the house is down to N), 'fakes' (the show's own week, or the first
+ * fake elimination at N). `min`: the smallest N it can start at.
+ */
+export const SIGNATURE_START = {
+  masters: { kind: 'role', min: 8 }, thieves: { kind: 'role', min: 8 }, 'control-tower': { kind: 'fakes', min: 10 },
+  intruders: { kind: 'launch' }, 'secret-box': { kind: 'launch' }, 'crystal-house': { kind: 'launch' }, hotel: { kind: 'launch' }, yacht: { kind: 'launch' },
+};
+/** The housemates-left the setting asks for, or null (launch night, or the show's own week). */
+export function startAtOf(id, setting) {
+  const s = SIGNATURE_START[id];
+  const n = Number(setting);
+  return s && s.kind !== 'launch' && Number.isFinite(n) && n >= (s.min || 0) ? n : null;
+}

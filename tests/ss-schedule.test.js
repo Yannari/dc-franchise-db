@@ -146,3 +146,62 @@ describe("the season twist", () => {
     expect(bbWeekSteps(gs.episodeHistory.at(-1), { host: 'Josh' }).some(s => s.id === 'bb-ss-launch-signature')).toBe(false);
   });
 });
+
+// the user, 2026-11-02: "can we choose if those twist happen when theyre supposed to happen (top 12 top8 etc for
+// example)", "or at the start", "make the option available depending of whats the twist"
+describe('when the season twist starts', () => {
+  const NAMES16 = [...NAMES, 'Ike', 'Jules', 'Kit', 'Lane'];
+  const CAST16 = NAMES16.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater'][i % 6] }));
+  const season = (cfg, weeks, seed = 4) => {
+    seedGame(CAST16, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', themeArcStamped: '', bbSecretStory: undefined, ssSecretRoom: 'off', ssSurprise: 'on', ssTools: {}, twistSchedule: [], ...cfg });
+    withSeededRandom(seed, () => { for (let i = 0; i < weeks; i++) if (!simulateBBEpisode()) break; });
+    return gs.bb.secretStory;
+  };
+  it('offers each twist only the starts it can have', async () => {
+    const { SIGNATURE_START, SIGNATURES, startAtOf } = await import('../js/ss/twists.js');
+    for (const s of SIGNATURES.filter(x => x.built)) expect(SIGNATURE_START[s.id], s.id).toBeTruthy();
+    for (const id of ['secret-box', 'intruders', 'crystal-house', 'hotel', 'yacht']) { expect(SIGNATURE_START[id].kind).toBe('launch'); expect(startAtOf(id, '10')).toBeNull(); }
+    expect(startAtOf('masters', '10')).toBe(10);
+    expect(startAtOf('masters', 'start')).toBeNull();
+    expect(startAtOf('control-tower', 'auto')).toBeNull();
+    expect(startAtOf('thieves', '5')).toBeNull();
+  });
+  it('a role "with N left" is handed out the first week the house is down to N, never on launch night', () => {
+    const st = season({ ssSignature: 'masters', ssSignatureStart: '12' }, 9);
+    const rows = gs.episodeHistory.filter(e => e?.format === 'big-brother');
+    const given = rows.flatMap(e => (e.acts || []).filter(a => a?.type === 'ss-role-given').map(a => ({ week: e.num, a })));
+    expect(given.length).toBe(1);
+    expect(given[0].a.left).toBeLessThanOrEqual(12);
+    expect(given[0].week).toBeGreaterThan(1);
+    expect(st.role.pair).toEqual(given[0].a.pair);
+    // (nothing of the role before it: no masters' nomination, no launch-night confessional)
+    for (const e of rows.filter(r => r.num < given[0].week)) expect((e.acts || []).some(a => a?.type === 'ss-role')).toBe(false);
+    const launch = bbWeekSteps(rows[0], { host: 'Josh' });
+    expect(launch.some(s => s.id === 'bb-ss-launch-role')).toBe(false);
+    const intro = launch.find(s => s.id === 'bb-ss-launch-signature');
+    expect(intro.steps.map(x => x.t).join(' ')).toMatch(/When only 12 housemates are left, the Voice will choose two of them/);
+    // (the week it starts: the Voice calls the two in, and says what the job is)
+    const wk = bbWeekSteps(rows.find(r => r.num === given[0].week), { host: 'Josh' });
+    const sc = wk.find(s => s.id === `bb-ss-role-given-w${given[0].week}`);
+    expect(sc).toBeTruthy();
+    expect(sc.steps.map(x => x.t).join(' ')).toMatch(/You are the Masters of the Nominations\./);
+  });
+  it("the Control Tower's first fake elimination comes the week the house is down to N", () => {
+    const st = season({ ssSignature: 'control-tower', ssSignatureStart: '11' }, 9);
+    const first = st.plan.fakes[0];
+    expect(first.atSize).toBe(11);
+    expect(first.week).toBeGreaterThan(1);
+    const row = gs.episodeHistory.find(e => e.num === first.week);
+    expect(row.gsSnapshot?.activePlayers?.length ?? 0).toBeLessThanOrEqual(12);
+    expect(st.plan.fakes[1].week).toBeGreaterThan(first.week);
+    // (and it played: the house believed somebody eliminated that week, and they went up to the tower)
+    expect(first.used).toBe(true);
+  });
+  it('a hidden group starts on launch night whatever the setting says', () => {
+    const st = season({ ssSignature: 'secret-box', ssSignatureStart: '10' }, 1);
+    expect(st.group?.id).toBe('secret-box');
+    expect(st.group.from).toBe(1);
+  });
+});

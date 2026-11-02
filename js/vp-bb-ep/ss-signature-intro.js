@@ -87,13 +87,27 @@ export const SIGNATURE_INTRO = {
   },
 };
 
+// (a twist the setup screen started later: the words say when, instead of tonight)
+const LATER = {
+  masters: n => [`When only ${n} housemates are left, the Voice will choose two of them, in secret. They will be the Masters of the Nominations.`],
+  thieves: n => [`When only ${n} housemates are left, the Voice will choose two of them, in secret. They will be the House Thieves.`],
+  'control-tower': n => [`Twice this season, starting when ${n} housemates are left, a housemate the house believes eliminated will not go home.`],
+};
+function laterStart(sig, w) {
+  const n = Number(sig?.startAt);
+  if (!n || !LATER[sig.id]) return w;
+  const rows = w.rows.map((r, i) => (i === 0 ? [`AT ${n} LEFT`, r[1].replace(/ tonight$/, ' then')] : r));
+  return { rows, lines: [...LATER[sig.id](n), ...w.lines.slice(1)] };
+}
+
 /**
  * The screen after the cold open: the host explains the season's signature to the people at home. `sig` is the act's
  * `signature` ({ id, name }); null when the season has none or none of these words.
  */
 export function ssSignatureIntroScreen(sig, host, base, studio) {
-  const w = SIGNATURE_INTRO[sig?.id];
-  if (!w) return null;
+  const w0 = SIGNATURE_INTRO[sig?.id];
+  if (!w0) return null;
+  const w = laterStart(sig, w0);
   const name = sig.name || '';
   /** @type {any[]} */ const steps = [
     { k: 'host', by: host, t: "One more thing before we meet them. There is something the housemates don't know yet, and you are going to.", toast: ['THIS SEASON', '#e0b84a'] },

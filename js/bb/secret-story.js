@@ -53,13 +53,13 @@ import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { throwParty, runSuperette } from '../ss/parties.js';
-import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, planFakes, fakePlanFor, usePlan } from '../ss/hidden.js';
+import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, planFakes, pinFakes, fakePlanFor, usePlan } from '../ss/hidden.js';
 import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
 import { careerOf, activeSeasons } from '../franchise-meta.js';
-import { drawSeason, RATE, signatureOf } from '../ss/twists.js';
+import { drawSeason, RATE, signatureOf, startAtOf } from '../ss/twists.js';
 import { castRole, playRole, accuseRole, ROLE_NAMES } from '../ss/signatures.js';
 import { planLaunch, lastSummer } from '../ss/launch.js';
 import { planHouseSecret, houseSecretClue, solveHouseSecret, finalPlace, unveilSecrets, validateKitties, finalParty, journeyOf, CHEQUE, KEPT_BONUS } from '../ss/final.js';
@@ -373,9 +373,16 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
     // the season's fake eliminations: how many, which kind, how long, and what they do up there (js/ss/hidden.js)
-    planFakes(st0, { castSize: room.length, level: st0.tools.secretRoom === 'on' ? 'once' : st0.tools.secretRoom, rng, first: st0.draw.secretRoomWeek, tower: st0.draw.signature === 'control-tower' });
-    // the signature's pair, chosen by the Voice tonight
-    castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
+    // WHEN THE SEASON TWIST STARTS (the user, 2026-11-02: "can we choose if those twist happen when theyre supposed to
+    // happen (top 12 top8 etc) or at the start"): only for a twist the setup screen chose, and only where the twist
+    // can start late (js/ss/twists.js signatureStarts): a role handed out the week the house is down to N, the
+    // Control Tower's first fake elimination at N. A hidden group always starts on launch night.
+    const startAt = sig && sig !== 'random' ? startAtOf(st0.draw.signature, seasonConfig?.ssSignatureStart) : null;
+    const tower = st0.draw.signature === 'control-tower';
+    planFakes(st0, { castSize: room.length, level: st0.tools.secretRoom === 'on' ? 'once' : st0.tools.secretRoom, rng, first: st0.draw.secretRoomWeek, tower, firstAt: tower ? startAt : null });
+    // the signature's pair, chosen by the Voice tonight (or later, at the start the setup screen chose)
+    if (startAt && ['masters', 'thieves'].includes(st0.draw.signature)) st0.roleStartAt = startAt;
+    else castRole(st0, huntCtx(undefined, rng), { signature: st0.draw.signature, house: room });
     // the secret of the house, hidden for the whole season (js/ss/final.js)
     planHouseSecret(st0, rng);
   }
@@ -413,7 +420,8 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     commandments: (gs.bb.secretStory.weekly === 'revival' ? COMMANDMENTS_REVIVAL : COMMANDMENTS).slice(),
     houseRiddle: gs.bb.secretStory.houseSecret?.riddle || null,
     recognitions: (gs.bb.secretStory.recognitions || []).slice(),
-    signature: gs.bb.secretStory.draw?.signature ? { ...signatureOf(gs.bb.secretStory.draw.signature), pair: gs.bb.secretStory.role?.pair || [] } : null,
+    signature: gs.bb.secretStory.draw?.signature ? { ...signatureOf(gs.bb.secretStory.draw.signature), pair: gs.bb.secretStory.role?.pair || [],
+      startAt: gs.bb.secretStory.roleStartAt || gs.bb.secretStory.plan?.fakes?.[0]?.atSize || null } : null,
     kitty: KITTY_START, stake: BUZZ_STAKE,
     beats: [{ text: `Every housemate moves in with a secret and $${KITTY_START.toLocaleString('en-US')} in the kitty.`, players: room.slice(0, 4), badgeText: 'THE SECRETS', badgeClass: 'gold', part: 'rules' }],
   };
@@ -461,6 +469,13 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
   state._week = ctx.week;
   // the twists the user placed on this week in the timeline, before the engine draws its own
   readSchedule(state, ctx.week);
+  // the season twist that waits for the house to be down to N (the setup screen's "With N left")
+  pinFakes(state, ctx.week, room.length);
+  if (state.roleStartAt && !state.role && ctx.week >= 2 && room.length <= state.roleStartAt) {
+    const given = castRole(state, ctx, { signature: state.draw?.signature, house: room });
+    if (given) acts.push({ type: 'ss-role-given', week: ctx.week, role: given.id, pair: given.pair.slice(), left: room.length,
+      beats: [{ text: `The Voice makes ${given.pair.join(' and ')} ${ROLE_NAMES[given.id]}, in secret.`, players: given.pair.slice(), badgeText: 'A SECRET ROLE', badgeClass: 'purple', part: 'role' }] });
+  }
   state.publicRoom = room.slice();
   state.kittyAtWeekStart = Object.fromEntries(room.map(n => [n, Number(state.kitty?.[n]) || 0]));
   // a new week: last week's headlines fade, the stories stay (js/ss/public.js)

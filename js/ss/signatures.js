@@ -38,7 +38,7 @@ export function castRole(state, ctx, { signature = null, house = [] } = {}) {
   state.role = { id: signature, pair, active: true, exposedWeek: null, by: null, log: [], suspicion: {} };
   if (signature === 'thieves') {
     // they start with nothing (the money is the Voice's, not anybody else's)
-    for (const n of pair) burn(state, n, balance(state, n), 'the thieves start at zero', 1);
+    for (const n of pair) burn(state, n, balance(state, n), 'the thieves start at zero', ctx.week ?? 1);
   }
   return state.role;
 }

@@ -174,7 +174,7 @@ async function publish() {
     if (!entry.published || entry.published.take !== +n) {
       const name = as?.trim() || displayName(slug, c);
       const v = await call(`/voices/v1/voices/${encodeURIComponent(draft)}:publish`, {
-        displayName: name, description: c.speakingVoice.slice(0, 500), tags: ['dc-franchise', 'season-x'],
+        displayName: name, description: c.speakingVoice.slice(0, 500), tags: ['the challenge'],
       });
       entry.published = { take: +n, voiceId: v.voiceId || draft, displayName: name };
       save(l);

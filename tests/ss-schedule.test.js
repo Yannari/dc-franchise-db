@@ -6,10 +6,10 @@ import { TWIST_CATALOG, TWIST_CATEGORIES, twistsForFormat } from '../js/core.js'
 import { gs, players, seasonConfig, relationships } from '../js/core.js';
 import { pStats, pronouns, ordinal, romanticCompat } from '../js/players.js';
 import { getBond, getPerceivedBond, bKey, bondLabel } from '../js/bonds.js';
-import { simulateBBEpisode, bbTwistsForWeek } from '../js/bb-run.js';
+import { simulateBBEpisode, bbTwistsForWeek, runBBFinale } from '../js/bb-run.js';
 import { seedGame } from './helpers/setup.js';
 import { withSeededRandom } from './helpers/rng.js';
-import { ssRandomDraw, SS_CARD_IDS } from '../js/ss/schedule.js';
+import { ssRandomDraw, SS_CARD_IDS, FAKE_CARD } from '../js/ss/schedule.js';
 import { bbWeekSteps } from '../js/vp-bb-ep/steps.js';
 import { readSchedule } from '../js/bb/secret-story.js';
 
@@ -203,5 +203,86 @@ describe('when the season twist starts', () => {
     const st = season({ ssSignature: 'secret-box', ssSignatureStart: '10' }, 1);
     expect(st.group?.id).toBe('secret-box');
     expect(st.group.from).toBe(1);
+  });
+});
+
+// the user, 2026-11-02: "fake elimination should be a schedulable twist not a house options"
+describe('the fake elimination, a timeline card', () => {
+  const NAMES16 = [...NAMES, 'Ike', 'Jules', 'Kit', 'Lane'];
+  const CAST16 = NAMES16.map((name, i) => ({ name, gender: i % 2 ? 'm' : 'f', sexuality: 'straight', archetype: ['mastermind', 'social-butterfly', 'hero', 'showmancer', 'schemer', 'floater'][i % 6] }));
+  const season = (cfg, weeks, seed = 4) => {
+    seedGame(CAST16, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', themeArcStamped: '', bbSecretStory: undefined, ssSecretRoom: undefined, ssSignature: 'none', ssSurprise: 'on', ssTools: {}, twistSchedule: [], ...cfg });
+    withSeededRandom(seed, () => { for (let i = 0; i < weeks; i++) if (!simulateBBEpisode()) break; });
+    return gs.bb.secretStory;
+  };
+  const fakeWeeks = () => gs.episodeHistory.filter(r => r && (r.acts || []).some(a => (a?.type === 'ss-after' && a.fake) || (a?.type === 'ss-prime' && (a.segments || []).some(s => s?.kind === 'voluntary')))).map(r => r.num);
+  it('is on the timeline, on a shelf, and explains itself', () => {
+    const card = twistsForFormat({ format: 'secret-story' }).find(t => t.id === FAKE_CARD);
+    expect(card).toBeTruthy();
+    expect(TWIST_CATEGORIES.some(c => c.id === card.category)).toBe(true);
+    expect(card.desc).toMatch(/secret room/);
+    expect(SS_CARD_IDS.has(FAKE_CARD)).toBe(true);
+  });
+  it('plays the week it is put on, and the show adds none of its own', () => {
+    for (const seed of [4, 5, 6]) {
+      const st = season({ twistSchedule: [{ episode: 4, type: FAKE_CARD }] }, 7, seed);
+      expect(fakeWeeks(), `seed ${seed}`).toEqual([4]);
+      expect(st.plan.fakes.filter(x => !x.card)).toEqual([]);
+      // (the timeline keeps the hand card and writes no second record on its week)
+      expect(seasonConfig.twistSchedule.filter(x => Number(x.episode) === 4 && x.type === FAKE_CARD)).toHaveLength(1);
+    }
+  });
+  it('a season with no card still gets the show\'s own, unless Surprise twists is off', () => {
+    let any = false;
+    for (const seed of [1, 2, 3, 4, 5, 6]) { season({}, 8, seed); if (fakeWeeks().length) any = true; }
+    expect(any).toBe(true);
+    for (const seed of [1, 2, 3]) { season({ ssSurprise: 'off' }, 8, seed); expect(fakeWeeks(), `seed ${seed}`).toEqual([]); }
+  });
+  it('the Randomize books it from week three, with eight or more in the house, never on a vote night', () => {
+    const weeks = Array.from({ length: 13 }, (_, i) => ({ ep: i + 1, active: 16 - i, finale: i === 12 }));
+    let booked = 0;
+    for (let s = 1; s <= 200; s++) {
+      let x = s;
+      const rng = () => { x = (x * 16807) % 2147483647; return x / 2147483647; };
+      const book = ssRandomDraw(rng, weeks);
+      const fk = book.filter(([, id]) => id === FAKE_CARD).map(([ep]) => ep);
+      booked += fk.length ? 1 : 0;
+      for (const ep of fk) {
+        expect(ep).toBeGreaterThanOrEqual(3);
+        expect(weeks.find(w => w.ep === ep).active).toBeGreaterThanOrEqual(8);
+        expect(book.some(([e, id]) => e === ep && ['ss-house-decides', 'ss-vote-to-evict'].includes(id))).toBe(false);
+      }
+    }
+    expect(booked).toBeGreaterThan(90);
+    expect(booked).toBeLessThan(170);
+  });
+});
+
+// the user, 2026-11-02: "can the finale always show the percentage even when its selected to never shows"
+// and: "semifinal dont show the percentage if the setting is off only the final the last read at the stage"
+describe('the percentages at the end of the season', () => {
+  it('the final shows them on the stage even when the season never does; the semi-final keeps the setting', () => {
+    seedGame(CAST, { episode: 0, eliminated: [], namedAlliances: [] });
+    Object.assign(globalThis, { gs, players, seasonConfig, relationships, pStats, pronouns, ordinal, getBond, getPerceivedBond, bKey, bondLabel, romanticCompat });
+    Object.assign(seasonConfig, { format: 'secret-story', seasonNumber: 1, finaleSize: 3, jurySize: 0, theme: '', themeArcStamped: '', bbSecretStory: undefined, ssSecretRoom: 'off', ssSignature: undefined, ssPercents: 'hide', twistSchedule: [] });
+    withSeededRandom(9, () => { let n = 0; while ((gs.activePlayers || []).length > 3 && n < 24) { if (!simulateBBEpisode()) break; n++; } runBBFinale(); });
+    const rows = gs.episodeHistory.filter(Boolean);
+    const verdict = r => bbWeekSteps(r, { host: 'Josh' }).find(s => /^bb-ss-prime-verdict-w/.test(s.id));
+    const semi = rows.find(r => (r.acts || []).some(a => a.type === 'ss-prime' && (a.segments || []).some(s => s.kind === 'unveil')));
+    const sv = verdict(semi);
+    expect(sv.steps.some(x => x.board?.title === "THE PUBLIC'S VOTE")).toBe(false);
+    expect(sv.steps.some(x => /% of the vote/.test(x.t || ''))).toBe(false);
+    // (the final: on the lines, where the stage draws it; each one as it is read, the winner's last)
+    const fin = bbWeekSteps(rows.find(r => r.isFinale), { host: 'Josh' }).find(s => s.id === 'bb-ss-final-v');
+    expect(fin.steps.map(x => x.t).join(' ')).toMatch(/with [0-9.]+% of the public's vote/);
+    const boards = fin.steps.filter(x => x.board?.title === "THE PUBLIC'S VOTE").map(x => x.board.rows.filter(r => /%$/.test(r.text)).length);
+    expect(boards.length).toBeGreaterThanOrEqual(2);
+    expect(boards).toEqual([...boards].sort((a, b) => a - b));
+    expect(boards.at(-1)).toBe(fin.steps.find(x => x.board).board.rows.length);
+    expect(boards[0]).toBe(1);
+    const win = fin.steps.find(x => x.confetti && x.big);
+    expect(win.board.rows.every(r => /%$/.test(r.text))).toBe(true);
   });
 });

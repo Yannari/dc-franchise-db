@@ -247,7 +247,7 @@ describe("Secret Story's setup screen", () => {
     for (const id of ['sec-bb-options', 'bb-options-body', 'sec-bb-divider']) { expect(ss).not.toContain(id); expect(bb).toContain(id); }
     for (const id of ['sec-ss-options', 'ss-options-body', 'grp-ss-signature']) { expect(ss).toContain(id); expect(bb).not.toContain(id); }
   });
-  it('offers every tool the season draws, the secret room, walkouts, and every season twist the show plays', async () => {
+  it('offers every tool the season draws, walkouts, and every season twist the show plays', async () => {
     const fs = await import('node:fs');
     const html = fs.readFileSync('simulator.html', 'utf8');
     const { TOOLS, SIGNATURES } = await import('../js/ss/twists.js');
@@ -255,7 +255,9 @@ describe("Secret Story's setup screen", () => {
       expect(html, id).toContain(`id="cfg-ss-tool-${id}"`);
       for (const lv of TOOLS[id].levels) expect(html, `${id} ${lv}`).toMatch(new RegExp(`id="cfg-ss-tool-${id}"[\\s\\S]*?<option value="${lv}">`));
     }
-    for (const id of ['cfg-ss-secret-room', 'cfg-ss-departures', 'cfg-ss-signature']) expect(html).toContain(`id="${id}"`);
+    for (const id of ['cfg-ss-departures', 'cfg-ss-signature']) expect(html).toContain(`id="${id}"`);
+    // (the fake elimination is a timeline card, not a house option: the user, 2026-11-02)
+    expect(html).not.toContain('id="cfg-ss-secret-room"');
     for (const s of SIGNATURES.filter(x => x.built)) expect(html, s.id).toMatch(new RegExp(`<option value="${s.id}" data-what="[^"]{150,}">`));
   });
 });

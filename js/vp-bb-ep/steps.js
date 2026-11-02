@@ -4711,10 +4711,17 @@ function ssFinalVoteScreen(act, ctx) {
   ];
   steps[0].ask = { id: 'ss-final|win', q: 'Who wins Secret Story?', people: true, opts: order.slice().sort() };
   const PLACE = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
+  // THE PERCENTAGES, always, whatever the season's setting (the user, 2026-11-02: "only the final, the last read at the
+  // stage"): each one goes up on the board as it is read, from the bottom, and the winner's last. The stage draws a
+  // step's board, so it rides on the lines.
+  const read = [];
+  const board = () => ({ title: "THE PUBLIC'S VOTE", rows: order.map(n => ({ n, text: read.includes(n) ? `${p[n]}%` : '?' })) });
   order.slice(1).reverse().forEach(n => {
-    steps.push({ k: 'host', by: host, t: `In ${PLACE[order.indexOf(n)] || `${order.indexOf(n) + 1}th`} place, with ${p[n]}% of the vote... ${n}.`, push: true });
+    read.push(n);
+    steps.push({ k: 'host', by: host, t: `In ${PLACE[order.indexOf(n)] || `${order.indexOf(n) + 1}th`} place, with ${p[n]}% of the vote... ${n}.`, push: true, board: board() });
   });
-  steps.push({ k: 'host', by: host, t: `And the winner of Secret Story, with ${p[order[0]]}% of the public's vote, is... ${order[0]}!`, settle: { id: 'ss-final|win', answer: order[0], n: order.length }, confetti: true, big: [order[0], 'Wins Secret Story', 'safe'], toast: ['THE WINNER', '#f5c542'] });
+  read.push(order[0]);
+  steps.push({ k: 'host', by: host, t: `And the winner of Secret Story, with ${p[order[0]]}% of the public's vote, is... ${order[0]}!`, settle: { id: 'ss-final|win', answer: order[0], n: order.length }, confetti: true, big: [order[0], 'Wins Secret Story', 'safe'], toast: ['THE WINNER', '#f5c542'], board: board() });
   steps.push(ssv(act.kitty ? `${order[0]}, you leave this house with your kitty: ${euros(act.kitty)}.` : `${order[0]}, your kitty is empty. But you leave this house as the winner.`));
   if (act.cheque) steps.push({ k: 'host', by: host, t: `And with the winner's cheque: ${euros(act.cheque)}. That is ${euros((act.kitty || 0) + act.cheque)} in all, ${order[0]}!`, confetti: true, toast: ['THE CHEQUE', '#f5c542'] },
     { k: 'say', by: order[0], push: true, t: pickBy(['I can\'t... I don\'t... thank you. Thank you, everybody.', 'This is for everybody at home who voted. Every single one of you.', act.kept === false ? "They found my secret, and you still voted for me. Thank you. Thank you so much." : 'I kept my secret, I kept my head, and I kept my friends. Thank you.'], `final|${order[0]}`) });

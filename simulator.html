@@ -813,8 +813,9 @@
             <!-- SECRET STORY'S SEASON TWIST (the user, 2026-11-02: "season twist (the one that last a season) should be in
                  SEASON STRUCTURE not in twist list and not be taken by the surprise twist"). Read by js/bb/secret-story.js
                  on launch night: Random lets the show draw one; Surprise twists does not touch it. -->
-            <div class="form-group" id="grp-ss-signature">
-              <label class="form-label">Season twist</label>
+            <div class="form-group ss-sig-card" id="grp-ss-signature">
+              <label class="ss-sig-k" for="cfg-ss-signature">Season twist</label>
+              <div class="ss-sig-sub">The twist that runs all season. Chosen here: the timeline and Surprise twists never add one.</div>
               <select id="cfg-ss-signature" onchange="ssSignatureHint();saveConfig()" class="form-input">
                 <option value="random" data-what="The show draws one for the season, most seasons, never the same as the last season's. Some seasons have none.">Random</option>
                 <option value="none" data-what="No season twist: everybody walks into the house on launch night, and nobody plays a secret role.">None</option>
@@ -841,7 +842,7 @@
                  by js/ss/setup-panel.js from the cast. -->
             <div class="divider" id="sec-ss-divider"></div>
             <div class="setup-section-label" id="sec-ss-basics">THE HOUSE OF SECRETS</div>
-            <div id="ss-setup-body">
+            <div id="ss-setup-body" class="ss-opt-grid">
               <div class="form-group">
                 <label class="form-label">The house</label>
                 <select id="cfg-ss-house" onchange="saveConfig()" class="form-input">
@@ -864,6 +865,14 @@
                 </select>
               </div>
               <div class="form-group">
+                <label class="form-label">The weekly game</label>
+                <select id="cfg-ss-weekly" onchange="saveConfig()" class="form-input">
+                  <option value="random">Random</option>
+                  <option value="classic">The Voice's game: clues, money, a free buzz, sometimes immunity (the classic seasons)</option>
+                  <option value="revival">Master of the House: immune, and one direct nomination (the revival)</option>
+                </select>
+              </div>
+              <div class="form-group ss-opt-wide">
                 <label class="form-label">Nominees each week</label>
                 <select id="cfg-ss-nominees" onchange="saveConfig()" class="form-input">
                   <option value="auto">Follow the nominations (two in the classic seasons, three or four in the revival)</option>
@@ -872,7 +881,7 @@
                 </select>
                 <div class="hint hint-tight">Twists still change it: a red room, a card, a week when the whole house faces the public.</div>
               </div>
-              <div class="form-group">
+              <div class="form-group ss-opt-wide">
                 <label class="form-label">The public's percentages</label>
                 <select id="cfg-ss-percents" onchange="saveConfig()" class="form-input">
                   <option value="end">Shown once the eliminated is named (no spoilers while it is read)</option>
@@ -880,23 +889,15 @@
                   <option value="hide">Never shown</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label class="form-label">The weekly game</label>
-                <select id="cfg-ss-weekly" onchange="saveConfig()" class="form-input">
-                  <option value="random">Random</option>
-                  <option value="classic">The Voice's game: clues, money, a free buzz, sometimes immunity (the classic seasons)</option>
-                  <option value="revival">Master of the House: immune, and one direct nomination (the revival)</option>
-                </select>
-              </div>
-              <div class="form-group">
+              <div class="form-group ss-opt-wide">
                 <label class="form-label">Surprise twists</label>
                 <select id="cfg-ss-surprise" onchange="saveConfig()" class="form-input">
                   <option value="on">On: the Voice adds twists of its own in the weeks you leave empty</option>
                   <option value="off">Off: only the twists on the timeline happen</option>
                 </select>
-                <div class="hint hint-tight">Off: no split, nomination twist, prime theme, false Voice, ticket, special vote, Clan War or fake elimination unless you put it on the timeline (or choose it here). An Arena house you picked keeps its wall.</div>
+                <div class="hint hint-tight">Off: no split, nomination twist, prime theme, false Voice, ticket, special vote, Clan War or fake elimination unless you put it on the timeline. An Arena house you picked keeps its wall.</div>
               </div>
-              <div class="form-group">
+              <div class="form-group ss-opt-wide">
                 <label class="form-label">The secrets</label>
                 <div class="hint hint-tight">Every housemate's secret is set in the Cast tab, on its <b>Secrets</b> view (next to Grid and Tribes).</div>
               </div>
@@ -904,8 +905,10 @@
 
             <div class="divider" id="sec-ss-house-divider"></div>
             <div class="setup-section-label" id="sec-ss-options">HOUSE OPTIONS</div>
-            <!-- Secret Story's own (js/ss/twists.js TOOLS; seasonConfig.ssTools). Random: the season draws it, as it always did. -->
-            <div id="ss-options-body">
+            <!-- Secret Story's own (js/ss/twists.js TOOLS; seasonConfig.ssTools). Random: the season draws it. The fake
+                 elimination is a timeline card (js/ss/schedule.js FAKE_CARD), not an option here. -->
+            <div id="ss-options-body" class="ss-opt-grid">
+              <div class="ss-opt-sub">During the prime</div>
               <div class="form-group">
                 <label class="form-label">The red phone</label>
                 <select id="cfg-ss-tool-phone" onchange="saveConfig()" class="form-input">
@@ -945,6 +948,7 @@
                 </select>
                 <div class="hint hint-tight">A choice on the prime that costs the housemate or a friend.</div>
               </div>
+              <div class="ss-opt-sub">In the house</div>
               <div class="form-group">
                 <label class="form-label">Party nights</label>
                 <select id="cfg-ss-tool-parties" onchange="saveConfig()" class="form-input">
@@ -964,15 +968,6 @@
                 <div class="hint hint-tight">Ninety seconds to grab the week's food, once a week. A house punishment can keep it shut.</div>
               </div>
               <div class="form-group">
-                <label class="form-label">The eliminated's farewell power</label>
-                <select id="cfg-ss-tool-farewell" onchange="saveConfig()" class="form-input">
-                <option value="random">Random</option>
-                <option value="none">Never</option>
-                <option value="some">Some weeks</option>
-                </select>
-                <div class="hint hint-tight">From the studio, the eliminated gives $2,000 to a friend still inside and halves the kitty of the one they blame most.</div>
-              </div>
-              <div class="form-group">
                 <label class="form-label">The Voice's evening games</label>
                 <select id="cfg-ss-tool-evenings" onchange="saveConfig()" class="form-input">
                 <option value="random">Random</option>
@@ -990,15 +985,15 @@
                 </select>
                 <div class="hint hint-tight">The Voice hides it in the house. Whoever finds it is immune that week and nominates one housemate.</div>
               </div>
+              <div class="ss-opt-sub">Leaving the house</div>
               <div class="form-group">
-                <label class="form-label">Fake eliminations (the secret room)</label>
-                <select id="cfg-ss-secret-room" onchange="saveConfig()" class="form-input">
+                <label class="form-label">The eliminated's farewell power</label>
+                <select id="cfg-ss-tool-farewell" onchange="saveConfig()" class="form-input">
                 <option value="random">Random</option>
-                <option value="off">Never</option>
-                <option value="once">Once</option>
-                <option value="twice">Twice</option>
+                <option value="none">Never</option>
+                <option value="some">Some weeks</option>
                 </select>
-                <div class="hint hint-tight">The eliminated does not go home: they hide in the secret room, watch the house, and come back. The Control Tower season twist always has two.</div>
+                <div class="hint hint-tight">From the studio, the eliminated gives $2,000 to a friend still inside and halves the kitty of the one they blame most.</div>
               </div>
               <div class="form-group">
                 <label class="form-label">Walkouts and expulsions</label>

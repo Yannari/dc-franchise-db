@@ -72,6 +72,21 @@ export function pinFakes(state, week, houseSize) {
   });
   if (state?.plan) state.plan.secretRoomWeek = fakes[0]?.week ?? state.plan.secretRoomWeek ?? null;
 }
+/**
+ * A fake elimination the timeline put on this week (the 'ss-fake-elimination' card, js/ss/schedule.js): planned now,
+ * with a drawn kind, length and role, unless the week already has one. Two weeks up there is cut to one when the next
+ * card comes before they would be back down.
+ */
+export function pinFakeCard(state, week, rng = Math.random, nextCard = null) {
+  state.plan ||= {};
+  const fakes = (state.plan.fakes ||= []);
+  if (fakes.some(x => x.week === week)) return null;
+  const x = { week, kind: weighted([['verdict', 0.4], ['double', 0.2], ['voluntary', 0.2], ['power', 0.2]], rng),
+    weeks: nextCard != null && nextCard - week <= 2 ? 1 : rng() < 0.7 ? 1 : 2, role: weighted([['watch', 0.4], ['master', 0.3], ['remote', 0.3]], rng), card: true };
+  fakes.push(x);
+  if (state.plan.secretRoomWeek == null) state.plan.secretRoomWeek = week;
+  return x;
+}
 /** This week's planned fake elimination, if it can happen (nobody up there already, a house big enough). */
 export function fakePlanFor(state, week, houseSize) {
   if (!state?.plan || hiddenNow(state).length || houseSize < 6) return null;

@@ -14,6 +14,11 @@
 // 2026-11-02), and the season's own draw when Random. What it was goes on the timeline's launch night as a record only.
 export const SIG_CARD_OF = id => `ss-sig-${id}`;
 
+// THE FAKE ELIMINATION is a card (the user, 2026-11-02: "fake elimination should be a schedulable twist not a house
+// options"): it plays the week it is put on (js/bb/secret-story.js readSchedule, js/ss/hidden.js pinFakeCard), and a
+// season with one placed by hand has no other fake elimination of the show's own.
+export const FAKE_CARD = 'ss-fake-elimination';
+
 /** The card ids, by what they force (js/bb/secret-story.js SS_SCHEDULE). */
 export const SS_CARDS = {
   noms: ['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'],
@@ -24,6 +29,7 @@ export const SS_CARDS = {
   vote: ['ss-house-decides', 'ss-vote-to-evict'],
   ticket: ['ss-ticket'],
   launch: ['ss-public-signs'],
+  fake: [FAKE_CARD],
 };
 export const SS_CARD_IDS = new Set(Object.values(SS_CARDS).flat());
 
@@ -35,7 +41,7 @@ export const SS_EARLIEST = {
   'ss-red-phone': 2, 'ss-dilemmas': 2, 'ss-bridge': 3, 'ss-rings': 3, 'ss-truths': 4,
   'ss-lie-detector': 3, 'ss-thermal': 3, 'ss-library': 2, 'ss-black-phone': 3, 'ss-families': 4, 'ss-masks': 3, 'ss-fire': 3, 'ss-back-in-time': 4, 'ss-returns': 4, 'ss-temptations': 2, 'ss-gender-war': 3, 'ss-shields': 3, 'ss-safe': 3, 'ss-crystal-ball': 4, 'ss-jungle': 3, 'ss-hearts': 3,
   'ss-second-house': 4, 'ss-clans': 4, 'ss-bears': 5, 'clans-event': 4,
-  'ss-false-voice': 4, 'ss-robot': 5, 'ss-house-decides': 3, 'ss-vote-to-evict': 4, 'ss-ticket': 4,
+  'ss-false-voice': 4, 'ss-robot': 5, 'ss-house-decides': 3, 'ss-vote-to-evict': 4, 'ss-ticket': 4, [FAKE_CARD]: 3,
 };
 /** Two surprises a week at most, the prime's theme included (the engine's own draws; the timeline's cards always play). */
 export const SS_MAX_PER_WEEK = 2;
@@ -106,5 +112,15 @@ export function ssRandomDraw(rng, weeks = []) {
   if (tkAt.length && rng() < 0.5) book.push([pick(tkAt).ep, 'ss-ticket']);
   // launch night: the Public's Signs, one season in three (a one-off of the real show, not every year's)
   if (weeks.some(w => w && w.ep === 1) && rng() < 0.34) book.push([1, 'ss-public-signs']);
+  // the fake elimination: two seasons in three, once (a third of those, twice, three weeks or more apart), while
+  // eight or more are in the house; never on the night the public votes differently (that night is never fake)
+  const voteNight = new Set(book.filter(([, id]) => SS_CARDS.vote.includes(id)).map(([ep]) => ep));
+  const fkAt = W.filter(w => w.ep >= earliestOf(FAKE_CARD) && size(w) >= 8 && !voteNight.has(w.ep));
+  if (fkAt.length && rng() < 0.65) {
+    const a = pick(fkAt);
+    book.push([a.ep, FAKE_CARD]);
+    const later = fkAt.filter(w => w.ep >= a.ep + 3);
+    if (later.length && rng() < 0.3) book.push([pick(later).ep, FAKE_CARD]);
+  }
   return book.sort((a, b) => a[0] - b[0]);
 }

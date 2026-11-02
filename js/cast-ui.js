@@ -11,7 +11,7 @@ import { ensurePortraitSelection, migrateCastPortraits, baseAvatarSlug,
   playerAvatarUrl, portraitOptions, hasShowPortraits, loadPortraitCatalog } from './players.js';
 import { SHOWS, HOSTS_BY_FORMAT, DEFAULT_FORMAT, DRAG_FORMAT } from './shows.js';
 import { TOOLS as SS_TOOLS, SIGNATURE_START } from './ss/twists.js';
-// (the secret room has its own control: ssSecretRoom, read by planFakes)
+// (the secret room's fake eliminations are a timeline card now: js/ss/schedule.js FAKE_CARD)
 const SS_TOOL_IDS = Object.keys(SS_TOOLS).filter(id => id !== 'secretRoom');
 import { cloudBackupRestore, cloudBackupReady, cloudBackupInventory, cloudBackupFetch, cloudSite } from './cloud-backup.js';
 import { CIRCLE_CATEGORIES } from './ci/categories.js';
@@ -1622,7 +1622,6 @@ export function saveConfig() {
     // the season twist (SEASON STRUCTURE), and the house options: Random lets the season draw it (js/ss/twists.js)
     ssSignature: g('cfg-ss-signature')?.value || seasonConfig.ssSignature || 'random',
     ssSignatureStart: g('cfg-ss-signature-start')?.value || seasonConfig.ssSignatureStart || 'start',
-    ssSecretRoom: g('cfg-ss-secret-room')?.value || seasonConfig.ssSecretRoom || 'random',
     ssTools: Object.fromEntries(SS_TOOL_IDS.map(id => [id, g(`cfg-ss-tool-${id}`)?.value || seasonConfig.ssTools?.[id] || 'random'])),
     ssSecrets: seasonConfig.ssSecrets || {},
     ssRecognitions: seasonConfig.ssRecognitions || null,
@@ -1863,7 +1862,8 @@ export function renderConfig() {
   set('cfg-ss-signature', seasonConfig.ssSignature || 'random');
   { const sp = document.getElementById('cfg-ss-signature-start'); if (sp) sp.value = ''; }
   window.ssSignatureHint?.();
-  set('cfg-ss-secret-room', seasonConfig.ssSecretRoom === 'on' ? 'once' : (seasonConfig.ssSecretRoom || 'random'));
+  // (the old house option for fake eliminations: the timeline's card decides now, so a saved choice must not linger)
+  delete seasonConfig.ssSecretRoom;
   for (const id of SS_TOOL_IDS) set(`cfg-ss-tool-${id}`, seasonConfig.ssTools?.[id] || 'random');
   set('cfg-ss-departures', seasonConfig.bbDepartures || 'off');
   // (a season twist placed on the timeline while it was briefly a card there: the setup screen chooses it now)

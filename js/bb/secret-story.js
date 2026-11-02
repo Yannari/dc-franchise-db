@@ -33,7 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { pinPublic, clueRoomWeek, settleDeals, pactBetrayed } from '../ss/clue-room.js';
-import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS, SIG_CARD_OF } from '../ss/schedule.js';
+import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS, SIG_CARD_OF, FAKE_CARD } from '../ss/schedule.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -53,7 +53,7 @@ import { handOutMissions, playMissions, settleMissions } from '../ss/missions.js
 import { castNominations } from '../ss/nominations.js';
 import { playPrime, revealOnExit, afterShow } from '../ss/prime.js';
 import { throwParty, runSuperette } from '../ss/parties.js';
-import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, planFakes, pinFakes, fakePlanFor, usePlan } from '../ss/hidden.js';
+import { isFakeNight, sendToSecretRoom, watchFromSecretRoom, bringBack, planFakes, pinFakes, pinFakeCard, fakePlanFor, usePlan } from '../ss/hidden.js';
 import { romanticCompat } from '../players.js';
 import { notice, weekPasses, readHouseBeats, absorbPopularity, support, standing, voteShares, publicRead, awareness, fileOf, carriedBy, GROUP_LABEL } from '../ss/public.js';
 import { pStats } from '../players.js';
@@ -142,6 +142,9 @@ export function readSchedule(state, wk) {
     if (m && (state[m[0]] ||= {})[wk] == null) state[m[0]][wk] = m[1];
     if (m && m[1] !== 'none') markSurprise(state, wk, t.type);
   }
+  // a fake elimination on this week's card (js/ss/hidden.js pinFakeCard): planned now, played at the prime
+  const fk = all.filter(x => x.type === FAKE_CARD).map(x => Number(x.episode)).filter(Number.isFinite).sort((a, b) => a - b);
+  if (fk.includes(Number(wk))) pinFakeCard(state, Number(wk), Math.random, fk.find(w => w > Number(wk)) ?? null);
   // A season the timeline's Randomize drew (js/ss/schedule.js) plays exactly its cards: a week the draw left empty
   // has no twist of its own on top. Cards placed by hand pin their week and leave the rest to the engine, unless
   // Surprise twists is Off (the user, 2026-10-29: "yes add an on/off"), when only the timeline's cards happen.
@@ -368,8 +371,13 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     // not in twist list and not be taken by the surprise twist"): a signature, 'none', or Random for the season's own
     // draw. Surprise twists and the timeline never touch it. The house options lock each tool; Random draws it.
     const sig = seasonConfig?.ssSignature;
+    // THE FAKE ELIMINATION is a timeline card (js/ss/schedule.js FAKE_CARD): with one placed by hand, or a timeline the
+    // Randomize drew, the show adds none of its own; the cards play on their weeks (readSchedule). (`ssSecretRoom` is
+    // an old setting, still read: no screen writes it.)
+    const cards0 = (seasonConfig?.twistSchedule || []).filter(x => x && !x.auto);
+    const fakeByCard = cards0.some(x => x.type === FAKE_CARD) || cards0.some(x => x.random && SS_CARD_IDS.has(x.type));
     const locks = { ...(seasonConfig?.ssTools || {}), signature: sig && sig !== 'random' ? sig : undefined,
-      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : (off ? 'off' : undefined) };
+      secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : (off || fakeByCard ? 'off' : undefined) };
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
     // the season's fake eliminations: how many, which kind, how long, and what they do up there (js/ss/hidden.js)
@@ -873,6 +881,7 @@ export function runPrime({ week = undefined, house = [], nominees = [], rng = Ma
         state.pendingVoluntary = who;
         state.pendingVoluntaryPlan = { weeks: plan.weeks, role: plan.role };
         usePlan(plan, 'voluntary');
+        aired(state, ctx.week, FAKE_CARD, 'A Fake Departure', '🕵️');
         /** @type {any[]} */ (night.segments).push({ kind: 'voluntary', to: who, kitty: Number(state.kitty?.[who]) || 0, effects: { bond: [], pop: [] } });
         pub(who, 'fun', 0.2, 'walked out of the game on the prime');
       }
@@ -1202,7 +1211,7 @@ export function secretStoryPublicVote({ nominees = [], rng = Math.random, week =
   // A double sends the two lowest up together; an elimination power hands the choice to one housemate.
   const plan = state ? fakePlanFor(state, Number(week?.num) || 0, houseSize) : null;
   const fake = !!plan && plan.kind !== 'voluntary';
-  if (fake && state) aired(state, Number(week?.num) || 0, 'fake-elimination', plan.kind === 'double' ? 'A Fake Double Elimination' : 'A Fake Elimination', '🕵️');
+  if (fake && state) aired(state, Number(week?.num) || 0, FAKE_CARD, plan.kind === 'double' ? 'A Fake Double Elimination' : 'A Fake Elimination', '🕵️');
   // THE NIGHT THE PUBLIC DECIDES DIFFERENTLY (js/ss/public-votes.js): to eliminate, or the house picks from the
   // public's bottom two. Never on a fake elimination's night.
   const mode = state && !fake ? voteMode(state, huntCtx(week, rng), { nominees }) : 'save';

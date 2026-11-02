@@ -18,6 +18,7 @@ import { ChxStage, AV } from './stage.js';
 import { ensureChxStyle } from './style.js';
 import { CH_MARKS } from './marks.js';
 import { bedFor, playStep, warmStings } from './sound.js';
+import { chVoiceLine, chVoiceStop, chVoiceLeft, chVoicedLines } from './voicing.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const reg = () => (typeof window !== 'undefined' ? (window._chx ||= {}) : (globalThis._chx ||= {}));
@@ -27,6 +28,8 @@ export function chStepVpScreens(row, ctx = {}) {
   const screens = chStepScreens(row, ctx);
   const key = `ch${row.num}`;
   reg()[key] = { row, screens, ctx: { ...ctx, ...wordsOf(row, ctx) } };
+  // which of the episode's lines have a voice actor's clip (vp-ch-ep/voicing.js), asked before the first line
+  chVoicedLines(row.num);
   ensureChxStyle();
   const week = row?.ch?.final ? 'The final' : row?.ch?.division === 'm' ? "Men's week" : row?.ch?.division === 'f' ? "Women's week" : '';
   return screens.map((s, si) => ({ id: `ch-${s.id}`, label: s.label, html: shell(key, si, s, row, week, ctx),
@@ -76,6 +79,7 @@ function shell(key, si, s, row, week, ctx) {
   <div class="chx-top"><div class="chx-logo">The Challenge<small>${esc((ctx.title || 'Blue Lagoon').toUpperCase())}</small></div>
     <div class="chx-eps"><b>Episode ${esc(row.num)}</b>${week ? ` · ${esc(week)}` : ''} · ${esc(s.label)}</div>
     <div class="chx-chapmenu"><button type="button" class="chx-ibtn" onclick="chxChapters(this)">Chapters &#9662;</button><div class="chapters"></div></div><div class="chx-spacer"></div>
+    <button type="button" class="chx-ibtn" onclick="chVoiceSelected(${Number(row.num)})" title="Voice every line of this episode, each speaker in their own Inworld voice">&#127897; Voice</button>
     <button type="button" class="chx-ibtn" onclick="chxTv()">TV</button>
     <button type="button" class="chx-ibtn" onclick="chxSwitchViewer('classic')" title="The readout: every line of the episode, one screen per moment">Readout view</button></div>
   <div class="chx-frame" onclick="chxFrame(this)">
@@ -635,6 +639,8 @@ function goTo(R, idx, forward, sting = forward) {
   if ((steps[idx]?.know || /alliance|showmance/i.test(steps[idx]?.card?.k || '')) && !R.intelOpen) R.root.querySelector('.intelbtn')?.classList.add('new');
   intel(R); chapters(R); script(R);
   playStep(R.scr, idx, sting);
+  // the speaker's own voice when the line has a clip (vp-ch-ep/voicing.js); any move off a line stops it
+  chVoiceLine(R.E.row.num, steps[idx]);
 }
 // The bar is one segment per scene (the user, 2026-10-15: "like in Total Drama, a bubble each time a scene
 // switches"): as long as its scene, filling as it plays, ticked once watched, named on hover.
@@ -750,7 +756,8 @@ export function chxAuto(el) {
   R.auto = !R.auto;
   R.root.querySelector('.chx-auto')?.classList.toggle('on', R.auto);
   // play stops at a map: the viewer picks (the user, 2026-10-15: "let me pick, then it chooses for me")
-  const tick = () => { if (!R.auto) return; if (R.scr.steps[R.idx]?.map) { stopAuto(R); return; } chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); };
+  // a voiced line is heard to its end before Play moves on
+  const tick = () => { if (!R.auto) return; if (R.scr.steps[R.idx]?.map) { stopAuto(R); return; } const left = chVoiceLeft(); if (left > 0) { R.timer = setTimeout(tick, left + 350); return; } chxNext(R.root); if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); };
   if (R.auto) R.timer = setTimeout(tick, holdFor(R.scr.steps[R.idx]) / speed()); else clearTimeout(R.timer);
 }
 export function chxIntel(el) { const R = runner(rootOf(el) || document.querySelector('.chx[data-ep]')); if (!R) return; R.intelOpen = !R.intelOpen; intel(R); }
@@ -776,6 +783,7 @@ export const CHX_SWITCH = `<div style="display:flex;justify-content:flex-end;mar
 if (typeof window !== 'undefined') Object.assign(window, { chxGo, chxFrame, chxNext, chxBack, chxRestart, chxAuto, chxIntel, chxTv, chxSwitchViewer, chxSpeed, chxChapters });
 if (typeof document !== 'undefined') {
   // a screen opens on its first step; leaving it stops its Auto
+  document.addEventListener('vp:close', () => chVoiceStop());
   document.addEventListener('vp:screen', () => {
     setTimeout(() => {
       const root = document.querySelector('.chx[data-ep]');

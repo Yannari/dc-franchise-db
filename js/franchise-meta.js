@@ -1787,6 +1787,47 @@ export function dropMislabeledRecords() {
   return dropped;
 }
 
+/**
+ * Fold a season filed under the wrong number into the one it is.
+ *
+ * The recorders take the number from the season settings, which can still hold
+ * another show's: The Circle 1, played while they said 15 (Total Drama's), was
+ * filed as ci-15 beside the published ci-1, and every Challenge intro then
+ * named "The Circle 15" (the user, 2026-11-02: "theres only 1 circle season and
+ * its season 1 delete that season 15"). A record whose name is its OWN show's
+ * name and a number that is not its key's, with exactly the people of that
+ * numbered season, is that season: what the copy knows that the season does
+ * not (showmances, rivals, a fan favourite — a published season is backfilled
+ * from placements) moves over where the two agree on the result, and the copy
+ * goes. Returns how many it folded.
+ */
+export function foldMisnumberedRecords() {
+  const af = activeFranchise();
+  if (af.locked) return 0;
+  const people = r => Object.keys(r?.players || {}).sort().join('|');
+  const empty = v => v == null || v === 0 || v === '' || (Array.isArray(v) && !v.length);
+  let folded = 0;
+  for (const [key, rec] of Object.entries(af.seasons)) {
+    const { format, num } = seasonKeyParts(key, rec);
+    const show = SHOWS[format]?.name;
+    const m = show && String(rec?.seasonName || '').match(new RegExp(`^${show.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+(\\d+)$`));
+    if (!m || Number(m[1]) === num) continue;
+    const realKey = seasonKey(format, Number(m[1]));
+    const real = af.seasons[realKey];
+    if (!real || !people(rec) || people(rec) !== people(real)) continue;
+    for (const [n, r] of Object.entries(rec.players)) {
+      const k = real.players[n];
+      if (!k || k.placement !== r.placement || !!k.winner !== !!r.winner) continue;
+      for (const [f, v] of Object.entries(r)) if (empty(k[f]) && !empty(v)) k[f] = v;
+    }
+    for (const f of ['fanFavorite', 'ratings', 'finale']) if (empty(real[f]) && !empty(rec[f])) real[f] = rec[f];
+    console.info(`Franchise ledger: ${key} ("${rec.seasonName}") is ${realKey} filed under the wrong number; folded into it.`);
+    delete af.seasons[key];
+    folded++;
+  }
+  return folded;
+}
+
 export function recordSeasonToLedger(_ep, source = 'live') {
   const af = activeFranchise();
   if (af.locked) {
@@ -1838,6 +1879,8 @@ export function recordBuiltSeason(rec, seasonNumber, source = 'live') {
   rec.source = source;
   rec.deriverV = LEDGER_DERIVER_V;
   activeSeasons()[seasonKey(rec.format, Number(seasonNumber))] = rec;
+  // played under another show's number ("The Circle 1" as ci-15): it joins the season it is
+  foldMisnumberedRecords();
   return true;
 }
 

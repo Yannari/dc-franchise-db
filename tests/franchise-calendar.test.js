@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   SLOTS, airKey, byAirDate, airLabel, ageAt, latestAired, yearsBetween, nextWindowFor, nextAllStarsWindow,
-  nowDate, finaleDate, premiereDate, projectedRun,
+  nowDate, finaleDate, premiereDate, projectedRun, slotCutoff,
 } from '../js/franchise-calendar.js';
 import { SHOWS } from '../js/shows.js';
 
@@ -229,7 +229,7 @@ describe('never before now (the user, 2026-10-20)', () => {
     expect(nextWindowFor([td15], 'total-drama', { number: 17 })).toEqual({ airYear: 2027, airSlot: 'fall' });
   });
 
-  it('every projected window premieres at or after now', () => {
+  it('every projected window’s quarter is not half over at now', () => {
     const db = JSON.parse(readFileSync('seasons_database.json', 'utf8')).seasons
       .map(r => ({ ...r, format: r.format || 'total-drama' }));
     const now = nowDate(db);
@@ -237,7 +237,7 @@ describe('never before now (the user, 2026-10-20)', () => {
       const mine = db.filter(r => r.format === format && !r.allStars);
       const number = Math.max(0, ...mine.map(r => Number(r.seasonNumber) || 0)) + 101;
       const w = nextWindowFor(db, format, { number });
-      expect(premiereDate(w, format) >= now, `${format}: ${airLabel(w)}`).toBe(true);
+      expect(slotCutoff(w) > now, `${format}: ${airLabel(w)}`).toBe(true);
     }
   });
 
@@ -252,6 +252,16 @@ describe('never before now (the user, 2026-10-20)', () => {
     }
     // ...and nothing else: the Traitors' first season follows the rule.
     expect(nextWindowFor(db, 'traitors')).toEqual({ airYear: 2028, airSlot: 'winter' });
+  });
+
+  it('a quarter stays open until it is half over, not just until its first night (the user, 2026-11-01)', () => {
+    // A fall season running into mid-January: the winter premiere night (January 6) has passed, winter has not.
+    const ch = s(2030, 'fall', { format: 'the-challenge', seasonNumber: 9, episodeCount: 16 });
+    expect(nowDate([ch]).getUTCMonth(), 'ends in January').toBe(0);
+    expect(nextWindowFor([ch], 'traitors', { number: 9 })).toEqual({ airYear: 2031, airSlot: 'winter' });
+    // Into March, winter is half over and it moves a year.
+    const long = s(2030, 'fall', { format: 'the-challenge', seasonNumber: 9, episodeCount: 24 });
+    expect(nextWindowFor([long], 'traitors', { number: 9 })).toEqual({ airYear: 2032, airSlot: 'winter' });
   });
 
   it('a booking never moves a season LATER than the rule would', () => {

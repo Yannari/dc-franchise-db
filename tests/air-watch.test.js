@@ -42,16 +42,16 @@ describe('the season being played', () => {
 
 describe('what is due while it airs', () => {
   it('names the season that premieres during it, and where it would move', () => {
-    const { gs, cfg } = td21(16);
+    const { gs, cfg } = td21(28);
     const live = liveSeason(gs, cfg, SEASONS);
     const bb = dueSeasons(SEASONS, live).find(d => d.format === 'big-brother');
     expect(bb).toMatchObject({ number: 6, window: { airYear: 2031, airSlot: 'summer' }, moves: { airYear: 2032, airSlot: 'summer' } });
-    expect(bb.overdue, 'TD 21 episode 16 is after the July premiere').toBe(true);
+    expect(bb.overdue, 'TD 21 episode 28 is after the July premiere').toBe(true);
   });
 
   it('not overdue while the premiere is still ahead', () => {
-    // Last Total Drama ran 20 episodes, so this one is measured to August.
-    const seasons = SEASONS.map(r => (r.format === 'total-drama' ? { ...r, episodeCount: 20 } : r));
+    // Last Total Drama ran 28 episodes, so this one is measured into October, past summer.
+    const seasons = SEASONS.map(r => (r.format === 'total-drama' ? { ...r, episodeCount: 28 } : r));
     const { gs, cfg } = td21(4);
     const live = liveSeason(gs, cfg, seasons);
     const bb = dueSeasons(seasons, live).find(d => d.format === 'big-brother');
@@ -59,8 +59,16 @@ describe('what is due while it airs', () => {
     expect(airWatchHtml(live, [bb])).toMatch(/premieres July \d+, 2031, in \d+ weeks of TD 21/);
   });
 
-  it('leaves out a season that has started (its window is locked) and a booked one', () => {
+  it('a season ending inside the other show’s quarter moves nothing (the user, 2026-11-01: "but they are for winter 2028")', () => {
+    // TD 21 runs 16 weeks from April into August: past the BB premiere, still summer.
     const { gs, cfg } = td21(16);
+    const live = liveSeason(gs, cfg, SEASONS);
+    expect(live.finale.getUTCMonth(), 'finale in summer').toBeGreaterThanOrEqual(6);
+    expect(dueSeasons(SEASONS, live).some(d => d.format === 'big-brother')).toBe(false);
+  });
+
+  it('leaves out a season that has started (its window is locked) and a booked one', () => {
+    const { gs, cfg } = td21(28);
     const live = liveSeason(gs, cfg, SEASONS);
     const locked = dueSeasons(SEASONS, live, { 'big-brother#6': { airYear: 2031, airSlot: 'summer' } });
     expect(locked.some(d => d.format === 'big-brother')).toBe(false);
@@ -69,7 +77,7 @@ describe('what is due while it airs', () => {
   });
 
   it('the export asks, naming each move', () => {
-    const { gs, cfg } = td21(16);
+    const { gs, cfg } = td21(28);
     const live = liveSeason(gs, cfg, SEASONS);
     const ask = exportWarning(SEASONS, live);
     expect(ask).toContain('BB 6: Summer 2031 → Summer 2032');
@@ -78,7 +86,7 @@ describe('what is due while it airs', () => {
   });
 
   it('the Run tab banner says it, and says nothing when nothing is due', () => {
-    const { gs, cfg } = td21(16);
+    const { gs, cfg } = td21(28);
     const live = liveSeason(gs, cfg, SEASONS);
     const html = airWatchHtml(live, dueSeasons(SEASONS, live));
     expect(html).toContain('Due now');

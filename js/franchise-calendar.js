@@ -181,6 +181,18 @@ export function nowDate(seasons = []) {
  * Nothing else is ever added: from now on the Run tab and the export warn when
  * a season is due (js/air-watch.js), so a season starts before it can slip.
  */
+/**
+ * The latest "now" a season can still premiere in its window: the middle of
+ * its quarter, as a UTC Date (winter 2028 -> February 15, 2028). Until then
+ * most of the quarter is still ahead, so the season still belongs to it.
+ */
+export function slotCutoff(season) {
+  const month = SLOT_MONTH[String(season.airSlot).toLowerCase()];
+  const start = Date.UTC(Number(season.airYear), month - 1, 1);
+  const end = Date.UTC(Number(season.airYear), month - 1 + 3, 1);
+  return new Date(start + (end - start) / 2);
+}
+
 /** A booked window for this show's season `number`, or null. */
 export function bookedWindow(format, number) {
   const w = SHOWS[format]?.booked?.[number];
@@ -233,8 +245,17 @@ export function yearsBetween(from, to) {
  * have premiered before it: Total Drama 15 ran 26 weeks into September 2027,
  * and the Circle's first season, played after it, still sat in that April —
  * a "projected" bar drawn in the past. So the window found above moves on to
- * the first one whose premiere is at or after now. A show's own quarters
+ * the first one whose quarter is not half over by now. A show's own quarters
  * still win: the Circle waits for the next spring rather than taking the fall.
+ *
+ * The quarter, not the premiere night (the user, 2026-11-01: "but they are for
+ * winter 2028"). The Challenge 1 ends in mid-January 2028; measured against
+ * the first night, the Traitors' January 6 premiere was "in the past" and its
+ * first season moved a whole year over a twelve-day overlap. Shows overlap,
+ * and with most of winter 2028 still ahead a winter 2028 season can air in it.
+ * Half a quarter, not the whole one: Total Drama 15's late-September finale
+ * still moves an unplayed summer season, which would have aired almost all
+ * of its run before "now".
  *
  * That makes the ORDER seasons are exported in matter, which is why a season's
  * window is fixed when it starts (`gs.airWindow`, js/air-watch.js) and why the
@@ -275,7 +296,7 @@ export function nextWindowFor(seasons = [], format = null, { number = null } = {
   const pick = w => (booked && airKey(booked) < airKey(w) ? booked : w);
 
   const now = nowDate(dated);
-  const open = q => !now || premiereDate(at(q), format) >= now;
+  const open = q => !now || slotCutoff(at(q)) > now;
 
   const home = (format && SHOWS[format]?.airSlots || []).map(s => SLOTS.indexOf(s)).filter(i => i >= 0);
   if (home.length) {
@@ -334,7 +355,7 @@ export function nextAllStarsWindow(seasons = [], format = null) {
   const stars = dated.filter(s => seasonRowFormat(s) === spin);
   // Never before "now", like a flagship season (nextWindowFor).
   const now = nowDate(dated);
-  const open = q0 => { let q = q0; for (let i = 0; i < 16 && now && premiereDate(at(q), spin) < now; i++) q = slotAfter(q); return q; };
+  const open = q0 => { let q = q0; for (let i = 0; i < 16 && now && slotCutoff(at(q)) <= now; i++) q = slotAfter(q); return q; };
   if (stars.length) return { ...at(open(slotAfter(quarters(stars[stars.length - 1])))), number: stars.length + 1, bridge: [] };
 
   const need = Math.max(1, Number(cfg.after) || 1);

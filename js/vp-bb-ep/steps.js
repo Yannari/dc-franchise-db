@@ -6689,7 +6689,9 @@ export function bbWeekSteps(row, { host = 'Valeria', priorEvicted = [], plea = n
   /** @type {any} */ (out).leadingSlots = leading;
   for (const s of out) { s.wall = s.hidden?.size ? wall.filter(n => !s.hidden.has(n)) : wall; s.priorOut = priorEvicted.slice(); s.week = ctx.week; delete s.hidden; }
   if (out.length && !out.some(s => s.steps.some(st => st.hoh)) && ctx.hoh) out[0].steps[0] = { ...out[0].steps[0], hoh: ctx.hoh };
-  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = themeWords(truthTime(countWords(st.t), ctx.week), row.themeId);
+  // (a line marked `ahead` is about what is coming, a twist's rules on the night it starts: "they have three weeks",
+  // "every week they add a nominee" claim no time already passed, so the duration is not cut to the week it airs in)
+  for (const s of out) for (const st of s.steps || []) if (typeof st.t === 'string') st.t = themeWords(st.ahead ? countWords(st.t) : truthTime(countWords(st.t), ctx.week), row.themeId);
   if (THEME_WORDS[row.themeId]) for (const s of out) for (const k of ['title', 'label', 'sub', 'room']) if (typeof s[k] === 'string') s[k] = themeWords(s[k], row.themeId);
   // A Secret Story house has no veto, no jury, no backdoor and no pawn: a line about them, from any of
   // the house's writers, does not air there (the season read, 2026-10-28: "the last veto of the season",

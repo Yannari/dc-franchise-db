@@ -18,6 +18,7 @@
 // The steps' helpers come from steps.js (`H`), so the screens look like the rest.
 
 import { launchToSpaceSteps } from './ss-groups.js';
+import { ssSignatureIntroScreen } from './ss-signature-intro.js';
 import { portraitSteps } from './ss-portraits.js';
 import { duoRel } from '../ss/duos.js';
 import { roleOf } from '../ss/production.js';
@@ -155,6 +156,7 @@ export function ssLaunchScreens(act, ctx, host, H) {
   const out = [];
   const base = (id, extra) => ({ id, kind: 'twist', anchor: ctx.anchor, day: ctx.day, time: 'LIVE', ...extra });
   const STUDIO = { set: 'studio-wide', room: 'The Prime Studio', cam: 1, kicker: 'Live · The Prime Studio' };
+  const sigIntro = ssSignatureIntroScreen(act.signature, host, base, STUDIO);
 
   // ── the cold open, the teaser, the host and the Voice ──
   const summer = act.lastSummer;
@@ -177,8 +179,10 @@ export function ssLaunchScreens(act, ctx, host, H) {
     ssv('The Voice has an eye, ears, and a great many plans for this season.'),
     { k: 'host', by: host, t: "Well, you heard it. That's all we're getting for now." },
     ssv('That is all for now.'),
-    { k: 'host', by: host, t: "Tonight, you at home are going to find out every secret, and they won't. Let's meet the first one." });
+    { k: 'host', by: host, t: "Tonight, you at home are going to find out every secret, and they won't." + (sigIntro ? '' : " Let's meet the first one.") });
   out.push(base('bb-ss-launch-open', { ...STUDIO, title: 'Launch Night', label: 'Launch Night', sub: `${order.length} secrets`, cast: [], steps: open }));
+  // the season's signature, explained to the people at home before it starts (vp-bb-ep/ss-signature-intro.js)
+  if (sigIntro) out.push(sigIntro);
 
   const inside = [];
   const recog = act.recognitions || [];

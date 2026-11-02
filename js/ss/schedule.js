@@ -10,6 +10,17 @@
 //
 // Pure: (rng, weeks) → [[week, twist id]].
 
+import { SIGNATURES } from './twists.js';
+import { GROUPS } from './hidden-groups.js';
+
+// THE SEASON'S SIGNATURE IS A CARD TOO (the user, 2026-11-02: "secret box isnt in the list of the available twist so
+// i dont even know what it is"). One per season, on launch night (week one): 'ss-sig-<id>' for every signature the
+// engine plays (js/ss/twists.js SIGNATURES built). The engine's own draw is written on the timeline as the same card.
+export const SIG_CARD_OF = id => `ss-sig-${id}`;
+export const SS_SIGNATURE_CARDS = Object.fromEntries(SIGNATURES.filter(s => s.built).map(s => [SIG_CARD_OF(s.id), s.id]));
+/** The fewest housemates a signature can play with: a hidden group leaves eight in the house at least; a role needs eight. */
+export const signatureMinCast = id => (GROUPS[id] ? GROUPS[id].size + 8 : id === 'control-tower' ? 10 : 8);
+
 /** The card ids, by what they force (js/bb/secret-story.js SS_SCHEDULE). */
 export const SS_CARDS = {
   noms: ['ss-linked', 'ss-for-life', 'ss-inverted', 'ss-houses', 'ss-red-room', 'ss-exclusive', 'ss-everybody'],
@@ -20,6 +31,7 @@ export const SS_CARDS = {
   vote: ['ss-house-decides', 'ss-vote-to-evict'],
   ticket: ['ss-ticket'],
   launch: ['ss-public-signs'],
+  signature: Object.keys(SS_SIGNATURE_CARDS),
 };
 export const SS_CARD_IDS = new Set(Object.values(SS_CARDS).flat());
 
@@ -35,7 +47,8 @@ export const SS_EARLIEST = {
 };
 /** Two surprises a week at most, the prime's theme included (the engine's own draws; the timeline's cards always play). */
 export const SS_MAX_PER_WEEK = 2;
-export const earliestOf = id => SS_EARLIEST[id] ?? 2;
+// (a signature starts on launch night)
+export const earliestOf = id => SS_EARLIEST[id] ?? (SS_SIGNATURE_CARDS[id] ? 1 : 2);
 /** May the engine draw twist `id` this week? (its earliest week, and room left in the week) */
 export function surpriseOk(state, wk, id = null) {
   if (id && wk < earliestOf(id)) return false;
@@ -102,5 +115,12 @@ export function ssRandomDraw(rng, weeks = []) {
   if (tkAt.length && rng() < 0.5) book.push([pick(tkAt).ep, 'ss-ticket']);
   // launch night: the Public's Signs, one season in three (a one-off of the real show, not every year's)
   if (weeks.some(w => w && w.ep === 1) && rng() < 0.34) book.push([1, 'ss-public-signs']);
+  // the season's signature, on launch night: most seasons have one (js/ss/twists.js draws one 85% of the time), and
+  // only one the cast is big enough for
+  const w1 = weeks.find(w => w && w.ep === 1);
+  if (w1 && rng() < 0.85) {
+    const can = Object.entries(SS_SIGNATURE_CARDS).filter(([, id]) => size(w1) >= signatureMinCast(id)).map(([card]) => card);
+    if (can.length) book.push([1, pick(can)]);
+  }
   return book.sort((a, b) => a[0] - b[0]);
 }

@@ -33,7 +33,7 @@ import { KIND_KIT } from '../ss/secret-pool.js';
 import { openKitties, ledgerOf, mint, burn, KITTY_START as LEDGER_START, BUZZ_STAKE as LEDGER_STAKE } from '../ss/kitty.js';
 import { huntOf, huntDay, showClue, handClue, runBuzzes, secretOf, addEvidence } from '../ss/hunt.js';
 import { pinPublic, clueRoomWeek, settleDeals, pactBetrayed } from '../ss/clue-room.js';
-import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS } from '../ss/schedule.js';
+import { surpriseOk, markSurprise, earliestOf, SS_CARD_IDS, SS_SIGNATURE_CARDS, SIG_CARD_OF } from '../ss/schedule.js';
 import { oopsNight, miniSecretsNight, blackBuzzer } from '../ss/evening.js';
 import { voiceMoments } from '../ss/voice-moments.js';
 import { houseEvent } from '../ss/house-events.js';
@@ -364,7 +364,12 @@ export function assignSecrets({ house = [], rng = Math.random } = {}) {
     try { past = Object.values(activeSeasons() || {}).map(r => r?.ssDraw).filter(Boolean); } catch { past = []; }
     // (Surprise twists off: no signature twist and no fake elimination the user did not choose)
     const off = seasonConfig?.ssSurprise === 'off';
-    const locks = { signature: seasonConfig?.ssSignature || (off ? 'none' : undefined),
+    // (the signature placed on the timeline wins; a season the timeline's Randomize drew plays exactly its cards, so
+    // with no signature card it has none)
+    const cards = (seasonConfig?.twistSchedule || []).filter(t => t && !t.auto);
+    const sigCard = cards.find(t => SS_SIGNATURE_CARDS[t.type]);
+    const drawn = cards.some(t => t.random && SS_CARD_IDS.has(t.type));
+    const locks = { signature: sigCard ? SS_SIGNATURE_CARDS[sigCard.type] : seasonConfig?.ssSignature || (off || drawn ? 'none' : undefined),
       secretRoom: seasonConfig?.ssSecretRoom === 'on' ? 'once' : ['off', 'once', 'twice'].includes(seasonConfig?.ssSecretRoom) ? seasonConfig.ssSecretRoom : (off ? 'off' : undefined) };
     st0.draw = drawSeason({ castSize: room.length, past, locks, rng });
     st0.tools = { ...st0.draw.tools };
@@ -794,7 +799,7 @@ export function runSecretHunt({ week = undefined, house = [], rng = Math.random,
     acts.push(b);
   }
   // the season's signature, on the week it began (launch night)
-  if (ctx.week === 1 && state.draw?.signature && state.draw.signature !== 'none') aired(state, 1, `sig-${state.draw.signature}`, signatureOf(state.draw.signature)?.name || state.draw.signature, '🎭');
+  if (ctx.week === 1 && state.draw?.signature && state.draw.signature !== 'none') aired(state, 1, SIG_CARD_OF(state.draw.signature), signatureOf(state.draw.signature)?.name || state.draw.signature, '🎭');
   fillTimeline(state, ctx.week);
   return acts;
 }

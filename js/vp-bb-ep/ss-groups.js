@@ -15,10 +15,10 @@ const at = (plate, room, who, set = 'attic') => ({ set, plate, room, cam: 21, ki
 
 /** Each space, in words: where it is, what it is like, and the Voice's words on launch night. */
 export const SPACE = {
-  'secret-box': { room: 'The Secret Box', intro: 'In the corner of the living room there is a black glass cube. You will live inside it. You will see everything. Nobody will see you.',
-    goal: 'To get out, find the secret of one housemate, and they may be nominated. Whoever is last out of the box comes in nominated.', look: 'Through the tinted glass, the living room carries on, a metre away.' },
+  'secret-box': { room: 'The Secret Box', intro: 'In the corner of the living room there is a black glass cube: the Secret Box. You will live inside it. You will see everything. Nobody will see you.',
+    goal: 'To get out, find the secret of one housemate and tell me. If you are right, you walk into the house at the next prime, and that housemate is nominated. In three weeks, whoever is still inside walks in, and one of you walks in nominated.', look: 'Through the tinted glass, the living room carries on, a metre away.' },
   intruders: { room: "The Intruders' House", intro: 'Next door, through a tunnel, there is a second house. That is where you will live, for now.',
-    goal: 'Spy on the house, steal what you can, and come in one by one as new housemates. If the house finds the tunnel, you all come in, and one of you is nominated.', look: 'The little house is cramped and messy. Through a crack in the tunnel, voices from the main house.' },
+    goal: 'Spy on the house, steal what you can, and come in one by one as new housemates. If the house finds the tunnel, you all come in, and one of you is nominated. In three weeks, whoever is left comes in.', look: 'The little house is cramped and messy. Through a crack in the tunnel, voices from the main house.' },
   'crystal-house': { room: 'The Crystal House', intro: 'In the garden, a house made of glass. You will live there, in full view.',
     goal: 'Every prime, the main house will vote to let one of you in. The last one to come in will be nominated.', look: 'Through the glass walls, the main house watches them as much as they watch the main house.' },
   hotel: { room: 'The Hotel of Secrets', intro: 'Next door, there is a hotel. Your room is ready.',

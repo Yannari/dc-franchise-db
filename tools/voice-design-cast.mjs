@@ -7,7 +7,8 @@
 //       --more adds three more takes after the ones there (4, 5, 6), keeping every earlier take and the published one
 //   node tools/voice-design-cast.mjs publish <Characters dir> <slug>=<take>[:<Name>] ... [--no-lines]
 //       publishes the picked take under the character's name (or <Name>, for a character renamed since its file
-//       was written: amara-okafor=1:Anaya), then voices the three audition lines in it
+//       was written: amara-okafor=1:Anaya), then voices the three audition lines in it. Picking a new take for a
+//       character already published renames the old voice "<Name> (old take N)", so only one answers to the name
 //       -> "Voice Casting/<slug> - line N.mp3"
 //   node tools/voice-design-cast.mjs status  <Characters dir>
 //
@@ -95,10 +96,10 @@ const extOf = buf => buf.subarray(0, 4).toString('latin1') === 'RIFF' ? '.wav' :
 const ledger = () => fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, 'utf8')) : {};
 const save = l => fs.writeFileSync(ledgerPath, JSON.stringify(l, null, 2) + '\n');
 
-async function call(url, body) {
+async function call(url, body, method = 'POST') {
   for (let tries = 0; ; tries++) {
     const r = await fetch(API + url, {
-      method: 'POST',
+      method,
       headers: { Authorization: `Basic ${apiKey()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
@@ -173,6 +174,14 @@ async function publish() {
     if (!draft) { console.log(`${slug}: there is no take ${n}`); continue; }
     if (!entry.published || entry.published.take !== +n) {
       const name = as?.trim() || displayName(slug, c);
+      // a new pick replaces the voice already published: the old one is renamed out of the way, never deleted
+      // (voicing matches a name exactly, so "Anaya (old take 1)" is no longer Anaya's voice)
+      if (entry.published) {
+        const old = entry.published;
+        await call(`/voices/v1/voices/${encodeURIComponent(old.voiceId)}`, { displayName: `${old.displayName} (old take ${old.take})` }, 'PATCH');
+        (entry.retired ||= []).push(old);
+        console.log(`${slug}: the voice from take ${old.take} renamed "${old.displayName} (old take ${old.take})"`);
+      }
       const v = await call(`/voices/v1/voices/${encodeURIComponent(draft)}:publish`, {
         displayName: name, description: c.speakingVoice.slice(0, 500), tags: ['the challenge'],
       });

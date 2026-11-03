@@ -11,7 +11,7 @@ export default {
   'task-stage.ok': [
     // ── broken telephone ──
     { id: 'gi.st.sp1', when: at('telephone', 'the-speaker'), turns: [
-      beat('{a} presses the button on the speaker box, and Don\'s voice crackles out, saying one long phrase in the local language, very slowly and very smugly.'),
+      beat('{a} presses the button on the speaker box, and Don\'s voice crackles out, saying one long phrase in the local language, very slowly.'),
       by('b', "Play it again."),
       by('a', "Okay. It starts with \"smorgle\"... and then I've got nothing."),
     ] },
@@ -33,11 +33,11 @@ export default {
     ] },
     { id: 'gi.st.gy2', when: at('telephone', 'the-geysers'), turns: [
       by('a', "Watch the holes. When it bubbles, it's about to go."),
-      beat('A vent bubbles at their feet. They jump sideways just as it erupts, and the steam rolls over them like a warm, wet blanket.'),
+      beat('A vent bubbles at their feet. They jump sideways just as it erupts, and warm steam rolls over them.'),
       by('b', "Ugh. Why does it smell like eggs?"),
     ] },
     { id: 'gi.st.gy3', when: at('telephone', 'the-geysers'), turns: [
-      beat('{a} and {b} zigzag between the geysers, muttering the phrase under their breath, like two people who have both lost their minds at once.'),
+      beat('{a} and {b} zigzag between the geysers, muttering the phrase under their breath.'),
       by('a', "Nearly there. Don't say anything else, just the phrase."),
       by('b', "Smorgle bjarta hrumpen flissa..."),
     ] },
@@ -49,7 +49,7 @@ export default {
     ] },
     { id: 'gi.st.lo2', when: at('telephone', 'the-local'), turns: [
       by('b', "You say it. Your accent's better."),
-      beat('{a} takes a deep breath and says the whole phrase in one go, in an accent from no country that has ever existed.'),
+      beat('{a} takes a deep breath and says the whole phrase in one go.'),
       beat('The local blinks, and nods slowly.'),
     ] },
     { id: 'gi.st.pt1', when: at('telephone', 'phrase-tip'), turns: [
@@ -58,21 +58,21 @@ export default {
       by('a', "No idea. Hopefully nothing rude."),
     ] },
     { id: 'gi.st.pt2', when: at('telephone', 'phrase-tip'), turns: [
-      by('a', "\"Take a helicopter to the national park.\" A helicopter!"),
+      by('a', "It says take a helicopter to the national park. A helicopter!"),
       by('b', "And away from the geysers. Perfect."),
       beat('They run for the helipad, the phrase still going round and round in their heads.'),
     ] },
 
     // ── the feast ──
     { id: 'gi.st.sh1', when: at('feast-fossil', 'the-shark'), turns: [
-      beat('The first dish is a little cube of fermented shark, pale and wobbly, on a wooden board. The smell arrives a whole second before the plate does.'),
+      beat('The first dish is a little cube of fermented shark on a wooden board, and they can smell it before it reaches the table.'),
       by('a', "Oh, that smell. That's horrible."),
       by('b', "Hold your nose and chew fast."),
       beat('{a} holds {a.posAdj} nose, chews fast, and swallows. One down.'),
     ] },
     { id: 'gi.st.sh2', when: at('feast-fossil', 'the-shark'), turns: [
       by('b', "On three. One, two..."),
-      beat('They both eat the shark on two, because waiting for three is too much to ask, and sit very still afterwards.'),
+      beat('They both eat the shark on two, and sit very still afterwards.'),
       by('a', "I can still taste it. It's not going away."),
     ] },
     { id: 'gi.st.hd1', when: at('feast-fossil', 'sheeps-head'), turns: [
@@ -83,21 +83,21 @@ export default {
     { id: 'gi.st.hd2', when: at('feast-fossil', 'sheeps-head'), turns: [
       by('a', "It actually just tastes like lamb."),
       by('b', "Please stop talking about it."),
-      beat('They pick it clean anyway, every last bit, and carefully don\'t talk about the face.'),
+      beat('They pick it clean anyway, every last bit.'),
     ] },
     { id: 'gi.st.rm1', when: at('feast-fossil', 'the-ram'), turns: [
       beat('The third dish arrives in a little bowl, and the cook explains what it is, using hand gestures.'),
       by('b', "Is that... are those...?"),
       by('a', "Yep. Don't think. Just think about the money."),
-      beat('They eat them, thinking very hard about a million dollars.'),
+      beat('They eat them, one after another.'),
     ] },
     { id: 'gi.st.rm2', when: at('feast-fossil', 'the-ram'), turns: [
       by('b', "They're sour. Why are they sour?"),
       by('a', "Pickled, I think. Just keep chewing."),
-      beat('The bowl is empty. Neither of them will ever speak of it again.'),
+      beat('The bowl is empty.'),
     ] },
     { id: 'gi.st.so1', when: at('feast-fossil', 'the-shot'), turns: [
-      beat('Last of all, the cook pours two little glasses of something clear that smells of liquorice and fire.'),
+      beat('Last of all, the cook pours two little glasses of something clear that smells strongly of liquorice.'),
       by('a', "To the race."),
       by('b', "To the race."),
       beat('They drink. Both of them cough for a full ten seconds.'),
@@ -115,7 +115,7 @@ export default {
     { id: 'gi.st.cp2', when: at('feast-fossil', 'clean-plate'), turns: [
       by('b', "We did it. We ate the whole feast."),
       by('a', "We did. I feel so sick."),
-      beat('They carry the empty platter out of the hut like a trophy.'),
+      beat('They carry the empty platter out of the hut.'),
     ] },
 
     // ── the fossil ──
@@ -155,14 +155,14 @@ export default {
       beat('{b} taps there, and the block pops out.'),
     ] },
     { id: 'gi.st.lf1', when: at('feast-fossil', 'lift-out'), turns: [
-      beat('They lift the block between them, very slowly, as if it were made of glass.'),
+      beat('They lift the block between them, very slowly.'),
       by('a', "Got it? Don't drop it."),
       by('b', "I won't if you stop saying it."),
     ] },
     { id: 'gi.st.lf2', when: at('feast-fossil', 'lift-out'), turns: [
       by('b', "It's so heavy."),
       by('a', "It's mostly ice. The shell's tiny."),
-      beat('They lower it into a sack and wrap it up like a newborn baby.'),
+      beat('They lower it into a sack and wrap it up carefully.'),
     ] },
     { id: 'gi.st.fo1', when: at('feast-fossil', 'fossil-out'), turns: [
       beat('They come out of the cave into the daylight, holding the fossil between them.'),
@@ -180,16 +180,16 @@ export default {
     // ── broken telephone ──
     { id: 'gi.sf.sp1', when: at('telephone', 'the-speaker'), turns: [
       by('a', "Say it back to me. Just to check."),
-      by('b', "Smoogle... burger... something... boat?"),
+      by('b', "Smorgle... something... something?"),
       by('a', "Not even close. Play it again."),
     ] },
     { id: 'gi.sf.sp2', when: at('telephone', 'the-speaker'), turns: [
-      beat('They listen to the phrase twelve times. On the thirteenth, {a} realises they have been practising a completely different word in the middle.'),
+      beat('They listen to the phrase over and over, until {a} realises they\'ve been practising the wrong word in the middle.'),
       by('a', "Wait, is it \"flissa\" or \"flossa\"?"),
       by('b', "I don't know anymore. They both sound wrong now."),
     ] },
     { id: 'gi.sf.gy1', when: at('telephone', 'the-geysers'), turns: [
-      beat('A geyser goes off right under {a}\'s feet. {a} comes out of the steam soaked from head to toe, with a face like an empty room.'),
+      beat('A geyser goes off right next to {a}, and {a} comes out of the steam soaked from head to toe.'),
       by('b', "What's the phrase? What's your half?"),
       by('a', "It's gone. I lost it."),
     ] },
@@ -205,18 +205,18 @@ export default {
     ] },
     { id: 'gi.sf.lo2', when: at('telephone', 'the-local'), turns: [
       beat('{b} gets halfway through the phrase, stops, and starts humming the tune instead.'),
-      by('b', "Hm hm hmm-hm, hrumpen, hm hm..."),
-      beat('The local is not interested in the tune. They are sent back across the field.'),
+      by('b', "Smorgle... hrumpen... I forgot the rest."),
+      beat('The local shakes his head and sends them back across the field.'),
     ] },
     { id: 'gi.sf.lo3', when: at('telephone', 'the-local'), turns: [
       by('a', "You start, and I'll finish."),
-      beat('{b} starts. {a} finishes. Unfortunately, they both say the middle bit, at the same time, differently.'),
+      beat('{b} starts, and {a} finishes, but they both say the middle bit at the same time, differently.'),
       beat('The local points back at the geysers.'),
     ] },
 
     // ── the feast ──
     { id: 'gi.sf.sh1', when: at('feast-fossil', 'the-shark'), turns: [
-      beat('{a} puts the fermented shark in, chews twice, and then runs out of the hut to give it back to the river.'),
+      beat('{a} puts the fermented shark in, chews twice, and then runs out of the hut to be sick.'),
       by('b', "Was it that bad?"),
       by('a', "Worse than the smell. And now there's a whole new plate."),
     ] },
@@ -228,7 +228,7 @@ export default {
     { id: 'gi.sf.hd1', when: at('feast-fossil', 'sheeps-head'), turns: [
       beat('{b} picks up the sheep\'s head, comes face to face with its eye, and puts it straight back down again.'),
       by('b', "It's looking at me. I can't eat it while it's looking at me."),
-      beat('The cook takes the plate away, and brings another one. With another head. Also looking.'),
+      beat('The cook takes the plate away, and brings another one.'),
     ] },
     { id: 'gi.sf.hd2', when: at('feast-fossil', 'sheeps-head'), turns: [
       by('a', "I can do the cheek. I'm not doing the tongue."),
@@ -236,13 +236,13 @@ export default {
       beat('{a} doesn\'t do the tongue, so the cook brings a new head, tongue and all.'),
     ] },
     { id: 'gi.sf.rm1', when: at('feast-fossil', 'the-ram'), turns: [
-      beat('The cook explains what the third dish is. {a} understands, a beat later, and goes very green.'),
+      beat('The cook explains what the third dish is, and {a} goes pale.'),
       by('a', "No. I can't. Not those."),
       beat('{a} gets one down, and then it comes straight back up. The cook calmly refills the bowl.'),
     ] },
     { id: 'gi.sf.rm2', when: at('feast-fossil', 'the-ram'), turns: [
       by('b', "Okay. Doing it. Right now."),
-      beat('{b} is not doing it. {b} has been holding the spoon in front of {b.posAdj} mouth for a full minute, and the bowl goes back for a fresh one.'),
+      beat('{b} has been holding the spoon in front of {b.posAdj} mouth for a full minute, and the bowl goes back for a fresh one.'),
       by('a', "You were so close."),
     ] },
     { id: 'gi.sf.so1', when: at('feast-fossil', 'the-shot'), turns: [
@@ -251,8 +251,8 @@ export default {
       beat('The cook pours another one.'),
     ] },
     { id: 'gi.sf.so2', when: at('feast-fossil', 'the-shot'), turns: [
-      by('a', "Why does it smell like a candle?"),
-      beat('{a} sips it, which you cannot do with a shot, and the cook takes it away and pours a fresh one to be done properly.'),
+      by('a', "Why does it smell so strong?"),
+      beat('{a} sips it instead of drinking it, and the cook takes it away and pours a fresh one.'),
       by('b', "All in one go this time."),
     ] },
 
@@ -279,8 +279,8 @@ export default {
     ] },
     { id: 'gi.sf.cx3', when: at('feast-fossil', 'chip'), turns: [
       beat('{a} chips, {b} chips, and on the same tap, from both sides at once, the block splits right down the middle.'),
-      by('b', "Well. At least we did it together."),
-      by('a', "That's not better."),
+      by('b', "No. No."),
+      by('a', "Again. Another one."),
     ] },
     { id: 'gi.sf.lf1', when: at('feast-fossil', 'lift-out'), turns: [
       beat('They lift the block out of the wall, and it slides through their gloves, hits the floor and cracks in two.'),
@@ -289,7 +289,7 @@ export default {
     ] },
     { id: 'gi.sf.lf2', when: at('feast-fossil', 'lift-out'), turns: [
       by('b', "I've got it. I've got it."),
-      beat('{b} has got it right up until {b.posAdj} foot slides on the icy floor, and then nobody has got it.'),
+      beat('{b}\'s foot slides on the icy floor, and the block goes down.'),
       by('a', "Is it okay? Tell me it's okay."),
       by('b', "It's in three pieces."),
     ] },

@@ -17,13 +17,13 @@ const place = {
   'don-opener.annoyed': [
     { id: 'gsc.op1', when: P, turns: [
       beat("Don stands in the middle of a giant crossing under a hundred flashing screens, as a sea of people walks round him in every direction."),
-      don("Welcome to Game Show City! Where the trains are on time, the vending machines sell everything, and the game shows are completely, beautifully insane."),
-      don("Today, one of you becomes a pinball. I'm not explaining it any further. I don't think I can."),
+      don("Welcome to Game Show City! Where the trains are on time, the vending machines sell everything, and the game shows are completely crazy!"),
+      don("Today, one of you becomes a pinball, and yes, you heard me right!"),
       beat('One of the giant screens behind him shows a man being launched into a pool of custard. The crowd cheers.'),
     ] },
     { id: 'gsc.op2', when: P, turns: [
       don("Game Show City. I came here once to host a show. I lasted one episode. There was a crab involved. We don't talk about it."),
-      don("Racers, take the bullet train into the city. It leaves at exactly the time it says. Not one second later."),
+      don("Racers, take the bullet train into the city, and it leaves exactly on time, so don't be late!"),
       beat('A bullet train flashes past behind him with a whoosh that messes up his hair completely.'),
     ] },
   ],
@@ -44,19 +44,19 @@ const place = {
     { id: 'gsc.ar2', when: P, turns: [
       by('b', "That vending machine sells hot soup. In a can."),
       by('a', "This one sells umbrellas. And socks. And an egg?"),
-      by('b', "I love it here. I want to live in a vending machine."),
+      by('b', "I love it here. I want to stay."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'gsc.ad1', when: P, turns: [
       by('a', "The tip says 'you are the ball'. What does that mean?"),
-      by('b', "I think it means we're the ball."),
-      by('a', "That's what I was afraid of."),
+      by('b', "I think it means one of us is the ball."),
+      by('a', "That doesn't sound good."),
     ] },
     { id: 'gsc.ad2', when: P, turns: [
       beat("They walk past a studio window where a contestant in a giant foam suit is being bounced off a wall by a machine."),
       by('b', "Is that what we're doing?"),
-      by('a', "Please say it isn't."),
+      by('a', "I hope not."),
     ] },
   ],
 };
@@ -79,7 +79,7 @@ const pinball = {
     { id: 'gsc.pb-d1', when: PB, turns: [
       don("In this All-In, one of you is the ball. Strap into this padded suit, get launched onto the table, and bounce off the bumpers to light all five targets."),
       beat('A contestant in a padded suit is fired across the table behind him, bounces off three bumpers, and lands in a heap.'),
-      don("The other one works the flippers. Keep your ball on the table. Your ball is your partner. Treat them gently."),
+      don("The other one works the flippers, so keep your ball on the table, and remember, your ball is your partner!"),
     ] },
   ],
   'don-demo.dry': [
@@ -91,18 +91,18 @@ const pinball = {
   ],
   'task-start.any': [
     { id: 'gsc.pb-s1', when: PB, turns: [
-      beat("{a} stands at the plunger in a huge padded suit, looking like a marshmallow with arms."),
+      beat("{a} stands at the plunger in a huge padded suit."),
       by('a', "I can't see my feet. I can't see anything below my chin."),
       by('b', "You don't need to see. You need to bounce."),
     ] },
     { id: 'gsc.pb-s2', when: PB, turns: [
       by('b', "I'll flip you up to the left. That's where the targets are."),
       by('a', "Flip me gently."),
-      by('b', "There's no gentle. It's a flipper."),
+      by('b', "I'll try. No promises."),
     ] },
     { id: 'gsc.pb-s3', when: PB, turns: [
       beat("The plunger fires, and {a} shoots up the table, screaming, straight into the first bumper."),
-      by('a', "Ow! Ding! Ow! Ding!"),
+      by('a', "Ow! Ow! I hit it!"),
       by('b', "You lit one! You lit one!"),
     ] },
     { id: 'gsc.pb-s4', when: PB, turns: [
@@ -119,18 +119,18 @@ const pinball = {
     ] },
     { id: 'gsc.pb-f2', when: PB, turns: [
       by('b', "Flip! Flip! Up you go!"),
-      beat("{a} flies up the table, hits the last target dead centre, and the lights go mad. The host shouts something nobody understands."),
+      beat("{a} flies up the table, hits the last target dead centre, and the lights go mad."),
       by('a', "Did we win? I think we won something!"),
     ] },
     { id: 'gsc.pb-f3', when: PB, turns: [
       beat("{a} bounces off the panda, into a bumper, and straight into the last target."),
-      by('b', "The panda helped! The panda actually helped!"),
-      by('a', "First time in history!"),
+      by('b', "You bounced off the panda!"),
+      by('a', "I can't believe it!"),
     ] },
     { id: 'gsc.pb-f4', when: PB, turns: [
       by('a', "Are all five lit? I can't see. I'm upside down."),
-      by('b', "All five! You did it, upside-down person!"),
-      by('a', "Turn me the right way up, and I'll celebrate."),
+      by('b', "All five! You did it!"),
+      by('a', "Turn me over, please!"),
     ] },
   ],
   'task-try.after-fails': [
@@ -141,25 +141,25 @@ const pinball = {
     ] },
     { id: 'gsc.pb-a2', when: PB, turns: [
       beat("Third ball. {a} tucks into a tight ball this time, and bounces twice as fast."),
-      by('a', "Tuck! Tuck makes you faster!"),
+      by('a', "Tucking in worked!"),
       beat("Five targets light. The bell rings. The host throws confetti."),
     ] },
     { id: 'gsc.pb-a3', when: PB, turns: [
       by('a', "Swap! You be the ball. I'll do the flippers."),
-      beat("{b} is a natural ball. Five bounces, five targets, and the whole table lights up."),
-      by('b', "I was born to be a ball!"),
+      beat("{b} bounces perfectly. Five bounces, five targets, and the whole table lights up."),
+      by('b', "I did it! I actually did it!"),
     ] },
     { id: 'gsc.pb-a4', when: PB, turns: [
-      beat("After two drains and one long conversation with the panda, {a} finally lights the fifth target."),
+      beat("After two drains and a lot of trouble with the panda, {a} finally lights the fifth target."),
       by('a', "Five! Finally five!"),
-      by('b', "Was the panda nice, at least?"),
+      by('b', "That panda, though."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'gsc.pb-t1', when: PB, turns: [
       beat("{a} is lying in the middle of the table, not moving, while the timer counts down."),
       by('b', "Are you okay? Can you roll?"),
-      by('a', "I've been bounced too much. I'm just lying here now."),
+      by('a', "I can't. I'm so dizzy."),
     ] },
     { id: 'gsc.pb-t2', when: PB, turns: [
       by('b', "The panda keeps getting in the way!"),
@@ -175,18 +175,18 @@ const pinball = {
   'task-done.any': [
     { id: 'gsc.pb-dn1', when: PB, turns: [
       by('a', "I'm going to be dizzy for a week."),
-      by('b', "But you were the best ball in the history of balls."),
-      by('a', "I'll take it."),
+      by('b', "But you were amazing."),
+      by('a', "Thanks. I think."),
     ] },
     { id: 'gsc.pb-dn2', when: PB, turns: [
-      beat("{a} waddles out of the studio in the padded suit, refusing to take it off."),
+      beat("{a} waddles out of the studio, still in the padded suit."),
       by('b', "You can take it off now."),
-      by('a', "Never. It's my suit now. I've earned it."),
+      by('a', "I will. Just give me a minute."),
     ] },
     { id: 'gsc.pb-dn3', when: PB, turns: [
       by('b', "That was the strangest thing we've ever done."),
       by('a', "And the most fun."),
-      by('b', "Strange and fun. That's this whole city."),
+      by('b', "This whole city is like that."),
     ] },
   ],
   'attempt-fail.any': [
@@ -203,7 +203,7 @@ const pinball = {
     { id: 'gsc.pb-x3', when: PB, turns: [
       beat("The panda steps into {a}'s path, and {a} bounces off him, backwards, and straight down the drain."),
       by('a', "The panda! The panda did that!"),
-      by('b', "He's waving! He doesn't even know! New ball!"),
+      by('b', "He's waving! New ball!"),
     ] },
   ],
 };

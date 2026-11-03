@@ -14,8 +14,8 @@ export default {
     { id: 'nd.st.rm1', when: at(T, 'the-remote'), turns: [
       beat('Up in the wooden booth, {a} picks up the remote. Down on the sand, {b} climbs onto the buggy and grabs the roll bar.'),
       by('b', "You know how to drive one of these, right?"),
-      by('a', "I had a remote car when I was ten. It's the same thing."),
-      by('b', "It's not the same thing. I'm sitting on it."),
+      by('a', "I had a remote car when I was ten."),
+      by('b', "This is different. I'm sitting on it."),
     ] },
     { id: 'nd.st.rm2', when: at(T, 'the-remote'), turns: [
       by('a', "Left is left, right is right. Easy."),
@@ -50,12 +50,12 @@ export default {
     { id: 'nd.st.lf2', when: at(T, 'last-flag'), turns: [
       by('b', "Three! That's three!"),
       by('a', "With time left? Tell me there was time left!"),
-      beat('There were four seconds left.'),
+      beat('There are four seconds left on the clock.'),
     ] },
     { id: 'nd.st.bt1', when: at(T, 'buggy-tip'), turns: [
       beat('{b} hands in the three flags, and gets the tip back.'),
       by('a', "Was I a good driver?"),
-      by('b', "You were a scary driver. But we won, so, fine."),
+      by('b', "You were a scary driver. But we did it."),
     ] },
     { id: 'nd.st.bt2', when: at(T, 'buggy-tip'), turns: [
       by('b', "Run to the theatre. Can you run?"),
@@ -102,7 +102,7 @@ export default {
     { id: 'nd.st.vn2', when: at(T, 'vanished'), turns: [
       by('a', "How did I do that? I don't even know how I did that."),
       by('b', "Magic. Don't think about it."),
-      beat('The magician takes a bow, as if it was all their idea.'),
+      beat('The magician takes a bow.'),
     ] },
     { id: 'nd.st.mt1', when: at(T, 'magic-tip'), turns: [
       beat('The magician pulls the tip out of {b}\'s ear and hands it over.'),
@@ -112,7 +112,7 @@ export default {
     { id: 'nd.st.mt2', when: at(T, 'magic-tip'), turns: [
       by('a', "I was in a cage with a lion."),
       by('b', "You were, and you didn't scream once."),
-      by('a', "I screamed on the inside."),
+      by('a', "I wanted to."),
     ] },
   ],
 
@@ -172,13 +172,13 @@ export default {
     ] },
     { id: 'nd.sf.ls1', when: at(T, 'lion-stirs'), turns: [
       beat('{a} sneezes. The lion\'s eyes snap open.'),
-      by('a', "Sorry! Sorry! Bless me!"),
+      by('a', "Sorry! Sorry!"),
       beat('The magician opens the door fast, and they have to start the whole act again.'),
     ] },
     { id: 'nd.sf.ls2', when: at(T, 'lion-stirs'), turns: [
       by('b', "Hurry up! The lever's stuck!"),
       beat('The lion stands up, stretches, and looks straight at {a}. The magician whips the door open.'),
-      by('a', "That's it. I'm done. Somebody else do the cage."),
+      by('a', "That's it. I'm done. You do the cage."),
     ] },
   ],
 };

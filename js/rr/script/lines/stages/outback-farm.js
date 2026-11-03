@@ -20,28 +20,28 @@ export default {
     ] },
     { id: 'of.st.wh1', when: at('bunnies', 'into-wheat'), turns: [
       beat('They dive into the wheat, and the rabbits scatter in every direction, zigzagging through the stalks.'),
-      by('a', "Got one! Oh. No. That's just wheat."),
+      by('a', "Got one! No. No, it got away."),
       by('b', "Chase them this way!"),
     ] },
     { id: 'of.st.wh2', when: at('bunnies', 'into-wheat'), turns: [
-      by('b', "Slowly. Like a cat."),
+      by('b', "Slowly. Creep up on them."),
       beat('{b} creeps through the wheat on all fours, freezes, and pounces. When {b} stands up, there is a rabbit in each hand.'),
       by('b', "Two! I got two!"),
     ] },
     { id: 'of.st.wh3', when: at('bunnies', 'into-wheat'), turns: [
-      beat('{a} runs after one rabbit for so long, round and round in circles through the wheat, that it eventually just sits down, exhausted, and lets itself be picked up.'),
-      by('a', "I tired it out."),
-      by('b', "You ran in a circle for ten minutes."),
+      beat('{a} chases one rabbit round and round through the wheat until it finally stops, worn out, and {a} picks it up.'),
+      by('a', "Got one! I got one!"),
+      by('b', "That took ten minutes."),
     ] },
     { id: 'of.st.wr1', when: at('bunnies', 'white-rabbit'), turns: [
       beat('Down by the water, sitting on the end of an old wooden jetty, is a little white rabbit, washing its ears.'),
       by('b', "There it is. The white one. Don't scare it."),
-      by('a', "Hi, bunny. Stay there. Good bunny."),
+      by('a', "Stay there. Stay right there."),
     ] },
     { id: 'of.st.wr2', when: at('bunnies', 'white-rabbit'), turns: [
       by('a', "It's on the jetty. It's got nowhere to go."),
       beat('They creep out onto the jetty from both ends of the bank, and the white rabbit looks from one to the other, trapped.'),
-      by('b', "Sorry, little guy."),
+      by('b', "Got you. Sorry."),
     ] },
     { id: 'of.st.sk1', when: at('bunnies', 'the-sack'), turns: [
       beat('{a} drops the rabbits into the sack one at a time, and {b} ties the top shut with a knot, and another knot, and another.'),
@@ -59,7 +59,7 @@ export default {
       beat('The farmer hands over the tip and lets the rabbits back out into the wheat, where they immediately start eating it again.'),
     ] },
     { id: 'of.st.ct2', when: at('bunnies', 'the-count'), turns: [
-      by('b', "\"Glide over the valley to the Chill Zone.\" A glider!"),
+      by('b', "It says glide over the valley to the Chill Zone. A glider!"),
       by('a', "Anything's easier than rabbits."),
       beat('They brush the wheat out of their hair and run for the hill.'),
     ] },
@@ -73,13 +73,13 @@ export default {
     ] },
     { id: 'of.sf.wh2', when: at('bunnies', 'into-wheat'), turns: [
       by('b', "It went left! No, right! No, it went under you!"),
-      beat('{a} spins round so many times chasing one rabbit that {a.sub} falls over in a dizzy heap.'),
+      beat('{a} spins round so many times chasing one rabbit that {a.sub} falls over.'),
       by('a', "I'm so dizzy. Did it go?"),
     ] },
     { id: 'of.sf.wr1', when: at('bunnies', 'white-rabbit'), turns: [
       beat('{a} reaches for the white rabbit, and it hops neatly off the end of the jetty and swims away to the other bank.'),
-      by('a', "It can swim! Since when can rabbits swim?"),
-      by('b', "Apparently. Okay, back to the normal ones."),
+      by('a', "It can swim! I didn't know they could swim!"),
+      by('b', "Okay. Back to the normal ones."),
     ] },
     { id: 'of.sf.wr2', when: at('bunnies', 'white-rabbit'), turns: [
       by('b', "Grab it!"),
@@ -93,7 +93,7 @@ export default {
     ] },
     { id: 'of.sf.sk2', when: at('bunnies', 'the-sack'), turns: [
       by('a', "Why is the sack getting lighter?"),
-      beat('There is a hole in the bottom of the sack. Rabbits are dropping out of it one by one, like sand out of an hourglass.'),
+      beat('There\'s a hole in the bottom of the sack, and rabbits are dropping out of it one by one.'),
       by('b', "There's a hole in it. Great."),
     ] },
   ],

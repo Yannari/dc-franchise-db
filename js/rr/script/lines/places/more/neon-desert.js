@@ -11,42 +11,42 @@ const MAGIC = { taskId: 'buggy-magic', side: 'magic' };
 const buggyMagic = {
   'task-start.any': [
     { id: 'nde2.bm-s1', when: BUGGY, turns: [
-      { beat: '{b} sits on the buggy, which is just about big enough, knees up round {b.posAdj} ears, holding on with one hand.' },
+      { beat: '{b} sits on the buggy, which is only just big enough, holding on with one hand.' },
       { by: 'b', say: "There's no seatbelt. Why is there no seatbelt?" },
-      { by: 'a', say: "It's a toy. Toys don't come with seatbelts. Hold on." },
+      { by: 'a', say: "Just hold on tight." },
     ] },
     { id: 'nde2.bm-s2', when: BUGGY, turns: [
       { by: 'a', say: "The flags are on the left. All three. So I keep the left side close." },
       { by: 'b', say: "Close, not on top of. Don't drive me into a pole." },
-      { by: 'a', ...V("I would never drive you into a pole on purpose.", "Never on purpose.", "Not on purpose.", "I would NEVER drive you into a pole on PURPOSE!", "I'd never drive you into a pole on purpose, I promise.", "Any pole I drive you into will be a total surprise to both of us.") },
+      { by: 'a', say: "I won't. I promise." },
     ] },
     { id: 'nde2.bm-s3', when: MAGIC, turns: [
-      { beat: 'The magician swirls his cape, opens the cage, and bows {a} inside. The lion, in the corner, snores like a lorry.' },
+      { beat: 'The magician swirls his cape, opens the cage, and waves {a} inside. The lion, in the corner, is snoring.' },
       { by: 'a', say: "It's so big. Nobody said it would be this big." },
-      { by: 'b', say: "It's asleep. Big things sleep heavily. Probably." },
+      { by: 'b', say: "It's asleep. You'll be fine." },
     ] },
     { id: 'nde2.bm-s4', when: MAGIC, turns: [
-      { by: 'b', say: "Should I do a bit of a show? Wave my arms? Say a magic word?" },
+      { by: 'b', say: "Which one? Which lever?" },
       { by: 'a', say: "Just pull the lever!" },
-      { by: 'b', say: "It's a theatre! There's an audience! Three people, but still!" },
+      { by: 'b', say: "I'm trying! I'm not sure!" },
     ] },
   ],
   'task-try.first-try': [
     { id: 'nde2.bm-f1', when: BUGGY, turns: [
       { beat: '{a} takes the buggy round the course in one long smooth curve. {b} snatches all three flags without the buggy even slowing.' },
-      { by: 'b', say: "Forty seconds! We're racing drivers!" },
-      { by: 'a', say: "Toy racing drivers. It still counts." },
+      { by: 'b', say: "Forty seconds! We did it!" },
+      { by: 'a', say: "That was so fast!" },
     ] },
     { id: 'nde2.bm-f2', when: BUGGY, turns: [
       { by: 'b', say: "Flag one! Flag two! Flag... three!" },
       { beat: 'The buggy skids to a stop at the finish post with sand spraying out in a fan. The clock says fifty-four.' },
-      { by: 'a', say: "I've never been so good at anything with buttons." },
+      { by: 'a', say: "I can't believe it!" },
     ] },
     { id: 'nde2.bm-f3', when: MAGIC, turns: [
-      { beat: '{b} pulls the second lever. A trapdoor opens, the cage floor drops, and {a} is gone in a puff of smoke. The lion sighs in its sleep.' },
+      { beat: '{b} pulls the second lever. A trapdoor opens, the cage floor drops, and {a} is gone in a puff of smoke. The lion doesn\'t move.' },
       { by: 'b', say: "Second lever! First pull!" },
       { beat: 'A muffled voice comes up through the floorboards.' },
-      { by: 'a', say: "I'm in a room full of rabbits! Is this where the rabbits live?" },
+      { by: 'a', say: "I'm under the stage! It worked!" },
     ] },
   ],
   'task-try.after-fails': [
@@ -56,8 +56,8 @@ const buggyMagic = {
       { by: 'b', say: "Three! And under the minute!" },
     ] },
     { id: 'nde2.bm-a2', when: BUGGY, turns: [
-      { beat: 'After three runs, {b} stops leaning out for the flags and hangs one arm out wide the whole way round instead.' },
-      { by: 'b', say: "I'm a gate! Just drive me past them!" },
+      { beat: 'After three runs, {b} stops leaning out for the flags and holds one arm out wide the whole way round instead.' },
+      { by: 'b', say: "Just drive me past them!" },
       { beat: 'The flags hit {b}\'s arm one, two, three, and the clock stops at fifty-six.' },
     ] },
     { id: 'nde2.bm-a3', when: MAGIC, turns: [
@@ -67,7 +67,7 @@ const buggyMagic = {
     ] },
     { id: 'nde2.bm-a4', when: MAGIC, turns: [
       { beat: 'Third time in the cage, {a} stops panicking, lies down flat on the cage floor, and closes {a.posAdj} eyes.' },
-      { by: 'a', say: "If it wakes up, I'm just another sleeping thing." },
+      { by: 'a', say: "If I'm still, it won't notice me." },
       { beat: 'The lion stays asleep long enough for {b} to find the right lever. The floor drops, and {a} disappears.' },
     ] },
   ],
@@ -79,13 +79,13 @@ const buggyMagic = {
     ] },
     { id: 'nde2.bm-t2', when: MAGIC, turns: [
       { beat: 'The lion rolls over in its sleep and lays one huge paw across {a}\'s foot.' },
-      { by: 'a', say: "It's touching me. It's holding my foot." },
-      { by: 'b', say: "It likes you! Don't move!" },
+      { by: 'a', say: "It's touching me. Its paw is on my foot." },
+      { by: 'b', say: "Don't move! Don't move!" },
     ] },
     { id: 'nde2.bm-t3', when: BM, turns: [
       { by: 'a', say: "Do we switch? Lion or buggy?" },
-      { by: 'b', say: "We're good at neither of them." },
-      { by: 'a', say: "Then we're losing nothing by switching." },
+      { by: 'b', say: "I don't know." },
+      { by: 'a', say: "Let's just try the other one." },
     ] },
   ],
   'attempt-fail.any': [
@@ -97,34 +97,34 @@ const buggyMagic = {
     { id: 'nde2.bm-x2', when: BUGGY, turns: [
       { beat: 'The buggy hits a bump, and {b} flies off the back into the sand, still holding the first flag.' },
       { by: 'a', say: "You fell off!" },
-      { by: 'b', say: "But I kept the flag! Does that help? No? Again!" },
+      { by: 'b', say: "I've still got the flag! Okay. Again!" },
     ] },
     { id: 'nde2.bm-x3', when: MAGIC, turns: [
       { beat: '{b} pulls a lever. A spotlight swings round and shines directly on the lion\'s face. It opens one eye.' },
       { by: 'a', say: "Why would you light it up?" },
-      { by: 'b', say: "I didn't know that was the light lever! Start the act again!" },
+      { by: 'b', say: "I didn't know! Start again!" },
     ] },
     { id: 'nde2.bm-x4', when: MAGIC, turns: [
       { beat: 'The trapdoor opens under {b} instead, and {b} drops out of sight. {a} is still in the cage.' },
-      { by: 'a', say: "Wrong person! You vanished the wrong person!" },
+      { by: 'a', say: "Wrong one! You're the one who disappeared!" },
       { beat: 'The magician sighs, and they start again from the top.' },
     ] },
   ],
   'task-done.any': [
     { id: 'nde2.bm-dn1', when: BUGGY, turns: [
-      { by: 'b', say: "I've got sand in every pocket. Pockets I didn't know I had." },
+      { by: 'b', say: "I've got sand in every pocket." },
       { by: 'a', say: "I've got a sore thumb from the remote." },
-      { by: 'b', say: "That's the same thing, then." },
+      { by: 'b', say: "We both did great." },
     ] },
     { id: 'nde2.bm-dn2', when: MAGIC, turns: [
-      { by: 'a', say: "Do you know what's under that stage? Doves. Rabbits. A man eating a sandwich." },
-      { by: 'b', say: "A magician's never supposed to tell." },
-      { by: 'a', say: "I'm not a magician. I'm a person who was nearly eaten." },
+      { by: 'a', say: "There's a whole room under that stage." },
+      { by: 'b', say: "Don't tell me. I don't want to know how it works." },
+      { by: 'a', say: "I was in a cage with a lion." },
     ] },
     { id: 'nde2.bm-dn3', when: BM, turns: [
       { beat: '{a} and {b} run out of the desert towards the theatre doors, which are lit up with a thousand flashing bulbs.' },
       { by: 'b', say: "Is the Chill Zone a casino? It looks like a casino." },
-      { by: 'a', say: "Everything here looks like a casino. Even the petrol stations." },
+      { by: 'a', say: "Everything here looks like a casino." },
     ] },
   ],
 };

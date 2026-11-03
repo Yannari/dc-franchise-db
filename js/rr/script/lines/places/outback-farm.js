@@ -19,32 +19,32 @@ const place = {
       beat("Don stands at a farm gate in a wide-brimmed hat, flies buzzing round his face, the wheat stretching off to the horizon."),
       don("Welcome to Outback Farm! Wide open skies, endless wheat fields, and about ten thousand rabbits who are eating all of it."),
       don("Today, teams play farmer. And then they fly. Not like birds. Like people strapped to a kite."),
-      beat('A rabbit hops right between his feet. Don looks down at it. It looks up at him. It wins.'),
+      beat('A rabbit hops right between his feet, and he jumps.'),
     ] },
     { id: 'obf.op2', when: P, turns: [
       don("Outback Farm. The nearest shop is three hours away, and it only sells hats. I bought this hat."),
       don("Racers, there's a ute at the gate. It's a truck. Everybody here calls it a ute. Don't ask me why."),
-      beat('A sheepdog runs up, sniffs Don\'s shoes, and walks away, unimpressed.'),
+      beat('A sheepdog runs up, sniffs Don\'s shoes, and runs off again.'),
     ] },
   ],
   'don-opener.bored': [
     { id: 'obf.op3', when: P, turns: [
       beat("Don is lying on a hay bale in the shade of the barn, his hat over his face."),
       don("Outback Farm. It's very hot. There are rabbits. Go and catch some."),
-      don("I'd help, but I'm busy. Being on a hay bale."),
+      don("I'll be right here in the shade, so good luck!"),
     ] },
   ],
   'arrival-awe.wonder': [
     { id: 'obf.ar1', when: P, turns: [
       beat("The ute bounces down the dirt road, and the land opens out: red earth, gold wheat, and sky from edge to edge."),
-      by('a', "There's nothing here. In the best way. Nothing at all."),
+      by('a', "There's nothing out here. Nothing at all."),
       by('b', "There's a kangaroo. Look, by the fence. A real one."),
-      by('a', "Okay. There's nothing and a kangaroo."),
+      by('a', "A real kangaroo! Wow!"),
     ] },
     { id: 'obf.ar2', when: P, turns: [
       by('b', "The sky is so big here. Why is the sky bigger here?"),
-      by('a', "It's the same sky. There's just nothing in the way."),
-      by('b', "It feels bigger."),
+      by('a', "There's just nothing in the way."),
+      by('b', "It's beautiful."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -56,7 +56,7 @@ const place = {
     { id: 'obf.ad2', when: P, turns: [
       beat('A cloud of flies finds {a} the second {a.sub} steps out of the ute.'),
       by('a', "Why are they all on me? Why only me?"),
-      by('b', "You smell like a sandwich."),
+      by('b', "I don't know. They just like you."),
     ] },
   ],
 };
@@ -67,7 +67,7 @@ const roads = {
     { id: 'obf.tm1', when: { taskId: 'ute-drive', mishap: 'kangaroo-in-the-road' }, turns: [
       beat('A kangaroo bounds out of the bush and stops in the middle of the dirt road. The ute skids to a halt.'),
       by('a', "Is it going to move?"),
-      by('b', "It's staring at us. It's not moving. It's winning."),
+      by('b', "It's staring at us. It's not moving."),
       beat("Fifteen minutes later, it finally hops off into the wheat, and they're moving again."),
     ] },
     { id: 'obf.tm2', when: { taskId: 'valley-glide', mishap: 'loses-the-thermal' }, turns: [
@@ -84,15 +84,15 @@ const bunnies = {
   'don-demo.gag': [
     { id: 'obf.bn-d1', when: BN, turns: [
       don("In this All-In, catch ten of the rabbits wrecking this farmer's wheat and put them in your sack. They're fast. They zigzag. They're very good at this."),
-      beat('He lunges at a rabbit by his feet. It is gone before his hands get there. He lunges again at nothing.'),
+      beat('He lunges at a rabbit by his feet. It\'s gone before his hands get there.'),
       don("That one doesn't count. That was a warm-up."),
     ] },
   ],
   'don-demo.dry': [
     { id: 'obf.bn-d2', when: BN, turns: [
       don("Tie your sack properly, or they'll get out, and you'll be counting again from whatever's left inside."),
-      don("There's one rare white rabbit somewhere in the field. Catch that, and it counts as all ten. Good luck finding it."),
-      beat('The farmer, beside him, holds up ten fingers, then one finger, then shrugs.'),
+      don("There's one rare white rabbit somewhere in the field, and if you catch that, it counts as all ten!"),
+      beat('The farmer, beside him, holds up ten fingers, then one.'),
     ] },
   ],
   'task-start.any': [
@@ -108,24 +108,24 @@ const bunnies = {
     ] },
     { id: 'obf.bn-s3', when: BN, turns: [
       beat("{a} creeps up on a rabbit very slowly, on tiptoe, arms out, holding {a.posAdj} breath."),
-      by('a', "Nice bunny. Good bunny. Stay right there, bunny."),
+      by('a', "Stay there. Stay right there."),
       beat('The rabbit waits until the very last second, and leaves.'),
     ] },
     { id: 'obf.bn-s4', when: BN, turns: [
       by('a', "Keep an eye out for the white one."),
-      by('b', "I'm keeping both eyes out for any of them."),
+      by('b', "I'm looking for any of them."),
       by('a', "The white one's worth all ten, though."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'obf.bn-f1', when: BN, turns: [
-      beat("{a} and {b} work the field like sheepdogs, driving rabbit after rabbit into a corner of the fence, and bag ten without losing one."),
+      beat("{a} and {b} work the field together, driving rabbit after rabbit into a corner of the fence, and bag ten without losing one."),
       by('a', "Ten! Count them! Ten!"),
       by('b', "The farmer's counting. He's nodding. Ten!"),
     ] },
     { id: 'obf.bn-f2', when: BN, turns: [
       by('b', "There! The white one! Under the tractor!"),
-      beat('{b} dives under the tractor and comes out holding a fluffy white rabbit, looking very pleased with itself.'),
+      beat('{b} dives under the tractor and comes out holding a fluffy white rabbit.'),
       by('a', "That's all ten in one! You caught all ten in one!"),
     ] },
     { id: 'obf.bn-f3', when: BN, turns: [
@@ -136,24 +136,24 @@ const bunnies = {
     { id: 'obf.bn-f4', when: BN, turns: [
       by('a', "Tie it tight. Tie it so tight nothing gets out."),
       beat("Nothing gets out. The farmer opens the sack, counts ten, and hands over the tip."),
-      by('b', "We're rabbit catchers now. That's a real job here."),
+      by('b', "We did it! First go!"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'obf.bn-a1', when: BN, turns: [
       by('b', "They got out because we didn't tie it. So this time, we tie it after every single rabbit."),
       beat('They tie it after every single rabbit. It takes longer, but the farmer counts ten.'),
-      by('a', "Slow and tied. That's the secret."),
+      by('a', "Tying it every time worked."),
     ] },
     { id: 'obf.bn-a2', when: BN, turns: [
       beat("After an hour of chasing, {a} trips over something soft and white in the wheat, and grabs it on instinct."),
-      by('a', "It's the white one! I fell on the white one!"),
+      by('a', "It's the white one! I've got the white one!"),
       by('b', "Don't let go! That's all ten of them!"),
     ] },
     { id: 'obf.bn-a3', when: BN, turns: [
       by('a', "Stop chasing them. Herd them. Into the corner by the barn."),
       beat('Herded into the corner by the barn, the rabbits have nowhere to go. Ten go into the sack.'),
-      by('b', "Herding! Herding was the answer all along!"),
+      by('b', "Herding them worked!"),
     ] },
     { id: 'obf.bn-a4', when: BN, turns: [
       beat("Back to six, then eight, then nine, and with one last dive, {b} gets the tenth."),
@@ -164,7 +164,7 @@ const bunnies = {
   'task-try.struggling': [
     { id: 'obf.bn-t1', when: BN, turns: [
       beat("{a} is lying face down in the wheat after another dive, empty-handed, as a rabbit hops away."),
-      by('a', "I touched it. I touched it, I swear."),
+      by('a', "I touched it. I swear."),
       by('b', "Touching doesn't count! Get up!"),
     ] },
     { id: 'obf.bn-t2', when: BN, turns: [
@@ -175,24 +175,24 @@ const bunnies = {
     { id: 'obf.bn-t3', when: BN, turns: [
       beat('{a} and {b} are both chasing the same rabbit, from opposite sides, and run straight into each other.'),
       by('a', "That was my rabbit!"),
-      by('b', "Nobody has a rabbit! That's the problem!"),
+      by('b', "Neither of us has it now!"),
     ] },
   ],
   'task-done.any': [
     { id: 'obf.bn-dn1', when: BN, turns: [
-      by('a', "I'm going to miss them a bit."),
-      by('b', "They bit you."),
-      by('a', "Only a little bit. Gently."),
+      by('a', "They were so cute."),
+      by('b', "One of them bit you."),
+      by('a', "Only a little bit."),
     ] },
     { id: 'obf.bn-dn2', when: BN, turns: [
       beat("{a} and {b} jog away from the barn towards the glider, covered in wheat and rabbit fur."),
       by('b', "A glider now. We fly now."),
-      by('a', "I've never flown anything. I've only chased rabbits."),
+      by('a', "I've never flown anything."),
     ] },
     { id: 'obf.bn-dn3', when: BN, turns: [
       by('b', "The farmer smiled at us. Did you see? He actually smiled."),
       by('a', "We saved his wheat."),
-      by('b', "We saved about ten stalks of his wheat."),
+      by('b', "We caught ten rabbits."),
     ] },
   ],
   'attempt-fail.any': [
@@ -208,7 +208,7 @@ const bunnies = {
     ] },
     { id: 'obf.bn-x3', when: BN, turns: [
       beat("{b} dives at a rabbit, misses, and lands in a patch of thistles."),
-      by('b', "Ow! Ow! Everything here bites or stings!"),
+      by('b', "Ow! Ow! Thistles!"),
       by('a', "Get up! It went that way!"),
     ] },
   ],

@@ -19,14 +19,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'nde.op1', when: P, turns: [
       beat('Don stands in front of a wall of flashing neon signs, a slot machine ringing behind him, in a gold jacket.'),
-      don("Welcome to the Neon Desert! The city that never sleeps, in the middle of a desert that never rains. I've been here a day. I've lost two hundred dollars and a shoe."),
-      don("Today, teams either drive a toy car or disappear in front of a lion. Both are things I've seen happen here at four in the morning."),
-      beat('Behind him, a man in a sequinned suit walks past carrying a small dog in a tiny tuxedo. Don watches them go.'),
+      don("Welcome to the Neon Desert! The city that never sleeps, in the middle of a desert that never rains!"),
+      don("Today, teams either drive a remote-control buggy or disappear in front of a lion!"),
+      beat('Behind him, a man in a sequinned suit walks past.'),
     ] },
     { id: 'nde.op2', when: P, turns: [
       don("The Neon Desert. Everything here is too bright, too loud, and open all night. I feel very at home."),
       don("Racers, grab a taxi off the strip. Do not stop to play anything. Do not get married. It happens fast here."),
-      beat('A wedding chapel across the street flashes a sign: DRIVE-THROUGH, NO WAITING. Don points at it, warningly.'),
+      beat('A wedding chapel across the street flashes its sign.'),
     ] },
   ],
   'don-opener.bored': [
@@ -41,11 +41,11 @@ const place = {
       beat('The taxi crawls down the strip at night, and every building on both sides is lit up: castles, towers, a pyramid, a giant guitar.'),
       by('a', "Is that a pyramid? Next to a castle? Next to a guitar?"),
       by('b', "It's like somebody built every city in the world on one street."),
-      by('a', "And then plugged it all in."),
+      by('a', "It's crazy."),
     ] },
     { id: 'nde.ar2', when: P, turns: [
       by('b', "A fountain just started dancing. To music. Look at it."),
-      by('a', "Even the water here is showing off."),
+      by('a', "That's amazing."),
       by('b', "I love it. I love all of it."),
     ] },
   ],
@@ -53,12 +53,12 @@ const place = {
     { id: 'nde.ad1', when: P, turns: [
       by('a', "The tip says 'lion'. In capital letters."),
       by('b', "Or a toy car. It also says toy car."),
-      by('a', "The capital letters are on 'lion'."),
+      by('a', "I'm doing the car."),
     ] },
     { id: 'nde.ad2', when: P, turns: [
-      beat('They step out of the air conditioning into the desert heat, and the air feels like a hairdryer.'),
+      beat('They step out of the air conditioning into the desert heat.'),
       by('b', "It's night. Why is it this hot at night?"),
-      by('a', "Because it's a desert pretending to be a city."),
+      by('a', "Because it's a desert."),
     ] },
   ],
 };
@@ -80,7 +80,7 @@ const desert = {
   'don-demo.gag': [
     { id: 'nde.bm-d1', when: BM, turns: [
       don("In this Either/Or, Buggy: one of you drives a remote-control dune buggy round the course, and the other one rides on it and grabs three flags. In a minute."),
-      beat('He presses a button on the remote. The buggy shoots off, hits a dune, and flips over onto its back.'),
+      beat('He presses a button on the remote. The buggy shoots off, hits a dune, and flips over.'),
       don("Or Magic: one of you gets locked in a cage with a sleeping lion, and the other pulls the lever that makes you disappear. Before it wakes up. Ideally."),
     ] },
   ],
@@ -88,26 +88,26 @@ const desert = {
     { id: 'nde.bm-d2', when: BM, turns: [
       don("Miss a flag, or run out of time, and the buggy goes back to the start. Pull the wrong lever, and the lion wakes up, and the act starts again."),
       don("Three flags, or a clean disappearance, and the next tip is yours. You may switch sides. The lion may not."),
-      beat("In the theatre behind him, a lion yawns. It is a very, very big yawn."),
+      beat("In the theatre behind him, a lion yawns."),
     ] },
   ],
   'decide-side.agree': [
     { id: 'nde.bm-c1', when: { ...BM, side: 'buggy' }, turns: [
-      by('a', "Buggy. Definitely buggy. A toy car has never eaten anybody."),
-      by('b', "Not that we know of."),
-      by('a', "Buggy."),
+      by('a', "Buggy. Definitely buggy. I'm not going near a lion."),
+      by('b', "Okay. Buggy."),
+      by('a', "Good."),
     ] },
     { id: 'nde.bm-c2', when: { ...BM, side: 'magic' }, turns: [
-      by('b', "Magic. The lion's asleep. It's basically a big cat having a nap."),
-      by('a', "A big cat that eats people."),
-      by('b', "Only when it's awake."),
+      by('b', "Magic. The lion's asleep. It's fine."),
+      by('a', "It's a lion."),
+      by('b', "A sleeping lion. We'll be quick."),
     ] },
   ],
   'decide-side.overruled': [
     { id: 'nde.bm-c3', when: { ...BM, side: 'magic' }, turns: [
       by('a', "I really, really don't want to be in a cage with a lion."),
       by('b', "It's faster. And you're the one who fits in the cage."),
-      by('a', "That's the worst reason I've ever heard."),
+      by('a', "That's not a good reason."),
     ] },
   ],
   'task-start.any': [
@@ -118,25 +118,25 @@ const desert = {
     ] },
     { id: 'nde.bm-s2', when: BG, turns: [
       by('b', "Slow round the corners. I need time to grab the flags."),
-      by('a', "We've got a minute. There is no slow."),
-      by('b', "Then grab-speed. Go grab-speed."),
+      by('a', "We've only got a minute."),
+      by('b', "Then slow down right at the flags."),
     ] },
     { id: 'nde.bm-s3', when: MG, turns: [
       beat("{a} steps into the cage. In the corner, the lion is asleep, its tail twitching."),
       by('a', "It's twitching. Why is it twitching?"),
-      by('b', "It's dreaming. Don't be in its dream."),
+      by('b', "It's dreaming. Stay still."),
     ] },
     { id: 'nde.bm-s4', when: MG, turns: [
-      by('b', "The magician said it's the third lever. Or the fourth. There are six levers."),
+      by('b', "I think it's the third lever. Or the fourth."),
       by('a', "Pick the right one, please. Pick it fast."),
-      by('b', "No pressure, then."),
+      by('b', "I'm trying!"),
     ] },
   ],
   'task-try.first-try': [
     { id: 'nde.bm-f1', when: BG, turns: [
       beat("The buggy tears round the course, {b} leaning out, and snatches one flag, two flags, three, with seconds to spare."),
       by('b', "Three! I got all three!"),
-      by('a', "First go! We're a racing team!"),
+      by('a', "First go! We did it!"),
     ] },
     { id: 'nde.bm-f2', when: BG, turns: [
       by('a', "Left, left, now right, now straight!"),
@@ -151,7 +151,7 @@ const desert = {
     { id: 'nde.bm-f4', when: MG, turns: [
       by('a', "Did I vanish? Did it work?"),
       beat('The magician bows to the empty seats. The lion has not moved. The tip is theirs.'),
-      by('b', "You vanished! You vanished beautifully!"),
+      by('b', "You vanished! It worked!"),
     ] },
   ],
   'task-try.after-fails': [
@@ -162,13 +162,13 @@ const desert = {
     ] },
     { id: 'nde.bm-a2', when: BG, turns: [
       beat("Third run. {a} has finally worked out which button is forward, and the buggy flies round the course."),
-      by('a', "I know the buttons now! I know all the buttons!"),
+      by('a', "I've got it now!"),
       by('b', "Three flags! Stop the clock!"),
     ] },
     { id: 'nde.bm-a3', when: MG, turns: [
       by('b', "It's not the third lever. It's not the fourth. So it's the fifth."),
       beat("{b} pulls the fifth lever. The smoke rises, and {a} vanishes. The lion doesn't even stir."),
-      by('a', "It was the fifth one! Write that down for next time!"),
+      by('a', "It was the fifth one!"),
     ] },
     { id: 'nde.bm-a4', when: MG, turns: [
       beat("This time {a} stands perfectly still in the cage, barely breathing, and {b} pulls the lever in one smooth move."),
@@ -180,7 +180,7 @@ const desert = {
     { id: 'nde.bm-t1', when: BG, turns: [
       beat("The buggy is upside down on top of a dune. {b} is lying in the sand next to it."),
       by('a', "Is it broken? Are you broken?"),
-      by('b', "Neither of us is broken. Both of us are upside down."),
+      by('b', "I'm fine. Turn it back over."),
     ] },
     { id: 'nde.bm-t2', when: MG, turns: [
       by('a', "Its eye just opened. Its eye is open. Pull something!"),
@@ -190,7 +190,7 @@ const desert = {
     { id: 'nde.bm-t3', when: BM, turns: [
       by('b', "Should we switch? Maybe the other one's easier."),
       by('a', "The other one has a lion."),
-      by('b', "That's a no, then."),
+      by('b', "No. We stay."),
     ] },
   ],
   'task-done.any': [
@@ -202,12 +202,12 @@ const desert = {
     { id: 'nde.bm-dn2', when: BM, turns: [
       beat("{a} and {b} jog towards the theatre doors, under the flashing lights."),
       by('b', "Everything's so bright. My eyes hurt."),
-      by('a', "Close them and follow my voice."),
+      by('a', "Just follow me."),
     ] },
     { id: 'nde.bm-dn3', when: BM, turns: [
       by('b', "Was that the strangest thing we've done in this race?"),
-      by('a', "So far. There's still time."),
-      by('b', "Don't say that."),
+      by('a', "So far."),
+      by('b', "Don't say so far."),
     ] },
   ],
   'attempt-fail.any': [
@@ -217,12 +217,12 @@ const desert = {
       by('a', "Back to the start. Hold on tighter."),
     ] },
     { id: 'nde.bm-x2', when: MG, turns: [
-      beat("{b} pulls a lever. A trapdoor opens, under the magician. He drops out of sight. The lion opens one eye."),
-      by('a', "That's the wrong person! Wrong person!"),
+      beat("{b} pulls a lever. A trapdoor opens under the magician, and he drops out of sight. The lion opens one eye."),
+      by('a', "Not him! Wrong one!"),
       by('b', "Everybody out! We start the act again!"),
     ] },
     { id: 'nde.bm-x3', when: MG, turns: [
-      beat("{b} pulls a lever. Confetti falls on {a}. The lion sneezes, and wakes up."),
+      beat("{b} pulls a lever. Confetti falls on {a}, and the lion wakes up."),
       by('a', "Get me out! Get me out now!"),
       by('b', "Not that one! Start again!"),
     ] },

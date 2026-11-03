@@ -59,7 +59,7 @@ export const NARRATOR_STORY = {
     { id: 'nst.gc.1', when: { subj: 'found-out' }, turns: [['narrator', "{a} has just found out about {x}, and needs {a.posAdj} friends."]] },
     { id: 'nst.gc.2', when: { subj: 'pulled' }, turns: [['narrator', "{x} pulled {a} for a chat earlier, and the others want to know how it went."]] },
     { id: 'nst.gc.3', when: { subj: 'celebrate' }, turns: [['narrator', "{a} has good news about {x}, and can't wait to tell everyone."]] },
-    { id: 'nst.gc.4', when: { subj: ['turned', 'ended'] }, turns: [['narrator', "Today hasn't gone the way {a} hoped with {x}. {a} goes to {a.posAdj} friends."]] },
+    { id: 'nst.gc.4', when: { subj: ['turned', 'ended'], took: [null, 'hurt', 'bitter'] }, turns: [['narrator', "Today hasn't gone the way {a} hoped with {x}. {a} goes to {a.posAdj} friends."]] },
     { id: 'nst.gc.5', when: { subj: 'spark' }, turns: [['narrator', "Yesterday, {a} and {x} talked for hours, and everyone noticed."]] },
   ],
   'bed-chat': [

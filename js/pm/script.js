@@ -104,7 +104,9 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // shown interest (events.js noteInterest): a's in b aired in an earlier episode; nothing shown either way before this scene
   'longing', 'firstSign', 'flirt',
   // the episode's light story (pm/runner.js): which bit, which beat, which bet or prank, how it ended
-  'bit', 'step', 'topic', 'out'];
+  'bit', 'step', 'topic', 'out',
+  // a vote's call-out: {a} has chased {b}'s partner on screen (talk/aftermath.js)
+  'chasedPartner'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];

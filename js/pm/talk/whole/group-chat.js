@@ -309,7 +309,23 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
   ], beat: "{a} lets out a breath, and puts {a.posAdj} feet in the water." },
 
   // ── ended: {x} said they're better as friends ──
-  { when: { subj: 'ended', cast: C }, stage: "{a} walks into the bedroom and lies face down on the nearest bed. {b} sits on the edge of it.", turns: [
+  // …and {a} is relieved (`took` friends): it was going that way for both of them.
+  { when: { subj: 'ended', took: 'friends', cast: C }, stage: "{a} comes back to the daybeds looking lighter than {a.he} has all week.", turns: [
+    ['b', "Well?"],
+    ['a', "Me and {x} are done. As a couple, anyway. We're friends."],
+    ['c', "Are you okay?"],
+    ['a', "Honestly? I'm fine. I think I'm relieved. It wasn't going anywhere, and we both knew it."],
+    ['b', "You don't look upset."],
+    ['a', "I'm not. It was nice, and it's over, and nobody's crying. That's the best way it could have gone."],
+  ], beat: "{b} looks at {c}, and they both look a bit disappointed there's no drama." },
+  { when: { subj: 'ended', took: 'friends', tier: SHORT }, stage: "{a} finds {b} on the terrace.", turns: [
+    ['a', "{x} ended it. We're friends now."],
+    ['b', "Oh, no. Are you all right?"],
+    ['a', "I'm all right. Better than all right, honestly. I was going to say it if {x.he} didn't."],
+    ['b', "So it's a good thing?"],
+    ['a', "It's a good thing. It just feels strange."],
+  ], beat: "{b} gives {a} a hug anyway." },
+  { when: { subj: 'ended', took: [null, 'hurt', 'bitter'], cast: C }, stage: "{a} walks into the bedroom and lies face down on the nearest bed. {b} sits on the edge of it.", turns: [
     ['b', "What happened?"],
     say('a', "{x} said we're better as friends.", { lad: "{x} friend-zoned me, bro. Just like that.", bestie: "{x} said we're better as friends. Babe. Friends." }),
     ['c', "Did you see it coming?"],
@@ -317,7 +333,7 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     ['b', "I'm so sorry."],
     say('a', "Don't be nice to me. I'll cry.", { sharp: "It's fine. If {x.he} doesn't want me, I'm not going to make {x.obj}." }),
   ], beat: "{b} lies down next to {a} anyway." },
-  { when: { subj: 'ended', cast: C }, stage: "{a} comes back to the daybeds and sits down between {b} and {c}.", turns: [
+  { when: { subj: 'ended', took: [null, 'hurt', 'bitter'], cast: C }, stage: "{a} comes back to the daybeds and sits down between {b} and {c}.", turns: [
     ['c', "How did it go?"],
     ['a', "It's done. Me and {x}. We're friends now, apparently."],
     ['b', "Are you okay?"],
@@ -325,7 +341,7 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     say('c', "Whatever you need, we're here.", { lad: "We've got you, {~mate}. Whatever you need." }),
     ['a', "I just need to sit here for a bit."],
   ], beat: "They sit with {a}. Nobody says anything else." },
-  { when: { subj: 'ended', tier: SHORT }, stage: "{a} finds {b} on the terrace.", turns: [
+  { when: { subj: 'ended', took: [null, 'hurt', 'bitter'], tier: SHORT }, stage: "{a} finds {b} on the terrace.", turns: [
     ['a', "{x} ended it. Said we're better as friends."],
     ['b', "Oh, no. How do you feel?"],
     say('a', "Sad. Mostly sad. I really liked {x.obj}.", { sharp: "Embarrassed. I liked {x.obj} more than {x.he} liked me." }),

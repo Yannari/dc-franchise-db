@@ -1292,6 +1292,25 @@ const NO_HUT = new Set(['final-date', 'journey-open', 'journey-clip', 'journey-r
 /** Create one event: decide airing, apply it, attach a hut cutaway, write the ledger. */
 const SIDE_STORY = /^(triangle|rival|crush|camp|feud|betray|redeem|grass|parents|exw|enemy)-|^ex-(awkward|jealous)$|^game-(plan|latch|two-faced|suspect|called|fallout|end)$|^(code-call|mugged-low|found-love|villa-happy|torch|blowup|pile-in|villa-divided|cold-shoulder|clear-the-air|double-standard)$/;
 const SIDE_AIRED = 2;
+// The villa's own day, and what in it is somebody's story (the budget in makeEvent).
+const LIFE_PHASES = new Set(['morning', 'day', 'evening', 'night', 'triangle', 'rivals', 'blowup']);
+// Never cut by the budget: the light bit, a split, a reunion, a confession (they change the villa).
+const BUDGET_FREE = new Set(['villa-bit', 'doubt-end', 'reunite', 'open-back-up', 'confession', 'hideaway', 'breakdown']);
+const COUPLE_KINDS = new Set(['close-off', 'keeping-open', 'exclusive-ask', 'official-ask', 'ask-declined', 'love-said', 'love-hanging', 'head-turned']);
+const FEELING_KINDS = new Set(['jealous-confront', 'jealous-sulk', 'jealous-retaliate', 'overthinking', 'reassurance']);
+function budgetFamily(state, ev) {
+  const x = ev.extra || {};
+  const pair = (a, b) => [a, b].filter(Boolean).sort().join('+');
+  const [a, b, c] = ev.players;
+  if (x.thread?.id) return `t:${x.thread.id}`;
+  if (SIDE_STORY.test(ev.kind)) return `side:${sideFamily(ev.kind)}:${pair(a, b)}`;
+  if (COUPLE_KINDS.has(ev.kind)) return `couple:${pair(a, b)}`;
+  if (FEELING_KINDS.has(ev.kind)) return `couple:${pair(a, heartOf(state, a))}`;
+  if (ev.kind === 'advice') return `couple:${pair(b, c)}`;
+  if (ev.kind === 'apology' || ev.kind === 'apology-rejected') return `ex:${pair(a, b)}`;
+  if (ev.kind.startsWith('enemy-')) return `enemy:${pair(a, b)}`;
+  return null;
+}
 // One side story is one family of scenes: a rivalry's villa taking sides is the rivalry.
 const SIDE_FAMILY = { 'code-call': 'rival', 'pile-in': 'blowup', 'villa-divided': 'blowup' };
 const sideFamily = k => SIDE_FAMILY[k] || (k.startsWith('camp-') ? 'rival' : k.startsWith('game-') ? 'game' : k.split('-')[0]);
@@ -1335,6 +1354,26 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     const already = players.length && players.every(n => s.fam[n] === fam);
     if (offStory || busy || (!already && s.n >= SIDE_AIRED)) ev.aired = false;
     else { if (!already) s.n++; for (const n of players) s.fam[n] = fam; }
+  }
+  // THE BUDGET (2026-11-03, the spine; season 12 ep 7: Amber, in one villa day,
+  // fought for a sunbed, was told where Theo's head was, rowed about a game
+  // kiss, was accused of playing a game and had it out with Priya). An
+  // islander leads at most two of the villa's stories an episode on screen —
+  // a storyline, a side story, the couple's own moments, a feud, the light
+  // bit; what goes over still happens, and the edit cuts it like any scene.
+  // The villa's day only (not a game, a ceremony or a date), never a big
+  // moment, never the light bit (it is set up and paid off, or it is nothing).
+  if (ev.aired && LIFE_PHASES.has(phase) && !major.length && !BUDGET_FREE.has(kind)) {
+    const fam = budgetFamily(state, ev);
+    if (fam) {
+      const b = state._budget?.ep === state.ep ? state._budget : (state._budget = { ep: state.ep, of: {} });
+      const lead = ev.players.slice(0, 2).filter(Boolean);
+      if (lead.some(n => !(b.of[n] || []).includes(fam) && (b.of[n] || []).length >= 2)) ev.aired = false;
+      else for (const n of lead) { const f = (b.of[n] ||= []); if (!f.includes(fam)) f.push(fam); }
+    }
+  } else if (ev.aired && extra?.runner) {
+    const b = state._budget?.ep === state.ep ? state._budget : (state._budget = { ep: state.ep, of: {} });
+    for (const n of ev.players.slice(0, 2)) { const f = (b.of[n] ||= []); if (!f.includes('runner')) f.push('runner'); }
   }
   // Which villa it happened in, while the villa is split for Casa Amor: the
   // screens and the transcript cut between them (season read 2026-10-25: the

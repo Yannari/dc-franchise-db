@@ -124,7 +124,10 @@ describe('the day remembers itself', () => {
   it('no cosy scene straight after a row, and the next one is making up', () => {
     const MAKING_UP = idsFor('rowedToday');
     let rows = 0;
-    for (let s = 1; s <= 6; s++) {
+    // (The spine, 2026-11-03, cut the villa's random texture: a row and a cosy
+    // scene for the same couple on one day are rarer, so this looks further
+    // until it has seen one, rather than pass on none.)
+    for (let s = 1; s <= 16 && (s <= 6 || !rows); s++) {
       for (const r of season(s).rows) {
         const evs = r.pm.events;
         evs.forEach((e, i) => {

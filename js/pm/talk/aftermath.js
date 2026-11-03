@@ -117,6 +117,13 @@ export const VOTE_FALLOUT = build('vote-fallout', {
 
 export const VOTE_CALLOUT = build('vote-callout', {
   tiered: false,
+  // {a} has gone after {b}'s partner on screen (events.js noteInterest).
+  facts: (state, ev) => {
+    const [a, b] = ev.players;
+    const c = state.couples?.find(k => k.includes(b));
+    const pb = c ? (c[0] === b ? c[1] : c[0]) : null;
+    return { chasedPartner: !!pb && (state.shownInterest || {})[`${a}>${pb}`] != null };
+  },
   plans: { featured: ['open', 'answer'], short: ['open', 'answer'] },
   moves: {
     open: [
@@ -128,7 +135,9 @@ export const VOTE_CALLOUT = build('vote-callout', {
     ],
     answer: [
       { when: { of: 'threat' }, turns: [['b', "I don't know you well enough to know. That's the honest answer."], ['a', "Then get to know me before you try and send me home."]] },
-      { when: { of: 'threat' }, turns: [['b', "I can see that."], ['a', "And I'm not after your partner. I never was."], ['b', "Good."]] },
+      // (Only from somebody who never chased {b}'s partner on screen: season 12, Theo said it the day he chased Mia.)
+      { when: { of: 'threat', chasedPartner: false }, turns: [['b', "I can see that."], ['a', "And I'm not after your partner. I never was."], ['b', "Good."]] },
+      { when: { of: 'threat', chasedPartner: true, bTaken: true }, turns: [['b', "I can see that. And I can see who you've been talking to."], ['a', "That's between me and {pb}."], ['b', "{pb} is my partner. It's between all of us."]] },
       { when: { of: 'grudge' }, turns: [['b', "I said what I thought."], ['a', "Well, the villa didn't agree with you."], ['b', "Not this time."]] },
       { when: { of: 'grudge' }, turns: [['b', "Not really."], ['a', "I heard every word you said about me."], ['b', "Good. I meant every one."]] },
       { when: { of: 'tactical' }, turns: [['b', "It was my reason."], ['a', "It was your cover story."]] },

@@ -1004,7 +1004,8 @@ const REACT = {
   'where-head': e => (e.extra.of === 'honest' ? { center: e.players[0], subj: 'honest', x: e.players[1], about: e.players[2] || null, kissed: !!e.extra.kissed, story: e.extra.thread?.type, why: e.extra.why, due: 'next' }
     : e.extra.of === 'deflect' ? { center: e.players[0], subj: 'dodged', x: e.players[1], story: e.extra.thread?.type, due: 'next' } : null),
   'graft-turn': e => ({ center: e.players[1], subj: 'turned', x: e.players[0], about: e.players[2], due: 'next' }),
-  'doubt-end': e => (e.extra.of === 'friends' ? { center: e.players[1], subj: 'ended', x: e.players[0], due: 'next' } : null),
+  // …with how {center} took it (breakups.js mood): a relieved one tells the friends a different story (season 12 ep 7).
+  'doubt-end': e => (e.extra.of === 'friends' ? { center: e.players[1], subj: 'ended', x: e.players[0], took: e.extra.took || null, due: 'next' } : null),
   'graft-shut': e => ({ center: e.players[1], subj: 'shut-down', x: e.players[0], due: 'next' }),
   // The Tower of Truths' honest answer, out loud: told by the one who asked
   // (season read 2026-10-25: Ryan said "Leah" in front of everyone, and nobody mentioned it again).
@@ -1095,7 +1096,7 @@ export function reactions(state, rng, phase, max = 3) {
     const aired = n <= (CHAT_CAP[subjNow] ?? 3) && total < CHATS_AIRED;
     if (aired) th.chatsAired = total + 1;
     out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj: subjNow, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
-      ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
+      ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.took ? { took: q.took } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
       pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }, { aired }));
     if (followUp) { const after = haveItOut(state, followUp, { force: true, phase }); if (after) out.push(after); }
   }

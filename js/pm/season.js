@@ -62,7 +62,9 @@ function maybeWalk(state, rng, entry) {
   // night they came back from Casa with someone new (Nadia, back with Sammy,
   // walked out over Jordan an hour later), or a bombshell picked them.
   const coupling = e => e.kind === 'recouple-pick' || e.kind === 'steal'
-    || (e.kind === 'casa-return' && e.extra?.choice === 'twist');
+    || (e.kind === 'casa-return' && e.extra?.choice === 'twist')
+    // …which the comment always said and the list never had (s2 ep7, 2026-11-03: saved by a bombshell, walked an hour later).
+    || ['bombshell-save', 'step-choose', 'stand-up-pick', 'public-match', 'profile-pick', 'kiss-pick', 'lady-luck-pick', 'reunite'].includes(e.kind);
   const choseTonight = new Set((state.history || []).filter(e => e.ep === state.ep && coupling(e)).flatMap(e => e.players.slice(0, 2)));
   for (const n of state.villa) {
     if (choseTonight.has(n)) continue;

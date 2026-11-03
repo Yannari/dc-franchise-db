@@ -11,7 +11,7 @@ export default {
   'task-stage.ok': [
     // ── the wedding ring ──
     { id: 'li.st.pi1', when: at('ring-dive', 'the-pier'), turns: [
-      beat('The old pier creaks over a bay of clear green water. Newlyweds throw their wedding rings in here for luck, which seems like very bad luck for the rings.'),
+      beat('The old pier creaks over a bay of clear green water. Newlyweds throw their wedding rings in here for luck.'),
       by('b', "You dive. I'll tell you where to look."),
       by('a', "How? You won't be able to see anything."),
       by('b', "I'll figure it out."),
@@ -34,15 +34,15 @@ export default {
     { id: 'li.st.ss1', when: at('ring-dive', 'search-sand'), turns: [
       beat('At the bottom, {a} sweeps a hand through the sand. Shells, pebbles, a fork. Then something small and round catches the light.'),
       by('b', "Anything? Have you got anything?"),
-      beat('{b} is asking the water. The water does not answer.'),
+      beat('Under the water, {a} can\'t hear a thing.'),
     ] },
     { id: 'li.st.ss2', when: at('ring-dive', 'search-sand'), turns: [
       by('b', "Left! Go left! No, my left!"),
-      beat('Under the water, {a} cannot hear a word, and searches in a slow circle round the bottom of a wooden post instead, which is exactly where the ring is.'),
-      by('b', "See? I told you I'd help!"),
+      beat('Under the water, {a} can\'t hear a word, and searches in a slow circle round the bottom of a wooden post instead, which is exactly where the ring is.'),
+      by('b', "See? I told you!"),
     ] },
     { id: 'li.st.ss3', when: at('ring-dive', 'search-sand'), turns: [
-      beat('{a} brushes the sand away from a little gold glint and there it is: a wedding ring, half buried, shining like a coin.'),
+      beat('{a} brushes the sand away from a little gold glint, and there it is: a wedding ring, half buried.'),
       beat('{a} grabs it, clenches a fist round it, and kicks for the surface.'),
       by('b', "Bubbles! I see bubbles! You're coming up!"),
     ] },
@@ -62,7 +62,7 @@ export default {
       by('b', "I know. Read the tip."),
     ] },
     { id: 'li.st.rt2', when: at('ring-dive', 'ring-tip'), turns: [
-      by('b', "\"Put on a grass skirt and carry your partner over hot coals.\" Over what?"),
+      by('b', "It says put on a grass skirt and carry your partner over hot coals. Over what?"),
       by('a', "Hot coals. Great."),
       beat('They run off up the jungle path.'),
     ] },
@@ -95,11 +95,11 @@ export default {
     ] },
     { id: 'li.st.co2', when: at('fire-walk', 'the-coals'), turns: [
       by('a', "It's warm. It's actually not that bad."),
-      beat('{a} walks across the glowing coals like someone crossing a hot beach, quick little steps all the way.'),
+      beat('{a} walks across the glowing coals with quick little steps all the way.'),
       by('b', "You're doing it! Keep going!"),
     ] },
     { id: 'li.st.co3', when: at('fire-walk', 'the-coals'), turns: [
-      beat('Halfway across, sparks pop up round {a}\'s feet, and {a} speeds up into a sort of hot-footed jog.'),
+      beat('Halfway across, sparks pop up round {a}\'s feet, and {a} speeds up into a jog.'),
       by('b', "Faster! The faster you go, the less it burns!"),
       by('a', "Is that true?"),
       by('b', "I really hope so!"),
@@ -110,7 +110,7 @@ export default {
       by('b', "They're fine. A bit black, but fine."),
     ] },
     { id: 'li.st.fd2', when: at('fire-walk', 'fire-dancer'), turns: [
-      by('b', "\"Run to the Chill Zone at the tiki hut.\" Can you run?"),
+      by('b', "It says run to the Chill Zone at the tiki hut. Can you run?"),
       by('a', "After that? I can do anything."),
       beat('They run for the beach, grass skirts swishing.'),
     ] },
@@ -126,7 +126,7 @@ export default {
     { id: 'li.sf.dd2', when: at('ring-dive', 'dive-down'), turns: [
       by('b', "Why are you still floating?"),
       by('a', "I don't know! I keep trying to go down and I just float!"),
-      beat('{a} kicks and kicks, and stays exactly where {a.sub} is, like a cork in a bath.'),
+      beat('{a} kicks and kicks, and stays exactly where {a.sub} is.'),
     ] },
     { id: 'li.sf.ss1', when: at('ring-dive', 'search-sand'), turns: [
       beat('{a} comes up out of the water holding something shiny high in the air.'),
@@ -146,7 +146,7 @@ export default {
     { id: 'li.sf.ru1', when: at('ring-dive', 'ring-up'), turns: [
       beat('{a} reaches up to pass the ring to {b}, their fingers touch, and the ring slips between them and falls back into the bay with a tiny plop.'),
       by('b', "No! No, no, no!"),
-      by('a', "That one was both of us."),
+      by('a', "That was both of us. I'll go again."),
     ] },
     { id: 'li.sf.ru2', when: at('ring-dive', 'ring-up'), turns: [
       by('a', "Catch!"),
@@ -162,7 +162,7 @@ export default {
     ] },
     { id: 'li.sf.gs2', when: at('fire-walk', 'grass-skirts'), turns: [
       by('a', "Where's your lei?"),
-      beat('{b} looks down. The lei is not there. It is hanging off a bush on the path behind them.'),
+      beat('{b} looks down. The lei is gone. It\'s hanging off a bush on the path behind them.'),
       by('b', "Hang on. I'll get it."),
     ] },
     { id: 'li.sf.lf1', when: at('fire-walk', 'the-lift'), turns: [
@@ -183,7 +183,7 @@ export default {
     ] },
     { id: 'li.sf.co2', when: at('fire-walk', 'the-coals'), turns: [
       by('a', "Hot! Hot, hot, hot!"),
-      beat('{a} dances sideways off the edge of the coals and onto the grass, which is much cooler and completely against the rules.'),
+      beat('{a} jumps sideways off the edge of the coals and onto the grass, which is against the rules.'),
       by('b', "That's off the side! We have to start again!"),
     ] },
     { id: 'li.sf.co3', when: at('fire-walk', 'the-coals'), turns: [

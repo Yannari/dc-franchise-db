@@ -20,13 +20,13 @@ const place = {
     { id: 'lei.op1', when: P, turns: [
       beat('Don stands on a white beach in a flowered shirt and a lei, a drink with a tiny umbrella in his hand.'),
       don("Welcome to Lei Island! Sun, surf, flowers, and the most romantic bay in the world, which today is full of wedding rings."),
-      don("Teams will dive for a ring, and then carry each other over hot coals. That last part is less romantic."),
-      beat('A wave rolls in and soaks his shoes. He keeps smiling, but only with his mouth.'),
+      don("Teams will dive for a ring, and then carry each other over hot coals!"),
+      beat('A wave rolls in and soaks his shoes, and he keeps smiling.'),
     ] },
     { id: 'lei.op2', when: P, turns: [
       don("Lei Island. Paradise. I've been asked by the tourist board to say it's paradise, and they paid for the drinks, so: paradise."),
       don("Racers, your taxis are waiting. Aloha, and good luck. Mostly good luck."),
-      beat('A hula dancer sways past behind him. He tries, very briefly, to join in, and stops.'),
+      beat('A hula dancer sways past behind him, and he tries, very briefly, to join in.'),
     ] },
   ],
   'don-opener.bored': [
@@ -39,7 +39,7 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'lei.ar1', when: P, turns: [
       beat('The taxi rounds a headland, and the bay appears: turquoise water, white sand, and a long wooden pier.'),
-      by('a', "This doesn't look real. It looks like a screensaver."),
+      by('a', "This doesn't look real."),
       by('b', "It looks like the place my parents went on their honeymoon."),
       by('a', "It probably is. Look at all the couples."),
     ] },
@@ -57,8 +57,8 @@ const place = {
     ] },
     { id: 'lei.ad2', when: P, turns: [
       by('b', "It's too hot. How is it this hot by the sea?"),
-      by('a', "Because the sea is also hot."),
-      by('b', "That's not how seas work."),
+      by('a', "I don't know. It just is."),
+      by('b', "I'm melting."),
     ] },
   ],
 };
@@ -69,7 +69,7 @@ const roads = {
     { id: 'lei.tm1', when: { taskId: 'pier-taxi', mishap: 'flat-tyre' }, turns: [
       beat('With a bang and a long hiss, the taxi lurches to the side of the coast road. Flat tyre.'),
       by('a', "We're in paradise, and we've got a flat tyre."),
-      by('b', "Even paradise has flat tyres, apparently."),
+      by('b', "Of course we do."),
       beat('Twenty minutes, one spare wheel and a lot of sweating later, they are moving again.'),
     ] },
   ],
@@ -80,65 +80,65 @@ const ring = {
   'don-demo.gag': [
     { id: 'lei.rd-d1', when: RD, turns: [
       don("In this Botch or Watch, one of you dives into the bay under the pier and finds a wedding ring. Couples throw them in here for luck."),
-      beat('He holds up his own hand, looks at it, and puts it in his pocket.'),
+      beat('He holds up a ring to the light.'),
       don("I've never been married. That's not relevant. Find a ring."),
     ] },
   ],
   'don-demo.dry': [
     { id: 'lei.rd-d2', when: RD, turns: [
-      don("Come up with a shell, a bottle cap, or a very surprised crab, and back down you go. The other one waits on the pier and shouts."),
+      don("Come up with a shell or a bottle cap, and back down you go. The other one waits on the pier!"),
       don("A real wedding ring, handed up onto the pier, gets you the next tip. Don't keep it. I know what some of you are like."),
-      beat('Behind him, a newly married couple throws a ring off the end of the pier and kisses. Don rolls his eyes.'),
+      beat('Behind him, a newly married couple throws a ring off the end of the pier and kisses.'),
     ] },
   ],
   'whose-botch.obvious': [
     { id: 'lei.rd-w1', when: RD, turns: [
       by('b', "You're the swimmer. You're always the swimmer."),
       by('a', "I'm only the swimmer because you can't swim."),
-      by('b', "Exactly. So you're the swimmer."),
+      by('b', "Exactly. So you're diving."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'lei.rd-w2', when: RD, turns: [
       by('a', "I'll dive. I've always wanted to find treasure in the sea."),
       by('b', "It's a ring, not treasure."),
-      by('a', "A ring in the sea is treasure. That's the definition of treasure."),
+      by('a', "It is to me."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'lei.rd-w3', when: RD, turns: [
-      by('b', "Your turn. I did the ants."),
-      by('a', "We haven't done any ants."),
-      by('b', "Then I'm saving myself for the ants. Go."),
+      by('b', "Your turn. I did the last one."),
+      by('a', "Did you?"),
+      by('b', "Yes. Go."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'lei.rd-w4', when: RD, turns: [
       by('a', "'Who can hold their breath?' Underwater. It's going to be underwater."),
-      by('b', "You can hold your breath for ages. You did it in the bath once for a minute."),
-      by('a', "That was a bath, not a bay."),
+      by('b', "You can hold your breath for ages."),
+      by('a', "Not that long. But okay."),
     ] },
   ],
   'task-start.any': [
     { id: 'lei.rd-s1', when: RD, turns: [
       beat('{a} stands at the edge of the pier, looking down at the clear blue water and the sand far below.'),
       by('a', "It's deeper than it looks."),
-      by('b', "Everything is deeper than it looks. Just jump."),
+      by('b', "Just jump. You'll be fine."),
     ] },
     { id: 'lei.rd-s2', when: RD, turns: [
       by('b', "Look for something shiny. Wedding rings are shiny."),
-      by('a', "Everything at the bottom of the sea is shiny. That's the problem."),
-      by('b', "Look for the shiny thing that's a ring, then."),
+      by('a', "Everything down there is shiny."),
+      by('b', "Then look for the round ones."),
     ] },
     { id: 'lei.rd-s3', when: RD, turns: [
       beat('{a} takes three huge breaths, pinches {a.posAdj} nose and jumps.'),
-      by('b', "Find a ring! Any ring! Make someone's honeymoon worth it!"),
+      by('b', "Find a ring! Any ring!"),
       beat("{a} disappears with a splash, and the surface goes still."),
     ] },
     { id: 'lei.rd-s4', when: RD, turns: [
       by('a', "What if I find a really expensive one?"),
       by('b', "Then we hand it over and don't think about it."),
-      by('a', "I'm going to think about it a little bit."),
+      by('a', "Okay. Okay."),
     ] },
   ],
   'task-try.first-try': [
@@ -150,24 +150,24 @@ const ring = {
     { id: 'lei.rd-f2', when: RD, turns: [
       by('b', "Is that a ring? Tell me that's a ring!"),
       by('a', "It's a ring! It's got writing inside. 'Forever.'"),
-      by('b', "Forever, and it's in the sea. Give it here."),
+      by('b', "That's so sad. Give it here."),
     ] },
     { id: 'lei.rd-f3', when: RD, turns: [
       beat('{a} comes up, gasping, opens a hand, and there it is: a thin silver ring, glinting.'),
       by('b', "How did you find it so fast?"),
-      by('a', "It found me. It was right under the ladder."),
+      by('a', "It was right under the ladder."),
     ] },
     { id: 'lei.rd-f4', when: RD, turns: [
-      by('a', "First dive. First ring. I'm a natural."),
-      by('b', "You're a natural ring finder. Put it on your CV."),
-      by('a', "Already have."),
+      by('a', "First dive. First ring."),
+      by('b', "You were amazing."),
+      by('a', "Come on. The coals."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'lei.rd-a1', when: RD, turns: [
       by('b', "Stop looking near the ladder. Everybody looks near the ladder. Go out further."),
       beat('{a} swims out further, dives, and comes back up with a ring.'),
-      by('a', "Further was right! Further had a ring!"),
+      by('a', "You were right! It was further out!"),
     ] },
     { id: 'lei.rd-a2', when: RD, turns: [
       beat('On the fourth dive, {a} stays down for what feels like forever, and comes up holding a ring.'),
@@ -177,28 +177,28 @@ const ring = {
     { id: 'lei.rd-a3', when: RD, turns: [
       by('a', "I keep bringing up shells. Every shiny thing is a shell."),
       by('b', "Then look for the shiny thing that's round and small."),
-      beat("Round and small turns out to be right. {a} surfaces with a ring."),
+      beat("{a} surfaces with a ring."),
     ] },
     { id: 'lei.rd-a4', when: RD, turns: [
       beat('{a} dives again, sifting through the sand with both hands, and comes up with a gold band.'),
       by('a', "Finally! A ring and not a bottle top!"),
-      by('b', "Swim it up! Before a crab takes it!"),
+      by('b', "Swim it up! Don't drop it!"),
     ] },
   ],
   'task-try.struggling': [
     { id: 'lei.rd-t1', when: RD, turns: [
       beat("{a} clings to the pier ladder, panting, eyes red from the salt water."),
-      by('a', "There are no rings down there. Only shells and sadness."),
+      by('a', "There are no rings down there. Only shells."),
       by('b', "There are hundreds of rings! People throw them every day!"),
     ] },
     { id: 'lei.rd-t2', when: RD, turns: [
       by('b', "How long can you stay down there? Ten seconds?"),
-      by('a', "About eight. Seven, if I'm scared."),
-      by('b', "You need more than eight to find a ring."),
+      by('a', "Not long. Ten seconds."),
+      by('b', "Take a bigger breath."),
     ] },
     { id: 'lei.rd-t3', when: RD, turns: [
       beat("{a} comes up again, empty-handed, for the fifth time, and just floats there."),
-      by('a', "I'm going to live down here now. With the shells."),
+      by('a', "I can't. I'm so tired."),
       by('b', "Breathe, and go down once more."),
     ] },
   ],
@@ -206,23 +206,23 @@ const ring = {
     { id: 'lei.rd-dn1', when: RD, turns: [
       by('a', "Somebody somewhere is married because of this ring."),
       by('b', "And now we're going to win a leg because of it."),
-      by('a', "That's beautiful, in a way."),
+      by('a', "That's kind of beautiful."),
     ] },
     { id: 'lei.rd-dn2', when: RD, turns: [
       beat('{a} climbs onto the pier, dripping and grinning, and hands over the ring.'),
       by('b', "You did so good. You're a hero."),
-      by('a', "I'm a wet hero. Give me a towel."),
+      by('a', "I'm so cold. Give me a towel."),
     ] },
     { id: 'lei.rd-dn3', when: RD, turns: [
       by('b', "What does the tip say?"),
       by('a', "Something about a fire walk."),
-      by('b', "From water to fire. That's a big day."),
+      by('b', "From water to fire."),
     ] },
   ],
   'attempt-fail.any': [
     { id: 'lei.rd-x1', when: RD, turns: [
       beat("{a} surfaces holding something triumphantly. It's a bottle cap."),
-      by('a', "Ring! I found a ring!"),
+      by('a', "I found one! A ring!"),
       by('b', "That's a bottle cap. Back down."),
     ] },
     { id: 'lei.rd-x2', when: RD, turns: [
@@ -238,9 +238,9 @@ const ring = {
   ],
   'watching-botch.cheer': [
     { id: 'lei.rd-v1', when: RD, turns: [
-      by('b', "You've got this! You're a fish! You're a ring-finding fish!"),
-      by('a', "Fish don't wear rings!"),
-      by('b', "Find one anyway!"),
+      by('b', "You've got this! Find it!"),
+      by('a', "I'm trying!"),
+      by('b', "Go again!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -261,7 +261,7 @@ const ring = {
     { id: 'lei.rd-v4', when: RD, turns: [
       beat("{b} kneels on the end of the pier, perfectly silent, staring down into the clear water."),
       by('a', "Can you see anything from up there?"),
-      by('b', "Your feet. Mostly I can see your feet."),
+      by('b', "Not really. Mostly I can see your feet."),
     ] },
   ],
   'helped-botch.any': [
@@ -285,15 +285,15 @@ const fire = {
   'don-demo.dry': [
     { id: 'lei.fw-d2', when: FW, turns: [
       don("Stop on the coals, step off the side, or drop your partner, and you go back to the start and carry them across again."),
-      don("The fire dancer at the end has your tip. He's done this every day for twenty years. He doesn't even have feet any more. That's a joke."),
-      beat('The fire dancer at the end of the coals waves. He definitely has feet.'),
+      don("The fire dancer at the end has your tip, and he's done this every day for twenty years!"),
+      beat('The fire dancer at the end of the coals waves.'),
     ] },
   ],
   'task-start.any': [
     { id: 'lei.fw-s1', when: FW, turns: [
       beat('{a} and {b} stand in grass skirts at the start of the coals, which glow orange in the shade of the trees.'),
       by('b', "We look ridiculous."),
-      by('a', "We look ridiculous and we're about to walk on fire. Climb on."),
+      by('a', "I know. Climb on."),
     ] },
     { id: 'lei.fw-s2', when: FW, turns: [
       by('a', "Piggyback or in my arms?"),
@@ -307,15 +307,15 @@ const fire = {
     ] },
     { id: 'lei.fw-s4', when: FW, turns: [
       by('b', "Walk fast. If you walk fast, your feet don't have time to burn."),
-      by('a', "Is that science?"),
-      by('b', "It's hope. Go."),
+      by('a', "Is that true?"),
+      by('b', "I hope so. Go."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'lei.fw-f1', when: FW, turns: [
       beat("{a} strides across the coals without stopping, {b} on {a.posAdj} back, and steps off the end onto the cool grass."),
       by('b', "You did it! You didn't stop once!"),
-      by('a', "I couldn't stop. If I stopped, I'd have cried."),
+      by('a', "I couldn't stop. If I stopped, I'd have panicked."),
     ] },
     { id: 'lei.fw-f2', when: FW, turns: [
       by('a', "Hot, hot, hot, hot, hot, done!"),
@@ -329,15 +329,15 @@ const fire = {
     ] },
     { id: 'lei.fw-f4', when: FW, turns: [
       by('b', "First try! You carried me over fire on the first try!"),
-      by('a', "Put that in my wedding speech one day."),
-      by('b', "Whose wedding?"),
+      by('a', "Don't ask me to do that again."),
+      by('b', "I won't. Thank you."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'lei.fw-a1', when: FW, turns: [
       by('b', "Don't look at the coals. Look at the fire dancer. Walk to him."),
       beat("{a} fixes eyes on the fire dancer and walks straight to him, without looking down once."),
-      by('a', "Done! Looking at him worked!"),
+      by('a', "Done! That worked!"),
     ] },
     { id: 'lei.fw-a2', when: FW, turns: [
       beat("Third try, {a} hoists {b} into both arms, takes a deep breath, and walks the coals end to end."),
@@ -347,19 +347,19 @@ const fire = {
     { id: 'lei.fw-a3', when: FW, turns: [
       by('a', "We swap. You carry me this time."),
       by('b', "Me? Carry you?"),
-      beat("{b} carries {a} over the coals without stopping, to everyone's surprise, including {b}'s."),
+      beat("{b} carries {a} over the coals without stopping."),
     ] },
     { id: 'lei.fw-a4', when: FW, turns: [
       beat("{a} counts every step out loud this time, all the way across, and doesn't stop until the last one."),
       by('a', "Fourteen! Fourteen steps! We're off!"),
-      by('b', "You counted us across a fire. That's genius."),
+      by('b', "That's so smart."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'lei.fw-t1', when: FW, turns: [
       beat("{a} stands at the edge of the coals with {b} on {a.posAdj} back, and doesn't move."),
       by('b', "Are we going?"),
-      by('a', "My feet won't go. My feet have decided."),
+      by('a', "I can't. My feet won't move."),
     ] },
     { id: 'lei.fw-t2', when: FW, turns: [
       by('b', "My grass skirt keeps falling down."),
@@ -369,7 +369,7 @@ const fire = {
     { id: 'lei.fw-t3', when: FW, turns: [
       beat("{a} has had to put {b} down three times now, and is leaning on a palm tree, panting."),
       by('a', "Why are you so heavy?"),
-      by('b', "Why are you so weak? Pick me up."),
+      by('b', "Come on. You can do it."),
     ] },
   ],
   'task-done.any': [
@@ -381,12 +381,12 @@ const fire = {
     { id: 'lei.fw-dn2', when: FW, turns: [
       beat("{a} and {b} jog away towards the beach, still in their grass skirts, leis bouncing."),
       by('b', "Are we taking these off?"),
-      by('a', "No. We earned these skirts."),
+      by('a', "No. I like mine."),
     ] },
     { id: 'lei.fw-dn3', when: FW, turns: [
       by('b', "You carried me across fire. That's the most romantic thing anybody has ever done for me."),
-      by('a', "It was a race task."),
-      by('b', "Still counts."),
+      by('a', "Don't make it weird."),
+      by('b', "Thank you, though."),
     ] },
   ],
   'attempt-fail.any': [
@@ -403,7 +403,7 @@ const fire = {
     { id: 'lei.fw-x3', when: FW, turns: [
       beat("{a} stops dead in the middle of the coals, frozen, and the fire dancer points them back to the start."),
       by('a', "I stopped. Why did I stop?"),
-      by('b', "Because you're human! Go again!"),
+      by('b', "I don't know! Go again!"),
     ] },
   ],
 };

@@ -46,7 +46,7 @@ export default {
     { id: 'mth.st.fl1', when: at('hurdles', 'finish-line'), turns: [
       beat('They cross the finish line side by side, and every hurdle behind them is still standing.'),
       by('b', "Clean! Every one!"),
-      by('a', "Olympians. We're basically Olympians."),
+      by('a', "We did it! First go!"),
     ] },
     { id: 'mth.st.fl2', when: at('hurdles', 'finish-line'), turns: [
       by('a', "High jump next. Who's jumping?"),
@@ -72,7 +72,7 @@ export default {
     ] },
     { id: 'mth.st.lp2', when: at('high-jump', 'the-leap'), turns: [
       by('b', "Go! Up! Up!"),
-      beat('{a} throws {a.ref} at the bar in a sort of flailing scissor kick, and somehow sails over it.'),
+      beat('{a} throws {a.ref} at the bar in a scissor kick, and somehow sails over it.'),
       by('a', "Did it stay up? Tell me it stayed up."),
     ] },
     { id: 'mth.st.mt1', when: at('high-jump', 'the-mat'), turns: [
@@ -90,11 +90,11 @@ export default {
     { id: 'mth.st.rn1', when: at(G, 'reins'), turns: [
       beat('Among the temple columns, a chariot waits behind two snorting horses. {a} takes the reins, and {b} climbs in the back.'),
       by('b', "Do you know how to drive this?"),
-      by('a', "It's like a bike. A bike with two horses."),
+      by('a', "No. But how hard can it be?"),
     ] },
     { id: 'mth.st.rn2', when: at(G, 'reins'), turns: [
       by('a', "Hold on to the sides. Don't let go."),
-      by('b', "I wasn't planning to."),
+      by('b', "I won't. Go."),
       beat('{a} flicks the reins, and the horses lurch forward.'),
     ] },
     { id: 'mth.st.fb1', when: at(G, 'first-bend'), turns: [
@@ -110,7 +110,7 @@ export default {
     { id: 'mth.st.fs1', when: at(G, 'far-side'), turns: [
       beat('Down the far side, the horses gallop flat out, and the chariot rattles so hard it seems to be shaking itself apart.'),
       by('b', "Is the wheel okay? It's making a noise!"),
-      by('a', "It's fine! Probably! Hold on!"),
+      by('a', "It's fine! Hold on!"),
     ] },
     { id: 'mth.st.fs2', when: at(G, 'far-side'), turns: [
       by('b', "Faster! We're nearly round!"),
@@ -120,7 +120,7 @@ export default {
     { id: 'mth.st.lp3', when: at(G, 'full-lap'), turns: [
       beat('The chariot crosses the line, the horses slow, and the official places a laurel wreath on {a}\'s head.'),
       by('b', "A full lap! In one piece!"),
-      by('a', "I'm a champion. Look at my leaves."),
+      by('a', "We did it! Look at this!"),
     ] },
     { id: 'mth.st.lp4', when: at(G, 'full-lap'), turns: [
       by('a', "Can we keep the horses?"),
@@ -130,7 +130,7 @@ export default {
 
     // ── Wrestle ──
     { id: 'mth.st.ci1', when: at(G, 'the-circle'), turns: [
-      beat('In the sand circle stands the champion, enormous, oiled, and smiling in a way that isn\'t friendly.'),
+      beat('In the sand circle stands the champion, huge and oiled, and not smiling.'),
       by('a', "I'm wrestling that?"),
       by('b', "Three falls out of five. You can do three."),
     ] },
@@ -146,7 +146,7 @@ export default {
     ] },
     { id: 'mth.st.ff2', when: at(G, 'first-fall'), turns: [
       by('b', "Grab the leg! The leg!"),
-      beat('{a} grabs a leg and holds on, and the champion topples over like a tree.'),
+      beat('{a} grabs a leg and holds on, and the champion topples over.'),
       by('a', "I got one! I actually got one!"),
     ] },
     { id: 'mth.st.tf1', when: at(G, 'three-falls'), turns: [
@@ -161,8 +161,8 @@ export default {
     ] },
     { id: 'mth.st.wr1', when: at(G, 'the-wreath'), turns: [
       beat('The champion gets up, shakes {a}\'s hand, and places the laurel wreath on {a.posAdj} head.'),
-      by('b', "You've got a crown! A leafy crown!"),
-      by('a', "I'm never taking it off."),
+      by('b', "You won! You actually won!"),
+      by('a', "I can't believe it."),
     ] },
     { id: 'mth.st.wr2', when: at(G, 'the-wreath'), turns: [
       by('a', "Everything hurts. Everything."),
@@ -176,7 +176,7 @@ export default {
     { id: 'mth.sf.fh1', when: at('hurdles', 'first-hurdles'), turns: [
       beat('{b}\'s foot catches the third hurdle, and it clatters down onto the track.'),
       by('a', "Back to the start. Both of us."),
-      by('b', "Sorry! My foot's bigger than I thought!"),
+      by('b', "Sorry! I didn't lift my foot enough!"),
     ] },
     { id: 'mth.sf.fh2', when: at('hurdles', 'first-hurdles'), turns: [
       by('a', "Jump! Jump now!"),
@@ -225,12 +225,12 @@ export default {
     { id: 'mth.sf.rn2', when: at(G, 'reins'), turns: [
       by('b', "Why aren't we moving?"),
       beat('The horses look at {a}, look at each other, and stay exactly where they are.'),
-      by('a', "Giddy up? Please?"),
+      by('a', "Go! Please go!"),
     ] },
     { id: 'mth.sf.fb1', when: at(G, 'first-bend'), turns: [
       beat('The chariot takes the first bend far too fast, tips over on its side, and they both tumble into the sand.'),
       by('a', "Are you okay?"),
-      by('b', "I've got sand in places I didn't know I had."),
+      by('b', "I've got sand everywhere."),
     ] },
     { id: 'mth.sf.fb2', when: at(G, 'first-bend'), turns: [
       by('b', "Slow down for the corner!"),
@@ -245,23 +245,23 @@ export default {
     { id: 'mth.sf.fs2', when: at(G, 'far-side'), turns: [
       by('a', "Why are they stopping?"),
       beat('The horses have stopped to eat grass by the track, and nothing {a} says will move them.'),
-      by('b', "Another try. With better horses."),
+      by('b', "Again. We have to go again."),
     ] },
 
     // ── Wrestle ──
     { id: 'mth.sf.ci1', when: at(G, 'the-circle'), turns: [
       beat('{a} looks at the champion, looks at the sand, and steps straight back out of the circle.'),
       by('b', "That counts as a fall! You walked out!"),
-      by('a', "Did it? Oh. That's bad."),
+      by('a', "Oh no. I didn't know."),
     ] },
     { id: 'mth.sf.ci2', when: at(G, 'the-circle'), turns: [
-      by('a', "Can we just talk about this?"),
-      beat('The champion does not want to talk about this.'),
+      by('a', "Okay. Okay. Here I go."),
+      beat('The champion steps forward.'),
       by('b', "Just go in there!"),
     ] },
     { id: 'mth.sf.ff1', when: at(G, 'first-fall'), turns: [
       beat('The champion picks {a} up, turns round once, and puts {a.obj} down gently outside the circle.'),
-      by('a', "That was quite nice, actually."),
+      by('a', "He just picked me up!"),
       by('b', "That was a fall! You lost a fall!"),
     ] },
     { id: 'mth.sf.ff2', when: at(G, 'first-fall'), turns: [

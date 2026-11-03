@@ -85,7 +85,7 @@ const statue = {
   ],
   'task-done.any': [
     { id: 'gpc2.bs-dn4', when: BS, turns: [
-      { by: 'b', say: "It's very beautiful, now it's in one piece." },
+      { by: 'b', say: "It's beautiful, now it's in one piece." },
       { by: 'a', say: "Who broke it in the first place?" },
       { by: 'b', say: "I don't know. Not us." },
     ] },

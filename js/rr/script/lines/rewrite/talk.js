@@ -51,7 +51,7 @@ export default {
       { id: 'tk.c-any2', when: { relFamB: 'family' }, turns: [
         { by: 'b', say: "How do you two get along so well? Don't you ever fight?" },
         { by: 'c', say: "Oh, we fight all the time." },
-        { by: 'd', say: "All the time. We've been fighting since we were kids." },
+        { by: 'd', say: "All the time. We've been fighting for years." },
         { by: 'c', say: "But at the end of the day, we've always got each other's backs." },
         { by: 'a', say: "That's really nice." },
         { by: 'd', say: "Don't tell {c.obj} I said this, but I couldn't do this with anybody else." },

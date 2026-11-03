@@ -145,10 +145,10 @@ export default {
       { id: 'vt.wl2', turns: [
         { by: 'b', say: "They keep rushing it. Every single time." },
         { by: 'c', say: "What else are you supposed to do?" },
-        { by: 'b', say: "Wait for it. Look. It swings, and then it stops for a second. Go when it stops." },
-        { by: 'd', say: "Oh. Yeah, it does stop." },
-        { by: 'a', say: "Okay. Go when it stops. Got it." },
-        { beat: 'When their turn comes, {a} waits, goes when it stops, and gets it first time.' },
+        { by: 'b', say: "Slow down. Look at them. They start before they're even ready." },
+        { by: 'd', say: "Oh. Yeah, they do." },
+        { by: 'a', say: "Okay. Slow down. Got it." },
+        { beat: 'When their turn comes, {a} takes a breath first, goes slowly, and gets it first time.' },
       ] },
       { id: 'vt.wl3', turns: [
         { beat: 'The team out in front is arguing more than they\'re trying.' },

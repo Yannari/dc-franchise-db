@@ -137,8 +137,8 @@ export default {
         { by: 'a', say: "Thanks, Don." }, don("You're welcome! I mean it as a compliment. Mostly.")),
       q('dpv.b11', 'bottom', don("{team}, you're {placing}."), { by: 'b', say: "We thought we were last. We were sure we were last." },
         don("Not tonight! Somebody else has that honour.")),
-      q('dpv.b12', 'bottom', don("{team}! {placing}. That was nail-biting. And I just had them done."),
-        { by: 'a', say: "Sorry?" }, don("Apology accepted. Go sit down!")),
+      q('dpv.b12', 'bottom', don("{team}! {placing}. That was close, so very well done!"),
+        { by: 'a', say: "Sorry?" }, don("Close, but you made it, so go and sit down!")),
       // anywhere
       q('dpv.a1', null, don("{team}, you're team number {number}!"), { by: 'a', say: "Thank you!" },
         don("You're welcome! Next!")),

@@ -5,7 +5,7 @@ export default {
   'nf2.8:0': "Flight number one has landed, with the best seats, a head start, and absolutely no excuses left.",
   'nl.7:0': "Flight {flight} has touched down, and everybody on it is behind, but they're not beaten yet.",
   'nl.12:0': "Flight {flight} has arrived, and everybody on board is very aware that they're behind.",
-  'nl2.7:0': "Flight number {flight} is here, fashionably late, which I respect, although the clock doesn't.",
+  'nl2.7:0': "Flight number {flight} is here, and these teams have time to make up!",
   'nb.10:0': "{team} breeze into {task}, while back at {prevTask}, nobody is breezing anywhere.",
   'nb.11:0': "{team} reach {task}, while back at {prevTask}, the rest of the pack is learning some hard lessons.",
   'nb2.1:0': "{team} reach {task}, while back at {prevTask}, the back of the pack is having a very different kind of day.",

@@ -714,8 +714,9 @@ export function airLeg(state, leg) {
     let run = [];
     const flush = () => {
       if (!run.length) return;
+      // (at the last arrival's time: at the first, "eighth place" aired before that team's runway was done, read 2026-11-03)
       montages.push({ scene: run[0].id, scenes: run.map(s => s.id), kind: 'mat-montage', ending: 'any', stretch: 'mat',
-        t: run[0].data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0,
+        t: run.at(-1).data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0,
         srcs: run.map(s => ({ ...s, kind: 'mat-montage', data: { ...s.data, ending: 'any' } })) });
       run = [];
     };
@@ -762,7 +763,7 @@ export function airLeg(state, leg) {
       if (run.length >= 2) {
         for (const s of run) picked.delete(s.id);
         montages.push({ scene: run[0].id, scenes: run.map(s => s.id), kind: 'mat-montage', ending: 'any', stretch: 'mat',
-          t: run[0].data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0, checkinRun: true,
+          t: run.at(-1).data?.t ?? 0, teams: run.map(s => s.data.team), who: run.flatMap(s => s.who), side: null, tier: 0, checkinRun: true,
           srcs: run.map(s => ({ ...s, kind: 'mat-montage', data: { ...s.data, ending: 'any' } })) });
       }
       run = [];

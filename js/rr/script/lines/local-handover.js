@@ -218,9 +218,9 @@ export const HANDOVER = {
     behind: ["Many have walked through today. The mud is deep now. Careful where you step."],
   },
   'museum-guard': {
-    any: ["Your clue. And please, no running in the galleries. I have said this many times today.",
+    any: ["Your clue. And please, no running in the galleries. I've said it all morning.",
       "Here. Look but do not touch. Unless it is part of the challenge. Then touch carefully.",
-      "Take it. If an alarm goes off, it was not me who told you anything."],
+      "Take it. And please don't touch anything in there."],
     ahead: ["The first ones. The galleries are quiet. Keep them quiet."],
     behind: ["Many teams have been through. Several statues are looking at me very sadly."],
   },

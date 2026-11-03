@@ -324,7 +324,7 @@ export default {
       ] },
       { id: 'lm.ha2', turns: [
         { by: 'b', say: "We keep getting it wrong. We've done it so many times." },
-        L("You're holding it wrong. Not like that. Like this."),
+        L("You're rushing it. Slow down. Do it like this."),
         { by: 'a', say: "Like this? Oh. Why didn't anybody tell us?" },
         L("Because nobody asked me."),
         { beat: 'It works first time the new way.' },

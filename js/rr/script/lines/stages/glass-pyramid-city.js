@@ -154,7 +154,7 @@ export default {
       by('b', "Ask for another outfit!"),
     ] },
     { id: 'gpc.sf.ou2', when: at('runway', 'the-outfit'), turns: [
-      by('b', "That's not how it goes on."),
+      by('b', "That's on backwards."),
       by('a', "How does it go on, then?"),
       beat('It takes them a while to work it out.'),
     ] },

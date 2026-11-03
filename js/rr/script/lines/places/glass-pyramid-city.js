@@ -344,7 +344,7 @@ const runway = {
       by('a', "I know. I miss them anyway."),
     ] },
     { id: 'gpc.rw-dn2', when: RW, turns: [
-      beat("{a} and {b} run out of the museum towards the glass pyramid, glowing in the dark."),
+      beat("{a} and {b} run out of the museum towards the glass pyramid."),
       by('b', "The pyramid! Look at it, all lit up!"),
       by('a', "It's beautiful. Run faster. Admire it later."),
     ] },

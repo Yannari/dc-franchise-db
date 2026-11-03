@@ -37,9 +37,9 @@ export default {
       ] },
       { id: 'dp2.f5', when: { matPlace: 'first', relFam: 'romantic' }, turns: [
         { beat: '{a} and {b} cross the mat, and kiss before Don has said a word.' },
-        don("{team}, you're first. And please don't do that on my mat."),
-        { by: 'a', say: "Sorry. We're very happy." },
-        don("Be happy over there."),
+        don("{team}, you're first. Look at you two!"),
+        { by: 'a', say: "We're just so happy." },
+        don("You should be! Congratulations!"),
       ] },
       // near the top
       { id: 'dp2.t1', when: { matPlace: 'top' }, turns: [
@@ -116,9 +116,9 @@ export default {
         don("I don't keep you in my head. That's what the card's for."),
       ] },
       { id: 'dp2.a4', turns: [
-        don("{team}. {placing}. I'd clap, but I'm holding a coffee."),
-        { by: 'a', say: "You could put the coffee down." },
-        don("I could. I won't. {placing}. Move along."),
+        don("{team}. {placing}. You're still in the race!"),
+        { by: 'a', say: "Thank God." },
+        don("Go and get some rest, because tomorrow is another leg!"),
       ] },
       { id: 'dp2.a5', turns: [
         { beat: '{a} and {b} jump onto the mat together.' },
@@ -209,7 +209,7 @@ export default {
         { beat: 'Don clicks his stopwatch and waves them over to the mat.' },
         don("Time's up, {team}! That's {penalty} served, so step onto the mat, because you're the {placing} team to arrive."),
         { by: 'a', ...V("We got here ages ago.", "We were here first. Well, earlier.", "We've been here the whole time.", "We got here AGES ago!", "We did get here quite a while ago, though.", "We got here so long ago, I've aged.") },
-        don("You did, and then you sat on a stool, and that's the order these things happen in."),
+        don("You did, but the penalty comes first, and that's where it puts you!"),
       ] },
       { id: 'dp2.ps2', turns: [
         don("{penalty}, served in full, and I watched every minute of it, so come on up, {team}."),

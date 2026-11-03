@@ -11,7 +11,7 @@
 // (a negative bond), and the teams it thinks are near it in the race.
 import { SCENES, playScene, decideEnding, prepare, pairKey, snapOf } from './scenes.js';
 import { addScene, S } from './state.js';
-import { perceivedRank } from './knowledge.js';
+import { perceivedRank, see } from './knowledge.js';
 import { teamLevel } from './skill.js';
 import { runTask } from './tasks.js';
 import { getBond } from '../bonds.js';
@@ -146,6 +146,8 @@ export function resolveBoard(state, team, stretch, t, api, rng) {
     const targets = active(state).filter(x => x !== id && !seen.includes(x) && !state.uturn?.[x]);
     if (key === 'boomerang') {
       if (!targets.length) {
+        // the board says who has already been through, and they now know it ("nobody's even close" twenty minutes later, read 2026-11-03)
+        for (const x of seen) if (x !== id) see(state, id, x, state.leg, t, 'board', false);
         act(state, 'boomerang-decide', id, null, rng, { t, stretch, ending: 'wasted', data: { wasted: true } });
         continue;
       }

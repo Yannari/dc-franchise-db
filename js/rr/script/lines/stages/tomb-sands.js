@@ -47,9 +47,9 @@ export default {
       by('a', "Mine too. Slowly. Nearly there."),
     ] },
     { id: 'ts.st.ds2', when: at('pyramid', 'down-the-side'), turns: [
-      by('a', "Sit down and slide off each one. Like stairs for babies."),
+      by('a', "Sit down and slide off each one."),
       beat('They bump down the far side on their bottoms, one huge step at a time.'),
-      by('b', "This is so undignified. It's working, though."),
+      by('b', "This looks so silly. It's working, though."),
     ] },
     { id: 'ts.st.ot1', when: at('pyramid', 'over-tip'), turns: [
       beat('They drop off the last step onto the sand on the far side, and the tip is waiting in the Don Box.'),
@@ -74,7 +74,7 @@ export default {
       by('a', "Both. Let's go."),
     ] },
     { id: 'ts.st.dr1', when: at('pyramid', 'three-doors'), turns: [
-      beat('The passage ends in three doorways. A symbol is carved above each one: a bird, an eye, a snake.'),
+      beat('The passage ends in three doorways. A symbol is carved above each one: a bird, an eye, a dog.'),
       by('b', "Which one?"),
       by('a', "The eye. The eye watches over you. That's a good one."),
     ] },
@@ -94,7 +94,7 @@ export default {
       by('a', "That was so close. That was right over my head."),
     ] },
     { id: 'ts.st.sc1', when: at('pyramid', 'scarab-room'), turns: [
-      beat('The next room is full of beetles, a crunching, clicking heap of them, all over the floor.'),
+      beat('The next room is full of beetles, crawling all over the floor.'),
       by('b', "No. No, no, no."),
       by('a', "They're just beetles. Walk fast and don't stop."),
     ] },
@@ -106,7 +106,7 @@ export default {
     { id: 'ts.st.wo1', when: at('pyramid', 'way-out'), turns: [
       beat('Past the painted mummy on the wall, sunlight shines in through a gap. They climb out onto the sand on the far side.'),
       by('b', "We made it! Out!"),
-      by('a', "And nothing grabbed us. I'm so happy nothing grabbed us."),
+      by('a', "I'm so happy to be out of there."),
     ] },
     { id: 'ts.st.wo2', when: at('pyramid', 'way-out'), turns: [
       by('a', "Daylight. Real daylight."),
@@ -162,7 +162,7 @@ export default {
     ] },
     { id: 'ts.st.fb2', when: at('reed-boat', 'far-bank'), turns: [
       by('a', "Look at our boat. It held."),
-      by('b', "Leave it. Let's go before it sinks out of spite."),
+      by('b', "Leave it. Let's go."),
       beat('They run up the bank towards the pyramid.'),
     ] },
   ],
@@ -202,7 +202,7 @@ export default {
       beat('They argue in the doorway while another team walks past them into the tomb.'),
     ] },
     { id: 'ts.sf.dr1', when: at('pyramid', 'three-doors'), turns: [
-      beat('They take the snake door. Twenty steps in, it ends in a solid wall.'),
+      beat('They take the dog door. Twenty steps in, it ends in a solid wall.'),
       by('a', "Dead end."),
       by('b', "Back. Try another one."),
     ] },
@@ -241,7 +241,7 @@ export default {
     { id: 'ts.sf.ti2', when: at('reed-boat', 'tie-it'), turns: [
       by('b', "Does it float? Test it."),
       beat('They push it into the water. One end floats and the other end sinks.'),
-      by('a', "Half a boat. We built half a boat."),
+      by('a', "It's sinking at one end."),
     ] },
     { id: 'ts.sf.co1', when: at('reed-boat', 'cast-off'), turns: [
       beat('Halfway across the river, the reeds come loose and the boat starts to sink underneath them.'),
@@ -249,14 +249,14 @@ export default {
       by('a', "Swim back! Swim back to the bank!"),
     ] },
     { id: 'ts.sf.co2', when: at('reed-boat', 'cast-off'), turns: [
-      by('a', "Why is the water getting higher?"),
-      by('b', "Because we're getting lower!"),
+      by('a', "Is the water getting higher?"),
+      by('b', "No! We're sinking!"),
       beat('They swim back to the bank, very fast, past the crocodiles, to build another.'),
     ] },
     { id: 'ts.sf.cr1', when: at('reed-boat', 'the-crocs'), turns: [
       beat('A crocodile bumps the side of the boat, and they both scream and paddle in the wrong direction.'),
       by('a', "Other way! The bank's the other way!"),
-      by('b', "The crocodile's the other way!"),
+      by('b', "So's the crocodile!"),
     ] },
     { id: 'ts.sf.cr2', when: at('reed-boat', 'the-crocs'), turns: [
       by('b', "It's coming! Paddle! Paddle!"),

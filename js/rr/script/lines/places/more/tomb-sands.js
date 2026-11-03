@@ -13,32 +13,32 @@ const pyramid = {
     { id: 'tms2.ov-s1', when: OVER, turns: [
       { beat: '{a} hauls {a.ref} up onto the first giant step and reaches a hand down for {b}.' },
       { by: 'a', say: "Grab on. One step at a time." },
-      { by: 'b', say: "One step at a time is going to take a very long time." },
+      { by: 'b', say: "That's going to take forever." },
       { by: 'a', say: "Then we'd better start." },
     ] },
     { id: 'tms2.ov-s2', when: OVER, turns: [
       { by: 'b', ...V("The stones are hot. They're really hot. I can feel it through my gloves.", "The stones are burning.", "Hot. Very hot.", "The stones are HOT! I can feel it through my GLOVES!", "These stones are really hot, I can feel it through my gloves.", "The pyramid has been sunbathing for four thousand years.") },
       { by: 'a', say: "Then don't stop on them. Keep moving." },
-      { by: 'b', say: "That's your answer to everything." },
+      { by: 'b', say: "Okay. Okay." },
     ] },
     { id: 'tms2.un-s1', when: UNDER, turns: [
       { beat: 'The tomb door creaks shut behind {a} and {b}. Their torch flickers.' },
       { by: 'b', say: "Did the door just close by itself?" },
-      { by: 'a', say: "Doors don't close by themselves." },
-      { by: 'b', say: "This one did." },
+      { by: 'a', say: "It's the wind. Keep going." },
+      { by: 'b', say: "I don't like this." },
     ] },
     { id: 'tms2.un-s2', when: UNDER, turns: [
       { by: 'a', say: "Pictures on every wall. They're telling a story." },
       { by: 'b', say: "What story?" },
-      { by: 'a', say: "From the look of it, people walking into a tomb and not coming out." },
-      { by: 'b', say: "Let's read a different wall." },
+      { by: 'a', say: "I don't know. Let's just find the way out." },
+      { by: 'b', say: "Okay. Keep going." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'tms2.ov-f1', when: OVER, turns: [
       { beat: '{a} and {b} climb in perfect rhythm, one boosting, the other pulling, all the way to the top.' },
-      { by: 'b', say: "We're a machine. A pyramid-climbing machine." },
-      { by: 'a', say: "Now let's be a pyramid-getting-down machine." },
+      { by: 'b', say: "We're doing it!" },
+      { by: 'a', say: "Now we have to get down." },
     ] },
     { id: 'tms2.ov-f2', when: OVER, turns: [
       { by: 'a', say: "Don't look at the top. Just look at the next step." },
@@ -48,13 +48,13 @@ const pyramid = {
     { id: 'tms2.un-f1', when: UNDER, turns: [
       { beat: '{b} spots a scratch on the floor in front of one of the doorways.' },
       { by: 'b', say: "Look. Footprints. Somebody's been this way and come back out." },
-      { by: 'a', say: "Out is good. Follow the out." },
+      { by: 'a', say: "Then follow them." },
       { beat: 'The footprints lead them straight out into the sun.' },
     ] },
     { id: 'tms2.un-f2', when: UNDER, turns: [
-      { by: 'a', say: "Something's moving in that corner. Wrapped in bandages." },
-      { by: 'b', say: "Don't stop. Don't look. Walk past it like it's a person at a bus stop." },
-      { beat: 'They walk past it like a person at a bus stop. It doesn\'t follow, and the corridor ends in daylight.' },
+      { by: 'a', say: "There's something in that corner. Wrapped in bandages." },
+      { by: 'b', say: "Don't stop. Don't look. It's just a statue." },
+      { beat: 'They walk past it without looking, and the corridor ends in daylight.' },
     ] },
   ],
   'task-try.after-fails': [
@@ -67,14 +67,14 @@ const pyramid = {
     { id: 'tms2.ov-a2', when: OVER, turns: [
       { by: 'a', say: "Back down the far side. Feet first. Slowly." },
       { by: 'b', say: "That's how I slipped last time." },
-      { by: 'a', say: "Then sit and scoot. Like a toddler on stairs." },
-      { beat: 'Sitting and scooting, they make it all the way down.' },
+      { by: 'a', say: "Then sit down and slide off each step." },
+      { beat: 'Sitting and sliding down, they make it all the way.' },
     ] },
     { id: 'tms2.un-a1', when: UNDER, turns: [
       { beat: 'Scarabs pour out of a crack in the wall. {a} and {b} back away, then turn and run the other way.' },
-      { by: 'b', ...V("Not that way! Never that way! Anywhere but that way!", "Not that way!", "Other way!", "NOT that way! NEVER that way!", "Let's never go that way again, anywhere but that way.", "That way belongs to the beetles now.") },
+      { by: 'b', say: "Not that way! Back!" },
       { by: 'a', say: "Then the other doorway. The last one. It has to be." },
-      { beat: 'It is.' },
+      { beat: 'It\'s the right one.' },
     ] },
     { id: 'tms2.un-a2', when: UNDER, turns: [
       { by: 'a', say: "Stop. Look at the symbols again. The eye was on the tip." },
@@ -85,9 +85,9 @@ const pyramid = {
   ],
   'task-done.any': [
     { id: 'tms2.py-dn1', when: PY, turns: [
-      { by: 'a', say: "Four thousand years old, and we got past it in one morning." },
-      { by: 'b', say: "It got past us a bit too." },
-      { by: 'a', say: "We won. Let's say we won." },
+      { by: 'a', say: "Four thousand years old, and we climbed it." },
+      { by: 'b', say: "My legs are dead." },
+      { by: 'a', say: "We did it, though." },
     ] },
     { id: 'tms2.py-dn2', when: PY, turns: [
       { beat: '{a} and {b} stagger out on the far side of the pyramid. A camel handler waves them over.' },
@@ -97,12 +97,12 @@ const pyramid = {
     { id: 'tms2.py-dn3', when: PY, turns: [
       { by: 'b', say: "Take a picture of me. With the pyramid." },
       { by: 'a', say: "We don't have a camera. They took everything at the start." },
-      { by: 'b', say: "Then remember me. Like this. Right now." },
+      { by: 'b', say: "Then I'll just remember it." },
     ] },
     { id: 'tms2.py-dn4', when: PY, turns: [
       { beat: '{a} pours a small heap of sand out of each shoe.' },
-      { by: 'a', say: "I'm taking half the desert with me." },
-      { by: 'b', say: "Leave some for the other teams." },
+      { by: 'a', say: "There's so much sand in my shoes." },
+      { by: 'b', say: "Mine too." },
     ] },
   ],
 };
@@ -111,23 +111,23 @@ const camel = {
   'ride.any': [
     { id: 'tms2.cm-r1', when: CM, turns: [
       { beat: 'The camel stops to chew on a dry bush and won\'t move until it\'s finished.' },
-      { by: 'a', say: "It's having lunch. In the middle of a race." },
-      { by: 'b', say: "I'm jealous. I want lunch." },
+      { by: 'a', say: "It's eating. In the middle of a race." },
+      { by: 'b', say: "I'm so hungry too." },
     ] },
     { id: 'tms2.cm-r2', when: CM, turns: [
       { by: 'b', say: "Hold me tighter. I'm sliding off the back." },
-      { by: 'a', say: "If you go, I go. We're tied together by fear." },
-      { by: 'b', say: "That's the nicest thing you've said all day." },
+      { by: 'a', say: "Hold on to me. I've got you." },
+      { by: 'b', say: "Okay. Thank you." },
     ] },
     { id: 'tms2.cm-r3', when: CM, turns: [
       { beat: 'The dunes go on and on, each one the same as the last, the sun beating down.' },
       { by: 'a', say: "Have we passed that dune before?" },
-      { by: 'b', say: "They're all that dune. Trust the camel." },
+      { by: 'b', say: "They all look the same. Just trust the camel." },
     ] },
     { id: 'tms2.cm-r4', when: CM, turns: [
       { by: 'a', say: "Its breath. Have you smelled its breath?" },
-      { by: 'b', say: "Every time it turns round. It's turning round on purpose." },
-      { by: 'a', say: "It's a very rude camel." },
+      { by: 'b', say: "Every time it turns round." },
+      { by: 'a', say: "Just keep going." },
     ] },
   ],
 };
@@ -136,24 +136,24 @@ const reed = {
   'task-start.any': [
     { id: 'tms2.rb-s1', when: RB, turns: [
       { by: 'a', say: "The reeds are sharp. Mind your fingers." },
-      { by: 'b', say: "Too late. I've cut all of my fingers." },
-      { by: 'a', say: "Then tie with your elbows." },
+      { by: 'b', say: "Too late. I've cut my finger." },
+      { by: 'a', say: "Wrap it. Keep going." },
     ] },
     { id: 'tms2.rb-s2', when: RB, turns: [
       { beat: '{b} lies down on the pile of reeds to see if it\'s long enough.' },
       { by: 'b', say: "It's as long as me. Is that enough?" },
       { by: 'a', say: "It has to be as long as both of us." },
-      { by: 'b', say: "Then lie down next to me." },
+      { by: 'b', say: "Then we need more reeds." },
     ] },
     { id: 'tms2.rb-s3', when: RB, turns: [
-      { by: 'a', ...V("Front, back, sides. A boat's just a big bundle with a pointy bit.", "Bundle, then a point.", "Bundle. Point.", "FRONT, BACK, SIDES! A boat's just a BUNDLE with a POINTY bit!", "A boat's just a big bundle with a pointy bit at the front.", "Think of it as a reed sausage with ambitions.") },
-      { by: 'b', say: "You've said that like you know." },
-      { by: 'a', say: "I don't. But I said it with confidence." },
+      { by: 'a', say: "Front, back, sides. A boat's just a big bundle with a pointy front." },
+      { by: 'b', say: "Do you know that?" },
+      { by: 'a', say: "No. But it makes sense." },
     ] },
     { id: 'tms2.rb-s4', when: RB, turns: [
       { beat: 'At the next bundle along, another team has already launched their boat.' },
       { by: 'b', say: "They're already on the water!" },
-      { by: 'a', say: "Let's see if they stay on the water." },
+      { by: 'a', say: "Let's just build ours." },
     ] },
   ],
   'task-try.first-try': [
@@ -161,7 +161,7 @@ const reed = {
       { beat: 'The reed boat glides out onto the river as smooth as a canoe.' },
       { by: 'a', say: "It's actually good. We built a good boat." },
       { by: 'b', say: "Don't say it out loud. You'll jinx it." },
-      { beat: 'Nobody jinxes it. They land on the far bank, dry.' },
+      { beat: 'They land on the far bank, dry.' },
     ] },
     { id: 'tms2.rb-f2', when: RB, turns: [
       { by: 'b', say: "Paddle together. Left, right. Left, right." },
@@ -170,8 +170,8 @@ const reed = {
       { beat: 'Copying works. They paddle straight across without spinning once.' },
     ] },
     { id: 'tms2.rb-f3', when: RB, turns: [
-      { beat: 'A crocodile surfaces right beside the boat, takes one look at it, and sinks again.' },
-      { by: 'a', say: "Did it just turn its nose up at us?" },
+      { beat: 'A crocodile surfaces right beside the boat, and sinks again.' },
+      { by: 'a', say: "Did you see that?" },
       { by: 'b', say: "Who cares? Paddle!" },
     ] },
   ],
@@ -179,8 +179,8 @@ const reed = {
     { id: 'tms2.rb-a1', when: RB, turns: [
       { beat: 'The second boat starts sinking at the back. {a} and {b} shuffle to the front and paddle like mad.' },
       { by: 'b', say: "Faster! It's sinking from the back!" },
-      { by: 'a', say: "Then we outrun the sinking!" },
-      { beat: 'They outrun the sinking, just.' },
+      { by: 'a', say: "Then paddle faster!" },
+      { beat: 'They make it to the far bank, just.' },
     ] },
     { id: 'tms2.rb-a2', when: RB, turns: [
       { by: 'a', say: "The ropes slipped. We tied them round the outside." },
@@ -190,8 +190,8 @@ const reed = {
     ] },
     { id: 'tms2.rb-a3', when: RB, turns: [
       { beat: '{a} and {b} wring out their clothes on the bank and start again from a fresh pile of reeds.' },
-      { by: 'b', ...V("We're good at this now. We've had practice sinking.", "We've had practice now.", "Practised.", "We're GOOD at this now! We've had PRACTICE sinking!", "We're good at this now, we've had plenty of practice sinking.", "Every great sailor sinks first. Probably.") },
-      { by: 'a', say: "This one won't sink. This one's angry." },
+      { by: 'b', say: "We know what we're doing now." },
+      { by: 'a', say: "This one won't sink." },
     ] },
     { id: 'tms2.rb-a4', when: RB, turns: [
       { by: 'b', say: "One of us paddles. The other one bails." },
@@ -203,29 +203,29 @@ const reed = {
   'task-done.any': [
     { id: 'tms2.rb-dn1', when: RB, turns: [
       { by: 'b', say: "Should we take the boat with us?" },
-      { by: 'a', say: "It's a pile of wet grass now." },
-      { by: 'b', say: "It's our pile of wet grass." },
+      { by: 'a', say: "It's falling apart." },
+      { by: 'b', say: "It got us here, though." },
     ] },
     { id: 'tms2.rb-dn2', when: RB, turns: [
       { beat: '{a} and {b} jump onto the far bank and run, without looking back at the water.' },
       { by: 'a', say: "Don't look at the river. Never look at the river again." },
       { by: 'b', say: "What's in the river?" },
-      { by: 'a', say: "Teeth." },
+      { by: 'a', say: "Crocodiles. Just run." },
     ] },
     { id: 'tms2.rb-dn3', when: RB, turns: [
-      { by: 'a', say: "We built a boat from grass and crossed a river full of crocodiles." },
-      { by: 'b', say: "Put that on a job application." },
-      { by: 'a', say: "Skills: boats. Fears: none." },
+      { by: 'a', say: "We built a boat out of reeds and crossed a river full of crocodiles." },
+      { by: 'b', say: "Nobody's going to believe us." },
+      { by: 'a', say: "I can't believe it." },
     ] },
     { id: 'tms2.rb-dn4', when: RB, turns: [
       { beat: 'The tip is pinned to a post on the bank, wet from the river spray.' },
       { by: 'b', say: "The Chill Zone. It's back at the pyramid." },
-      { by: 'a', say: "Of course it is. Everything here is at the pyramid." },
+      { by: 'a', say: "Okay. Let's go." },
     ] },
     { id: 'tms2.rb-dn5', when: RB, turns: [
-      { by: 'b', say: "I'm soaked, I'm sandy, and I smell like a camel." },
+      { by: 'b', say: "I'm soaked, I'm covered in sand, and I smell like a camel." },
       { by: 'a', say: "You look great, though." },
-      { by: 'b', say: "Don't lie to me. Not today." },
+      { by: 'b', say: "Thanks. Come on." },
     ] },
   ],
 };

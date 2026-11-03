@@ -19,14 +19,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'tea.op1', when: P, turns: [
       beat("Don stands on a terrace of bright green tea bushes that roll down the hills into the mist, a cup of tea in his hand."),
-      don("Welcome to the Tea Hills! Some of the finest tea in the world grows on these slopes. I've had eleven cups since breakfast. I can see sounds."),
+      don("Welcome to the Tea Hills! Some of the finest tea in the world grows on these slopes, and I've had eleven cups since breakfast!"),
       don("Today, teams pick tea, and then catch a train. A very small, very crowded, very slow train."),
-      beat('His hand is shaking slightly. The cup rattles on its saucer.'),
+      beat('The cup rattles on its saucer.'),
     ] },
     { id: 'tea.op2', when: P, turns: [
       don("The Tea Hills. Cool air, steep slopes, and a little steam train that has been running up this mountain for more than a hundred years."),
       don("Racers, a jeep will take you up the hill road. Hold on. It's mostly corners."),
-      beat('A jeep swerves round a bend behind him, honking, and he steps neatly out of the way.'),
+      beat('A jeep swerves round a bend behind him, honking.'),
     ] },
   ],
   'don-opener.bored': [
@@ -39,14 +39,14 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'tea.ar1', when: P, turns: [
       beat("The jeep climbs out of the clouds, and the hills appear: every slope combed into neat green rows, as far as they can see."),
-      by('a', "It looks like a giant green fingerprint."),
+      by('a', "It's all in rows. Look at it."),
       by('b', "It's tea. All of that is tea."),
-      by('a', "That's a lot of cups."),
+      by('a', "That's so much tea."),
     ] },
     { id: 'tea.ar2', when: P, turns: [
       beat("Far below, a little blue steam train puffs its way round the side of the hill, a long white trail behind it."),
       by('b', "That's the train! That tiny one!"),
-      by('a', "It looks like a toy. It looks like somebody's toy train."),
+      by('a', "It looks so small from up here."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -58,7 +58,7 @@ const place = {
     { id: 'tea.ad2', when: P, turns: [
       by('b', "The hills are so steep. How do people pick tea on these?"),
       by('a', "Very carefully, I imagine."),
-      by('b', "We're not careful people."),
+      by('b', "I'm not that careful."),
     ] },
   ],
 };
@@ -69,7 +69,7 @@ const roads = {
     { id: 'tea.tm1', when: { taskId: 'hill-jeep', mishap: 'landslide-on-the-road' }, turns: [
       beat("Round a hairpin bend, the jeep stops. Half the hillside is lying across the road in a heap of mud and rocks."),
       by('a', "Is that the road? Where did the road go?"),
-      by('b', "Under that. The road is under that."),
+      by('b', "It's under all that."),
       beat('Twenty minutes later, a crew with shovels has cleared a path just wide enough for the jeep.'),
     ] },
   ],
@@ -87,7 +87,7 @@ const tea = {
   'don-demo.dry': [
     { id: 'tea.tb-d2', when: TB, turns: [
       don("Bring your basket to the plantation's oldest picker. She tips it out and checks every leaf. Old leaves, stalks, or a basket that isn't full, and you go back up."),
-      don("A full basket of good tea gets you the next tip. She's been doing this for sixty years. You will not fool her."),
+      don("A full basket of good tea gets you the next tip, and she's been doing this for sixty years, so don't try to fool her!"),
       beat("The old picker, sitting by the scales, looks at the camera and says nothing at all."),
     ] },
   ],
@@ -99,25 +99,25 @@ const tea = {
     ] },
     { id: 'tea.tb-s2', when: TB, turns: [
       by('b', "Watch the pickers. Look how fast their hands go."),
-      by('a', "Their hands are a blur. Mine are a mess."),
-      by('b', "Then be a slow, tidy mess."),
+      by('a', "They're so fast."),
+      by('b', "Then go slow and get it right."),
     ] },
     { id: 'tea.tb-s3', when: TB, turns: [
       beat("{a} picks a handful of leaves and throws them over {a.posAdj} shoulder into the basket. Half of them miss."),
       by('a', "Is it in?"),
-      by('b', "Some of it is in. Some of it is on the hill."),
+      by('b', "Some of it is."),
     ] },
     { id: 'tea.tb-s4', when: TB, turns: [
       by('a', "How many leaves fill a basket?"),
       by('b', "Thousands. Maybe tens of thousands."),
-      by('a', "Then why are we talking? Pick."),
+      by('a', "Then stop talking. Pick."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'tea.tb-f1', when: TB, turns: [
       beat("{a} and {b} carry their full baskets down to the old picker. She tips them out, runs her fingers through, and nods."),
       by('b', "She nodded! First go!"),
-      by('a', "Sixty years of picking, and she nodded at us."),
+      by('a', "She's been doing this for sixty years, and she nodded at us."),
     ] },
     { id: 'tea.tb-f2', when: TB, turns: [
       by('a', "Only the top bits. Only the top bits. Every single leaf."),
@@ -131,15 +131,15 @@ const tea = {
     ] },
     { id: 'tea.tb-f4', when: TB, turns: [
       by('b', "First basket, and she accepted it."),
-      by('a', "My back is broken, but she accepted it."),
-      by('b', "A small price."),
+      by('a', "My back is killing me, but she accepted it."),
+      by('b', "Worth it."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'tea.tb-a1', when: TB, turns: [
       by('b', "She said too many stalks. So we check every handful before it goes in."),
       beat('Handful by handful, checked and checked again, until the basket is full. The old picker finally nods.'),
-      by('a', "Slow tea is good tea."),
+      by('a', "Slow worked."),
     ] },
     { id: 'tea.tb-a2', when: TB, turns: [
       beat("Second basket. This time {a} and {b} pick only from the very top of the bushes, the bright green new leaves."),
@@ -153,7 +153,7 @@ const tea = {
     ] },
     { id: 'tea.tb-a4', when: TB, turns: [
       beat("A young picker shows {b} how to snap the leaf off with a thumbnail. After that, it all goes much faster."),
-      by('b', "Thumbnail! It's all in the thumbnail!"),
+      by('b', "That's so much faster!"),
       by('a', "Third basket. Third time lucky. She's nodding!"),
     ] },
   ],
@@ -161,7 +161,7 @@ const tea = {
     { id: 'tea.tb-t1', when: TB, turns: [
       beat("{a} looks into the basket after half an hour of picking. It's barely a quarter full."),
       by('a', "Where did it all go? I've been picking forever!"),
-      by('b', "Leaves are small. Baskets are big."),
+      by('b', "The leaves are so small."),
     ] },
     { id: 'tea.tb-t2', when: TB, turns: [
       by('b', "My back. My back is gone. This hill is too steep."),
@@ -170,7 +170,7 @@ const tea = {
     ] },
     { id: 'tea.tb-t3', when: TB, turns: [
       beat("{a} slips on the wet terrace and slides down a row of bushes, basket and all."),
-      by('a', "I'm fine! The tea is not fine!"),
+      by('a', "I'm fine! The tea's all over the place!"),
       by('b', "Pick it up! Pick it all up!"),
     ] },
   ],
@@ -178,7 +178,7 @@ const tea = {
     { id: 'tea.tb-dn1', when: TB, turns: [
       by('a', "I'm going to appreciate every cup of tea I ever drink from now on."),
       by('b', "You don't drink tea."),
-      by('a', "I'm going to start, so I can appreciate it."),
+      by('a', "I'm going to start."),
     ] },
     { id: 'tea.tb-dn2', when: TB, turns: [
       beat("{a} and {b} jog down the terraces towards the railway line, rubbing their backs."),
@@ -187,8 +187,8 @@ const tea = {
     ] },
     { id: 'tea.tb-dn3', when: TB, turns: [
       by('b', "She smiled at us at the end. The old picker. Did you see?"),
-      by('a', "She smiled because it was over."),
-      by('b', "That's still a smile."),
+      by('a', "She did. Finally."),
+      by('b', "I'll take it."),
     ] },
   ],
   'attempt-fail.any': [
@@ -203,7 +203,7 @@ const tea = {
       by('a', "It's full on top. It's hollow underneath. Back up."),
     ] },
     { id: 'tea.tb-x3', when: TB, turns: [
-      beat("{a} hands over a basket full of big, dark, old leaves. The old picker sighs a sigh sixty years long."),
+      beat("{a} hands over a basket full of big, dark, old leaves, and the old picker sighs."),
       by('a', "They're leaves! They're tea leaves!"),
       by('b', "They're the wrong ones! Back up!"),
     ] },
@@ -215,14 +215,14 @@ const train = {
   'don-demo.gag': [
     { id: 'tea.tt-d1', when: TT, turns: [
       don("In this All-In, board the steam train at the back, and work your way to the front carriage. Only the front carriage stops at the right station."),
-      beat('He climbs onto the back of the little train, looks into the carriage, packed with people, sacks and goats, and climbs straight off.'),
+      beat('He climbs onto the back of the little train, looks into the carriage, packed with people, sacks and goats, and climbs back off.'),
       don("It's very full. It's always very full. That's the challenge. And the goats."),
     ] },
   ],
   'don-demo.dry': [
     { id: 'tea.tt-d2', when: TT, turns: [
       don("Get stuck, push past without a please, or get off at the wrong stop, and you walk back to the line and wait for the next train."),
-      don("Step off the front carriage at the right station, and you're at the Chill Zone. The train goes about as fast as you can jog. So don't fall off."),
+      don("Step off the front carriage at the right station, and you're at the Chill Zone!"),
       beat('The train whistles and chugs slowly away. A boy jumps on, walks along the side, and jumps off again, grinning.'),
     ] },
   ],
@@ -233,26 +233,26 @@ const train = {
       by('b', "There's always room. You just have to ask nicely."),
     ] },
     { id: 'tea.tt-s2', when: TT, turns: [
-      by('b', "Excuse me. Sorry. Excuse me. Lovely goat. Sorry."),
-      by('a', "Are you apologising to the goat?"),
-      by('b', "I'm apologising to everybody. It's working."),
+      by('b', "Excuse me. Sorry. Excuse me. Sorry."),
+      by('a', "Is it working?"),
+      by('b', "It's working. Keep going."),
     ] },
     { id: 'tea.tt-s3', when: TT, turns: [
       beat("{a} squeezes between two sacks of rice and comes face to face with a basket of chickens."),
-      by('a', "Hello. Can I just... get past you?"),
-      beat('The chickens do not move.'),
+      by('a', "Excuse me. Can I just get past?"),
+      beat('The chickens don\'t move.'),
     ] },
     { id: 'tea.tt-s4', when: TT, turns: [
       by('a', "How many carriages are there?"),
       by('b', "Six. We're in the sixth."),
-      by('a', "So, five more of this."),
+      by('a', "Five more of this."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'tea.tt-f1', when: TT, turns: [
       beat("Carriage by carriage, smiling and apologising, {a} and {b} reach the front just as the train pulls into the station."),
       by('a', "Front carriage! Right station! Get off, get off!"),
-      by('b', "Thank you, everyone! Thank you! Lovely goat!"),
+      by('b', "Thank you, everyone! Thank you!"),
     ] },
     { id: 'tea.tt-f2', when: TT, turns: [
       by('b', "A man just helped us through the whole carriage. He moved all the sacks for us!"),
@@ -266,7 +266,7 @@ const train = {
     ] },
     { id: 'tea.tt-f4', when: TT, turns: [
       by('a', "First train. Front carriage. Right station."),
-      by('b', "And I got given a samosa on the way."),
+      by('b', "And somebody gave me a samosa on the way."),
       by('a', "You got a samosa?"),
     ] },
   ],
@@ -274,7 +274,7 @@ const train = {
     { id: 'tea.tt-a1', when: TT, turns: [
       by('b', "We got stuck behind the goats last time. This time, we go round the goats. Outside."),
       beat("They step out onto the side ladder, go round the goat carriage, and climb back in at the front."),
-      by('a', "Round the goats! Always round the goats!"),
+      by('a', "We got round them!"),
     ] },
     { id: 'tea.tt-a2', when: TT, turns: [
       beat("Second train. This time {a} and {b} start moving the moment they board, and reach the front before the station."),
@@ -284,7 +284,7 @@ const train = {
     { id: 'tea.tt-a3', when: TT, turns: [
       by('a', "We were too pushy. This time, we say please to every single person."),
       beat("They say please to every single person. Every single person helps them through."),
-      by('b', "Manners! Manners got us to the front!"),
+      by('b', "Saying please worked!"),
     ] },
     { id: 'tea.tt-a4', when: TT, turns: [
       beat("After two trains and a long walk back along the line, {a} and {b} finally step off the front carriage at the right station."),
@@ -294,7 +294,7 @@ const train = {
   ],
   'task-try.struggling': [
     { id: 'tea.tt-t1', when: TT, turns: [
-      beat("{a} is wedged between a sack of potatoes and a large, sleeping man, and cannot move in any direction."),
+      beat("{a} is wedged between a sack of potatoes and a sleeping man, and can't move."),
       by('a', "I'm stuck. I'm completely stuck."),
       by('b', "Wiggle! Wiggle sideways!"),
     ] },
@@ -304,7 +304,7 @@ const train = {
       by('b', "It felt like ten."),
     ] },
     { id: 'tea.tt-t3', when: TT, turns: [
-      beat("A goat has decided {b}'s shoelace is lunch, and won't let go."),
+      beat("A goat has got {b}'s shoelace in its mouth and won't let go."),
       by('b', "Let go! Please let go! I need my shoe!"),
       by('a', "Leave the shoe! Leave the shoe and run!"),
     ] },
@@ -318,12 +318,12 @@ const train = {
     { id: 'tea.tt-dn2', when: TT, turns: [
       beat("{a} and {b} step off the train onto the platform, and the whole carriage waves goodbye to them."),
       by('b', "They're waving! Wave back!"),
-      by('a', "Goodbye! Goodbye, everyone! Goodbye, goat!"),
+      by('a', "Goodbye! Goodbye, everyone!"),
     ] },
     { id: 'tea.tt-dn3', when: TT, turns: [
       by('b', "I smell like a goat."),
-      by('a', "Everybody on that train smells like a goat."),
-      by('b', "Then we fitted right in."),
+      by('a', "We all do."),
+      by('b', "Come on. Let's go."),
     ] },
   ],
   'attempt-fail.any': [
@@ -334,7 +334,7 @@ const train = {
     ] },
     { id: 'tea.tt-x2', when: TT, turns: [
       beat("{a} pushes past a woman with a basket of eggs, and an egg breaks. The conductor points them both off at the next stop."),
-      by('a', "It was one egg!"),
+      by('a', "It was an accident!"),
       by('b', "Next train. We're on the next train."),
     ] },
     { id: 'tea.tt-x3', when: TT, turns: [

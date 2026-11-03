@@ -17,7 +17,7 @@ export default {
     ] },
     { id: 'th.st.bo2', when: at('tea-basket', 'baskets-on'), turns: [
       by('a', "How does it look on me?"),
-      by('b', "Like a very tired snail. Come on."),
+      by('b', "Like you know what you're doing. Come on."),
       beat('They start up the first terrace.'),
     ] },
     { id: 'th.st.pk1', when: at('tea-basket', 'picking'), turns: [
@@ -73,7 +73,7 @@ export default {
       beat('They jog alongside it and climb aboard the back.'),
     ] },
     { id: 'th.st.bc1', when: at('toy-train', 'back-carriage'), turns: [
-      beat('The back carriage is full: people, sacks, baskets of chickens, and a goat standing in the aisle chewing a newspaper.'),
+      beat('The back carriage is full: people, sacks, baskets of chickens, and a goat standing in the aisle.'),
       by('b', "We have to get to the front. Through all of this."),
       by('a', "Excuse me! Sorry! Coming through!"),
     ] },
@@ -108,8 +108,8 @@ export default {
       by('a', "Run. Before the train leaves with us on it."),
     ] },
     { id: 'th.st.ot2', when: at('toy-train', 'off-train'), turns: [
-      by('a', "I've still got chicken feathers on me."),
-      by('b', "You've got goat hair too. Go."),
+      by('a', "I've still got feathers on me."),
+      by('b', "So do I. Go."),
       beat('They run down the platform to the mat.'),
     ] },
   ],
@@ -124,7 +124,7 @@ export default {
     { id: 'th.sf.pk2', when: at('tea-basket', 'picking'), turns: [
       by('a', "Are those the right ones?"),
       by('b', "They're green. They're leaves."),
-      beat('They are the big tough old leaves from the bottom of the bush. They have to tip them out and start again.'),
+      beat('They\'re the big tough old leaves from the bottom of the bush, and they have to tip them out and start again.'),
     ] },
     { id: 'th.sf.fu1', when: at('tea-basket', 'fill-up'), turns: [
       beat('{a} carries the basket down, and the picker looks inside and shakes their head. It\'s only half full.'),
@@ -143,7 +143,7 @@ export default {
     ] },
     { id: 'th.sf.ck2', when: at('tea-basket', 'the-check'), turns: [
       by('b', "Is it okay? Is it good?"),
-      beat('The picker holds up a leaf with a big bite out of it, then a caterpillar, then a twig.'),
+      beat('The picker holds up an old leaf, then a twig, and shakes her head.'),
       by('a', "Okay. We'll pick more carefully."),
     ] },
 
@@ -165,18 +165,18 @@ export default {
     ] },
     { id: 'th.sf.sq2', when: at('toy-train', 'squeeze-through'), turns: [
       by('b', "Excuse me, can we just... sorry..."),
-      beat('Nobody moves. The carriage is too full, and they are stuck at the door for two whole stops.'),
+      beat('Nobody moves. The carriage is too full, and they\'re stuck at the door for two whole stops.'),
       by('a', "We're never getting to the front."),
     ] },
     { id: 'th.sf.fc1', when: at('toy-train', 'front-carriage'), turns: [
-      beat('They jump off at the first station they see, and the train puffs away. There is no Chill Zone, just a sign with a different name on it.'),
+      beat('They jump off at the first station they see, and the train puffs away. There\'s no Chill Zone, just a sign with a different name on it.'),
       by('b', "This isn't it."),
       by('a', "Back to the line. Next train."),
     ] },
     { id: 'th.sf.fc2', when: at('toy-train', 'front-carriage'), turns: [
       by('a', "This one? Is it this one?"),
       by('b', "I don't know! Get off!"),
-      beat('They get off. It is the wrong one. They watch the train leave without them.'),
+      beat('They get off. It\'s the wrong one, and they watch the train leave without them.'),
     ] },
   ],
 };

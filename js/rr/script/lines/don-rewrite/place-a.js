@@ -10,7 +10,7 @@ export default {
   'vt.pr3:2': "There's a whole page about you, and I went over it with a highlighter myself, because I'm very thorough.",
   'vt.pr3:4': "You can see it perfectly from the penalty spot, which has a lovely view, so off you go.",
   'vt.pr5:1': "{team}, that little stool is for you, because you've got a penalty to sit out.",
-  'vt.pr5:3': "Because I didn't break any rules, and comfort is a reward, so you might want to write that down.",
+  'vt.pr5:3': "Because I didn't break any rules!",
   'vt.pr6:0': "{team}, you were so close, so very close, but the bad news is that you're not done yet.",
   'vt.pr6:2': "You have a penalty to serve, so stand on that spot, face the camera and look sorry, a little sorrier, and hold that, because it's perfect.",
   'mat.hc3:0': "{team}, you're the {placing} team to arrive, which is a great start, so try not to peak too early!",

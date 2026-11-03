@@ -30,7 +30,7 @@ export default {
   'vt.sc4:0': "{team}, you're the {placing} team to arrive, and that was lovely work, but there's one rule at my mat: nobody touches the hair.",
   'vt.sc4:2': "Somebody always says that right before they touch the hair, so back up, please, because it took an hour.",
   'vt.sc5:1': "{team}, you're the {placing} team to arrive, and I'm checking my water, and I'm not going to say why.",
-  'vt.sc5:3': "I think I've seen the footage, and hydration is a privilege, so congratulations!",
+  'vt.sc5:3': "I've seen the footage, that's all, so congratulations!",
   'vt.sc6:3': "It's not a bribe, it's a muffin, which is totally different, so please enjoy it far, far away from me.",
   'fm.p2:0': "{team}, you're the {placing} team to the halfway mat, so don't stop, don't hug me, just run!",
   'fm.p3:1': "{team}, you're the {placing} team to the halfway mat, so keep moving, because the million dollars isn't on this one!",

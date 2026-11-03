@@ -144,7 +144,7 @@ export default {
         { by: 'a', say: "We actually have to go. Tell us later?" },
         { by: 'd', say: "Please don't ask later. Good luck, guys." },
       ] },
-      { id: 'vr2.so3', turns: [
+      { id: 'vr2.so3', when: { relB: ['siblings', 'cousins'] }, turns: [
         { by: 'a', say: "Have you two known each other long?" },
         { by: 'c', say: "Since we were kids. {d} once bit me so hard I needed stitches." },
         { by: 'd', say: "I was four!" },
@@ -165,7 +165,7 @@ export default {
       { id: 'vr2.sl2', turns: [
         { beat: '{a} picks up a postcard from a rack and turns it over.' },
         { by: 'a', say: "I want to send one of these home, so they know we're still alive." },
-        { by: 'b', say: "They're watching us on TV. They know we're still alive." },
+        { by: 'b', say: "They'll see it all on TV. They'll know we were fine." },
         { by: 'a', say: "It's not the same as a postcard, though." },
         { by: 'b', say: "We'll send them a hundred postcards when this is over. Come on." },
         { beat: '{a} puts the postcard back and follows {b}.' },
@@ -416,8 +416,8 @@ export default {
     'pep-talk.falls-flat': [
       { id: 'vr2.pf1', turns: [
         { by: 'a', say: "Come on, you've got this. Think about how proud everyone back home will be." },
-        { by: 'b', say: "Everyone back home is watching me fail on TV." },
-        { by: 'a', say: "They're watching you try, though, and that's what matters." },
+        { by: 'b', say: "Everyone back home is going to watch me fail on TV." },
+        { by: 'a', say: "They'll see you try, though, and that's what matters." },
         { by: 'b', say: "That really isn't helping right now." },
         { by: 'a', say: "Okay. I'll be quiet." },
         { beat: '{a} goes quiet, and {b} tries again.' },

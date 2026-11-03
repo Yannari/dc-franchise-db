@@ -25,6 +25,8 @@ import { ICK_WHOLE } from './whole/ick.js';
 import { CHAL_BUZZ_WHOLE, CHAL_WATCH_WHOLE, CHAL_PRIZE_WHOLE, CHAL_ROW_WHOLE, CHAL_SPARK_WHOLE } from './whole/challenge.js';
 import { GAME_KISS_WHOLE } from './whole/game-kiss.js';
 import { VILLA_BIT } from './runner.js';
+import { LONG_PULL, LONG_WATCHING, LONG_FEELS_OFF, LONG_GRAFT_EYES, LONG_VENT, LONG_LOYALTY, LONG_WHERE_HEAD, LONG_SECRET_BURDEN } from './whole/long.js';
+import { LONG_PULL_MORE, LONG_GRAFT_EYES_MORE, LONG_WATCHING_MORE, LONG_WHERE_HEAD_MORE, LONG_VENT_MORE, LONG_FEELS_OFF_MORE, LONG_PULL_BOTH, LONG_GRAFT_EYES_TAKEN, LONG_WATCHING_CHASER } from './whole/long-more.js';
 import { ARRIVAL_CHAT_WHOLE } from './whole/arrival.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
@@ -161,6 +163,12 @@ for (const t of [FINAL_DATE, JOURNEY_END, DECLARATION]) t.leads = [...(t.leads |
 extend(GRAFT_EYES, GRAFT_EYES_WHOLE); extend(FRIENDSHIP, FRIENDSHIP_WHOLE); extend(PULL, PULL_WHOLE); extend(CHAT, CHAT_WHOLE); extend(GROUP_CHAT, GROUP_CHAT_WHOLE); extend(WATCHING, WATCHING_WHOLE); extend(WHERE_HEAD, WHERE_HEAD_WHOLE); extend(DEEP_CHAT, DEEP_CHAT_WHOLE); extend(DEBRIEF, DEBRIEF_WHOLE); extend(PICK_CHAT, PICK_CHAT_WHOLE); extend(VOTE_WORRY, VOTE_WORRY_WHOLE); extend(ARGUMENT, ARGUMENT_WHOLE);
 extend(BED_CHAT, BED_CHAT_WHOLE); extend(LOYALTY, LOYALTY_WHOLE); extend(ADVICE, ADVICE_WHOLE); extend(FEELS_OFF, FEELS_OFF_WHOLE); extend(SECRET_BURDEN, SECRET_BURDEN_WHOLE);
 extend(ENEMY_SNIPE, ENEMY_SNIPE_WHOLE); extend(ENEMY_BITCH, ENEMY_BITCH_WHOLE); extend(ENEMY_CLASH, ENEMY_CLASH_WHOLE); extend(ENEMY_FREEZE, ENEMY_FREEZE_WHOLE); extend(ENEMY_TRUCE, ENEMY_TRUCE_WHOLE);
+// The episode's own story at length (whole/long.js; script.js `main`).
+extend(PULL, { moves: { whole: LONG_PULL } }); extend(WATCHING, { moves: { whole: LONG_WATCHING } }); extend(FEELS_OFF, { moves: { whole: LONG_FEELS_OFF } });
+extend(GRAFT_EYES, { moves: { whole: LONG_GRAFT_EYES } }); extend(VENT, { moves: { whole: LONG_VENT } }); extend(LOYALTY, { moves: { whole: LONG_LOYALTY } });
+extend(WHERE_HEAD, { moves: { whole: LONG_WHERE_HEAD } }); extend(SECRET_BURDEN, { moves: { whole: LONG_SECRET_BURDEN } });
+extend(PULL, { moves: { whole: LONG_PULL_MORE } }); extend(GRAFT_EYES, { moves: { whole: LONG_GRAFT_EYES_MORE } }); extend(WATCHING, { moves: { whole: LONG_WATCHING_MORE } });
+extend(WHERE_HEAD, { moves: { whole: LONG_WHERE_HEAD_MORE } }); extend(PULL, { moves: { whole: LONG_PULL_BOTH } }); extend(GRAFT_EYES, { moves: { whole: LONG_GRAFT_EYES_TAKEN } }); extend(WATCHING, { moves: { whole: LONG_WATCHING_CHASER } }); extend(VENT, { moves: { whole: LONG_VENT_MORE } }); extend(FEELS_OFF, { moves: { whole: LONG_FEELS_OFF_MORE } });
 extend(VENT, VENT_WHOLE); extend(ICK, ICK_WHOLE); extend(GAME_KISS, GAME_KISS_WHOLE); extend(ARRIVAL_CHAT, ARRIVAL_CHAT_WHOLE);
 extend(CHAL_BUZZ, CHAL_BUZZ_WHOLE); extend(CHAL_WATCH, CHAL_WATCH_WHOLE); extend(CHAL_PRIZE, CHAL_PRIZE_WHOLE); extend(CHAL_ROW, CHAL_ROW_WHOLE); extend(CHAL_SPARK, CHAL_SPARK_WHOLE);
 // Two enemies who have had it out before have it out AGAIN: the scene says so (whole/enemies.js).

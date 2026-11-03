@@ -65,7 +65,7 @@ it('episode spine audit', () => {
         const partner = n => (r.pm.couplesBefore || []).find(c => c.includes(n))?.find(x => x !== n) || null;
         const dir = {};
         for (const e of evs.filter(FLIRT)) {
-          const [a, b] = e.players;
+          const [a, b] = e.kind === 'loyalty' ? [e.players[1], e.players[0]] : e.players;
           if (!a || !b || partner(a) === b) continue;
           (dir[a] ||= new Set()).add(b);
         }

@@ -1476,7 +1476,8 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
 // scene is never its own setup. Reads only; draws nothing.
 const INTEREST = {
   pull: e => [e.players[0], e.players[1]], 'bed-share': e => [e.players[0], e.players[1]],
-  'triangle-case': e => [e.players[0], e.players[1]], loyalty: e => [e.players[0], e.players[1]],
+  // (A loyalty scene is [the one who says no, the one who asked]: pullBetween.)
+  'triangle-case': e => [e.players[0], e.players[1]], loyalty: e => [e.players[1], e.players[0]],
   'graft-turn': e => [e.players[0], e.players[1]],
   'chal-spark': e => [e.players[0], e.players[2]],
   'game-kiss': e => (['crush', 'stir'].includes(e.extra?.of) ? [e.players[0], e.players[1]] : null),

@@ -106,7 +106,9 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // the episode's light story (pm/runner.js): which bit, which beat, which bet or prank, how it ended
   'bit', 'step', 'topic', 'out',
   // a vote's call-out: {a} has chased {b}'s partner on screen (talk/aftermath.js)
-  'chasedPartner'];
+  'chasedPartner',
+  // a beat of the episode's own A or B story: the long talks (talkScript)
+  'main'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -277,6 +279,10 @@ export function factsFor(state, ev) {
   f.longing = !!b && si[`${a}>${b}`] != null && si[`${a}>${b}`] < state.ep;
   f.firstSign = !!b && si[`${a}>${b}`] == null && si[`${b}>${a}`] == null;
   f.flirt = FLIRT_KINDS.has(ev.kind);
+  // A beat of the stretch's main or second story (pm/stretch.js; 2026-11-03, the
+  // user: "fix the scene length"): its long talks are written for it, and play first.
+  const tid = ev.extra?.thread?.id, st = state.stretch;
+  f.main = !!tid && !!st && !st.off && (st.a === tid || st.b === tid);
   // Walked in on the same night: only then is "remember how nervous we were
   // when we walked in" theirs (season 33: Josh, day 5, and Nadia, day 15).
   f.sameStart = !!b && (state.ledger?.firstEp?.[a] ?? -1) === (state.ledger?.firstEp?.[b] ?? -2);
@@ -529,7 +535,8 @@ const presentFits = (e, facts) => {
 // acted on had nothing on screen before them). What {a} says, the staging and
 // the beat; {b} may say anything. Dropped only while something else fits, so a
 // cutaway the engine decided on is never lost to it.
-const FLIRT_KINDS = new Set(['pull', 'game-kiss', 'kiss', 'loyalty', 'chal-spark', 'tod-truth', 'graft-eyes', 'graft-turn',
+// (Not loyalty, where {a} is the one saying no, nor graft-eyes, told to a friend about a third.)
+const FLIRT_KINDS = new Set(['pull', 'game-kiss', 'kiss', 'chal-spark', 'tod-truth', 'graft-turn',
   'triangle-case', 'bed-share', 'blow-dare', 'heart-rate', 'snog-marry-pie', 'head-turned']);
 const CLAIM_RE = /for days|since (?:I|you) walked in|since day one|since the first day|all week|been wanting to|for ages|can't stop thinking about|haven't stopped thinking|been thinking about (?:it|you|this|that|kissing)\b[^.?!]{0,20}(?:for|since|all)|everyone in this villa knows|(?:wanted|liked|fancied) (?:you|to|\{b\})[^.?!]{0,25}(?:for (?:days|ages|a while)|since)/i;
 const claimText = e => {
@@ -864,6 +871,22 @@ function talkScript(state, ev, talk) {
   // being told, being turned down): a whole talk that doesn't name it would forget it.
   const whole = talk.moves.whole?.length ? leading(talk.moves.whole)
     .filter(e => matches(e.when, facts) && WHOLE_MUST.every(k => !facts[k] || e.when?.[k] != null)) : [];
+  // THE LONG TALK (2026-11-03, "fix the scene length"): a beat of the episode's
+  // own story plays a talk written long for it (`main: true`, 12-16 lines) while
+  // one fits; everything else keeps its own, shorter, talks.
+  const longs = facts.main ? whole.filter(e => e.when?.main === true) : [];
+  if (longs.length) {
+    const e = pickScript(state, longs, ps, facts, { lead: false, allowRepeat: false });
+    if (e) {
+      noteUse(state, e, ps);
+      let r = renderScript(e, ps, state, slots);
+      if (!r.stage && talk.stages?.length) {
+        const st = pickScript(state, talk.stages, ps, facts, { lead: false });
+        if (st) { noteUse(state, st, ps); r = { ...r, stage: renderScript(st, ps, state, slots).stage }; }
+      }
+      return { ...r, tier };
+    }
+  }
   if (whole.length) {
     const e = pickScript(state, whole, ps, facts, { lead: false });
     if (e) {

@@ -74,8 +74,10 @@ function choose(state, rng, a, targets) {
   const opts = [];
   // Not somebody a turned down today (season 41 ep 13: Theo told Keisha "Why are we
   // even talking about this?" at lunch, and kissed her in the game "I've wanted to for a while").
-  const turnedDown = new Set(today(state).filter(e => (e.kind === 'loyalty' && e.players[1] === a)
-    || (e.kind === 'pull' && e.extra?.rebuffed && e.players[1] === a) || (e.kind === 'graft-shut' && e.players[0] === a)).map(e => e.kind === 'graft-shut' ? e.players[1] : e.players[0]));
+  // (A loyalty scene is [the one who says no, the one who asked]: events.js pullBetween.)
+  const turnedDown = new Set(today(state).filter(e => (e.kind === 'loyalty' && e.players[0] === a)
+    || (e.kind === 'pull' && e.extra?.rebuffed && e.players[1] === a) || (e.kind === 'graft-shut' && e.players[0] === a))
+    .map(e => (e.kind === 'pull' ? e.players[0] : e.players[1])));
   for (const t of targets) {
     if (t === a || !compatible(state, a, t)) continue;
     const fancy = (attr(state, a, t) ?? 0) / 10;

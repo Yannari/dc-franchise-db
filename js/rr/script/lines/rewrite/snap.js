@@ -131,7 +131,7 @@ export default {
         { by: 'b', say: "Wow. Okay. Nice." },
         { beat: 'They keep going, not looking at each other.' },
       ] },
-      { id: 'xs.16', when: KIDS, turns: [
+      { id: 'xs.16', when: { rel: 'siblings' }, turns: [
         { by: 'a', say: "If Mom could see you right now, she'd be so embarrassed." },
         { by: 'b', say: "Don't bring Mom into this." },
         { by: 'a', say: "I'm just saying." },

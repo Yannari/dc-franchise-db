@@ -79,8 +79,10 @@ it('episode spine audit', () => {
         m.warm.push(warmAfter.length);
         ex.push(...warmAfter.slice(0, 2));
         const said = new Map();
-        for (const e of evs) for (const l of eventLines(e)) if (l.who && l.text.length >= 25) said.set(l.text, (said.get(l.text) || 0) + 1);
+        // (Not a replay: Movie Night's clips and the final's film quote scenes on purpose.)
+        for (const e of evs.filter(x => !/clip|replay|film/.test(x.kind))) for (const l of eventLines(e)) if (l.who && l.text.length >= 25) said.set(l.text, (said.get(l.text) || 0) + 1);
         m.echo.push([...said.values()].filter(v => v > 1).length);
+        for (const [t, v] of said) if (v > 1) (m.echoes ||= {})[t] = ((m.echoes || {})[t] || 0) + 1;
         m.light.push(evs.filter(LIGHT).length);
         // How many stories the villa's day followed: threads, plus the side stories' families.
         const life = evs.filter(e => ['morning', 'day', 'evening', 'night'].includes(e.phase));
@@ -111,6 +113,7 @@ it('episode spine audit', () => {
       + ` · focus ${pct(...m.focus)} · 2+ directions ${mean(m.dirs)}/ep · unset crush ${pct(...m.crush)} (said to be old: ${m.claim})`
       + ` · split-then-warm ${m.warm.reduce((x, y) => x + y, 0)} · echo ${mean(m.echo)}/ep · light ${mean(m.light)}/ep`
       + `\n    villa life: ${mean(m.lifeScenes)} scenes, ${mean(m.life)} lines, ${mean(m.stories)} stories an episode`
+      + (process.env.PM_ECHO ? `\n    echoes: ${Object.entries(m.echoes || {}).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([t, v]) => `${v}x "${t.slice(0, 70)}"`).join('\n            ')}` : '')
       + `\n    hooks ${JSON.stringify(m.hooks)}${ex.length ? '\n    e.g. ' + ex.slice(0, 4).join(' | ') : ''}${m.claimEg.length ? '\n    old-crush lines: ' + m.claimEg.join(' | ') : ''}`);
   }
   process.stdout.write('\n' + out.join('\n') + '\n\n');

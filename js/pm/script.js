@@ -403,7 +403,22 @@ function weightFor(state, entry, ps, facts) {
   w *= Math.pow(0.5, u.eps.length - 1);
   return w;
 }
+// The words themselves, said this episode: two entries can share a line (a
+// stitched opener, a common reply), and the entry guard never saw it twice
+// (2026-11-03: about two lines an episode were heard twice, from different entries).
+const LONG_LINE = 25;
+const rawLines = e => {
+  if (e._raw) return e._raw;
+  const r = (e.turns || []).filter(Array.isArray).map(t => t[1]).filter(t => typeof t === 'string' && t.length >= LONG_LINE);
+  Object.defineProperty(e, '_raw', { value: r, enumerable: false });
+  return r;
+};
+function saidThisEp(state) {
+  if (state._saidEp?.ep !== state.ep) state._saidEp = { ep: state.ep, said: new Set() };
+  return state._saidEp.said;
+}
 function noteUse(state, entry, ps) {
+  for (const t of rawLines(entry)) saidThisEp(state).add(t);
   const u = (usage(state)[entry.id] ||= { eps: [], pairs: [] });
   if (u.eps[u.eps.length - 1] !== state.ep) u.eps.push(state.ep);
   const k = pairKey(ps);
@@ -559,6 +574,10 @@ export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: ow
       // "where's your head at" for two different couples an hour apart).
       const notToday = weights.map((x, j) => { const u = usage(state)[w[j].id]; return u && u.eps[u.eps.length - 1] === state.ep ? 0 : x; });
       if (notToday.some(x => x > 0)) weights = notToday;
+      // …nor a line already said in it, from another entry.
+      const said = saidThisEp(state);
+      const notEcho = weights.map((x, j) => (x > 0 && rawLines(w[j]).some(t => said.has(t)) ? 0 : x));
+      if (notEcho.some(x => x > 0)) weights = notEcho;
       cands = w; ws = weights; break;
     }
   }

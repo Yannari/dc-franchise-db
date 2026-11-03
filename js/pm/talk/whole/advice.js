@@ -99,13 +99,22 @@ export const ADVICE_WHOLE = { moves: { whole: [
     ['b', "You don't know {c} like I do."],
     ['a', "Maybe not. You asked."],
   ], beat: "{b} picks up the drinks and walks off without another word." },
-  { when: { verdict: 'unsure' }, stage: "{a} and {b} are lying on the sunbeds.", turns: [
+  // "Haven't seen enough of {c}" only of a couple that's new (bNewCouple): season 41 heard it on day 33.
+  { when: { verdict: 'unsure', bNewCouple: true }, stage: "{a} and {b} are lying on the sunbeds.", turns: [
     ['b', "What's your honest opinion of {c}?"],
     ['a', "I haven't made my mind up yet."],
     ['b', "That's not very reassuring."],
     say('a', "It's not meant to be bad. I just haven't seen enough of {c.obj} yet.", { dry: "It's not bad. It's just not finished." }),
     ['b', "Then watch, and tell me."],
   ], beat: "{a} promises to keep an eye out, and means it." },
+  { when: { verdict: 'unsure', bNewCouple: false }, stage: "{a} and {b} are lying on the sunbeds.", turns: [
+    ['b', "What's your honest opinion of {c}? You've watched us for long enough."],
+    ['a', "I have. And I still can't tell what {c} is thinking half the time."],
+    ['b', "Is that bad?"],
+    ['a', "It's not bad. But you shouldn't have to guess. Not this far in."],
+    ['b', "So what do I do?"],
+    ['a', "Ask {c.obj}. Straight. And see if you get a straight answer back."],
+  ], beat: "{b} looks over at {c}, and doesn't say anything for a while." },
   { when: { verdict: 'unsure' }, stage: "{a} and {b} are making drinks in the kitchen.", turns: [
     ['b', "Can I ask you about {c}?"],
     ['a', "Go on."],

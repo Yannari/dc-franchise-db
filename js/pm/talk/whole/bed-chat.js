@@ -29,7 +29,7 @@ export const BED_CHAT_WHOLE = { moves: { whole: [
     ['a', "I believe you. It's just nice to hear it again."],
     ['b', "Then I'll keep saying it."],
   ], beat: "{a} smiles in the dark, and closes {a.posAdj} eyes." },
-  { when: { phase: 'evening', story: 'graft', of: 'after-row', ...ANY_ROW }, stage: "Lights out. {a} and {b} are lying in bed with a gap between them.", turns: [
+  { when: { phase: 'evening', story: 'graft', of: 'after-row', kissed: false, ...ANY_ROW }, stage: "Lights out. {a} and {b} are lying in bed with a gap between them.", turns: [
     ['b', "Are you awake?"],
     ['a', "Yeah."],
     ['b', "Are you still angry with me?"],
@@ -37,6 +37,21 @@ export const BED_CHAT_WHOLE = { moves: { whole: [
     ['b', "Nothing happened. I keep telling you."],
     ['a', "I know what you keep telling me."],
   ], beat: "Neither of them moves to close the gap." },
+  // …after b owned up to a kiss today (threads.js bedChats `kissed`).
+  { when: { phase: 'evening', story: 'graft', of: 'after-row', kissed: true, ...ANY_ROW }, stage: "Lights out. {a} and {b} are lying in bed with a gap between them.", turns: [
+    ['b', "Are you awake?"],
+    ['a', "Yeah."],
+    ['b', "I'm sorry. I know that doesn't fix it."],
+    ['a', "It doesn't. But I'd rather you told me than I found out from someone else."],
+    ['b', "Can I stay here tonight?"],
+    ['a', "It's your bed too. I just don't want to talk any more tonight."],
+  ], beat: "{b} stays on {b.posAdj} side of the bed, and neither of them sleeps much." },
+  { when: { phase: 'evening', story: 'graft', of: 'after-row', kissed: true, ...ANY_ROW }, stage: "Lights out. {a} is lying on the very edge of the bed.", turns: [
+    ['b', "Do you want me to sleep somewhere else?"],
+    ['a', "I don't know what I want."],
+    ['b', "I meant it when I said I was sorry."],
+    ['a', "I know you did. I keep thinking about it, though. Every time I close my eyes."],
+  ], beat: "{b} lies very still. After a while, {a} turns over to face the wall." },
   { when: { phase: 'evening', story: 'graft', of: 'distant', ...NO_ROW }, stage: "Lights out. {a} and {b} are lying back to back.", turns: [
     ['a', "Goodnight."],
     ['b', "Goodnight."],

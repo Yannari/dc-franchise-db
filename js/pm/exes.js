@@ -23,7 +23,7 @@
 // half-hearted one costs the one who gave it.
 import { addBond } from '../bonds.js';
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf, apart } from './events.js';
+import { makeEvent, partnerOf, apart, heartBusy } from './events.js';
 import { romance } from './feelings.js';
 import { emo, feel, breakHeart } from './emotions.js';
 import { rekindle } from './just-friends.js';
@@ -58,6 +58,9 @@ export function secondChances(state, rng, entry = null) {
     if (pb === a) { br.closed = true; continue; }
     if (pb && romance(b, pb) >= romance(b, a)) continue;
     if (pa && romance(a, pa) >= romance(a, b)) continue;
+    // Not on a day either heart already went somewhere else (events.js heartBusy):
+    // the reunion waits for a day that is theirs.
+    if (heartBusy(state, a, b) || heartBusy(state, b, a)) continue;
     const S = state.profiles[a]?.stats || {};
     // How sorry: guilt, loyalty and what they still feel — in proportion.
     const sorry = Math.max(0, Math.min(1, (emo(state, a).guilt / 10 + (S.loyalty ?? 5) / 10 + romance(a, b) / 10) / 3));

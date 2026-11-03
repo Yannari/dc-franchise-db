@@ -369,11 +369,107 @@ export const PULL_WHOLE = { moves: { whole: [
     ['b', "There might be someone. I'm not saying who yet."],
     ['a', "That's fair."],
   ], beat: "{b} looks over at the pool, and {a} tries to work out who {b.he}'s looking at." },
+  { when: { story: NONE, taken: true, bTaken: false, end: LANDS, kissed: false, promised: false }, stage: "{a} finds {b} on the swing seat on {b.posAdj} own.", turns: [
+    ['a', "Mind if I sit?"],
+    ['b', "Of course not. Where's {pa}?"],
+    ['a', "Asleep. I wanted to see how you were doing. You've been quiet."],
+    ['b', "I'm all right. It's just a lot, watching everyone pair off."],
+    ['a', "I'd be the same. Honestly, I'd be worse."],
+    ['b', "Thanks for coming over. It helps more than you'd think."],
+  ], beat: "{a} stays until {b} is laughing again, and then goes back to {pa}." },
+  { when: { story: NONE, taken: true, bTaken: false, end: LANDS, kissed: false, promised: false }, stage: "{a} and {b} are sitting on the edge of the pool, feet in the water.", turns: [
+    ['a', "Can I say something? I think you're one of the nicest people in here."],
+    ['b', "Where's that come from?"],
+    ['a', "Nowhere. I just don't think anyone's told you."],
+    ['b', "Nobody has, actually. Thank you."],
+    ['a', "Whoever ends up with you is lucky. That's all."],
+  ], beat: "{b} goes a bit pink, and kicks water at {a} so {b.he} doesn't have to answer." },
   { when: { story: NONE, taken: true, bTaken: false, end: 'turned-down', rebuffed: true }, stage: "{a} sits down next to {b} on the swing seat.", turns: [
     ['a', "Do you want some company?"],
     say('b', "Honestly? Not really. I'd rather be on my own for a bit.", { soft: "Thanks, but I think I just need a bit of time on my own." }),
     ['a', "Okay. I'll leave you to it."],
   ], beat: "{a} goes back to {pa}, and {b} stays where {b.he} is." },
+
+  // ── Casa Amor: {a} is coupled, {pa} is in the other villa, {b} is new and single ──
+  // (2026-11-03: every Casa pull fell through to one entry — the others place {pa}
+  // in the room, which presentFits drops while the villa is split — and it played
+  // three times in one episode, twice to the same pair.)
+  { when: { story: NONE, taken: true, bTaken: false, paAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{a} and {b} are sharing a sunbed, closer than either of them planned.", turns: [
+    ['b', "Can I ask you something? Do you miss {pa}?"],
+    ['a', "Yeah. Of course I do. I think."],
+    ['b', "You think?"],
+    ['a', "I came in here knowing exactly what I wanted. Then you walked in, and now I'm not sure of anything."],
+    ['b', "I'm not trying to make it hard for you."],
+    ['a', "I know. That's what makes it hard."],
+  ], beat: "Neither of them moves to make any more room on the sunbed." },
+  { when: { story: NONE, taken: true, bTaken: false, paAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{b} makes {a} a drink without being asked, and sits down next to {a.obj}.", turns: [
+    ['a', "You remembered how I take it."],
+    ['b', "I pay attention."],
+    ['a', "Nobody else in here does that."],
+    ['b', "Then maybe you've been around the wrong people."],
+    ['a', "Don't say that. Not while {pa} is in the other villa."],
+    ['b', "Okay. I won't say it. I'll just think it."],
+  ], beat: "{a} laughs, and doesn't tell {b} to stop." },
+  { when: { story: NONE, taken: true, bTaken: false, paAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{a} and {b} are lying on the daybeds, talking about home.", turns: [
+    ['b', "If you weren't with {pa}, would you be here talking to me?"],
+    ['a', "Probably. Honestly? Probably."],
+    ['b', "And because you are?"],
+    ['a', "I'm still here talking to you. Which I know doesn't look great."],
+    ['b', "I'm not asking you to do anything."],
+    ['a', "I know you're not. I'm just telling you the truth."],
+  ], beat: "They keep talking until the sun goes down behind the wall." },
+  { when: { story: NONE, taken: true, bTaken: false, paAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{b} takes {a} aside by the pool.", turns: [
+    ['b', "I just want to know where I stand. Is there any point in me trying?"],
+    ['a', "That's not a fair question."],
+    ['b', "Why not?"],
+    ['a', "Because if I say no, I'm lying. And if I say yes, I don't know what that makes me."],
+    ['b', "It makes you honest."],
+    ['a', "It makes me someone who has to face {pa} at the end of this."],
+  ], beat: "{b} squeezes {a}'s hand, and leaves {a.obj} to think about it." },
+  { when: { phase: 'evening', story: NONE, taken: true, bTaken: false, paAway: true, end: 'kissed', kissed: true }, stage: "{a} and {b} are the last two on the terrace.", turns: [
+    ['b', "Everyone's gone to bed."],
+    ['a', "I know. I should go too."],
+    ['b', "You should."],
+    ['a', "I'm not going to, though, am I?"],
+  ], beat: "{b} leans in, and {a} doesn't stop {b.obj}. When they pull apart, {a} stares at the floor for a long time." },
+  { when: { story: NONE, taken: true, bTaken: false, paAway: true, end: 'kissed', kissed: true }, stage: "{a} and {b} are still in the pool after the others have got out.", turns: [
+    ['a', "This is a bad idea."],
+    ['b', "Then get out."],
+    ['a', "I don't want to get out."],
+    ['b', "Then stop telling me it's a bad idea."],
+  ], beat: "They kiss in the water, and {a} spends the rest of the day not looking anyone in the eye." },
+  // ── Casa Amor: {a} is new and single, {b} is coupled with {pb} in the other villa ──
+  { when: { story: NONE, taken: false, bTaken: true, pbAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{a} asks {b} for a chat on the swing seat.", turns: [
+    ['a', "I'm not going to waste your time. I think you're the most interesting person in here."],
+    ['b', "That's a lot to say to someone you've only just met."],
+    ['a', "I know. I'd rather say it now than wait and wish I had."],
+    ['b', "I'm with {pb}. You know that."],
+    ['a', "I know. And you're still sitting here talking to me."],
+    ['b', "That's because I'm polite."],
+    ['a', "Is it?"],
+  ], beat: "{b} doesn't answer, and doesn't get up either." },
+  { when: { story: NONE, taken: false, bTaken: true, pbAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{a} sits down next to {b} on the steps by the pool.", turns: [
+    ['a', "Tell me about {pb}."],
+    ['b', "Why?"],
+    ['a', "Because I want to know what I'm up against."],
+    ['b', "You're not up against anything. {pb} and I are solid."],
+    ['a', "Then you've got nothing to worry about, talking to me."],
+    ['b', "I'm not worried."],
+  ], beat: "{b} says it twice, and both times {b.he} looks away." },
+  { when: { story: NONE, taken: false, bTaken: true, pbAway: true, end: 'flirt', kissed: false, promised: false }, stage: "{a} finds {b} in the kitchen, and helps without being asked.", turns: [
+    ['b', "You're very helpful."],
+    ['a', "I'm trying to impress you. Is it working?"],
+    ['b', "A bit. Don't tell anyone."],
+    ['a', "Who would I tell?"],
+    ['b', "Everyone. This place is impossible for secrets."],
+  ], beat: "{a} promises not to, and they finish the washing-up with their elbows touching." },
+  { when: { story: NONE, taken: false, bTaken: true, pbAway: true, end: 'turned-down', rebuffed: true }, stage: "{a} catches {b} on the way to the dressing room.", turns: [
+    ['a', "Can I steal you for five minutes?"],
+    ['b', "I don't think that's a good idea."],
+    ['a', "It's just a chat."],
+    ['b', "I know it is. But I know what I'd be doing if I said yes. I'm with {pb}, and I'm staying with {pb}."],
+    ['a', "Fair enough. I had to try."],
+  ], beat: "{a} goes back out to the pool, and {b} goes to bed early." },
 
   // ── {b} is coupled, not a story ──
   { when: { story: NONE, bTaken: true, end: LANDS, kissed: false, promised: false }, stage: "{a} catches {b} on the way out of the dressing room.", turns: [
@@ -383,6 +479,32 @@ export const PULL_WHOLE = { moves: { whole: [
     say('b', "Good. Really good. {pb} makes me happy.", { lad: "Good, yeah. {pb} is great.", quiet: "Good. Really good." }),
     ['a', "I'm glad. You look happy."],
   ], beat: "They chat a while longer, and it's easy." },
+  // (One entry for a bucket a season draws several times an episode: it was heard twice in one, 2026-11-03.)
+  { when: { story: NONE, bTaken: true, end: LANDS, kissed: false, promised: false }, stage: "{a} sits down on the end of {b}'s sunbed.", turns: [
+    ['a', "Is it all right if I sit here? Everyone else is asleep."],
+    ['b', "Go on. I could do with the company."],
+    ['a', "Can I ask what you see in {pb}? I don't mean that in a bad way. I just don't know {pb} very well."],
+    ['b', "{pb} makes me laugh. Every day. I didn't expect that in here."],
+    ['a', "That's a good reason."],
+    ['b', "It's the best one I've got."],
+  ], beat: "They sit in the sun for a while, and {a} doesn't ask anything else about {pb}." },
+  { when: { story: NONE, bTaken: true, end: LANDS, kissed: false, promised: false }, stage: "{a} and {b} are the only two left at the table after lunch.", turns: [
+    ['a', "We never really talk, do we?"],
+    ['b', "Not really. You're always on the other side of the villa."],
+    ['a', "So let's talk. How are you finding it, honestly?"],
+    ['b', "Better than I thought. Some days are hard. {pb} makes the hard days easier."],
+    ['a', "I'm glad you've got that."],
+    ['b', "Me too. Do you?"],
+    ['a', "Not yet. I'm still looking."],
+  ], beat: "{b} pats {a}'s hand on the way past, and tells {a.obj} to keep looking." },
+  { when: { story: NONE, bTaken: true, end: LANDS, kissed: false, promised: false }, stage: "{a} finds {b} doing the washing-up and picks up a tea towel.", turns: [
+    ['b', "You don't have to help."],
+    ['a', "I know. I wanted to talk to you anyway."],
+    ['b', "About what?"],
+    ['a', "Nothing much. I realised I don't really know you."],
+    ['b', "There's not much to know. I like {pb}, I like the pool, and I hate washing up."],
+    ['a', "Then I'll wash and you dry."],
+  ], beat: "They swap, and the pile goes down quickly." },
   { when: { story: NONE, bTaken: true, end: 'turned-down', rebuffed: true }, stage: "{a} asks {b} for a chat on the daybeds.", turns: [
     ['a', "I just wanted to get to know you a bit better."],
     say('b', "I'm sorry, I don't think it's a good idea. {pb} wouldn't like it.", { sharp: "I'm with {pb}. I don't need to get to know anyone better." }),

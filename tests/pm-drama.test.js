@@ -45,7 +45,14 @@ describe('pm drama', () => {
 
   it('a strong couple voted out says so, and the voter gets no goodbye hug', () => {
     let unfair = 0;
-    for (const seed of SEEDS) for (const r of seasons[seed].rows) {
+    // An unfair dumping is ~0.7 a season: three seasons can have none, and the
+    // checks below would then pass on nothing. More seasons until one has it.
+    const pool = [...SEEDS];
+    for (const extra of [12, 33, 41, 5, 9]) {
+      if (pool.some(sd => seasons[sd].rows.some(r => (r.pm?.events || []).some(e => e.kind === 'dump-unfair')))) break;
+      seasons[extra] ||= playReadSeason(extra); pool.push(extra);
+    }
+    for (const seed of pool) for (const r of seasons[seed].rows) {
       const evs = r.pm?.events || [];
       for (const e of evs.filter(e => e.kind === 'dump-unfair')) {
         unfair++;
@@ -55,6 +62,6 @@ describe('pm drama', () => {
         expect(hugs, `seed ${seed} ep${r.num}: ${v} hugged ${a}`).toEqual([]);
       }
     }
-    expect(unfair, 'no unfair dumping in three seasons').toBeGreaterThan(0);
+    expect(unfair, `no unfair dumping in ${pool.length} seasons`).toBeGreaterThan(0);
   });
 });

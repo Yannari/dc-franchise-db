@@ -29,7 +29,7 @@ import { arcs } from './arcs.js';
 import { streamFor } from '../dr/rng.js';
 import { kissRound, roundSize } from './kiss-round.js';
 import { inStory } from './threads.js';
-import { today } from './events.js';
+import { today, heartBusy, soreToday } from './events.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const pick = (rng, arr) => (arr.length ? arr[Math.floor(rng() * arr.length)] : null);
@@ -44,6 +44,13 @@ function ladderScenes(state, rng, days = 1) {
   for (let i = 0; i < Math.max(1, days); i++) decisions.push(...decideLadder(state, rng, attachment));
   for (const d of decisions) {
     const { from: a, to: b } = d;
+    // The ladder moves on a day that is theirs (2026-11-03, season 41): not the
+    // day either heart went to somebody else (events.js heartBusy), and no asking
+    // or "I love you" on the day they fell out (Chloe said it an hour after
+    // Callum walked out on her). It waits; the dice don't move for it.
+    const toward = ['close-off', 'exclusive-ask', 'official-ask', 'love-said', 'love-hanging'].includes(d.kind);
+    if (toward && (heartBusy(state, a, b) || soreToday(state, a, b)
+      || today(state).some(e => e.kind === 'where-head' && ['honest', 'lie'].includes(e.extra?.of) && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b)))) continue;
     const love = romance(a, b) / 10, loveBack = romance(b, a) / 10;
     if (d.kind === 'close-off') {
       feel(state, b, 'security', 1.5 * loveBack);
@@ -255,6 +262,13 @@ function advice(state, rng) {
     // They've had this conversation already today (a telling, a vent): a note
     // saying it again is the same scene twice (season read 2026-10-25).
     if (today(state).some(e => e.players.includes(c) && e.players.includes(n) && e.players.includes(partner))) continue;
+    // …and never from somebody who wants the partner, or whom n's partner wants:
+    // Chloe, turned down by Dan that afternoon, advising Dan's partner about Dan
+    // (season 41 ep 13). Nor on a day n and the partner fell out over something
+    // bigger: the advice scene doesn't know it, and the row is the scene.
+    const si = state.shownInterest || {};
+    if (si[`${c}>${partner}`] != null || si[`${partner}>${c}`] != null) continue;
+    if (soreToday(state, n, partner) || today(state).some(e => e.kind === 'where-head' && ['honest', 'lie'].includes(e.extra?.of) && e.players.slice(0, 2).includes(n) && e.players.slice(0, 2).includes(partner))) continue;
     const v = verdict(state, c, partner);
     nudgeAttraction(state, n, partner, 0.6 * v);
     addRelationshipDimension(n, partner, 'trust', 0.5 * v);

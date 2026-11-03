@@ -43,7 +43,7 @@ import { addRelationshipDimension, getRelationshipDimension } from '../relations
 import { broken, splitOf, heartOf, friendsRecords, rekindle } from './just-friends.js';
 import { recordSplit, verdictPop } from './breakups.js';
 import { nudgeBelief, beliefOf } from './ledger.js';
-import { makeEvent, partnerOf, roomMates, apart, today, soreToday, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
+import { makeEvent, partnerOf, roomMates, apart, today, soreToday, heartBusy, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance, friendship, schemeEligible, revealTruth } from './feelings.js';
 import { stepOf, setStep, tellStep, closedness } from './ladder.js';
@@ -438,6 +438,8 @@ function graftBeat(state, rng, t, phase) {
   // 2. The pull. Once a part of the day, and never in the morning.
   if (phase === 'day' || phase === 'evening') {
     if (today(state).some(e => (e.kind === 'pull' || e.kind === 'loyalty') && e.players.includes(c) && e.players.includes(tt))) return out;
+    // Not the day c's heart already went somewhere else (events.js heartBusy).
+    if (heartBusy(state, c, tt)) return out;
     const got = pullBetween(state, rng, c, tt);
     const ev = makeEvent(state, rng, { phase, kind: got.kind, players: got.players, aired: true, extra: { ...tag('pull') } });
     out.push(ev);
@@ -1124,9 +1126,11 @@ export function bedChats(state, rng, phase = 'evening') {
     const rowed = !madeUp && today(state).some(e => both(e) && (['jealous-confront', 'argument', 'graft-turn'].includes(e.kind)
       || (e.kind === 'where-head' && e.extra?.of !== 'reassure') || (e.kind === 'told-confront' && e.extra?.verdict !== 'forgive')));
     const warm = !rowed && (madeUp || (romance(a, b) >= 4 && romance(b, a) >= 4));
+    // b owned up to a kiss today (where-head honest): lights out can't be "nothing happened" (season 41 ep 14).
+    const owned = today(state).some(e => both(e) && e.kind === 'where-head' && e.extra?.of === 'honest' && e.extra?.kissed);
     if (warm) { addBond(a, b, 0.3); feel(state, a, 'security', 0.5); feel(state, b, 'security', 0.5); }
     else { feel(state, a, 'stress', 0.3); }
-    return scene(state, rng, phase, 'bed-chat', [a, b], { thread: { id: t.id, type: t.type, beat: 'bed', since: t.ep, who: castOf(t).slice(0, 2) }, subj: t.type, of: warm ? 'warm' : rowed ? 'after-row' : 'distant',
+    return scene(state, rng, phase, 'bed-chat', [a, b], { thread: { id: t.id, type: t.type, beat: 'bed', since: t.ep, who: castOf(t).slice(0, 2) }, subj: t.type, of: warm ? 'warm' : rowed ? 'after-row' : 'distant', ...(owned ? { kissed: true } : {}),
       pop: pop([a, 0.2, 0.6], [b, 0.2, 0.6]) });
   });
 }

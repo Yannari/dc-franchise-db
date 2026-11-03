@@ -207,6 +207,26 @@ export function kissedBefore(state, a, b, except = null) {
   const pair = e => e !== except && (KISS_KINDS.has(e.kind) || e.extra?.kissed) && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b);
   return (state.history || []).some(pair) || today(state).some(pair);
 }
+// WHERE A HEART WENT TODAY (2026-11-03, season 41 ep 13: in one evening Chloe
+// chased Dan and was turned down, accepted Elliot's close-off, and went back to
+// Callum; four systems, each sure of her, none of them knowing the others). The
+// moves a day makes toward somebody: [who moved, toward whom].
+const MOVES = {
+  pull: e => (e.extra?.rebuffed ? [] : [[e.players[0], e.players[1]]]),
+  'graft-turn': e => [[e.players[0], e.players[1]]],
+  loyalty: () => [],
+  'close-off': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'exclusive-ask': e => (e.extra?.yes ? [[e.players[0], e.players[1]], [e.players[1], e.players[0]]] : [[e.players[0], e.players[1]]]),
+  'official-ask': e => (e.extra?.yes ? [[e.players[0], e.players[1]], [e.players[1], e.players[0]]] : [[e.players[0], e.players[1]]]),
+  'love-said': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  reunite: e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'triangle-choice': e => [[e.players[0], e.players[1]]],
+};
+/** n's heart already went to somebody other than `toward` today. */
+export function heartBusy(state, n, toward) {
+  // (What happened, aired or not: the engine's day, not the edit's.)
+  return today(state).some(e => (MOVES[e.kind]?.(e) || []).some(([x, y]) => x === n && y !== toward));
+}
 export function soreToday(state, a, b) {
   if (!a || !b) return false;
   return today(state).some(e => (SORE[e.kind]?.(e) || []).some(([x, y]) => (x === a && y === b) || (x === b && y === a)));

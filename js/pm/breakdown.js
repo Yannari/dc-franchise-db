@@ -18,7 +18,7 @@
 import { storyRoleOf } from './stretch.js';
 import { addBond, getBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
-import { makeEvent, partnerOf, apart, tooSoonForWarm } from './events.js';
+import { makeEvent, partnerOf, apart, tooSoonForWarm, today } from './events.js';
 import { emo, feel, attachment } from './emotions.js';
 import { romance } from './feelings.js';
 import { players } from '../core.js';
@@ -41,6 +41,13 @@ export function proneness(state, a) {
   return (1 + 0.5 * att.anxiety - 0.35 * att.avoidance) * (PERSONA_PRONE[prof?.persona] ?? 1) * (ARCH_PRONE[arch] ?? 1);
 }
 
+// A partner owned up to somebody else, was found out, or ended it, today.
+function hurtToday(state, a) {
+  return today(state).some(e => (e.kind === 'where-head' && e.extra?.of === 'honest' && e.players[0] === a)
+    || (e.kind === 'told-confront' && e.players[0] === a)
+    || (e.kind === 'doubt-end' && e.players[1] === a && e.extra?.of !== 'recommit')
+    || (e.kind === 'open-back-up' && e.players[1] === a));
+}
 function causeOf(state, a) {
   const e = emo(state, a);
   const jea = Math.max(0, ...Object.values(e.jealousy || {}));
@@ -72,7 +79,10 @@ export function breakdowns(state, rng, entry = null) {
     if (last[a] != null && state.ep - last[a] <= COOLDOWN) continue;
     if (!ours(a)) continue;
     const e = emo(state, a);
-    const [cause, weight] = causeOf(state, a);
+    let [cause, weight] = causeOf(state, a);
+    // What today did to them is the reason, when it did something (season 41 ep 14:
+    // Callum, told an hour before that Chloe had kissed Elliot, broke down over "a cup of tea").
+    if (hurtToday(state, a)) cause = 'heartbreak';
     const temper = state.profiles[a]?.stats?.temperament ?? 5;
     // Heartbreak weighs by how much they loved the one who caused it.
     const loved = e.heartbreakFrom ? 0.6 + 0.8 * Math.max(0, romance(a, e.heartbreakFrom)) / 10 : 1;

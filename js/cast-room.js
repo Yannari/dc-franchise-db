@@ -739,6 +739,7 @@ function _manageMenuHTML() {
     `<div class="cr-menu-group">Quick load</div>`,
     item('S9 cast', 'loadS9Preset()'),
     item('S10 cast', 'loadS10Preset()'),
+    item('TD16 cast', 'loadTD16Preset()'),
     item('Clear all', 'clearCast()'),
   ].join('');
 }

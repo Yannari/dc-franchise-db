@@ -503,6 +503,26 @@ export function loadS9Preset() {
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
 }
+// TD16 — Brains vs Beauty vs Brawns, 15 newbies. By slug: Kendra, Daniela and Paolo were renamed
+// from names other characters already had, so a name lookup is the one that could go stale.
+const TD16_TRIBES = {
+  Brains: ['hailee', 'malo', 'mina', 'paolo', 'simone'],
+  Beauty: ['beau', 'daniela', 'kendra', 'luca', 'quentin'],
+  Brawns: ['nadia', 'rama', 'santi', 'tino', 'topaz'],
+};
+export function loadTD16Preset() {
+  if (players.length>0 && !confirm('Replace cast with TD16 Brains vs Beauty vs Brawns (15 newbies)?\n\nExisting relationships and pre-game alliances are cleared too — they name players from the old cast.')) return;
+  const bySlug = Object.fromEntries(FRANCHISE_ROSTER.map(p => [p.slug, p]));
+  players = Object.entries(TD16_TRIBES).flatMap(([tribe, slugs]) => slugs.map(slug => {
+    const r = bySlug[slug];
+    if (!r) { console.warn('TD16 preset: missing roster entry for', slug); return null; }
+    return { ...r, tribe, isReturnee: false };
+  })).filter(Boolean).map((p, i) => ({ ...p, id: 'td16-' + i }));
+  _clearCastScopedLinks();
+  seasonConfig.tribes = [{ name:'Brains', color:'#14b8a6' }, { name:'Beauty', color:'#ec4899' }, { name:'Brawns', color:'#f97316' }];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
+}
 export function exportCast() {
   const blob = new Blob([JSON.stringify(players,null,2)],{type:'application/json'});
   downloadFile('simulator-cast.json', blob);

@@ -119,9 +119,8 @@ export default {
         { by: 'a', say: "Oh. You don't know. Huh." },
         { beat: '{a} pats {c} on the shoulder and walks off with {b}.' },
         { by: 'c', ...V("What do they say, {d}?", "{d}, what do they say?", "What do they say, {d}?", "What DO they say, {d}?", "{d}, what do they say?", "{d}, what is the saying?") },
-        { by: 'd', ...V("Nobody says anything. There is no saying.", "There's no saying.", "Nobody says anything. There's no saying.", "NOBODY says anything! There IS no saying!",
-          "Nobody says anything. I promise there's no saying.", "There's no saying. Sayings aren't real. I'm almost sure.") },
-        { by: 'c', ...V("There's always a saying.", "There's always a saying.", "There is always a saying.", "There's ALWAYS a saying!", "But there's always a saying.", "There is always a saying. That's the saying.") },
+        { by: 'd', say: "Nobody says anything. They're just messing with you." },
+        { by: 'c', say: "Then why did they say it like that?" },
       ] },
     ],
 
@@ -185,7 +184,7 @@ export default {
           "That's actually kind of sweet. They think we're a threat.", "That's adorable. They think we're dangerous.") },
         { by: 'c', ...V("We are a threat.", "We are a threat.", "We are a threat.", "We ARE a threat!", "We are a threat, though.", "We are a threat. We've always been a threat. Quietly.") },
         { by: 'd', ...V("We're a threat!", "We're a threat.", "We're a threat.", "We're a THREAT!", "We're a threat!", "We're a threat! Somebody write that down!") },
-        { beat: 'They walk off about two inches taller than when they arrived.' },
+        { beat: 'They walk off looking a lot more confident than before.' },
       ] },
     ],
 
@@ -198,8 +197,8 @@ export default {
       ] },
       { id: 'mg.iv-p2', when: { cause: 'mind-game', causeEnding: 'rattled' }, turns: [
         { by: 'a', conf: "I didn't lie. I said half a sentence, and I let them finish it." },
-        { by: 'b', conf: "That's lying with extra steps." },
-        { by: 'a', conf: "Extra steps are still steps. And we're in a race." },
+        { by: 'b', conf: "That's still lying." },
+        { by: 'a', conf: "It's racing. Everybody does it." },
       ] },
       { id: 'mg.iv-p3', when: { cause: 'mind-game', causeEnding: 'rattled' }, turns: [
         { by: 'b', conf: "I felt bad about it for about a minute." },
@@ -212,7 +211,7 @@ export default {
       { id: 'mg.iv-j1', when: { cause: 'mind-game', causeEnding: 'steels-them' }, turns: [
         { by: 'a', conf: "Okay. That didn't work. In my defence, it's always worked before." },
         { by: 'b', conf: "We've never done it before." },
-        { by: 'a', conf: "Then it has a perfect record. Of one." },
+        { by: 'a', conf: "Okay. Well, now we know it doesn't work." },
       ] },
       { id: 'mg.iv-j2', when: { cause: 'mind-game', causeEnding: 'steels-them' }, turns: [
         { by: 'b', conf: "We basically gave them a pep talk." },

@@ -196,6 +196,11 @@ const DAYLIGHT = linesWith(/\b(a hose|the market|market stall|shopkeeper|the sho
 const OUTDOOR = new Set([...linesWith(/\b(fountain|the path|path narrows|ditch|swamp\w*|flooded|hedges?|puddles?|the field|the grass|the road|the trail|the bushes|a tree|the trees|the hill|mud|muddy|the river|the beach|the sand|the shade)\b/i)]
   .filter(e => !e.when?.taskId && !e.when?.place));
 const SUNLIT = linesWith(/\b(nice day|lovely day|sunny|sunshine|sunburn\w*|in the heat|the midday|this sun)\b/i);
+// (somebody watching a racer fall, slip or hang on by one hand: only at a challenge done with the body. "That's the
+// third time they've fallen" aired at the tea picking, read 2026-11-03; a place's own lines say what their task is)
+const FALLING = new Set([...linesWith(/\b(fell|fallen|falls over|falling off|slips|slipped|wobbles|hangs there|by one hand|use your feet)\b/i)]
+  .filter(e => !e.when?.taskId && !e.when?.place));
+const PHYSICAL = new Set(['heights', 'strength', 'water', 'nerve']);
 const MANY_PLACES = linesWith(/\b(best|worst|favourite|favorite) (place|country|city|leg|challenge|food)( we've (been|had|done))? so far\b|\bplaces we've been\b|\bevery (place|country) we've\b|\bthe first night\b|\bfor (days|weeks)\b|\bdays of racing\b/i);
 // the minute a scene happens, on the race's clock (the leg's start, js/rr/leg.js clockStart, plus the scene's own minute)
 function minuteOf(state, scene) {
@@ -329,7 +334,8 @@ export function writeScene(state, scene, { roles: given = null, keep = false } =
     && !(SUNLIT.has(e) && (tod === 'night' || tod === 'evening'))
     && !(OUTDOOR.has(e) && facts.indoor)
     // ("Best place we've been so far?" with one place behind them: a comparison needs two, read 2026-11-03)
-    && !(MANY_PLACES.has(e) && !((scene.leg ?? scene.data?.snap?.leg ?? state.leg) >= 3));
+    && !(MANY_PLACES.has(e) && !((scene.leg ?? scene.data?.snap?.leg ?? state.leg) >= 3))
+    && !(FALLING.has(e) && !facts.fearDoes && !(scene.data?.snap?.taskTypes || []).some(t => PHYSICAL.has(t)));
   // an interview about a moment is one written for that kind of moment, or there is no interview
   const aboutIt = e => !ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null || e.when?.cause != null;
   // (an opener whose setting isn't made yet waits for its plate: vp-rr-ep/opener-shots.js, the user 2026-10-20)

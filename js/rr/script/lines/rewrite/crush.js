@@ -155,7 +155,7 @@ export default {
         { by: 'b', say: "You're not ruining anything. I think I've felt it too. I just didn't let myself think about it." },
         { by: 'a', say: "Really?" },
         { by: 'b', say: "Really." },
-        { beat: 'They kiss. Somewhere behind them, a crew member very quietly says "finally".' },
+        { beat: 'They kiss.' },
         { by: 'a', conf: "I've wanted to say that for so long. And {b.sub} said it back. I don't think I'm going to stop smiling for the rest of the race." },
       ] },
       { id: 'cr.ot2', turns: [

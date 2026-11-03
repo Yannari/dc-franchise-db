@@ -16,14 +16,14 @@ export default {
       ] },
       { id: 'bg.gk2', turns: [
         { by: 'b', say: "How was it?" },
-        { by: 'a', ...V("Like a sock that's been somewhere terrible. But it's gone.", "Like a sock. But it's gone.", "A sock. Gone now.", "Like a SOCK that's been somewhere TERRIBLE! But it's GONE!", "Like a sock that's been somewhere terrible. But it's gone now.", "Like a sock's whole life story. But I swallowed the ending.") },
-        { by: 'b', say: "I'm so proud of you, and I'm never sharing a fork with you again." },
+        { by: 'a', say: "Honestly? Horrible. Really horrible. But it's gone." },
+        { by: 'b', say: "I'm so proud of you. Come here. Actually, maybe brush your teeth first." },
       ] },
     ],
     'gross-out.vomits': [
       { id: 'bg.gv1', turns: [
         { by: 'a', ...V("Bucket. Bucket. I need the bucket.", "Bucket. Now.", "Bucket.", "BUCKET! BUCKET! I need the BUCKET!", "Bucket, please, I need the bucket.", "Bucket. The bucket is my only friend now.") },
-        { beat: '{a} turns green and makes it to the bucket just in time. The camera politely looks at the sky.' },
+        { beat: '{a} turns green and makes it to the bucket just in time.' },
         { by: 'b', say: "Better out than in. Go again." },
       ] },
       { id: 'bg.gv2', turns: [
@@ -79,7 +79,7 @@ export default {
         { beat: '{b} goes and tells a crew member. The clock starts.' },
         { by: 'b', say: "Four hours. What do you want to do with four hours?" },
         { by: 'a', say: "Sleep. And then feel bad about it." },
-        { by: 'b', say: "Sleep first. Feel bad later. I'll wake you for the feeling bad." },
+        { by: 'b', say: "Then sleep. We'll worry about the rest later." },
       ] },
     ],
     'quit-talk.quits-race': [
@@ -107,7 +107,7 @@ export default {
         { by: 'b', ...V("Now? In the middle of the cab ride? Now?", "Now? In the cab?", "Now? Here?", "NOW? In the MIDDLE of the CAB RIDE? NOW?", "Now? In the middle of the cab ride?", "Now? It waited until now? That's very rude of it.") },
         { by: 'a', say: "Can we stop? Can we please stop somewhere?" },
         { by: 'b', say: "Excuse me, sir, could you pull over? Anywhere. Quickly." },
-        { beat: 'The cab pulls over at a petrol station. They lose ten minutes and gain a lot of gratitude for petrol stations.' },
+        { beat: 'The cab pulls over at a petrol station. They lose ten minutes.' },
         { by: 'a', say: "I'm never eating anything again." },
       ] },
       { id: 'bg.dl2', turns: [
@@ -123,8 +123,8 @@ export default {
       { id: 'bg.dh1', turns: [
         { by: 'a', say: "Is it me, or do I suddenly have a lot of energy?" },
         { by: 'b', ...V("It's the drink they gave us back there. The strong one.", "It's that drink. The strong one.", "The strong drink.", "It's the DRINK they gave us back there! The STRONG one!", "It's the drink they gave us back there, the strong one.", "It's the mystery drink. It's woken something up in you.") },
-        { by: 'a', say: "I can hear colours. And I can run." },
-        { by: 'b', say: "Then run! Run while you can hear colours!" },
+        { by: 'a', say: "I feel amazing. I can't stop moving." },
+        { by: 'b', say: "Then run! Run while it lasts!" },
         { beat: '{a} runs the next stretch at a speed {b} has never seen, talking the whole way.' },
         { by: 'b', say: "I need to find out what was in that drink." },
       ] },

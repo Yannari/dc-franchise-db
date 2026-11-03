@@ -70,7 +70,7 @@ export default {
         { by: 'b', say: "Do you need to stop?" },
         { by: 'a', say: "If I stop, I won't start again. Keep walking. Just keep walking." },
         { beat: '{a} keeps walking, one hand on {a.posAdj} stomach, jaw set.' },
-        { by: 'b', say: "You're the toughest person I know. And the greenest." },
+        { by: 'b', say: "You're the toughest person I know. Seriously." },
       ] },
       { id: 'bd.ip2', turns: [
         { by: 'a', say: "I feel awful. I feel really awful." },

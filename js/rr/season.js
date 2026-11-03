@@ -21,6 +21,8 @@ import { playLeg } from './leg.js';
 import { playFinal } from './final.js';
 import { medevac } from './chill.js';
 import { pairKey } from './scenes.js';
+import { canFancy } from './interest.js';
+import { stableRng } from '../script/rng.js';
 
 // The partner of a one-sided team who resents the other, when the Pairs view didn't say: one who may scheme over one
 // who may not, then the less loyal, then the sharper (strategic).
@@ -32,12 +34,21 @@ export function resenterOf(t) {
 /** What the two of each team already are to each other, and how they feel about it, before the race changes it
  *  (state.js REL start, FEEL shift). */
 export function walkIn(state) {
+  // (the roster's people are cast before this: canFancy reads their gender, sexuality and age)
   for (const t of Object.values(state.teams)) {
     // (set, not added: addBond scales by temperament and archetype, and this is a starting point, not a moment)
     const start = (REL[t.rel]?.start || 0) + FEEL[feelOf(t)].shift;
     if (start) setBond(t.a, t.b, getBond(t.a, t.b) + start);
     // a one-sided team names who resents whom (the Pairs view); unnamed, it's the colder, sharper of the two
     if (feelOf(t) === 'one-sided' && ![t.a, t.b].includes(t.resents)) t.resents = resenterOf(t);
+    // a secret crush is one of them in love with the other: never in a family, and only someone who could fancy their
+    // partner at all (rr/interest.js); unnamed, whichever of the two can (both can: the seed picks). Nobody can: warm.
+    if (feelOf(t) === 'crush') {
+      const other = n => (n === t.a ? t.b : t.a);
+      const can = [t.a, t.b].filter(n => canFancy(n, other(n)));
+      if (REL[t.rel]?.family || !can.length) { delete t.feel; delete t.crusher; }
+      else if (!can.includes(t.crusher)) t.crusher = can.length === 1 ? can[0] : can[Math.floor(stableRng(state.seed, 'rr-crusher', t.id)() * 2)];
+    }
     // how they walked in, for what is written about the start once the race has changed it
     t.feel0 = feelOf(t);
   }

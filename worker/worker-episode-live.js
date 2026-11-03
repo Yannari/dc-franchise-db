@@ -4075,7 +4075,15 @@ async function generateRaceLines(body, env) {
       ? "How they feel: one of them secretly resents the other, who has no idea. Keep it under the surface: polite, a little flat, never said outright."
       : feel === "strained"
         ? "How they feel: bitter on both sides. Something went wrong between them before the race and hasn't been fixed. Don't invent what it was: they talk around it, short and guarded, and it shows."
-        : "";
+        : feel === "crush"
+          ? (() => {
+              const lover = [A.name, B.name].includes(team.crusher) ? team.crusher : null;
+              const other = lover ? (lover === A.name ? B.name : A.name) : null;
+              return lover
+                ? `How they feel: ${lover} is secretly in love with ${other}, who sees a friend and has no idea. ${lover}'s lines are a little too warm, a little nervous, never a confession; ${other}'s are easy and friendly.`
+                : "How they feel: one of them is secretly in love with the other, who has no idea. Keep it in the subtext: a little too warm, never a confession.";
+            })()
+          : "";
   const relLine = [what && `What they are: ${what}.`, feelLine].filter(Boolean).join("\n");
   const prompt = [
     "You are writing a few lines for one team on The Ridonculous Race, an animated travel-race reality show: teams of two race around the world, a host named Don, a mat at the end of every leg where the last team can go home.",

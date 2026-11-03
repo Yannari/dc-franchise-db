@@ -80,6 +80,9 @@ every stretch, chosen by the situation.
 | `finds-out` | one-sided, a is the fooled one, from leg 3; likelier the sharper a is and the lower a's view has fallen | `mask-off` (feel → strained, mor −15) · `have-it-out` (feel → warm, bond +4); the relationship stays what it is | why, in the resenter's words | the user, 2026-11-02 |
 | `sore-spot` | strained (bitter both ways, any relationship) | `cold-war` (bond −0.3) · `reopens` (bond −1, str +4) · `reach-out` (bond +0.8) · `rebuffed` (bond −0.4, mor −4) | nothing invented about what went wrong | the user, 2026-11-02 |
 | `clear-the-air` | strained, bond ≥ 2 | `make-peace` (feel → warm, bond +1.5) · `almost` (bond +0.5) | the falling-out, never named | the user, 2026-11-02 |
+| `pining` | secret crush (a feeling; never family, never under 18), a is the one in love | `stares` · `almost-says-it` (a try: the confession comes likelier) · `helps-too-much` (bond +0.3) | nothing they don't share | the user, 2026-11-03 |
+| `crush-jealous` | secret crush, b drawn to somebody else in the race (a spark or a couple) | `swallows-it` · `snipes` (bond −0.5) · `tells-camera` | that somebody, unnamed | the user, 2026-11-03 |
+| `crush-out` | secret crush, from leg 3; likelier with every try, the bolder a is, and with somebody else in the picture | `together` (rel → newly-dating, a couple) · `not-now` · `not-like-that` (feel → strained, mor −15): b's answer is b's own interest (rr/interest.js) | how long, never invented | the user, 2026-11-03 |
 
 ## 2. Teams together (two teams at one place)
 
@@ -137,6 +140,7 @@ Where the show's crowd scenes come from: the airport, the plane, a bus, a closed
 | `confession-attempt` | thr `crush`, the crusher with courage (bold + stress) | `interrupted` (the most common ending: a taxi, a cell, a call) · `chickens-out` · `misheard` ("I love unibrows") · `said` (→ reaction) | ep 13, 22, 23 |
 | `confession` | said | `mutual` (couple) · `not-now` (Emma: after the race) · `crushed` (mor −15) · `reversed` (the other just gave up: ep 19) | ep 16, 19, 24 |
 | `jealousy` | one of a couple or crush sees the other close to someone | `sulk` (bond −1) · `scene` (a confrontation) · `pepper-in-eyes` (a self-inflicted mishap: min +) | ep 20, 21 |
+| `torch` | a crush across two teams turned down (the confession's `crushed`): x still carries it | `still-pining` · `moves-on` (it's over) · `watches-them` (y is with somebody) | the no | the user, 2026-11-03 |
 | `romance-costs` | a couple or crush delays for the other | `waits-for-them` (min +10–30: Noah's sauna) · `lets-them-pass` (an alliance place handed over at the mat) · `focus-lost` (task pass −0.05; the partner takes charge) | ep 9, 11, 15 |
 | `goodbye-kiss` | one of a cross-team couple is eliminated | `promise` ("meet me at the final") | ep 18 |
 

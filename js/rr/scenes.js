@@ -186,6 +186,11 @@ function makeFx(ctx, effects, kindId = null) {
     // they find out
     view(teamId, d) { st.view ||= {}; st.view[teamId] = Math.min(FOOLED_VIEW, (st.view[teamId] ?? FOOLED_VIEW) + d); push(['view', teamId, d]); },
     found(teamId) { st.found ||= {}; st.found[teamId] = st.leg; push(['found', teamId]); },
+    // a secret crush on the partner (scenes/crush.js): one more time it nearly came out, and the time it did
+    crushTry(teamId) { st.crushTries ||= {}; st.crushTries[teamId] = (st.crushTries[teamId] || 0) + 1; push(['crush-try', teamId]); },
+    crushOut(teamId, how) { st.crushOut ||= {}; st.crushOut[teamId] = { leg: st.leg, how }; push(['crush-out', teamId, how]); },
+    // a crush across two teams that was turned down: x still carries it (scenes/romance.js torch)
+    unrequited(x, y, on = true) { st.unrequited ||= {}; if (on) st.unrequited[`${x}>${y}`] = st.leg; else delete st.unrequited[`${x}>${y}`]; push(['unrequited', x, y, on]); },
     snap(teamId, on) { st.snapped[teamId] = on; push(['snapped', teamId, on]); },
     ally(t1, t2) {
       // a forced pairing (Superteam, a pass given) that would grow a bloc past its size stays a friendship
@@ -385,6 +390,7 @@ export function interviewAfter(state, sc, rng, { force = false } = {}) {
 // Load the families (each file registers its kinds).
 import './scenes/partners.js';
 import './scenes/frenemies.js';
+import './scenes/crush.js';
 import './scenes/teams.js';
 import './scenes/groups.js';
 import './scenes/romance.js';

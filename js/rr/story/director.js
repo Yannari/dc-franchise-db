@@ -32,7 +32,7 @@ export const MUST = new Set(['proposal', 'winner-words', 'don-signoff', 'don-ope
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
   'confession', 'breakup', 'back-together', 'alliance-betrayal', 'deal-broken', 'leader-shift', 'quit-task', 'snap',
   // the turns of a relationship's own story (scenes/frenemies.js): a secret out, a peace made, an act dropped
-  'finds-out', 'clear-the-air', 'frenemy-turn',
+  'finds-out', 'clear-the-air', 'frenemy-turn', 'crush-out',
   'push', 'ram', 'steal', 'kidnap-pet', 'course-sabotage', 'fake-shortcut', 'mind-game', 'admin-sabotage', 'revenge',
   'comeuppance', 'save-your-enemy', 'rescue',
   // a Superteam's teams put together: the challenge's own story (a formed group that never airs is a system with no screen)
@@ -78,7 +78,7 @@ const IV_BONUS = 2;
 // the everyday moments of a team's own relationship story (frenemies, one-sided, strained; scenes/frenemies.js): what
 // they move is small (a smile held, a dig), but it's the story the season set up, and it played 15-17 times in eight
 // seasons and aired once (measured 2026-11-02)
-const STORY_KINDS = new Set(['gush', 'cold-shoulder', 'quiet-sabotage', 'dig', 'keep-score', 'sore-spot']);
+const STORY_KINDS = new Set(['gush', 'cold-shoulder', 'quiet-sabotage', 'dig', 'keep-score', 'sore-spot', 'pining', 'crush-jealous', 'torch']);
 const STORY_BONUS = 1.5;
 // a fair share (ten teams or fewer): what a moment gains for each moment its least-seen team is behind the average, and
 // for being between two teams

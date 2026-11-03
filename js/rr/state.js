@@ -51,6 +51,9 @@ export const FEEL = {
   warm: { shift: 0, snap: 1 },
   strained: { shift: -6, snap: 1.4 },
   'one-sided': { shift: -7, snap: 1 },
+  // one of them (team.crusher) is in love with the other, who sees a friend (scenes/crush.js; the user, 2026-11-03).
+  // Never on a family team, never anybody under 18 (season.js walkIn checks it, rr/interest.js canFancy)
+  crush: { shift: 0, snap: 1 },
 };
 export const feelOf = t => (FEEL[t?.feel] ? t.feel : 'warm');
 

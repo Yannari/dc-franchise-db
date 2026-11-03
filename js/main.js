@@ -571,6 +571,9 @@ async function init() {
       ]);
       window.__lifeSeasons = sdb.seasons || [];
       window.__lifeLog = (await loadLifeLog()).filter(e => e.status === 'approved');
+      // a cast already on screen was read without it: the Casting Room draws its teams again (a race's couples from
+      // life events, rr-run.js raceTeams)
+      try { if (document.getElementById('tab-cast')?.classList.contains('cast-room-active')) window.renderCastRoom?.(); } catch {}
     } catch { window.__lifeLog = window.__lifeLog || []; }
   })();
 }

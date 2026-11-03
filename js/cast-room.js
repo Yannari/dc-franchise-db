@@ -488,6 +488,8 @@ function _raceTeamPanel(a, b) {
       <option value="">${(() => { const d = window.raceDefaultRel?.(a.name, b.name); return `Feeling: ${esc((d?.feelLabel || 'Warm').toLowerCase())}${d?.feel && d.feel !== 'warm' && d.from ? ' (from their ties)' : ' (the default)'}`; })()}</option>${opt(o.feels || [], v('rrFeel'))}</select>
     ${v('rrFeel') === 'one-sided' || v('rrRel') === 'one-sided' ? `<select class="cr-rt" data-f="rrResents" onchange="crRaceTeam(this)" title="The one who can't stand the other. The other has no idea, until they find out.">
       <option value="">Who resents the other: let the race decide</option>${[a, b].map(p => `<option value="${esc(p.name)}"${v('rrResents') === p.name ? ' selected' : ''}>${esc(p.name)} resents ${esc((p === a ? b : a).name)}</option>`).join('')}</select>` : ''}
+    ${v('rrFeel') === 'crush' ? `<select class="cr-rt" data-f="rrCrusher" onchange="crRaceTeam(this)" title="The one who's in love with the other. Never on a family team or with anybody under 18: then the team races warm.">
+      <option value="">Who has the crush: let the race decide</option>${[a, b].map(p => `<option value="${esc(p.name)}"${v('rrCrusher') === p.name ? ' selected' : ''}>${esc(p.name)} is in love with ${esc((p === a ? b : a).name)}</option>`).join('')}</select>` : ''}
     <select class="cr-rt" data-f="rrIdentity" onchange="crRaceTeam(this)" title="The kind of team they race as. It shapes what they're good at and how they talk. Two teams can't share one.">
       <option value="">No identity: named after the two of them</option>${opt(o.ids, v('rrIdentity'))}
       <option value="custom"${custom ? ' selected' : ''}>Custom identity…</option></select>
@@ -537,7 +539,7 @@ export async function crRaceFillLines(btn) {
   const rel = v('rrRel') || window.raceDefaultRel?.(a.name, b.name)?.rel || '';
   const idId = v('rrIdentity');
   const team = {
-    rel, relLabel: (o.rels || []).find(x => x.id === rel)?.label || rel, resents: v('rrResents') || null,
+    rel, relLabel: (o.rels || []).find(x => x.id === rel)?.label || rel, resents: v('rrResents') || null, crusher: v('rrCrusher') || null,
     feel: v('rrFeel') || window.raceDefaultRel?.(a.name, b.name)?.feel || 'warm',
     identity: idId === 'custom' ? v('rrCustomName') : (o.ids || []).find(x => x.id === idId)?.label || '',
     teamName: v('rrTeamName'),

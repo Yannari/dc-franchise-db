@@ -27,7 +27,7 @@ export default {
     E('ec.ff-a1', 'feast-fossil', 'feast', [a("Eat a meal, or chip a rock out of a wall of ice?"), b("I can eat anything."), a("Can you eat a sheep's head?"), b("We're about to find out.")]),
     E('ec.ff-a2', 'feast-fossil', 'feast', [b("I'm starving anyway."), a("It's fermented shark."), b("I'm still starving. Feast.")]),
     E('ec.ff-a3', 'feast-fossil', 'fossil', [a("Fermented shark."), b("Fossil."), a("Fossil.")]),
-    E('ec.ff-a4', 'feast-fossil', 'fossil', [b("I'll chip at ice all day if it means I don't have to look at that sheep."), a("The sheep is looking at us."), b("Fossil. Now.")]),
+    E('ec.ff-a4', 'feast-fossil', 'fossil', [b("I'll chip at ice all day if it means I don't have to look at that sheep."), a("Me neither."), b("Fossil. Now.")]),
     // the glass tower: the window platform down the outside, or the tennis launcher on the roof
     E('ec.sq-a1', 'squeegee-serve', 'squeegee', [a("Wash windows, or play tennis against a machine?"), b("I've never won a tennis match in my life."), a("Windows, then.")]),
     E('ec.sq-a2', 'squeegee-serve', 'squeegee', [{ by: 'b', say: "I clean windows at home." }, { by: 'a', say: "Not from the outside, hundreds of metres up." }, { by: 'b', say: "It's still just washing windows. Squeegee." }]),
@@ -103,7 +103,7 @@ export default {
     E('ec.sq-c1', 'squeegee-serve', 'squeegee', [a("Windows, and you hold the bucket so I can use both hands."), b("Fine, but I'm not looking down."), a("Nobody's looking down.")]),
     E('ec.sq-c2', 'squeegee-serve', 'squeegee', [b("We wash, and if it's too windy, we go up to the court."), a("Deal. A bit of wind is fine."), b("A bit.")]),
     E('ec.sq-c3', 'squeegee-serve', 'serve', [b("Tennis, and you take the shots."), a("And you shout encouragement."), b("Loudly. Deal.")]),
-    E('ec.sq-c4', 'squeegee-serve', 'serve', [a("We try the court, and if we keep hitting it out, we go down and wash."), b("We won't keep hitting it out."), a("Then we'll never have to wash a window.")]),
+    E('ec.sq-c4', 'squeegee-serve', 'serve', [a("We try the court, and if we keep hitting it out, we go down and wash."), b("We won't keep hitting it out."), a("Good. Let's go.")]),
     E('ec.jd-c1', 'jump-dance', 'jump', [{ by: 'a', say: "I'll jump, and you yell when you see the fish." }, { by: 'b', say: "Deal. I'll be watching the water." }, { by: 'a', say: "Tell me which way it's swimming." }]),
     E('ec.jd-c2', 'jump-dance', 'jump', [b("We jump, and if we come up empty twice, we go and learn the dance."), a("Deal. We won't come up empty."), b("We'll see.")]),
     E('ec.jd-c3', 'jump-dance', 'dance', [b("Dance, but I do the faces."), a("Why do you get the faces?"), b("Because my faces are better."), a("Fine. You do the faces.")]),
@@ -115,7 +115,7 @@ export default {
     E('ec.ag-c1', 'ancient-games', 'chariot', [a("Chariot, and I drive."), b("And I hang on for dear life."), a("That's the job.")]),
     E('ec.ag-c2', 'ancient-games', 'chariot', [{ by: 'b', say: "We try one lap, and if we tip, we go and wrestle." }, { by: 'a', say: "Deal. We're not going to tip." }, { by: 'b', say: "We'd better not." }]),
     E('ec.ag-c3', 'ancient-games', 'wrestle', [b("We wrestle, but you go in the circle."), a("Why me?"), b("Because you're the one who said we could."), a("Fair.")]),
-    E('ec.ag-c4', 'ancient-games', 'wrestle', [a("Wrestling, and if it's going badly after two falls, we switch to the chariot."), b("Deal. Three falls before they get three."), a("Easy.")]),
+    E('ec.ag-c4', 'ancient-games', 'wrestle', [a("Wrestling, and if it's going badly after two falls, we switch to the chariot."), b("Deal. But it won't go badly."), a("Easy.")]),
   ],
   'decide-side.swayed-by-watching': [
     E('ec.tw-s1', 'tower', 'stairs', [{ beat: "A team comes off the deck, white-faced and shaking." }, { by: 'b', say: "Look at them. They look like they're going to be sick." }, { by: 'a', say: "Stairs. Definitely the stairs." }]),

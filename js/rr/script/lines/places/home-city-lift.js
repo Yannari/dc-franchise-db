@@ -91,7 +91,7 @@ export default {
       by('c', "We were here first."),
       by('a', "Were you? It's a race. Nobody said it was a queue."),
       beat('{a} and {b} slip in ahead of them, and the doors shut.'),
-      by('d', "I hate them. I just want that on the record."),
+      by('d', "I can't believe they did that."),
     ] },
   ],
   'lift-scramble.held-line': [

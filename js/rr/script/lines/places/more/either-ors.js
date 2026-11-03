@@ -19,13 +19,13 @@ const lavaFalls = {
   'task-start.any': [
     { id: 'eo.lv-s1', when: LAVA, turns: [
       beat('{a} and {b} stand at the edge of the lava river. The first stone is closer than it looks, and hotter.'),
-      by('b', "You first. You've got the bigger shoes."),
-      by('a', "That's not how shoes work."),
+      by('b', "You first. You're better at this."),
+      by('a', "Okay. Watch me."),
     ] },
     { id: 'eo.lv-s2', when: LAVA, turns: [
       by('a', "Small jumps. Stone to stone. Don't stop on any of them."),
       by('b', "What happens if I stop?"),
-      by('a', "Your shoes find out what lava is."),
+      by('a', "You'll feel the heat. Keep moving."),
     ] },
     { id: 'eo.fl-s1', when: FALLS, turns: [
       beat('{a} and {b} push the raft off the bank. It spins round twice before it goes anywhere.'),
@@ -34,8 +34,8 @@ const lavaFalls = {
       by('b', "I am paddling on my side!"),
     ] },
     { id: 'eo.fl-s2', when: FALLS, turns: [
-      by('a', "Raft, then the path behind the waterfall. Slower, but nobody melts."),
-      by('b', "I like nobody melting."),
+      by('a', "Raft, then the path behind the waterfall. Slower, but safer."),
+      by('b', "Safer is good."),
       by('a', "Me too. Get in."),
     ] },
   ],
@@ -50,7 +50,7 @@ const lavaFalls = {
     { id: 'eo.lv-t2', when: LAVA, turns: [
       by('a', "My feet are hot. Are your feet hot?"),
       by('b', "Everything is hot. The air is hot."),
-      by('a', "Then let's get to the other side before we're cooked."),
+      by('a', "Then keep going. We're nearly across."),
     ] },
     { id: 'eo.fl-t1', when: FALLS, turns: [
       beat('Behind the waterfall, {a} grips the wet rock with both hands, soaked through.'),
@@ -72,7 +72,7 @@ const lavaFalls = {
     { id: 'eo.lv-x2', when: LAVA, turns: [
       beat('{b} slips, windmills both arms, and is sent back to the start of the stones.'),
       by('b', "I was nearly there!"),
-      by('a', "Nearly there is still back here. Come on."),
+      by('a', "I know. Come on, again."),
     ] },
     { id: 'eo.fl-x1', when: FALLS, turns: [
       beat("{a}'s foot slides off the wet path, and {a} drops into the pool under the falls with a splash."),
@@ -82,25 +82,25 @@ const lavaFalls = {
     { id: 'eo.fl-x2', when: FALLS, turns: [
       beat('The raft hits a rock and spins them both into the shallows.'),
       by('b', "Where's the paddle? Where did the paddle go?"),
-      by('a', "Downstream. With our dignity."),
+      by('a', "Downstream! Go and get it!"),
     ] },
   ],
   'task-done.any': [
     { id: 'eo.lf-dn1', when: LF, turns: [
       beat('{a} and {b} stagger into the clearing on the far side, steaming slightly.'),
       by('a', "We're across. Is there a Don Box?"),
-      by('b', "There's a Don Box. There is a beautiful, beautiful Don Box."),
+      by('b', "There's the Don Box!"),
     ] },
     { id: 'eo.lf-dn2', when: LF, turns: [
-      by('b', "I never want to see a river again. Of anything."),
-      by('a', "Agreed. No more rivers."),
+      by('b', "I never want to see lava again."),
+      by('a', "Me neither."),
       by('b', "Watch, the next tip says 'swim'."),
     ] },
     { id: 'eo.lf-dn3', when: LF, turns: [
       by('a', "Did we pick the right side?"),
-      by('b', "We're on the other side, so yes. Every side is the right side if you get across."),
-      by('a', "That's very wise."),
-      by('b', "It's the heat. I'm delirious."),
+      by('b', "We're across, so yes."),
+      by('a', "Good. Let's go."),
+      by('b', "Grab the tip."),
     ] },
   ],
 };
@@ -114,13 +114,13 @@ const pyramid = {
     ] },
     { id: 'eo.ov-s2', when: OVER, turns: [
       by('b', "Over the top and down the other side. How hard can it be?"),
-      by('a', "It's a pyramid. It's the original hard thing."),
-      by('b', "Then let's be the original fast people."),
+      by('a', "It's a pyramid. It's huge."),
+      by('b', "Then let's get going."),
     ] },
     { id: 'eo.un-s1', when: UNDER, turns: [
       beat('{a} and {b} step into the tomb. Their torch lights up three doorways, each with a different symbol.'),
-      by('b', "A bird, an eye and a snake."),
-      by('a', "Not the snake. Whatever we do, not the snake."),
+      by('b', "A bird, an eye and a dog."),
+      by('a', "Which one? I've got no idea."),
     ] },
     { id: 'eo.un-s2', when: UNDER, turns: [
       by('a', "Underneath is quicker, as long as we pick the right door."),
@@ -132,12 +132,12 @@ const pyramid = {
     { id: 'eo.ov-t1', when: OVER, turns: [
       beat('Halfway up, {b} sits on a step and refuses to look anywhere but straight ahead.'),
       by('b', "Is the top getting closer? It doesn't feel like it's getting closer."),
-      by('a', "It's getting closer. I promise. Pyramids work like that."),
+      by('a', "It's getting closer. I promise."),
     ] },
     { id: 'eo.ov-t2', when: OVER, turns: [
       by('a', "My legs have stopped. They've just stopped working."),
       by('b', "Then use your arms. Pull yourself up."),
-      by('a', "My arms have opinions about that, too."),
+      by('a', "My arms are dead too."),
     ] },
     { id: 'eo.un-t1', when: UNDER, turns: [
       beat("In the dark, {a}'s torch flickers and nearly goes out."),
@@ -165,7 +165,7 @@ const pyramid = {
     { id: 'eo.un-x1', when: UNDER, turns: [
       beat('The doorway ends in a blank stone wall. A dead end.'),
       by('b', "It's a wall. We picked the wall."),
-      by('a', "Back. Back to the three doors. Not the snake, not the wall."),
+      by('a', "Back. Back to the three doors. Try another one."),
     ] },
     { id: 'eo.un-x2', when: UNDER, turns: [
       beat('A slab grinds shut behind them, and they have to squeeze back out the way they came.'),
@@ -177,18 +177,18 @@ const pyramid = {
     { id: 'eo.py-dn1', when: PY, turns: [
       beat('{a} and {b} come out on the far side of the pyramid, covered in sand and dust.'),
       by('a', "We're out. We did the pyramid."),
-      by('b', "We did a pyramid. Tell everybody. Tell my mother."),
+      by('b', "We climbed a pyramid! I'm telling everybody."),
     ] },
     { id: 'eo.py-dn2', when: PY, turns: [
-      by('b', "That was four thousand years of history, and I mostly saw the back of your shoes."),
-      by('a', "They're very historical shoes now."),
+      by('b', "I didn't even look at it. I just looked at the steps."),
+      by('a', "Me too."),
       by('b', "Grab the tip. Let's go."),
     ] },
     { id: 'eo.py-dn3', when: PY, turns: [
-      beat('{a} hugs the last stone on the way out, very briefly.'),
-      by('a', "Thank you, pyramid."),
-      by('b', "Did you just thank the pyramid?"),
-      by('a', "It let us go. That deserves a thank you."),
+      beat('{a} puts a hand on the last stone on the way out.'),
+      by('a', "We did it."),
+      by('b', "I can't believe we did it."),
+      by('a', "Come on. The tip."),
     ] },
   ],
 };

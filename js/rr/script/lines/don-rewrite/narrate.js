@@ -115,10 +115,4 @@ export default {
   'pi.farmers:0': "Meet {a} and {b}, farmers and {relTag}, who've been up since four and are perfectly fine.",
   'pi.survivalists:1': "Meet {a} and {b}, survivalists and {relTag}, and you do know there's a door, right?",
   'pi.retirees:0': "Meet {a} and {b}, {relTag}, and very recently retired, as recently as Tuesday.",
-  'ci.first:0': "Meet {a} and {b}, {identity} and {relTag}, which is a first for this show.",
-  'ci.looked-up:0': "Meet {a} and {b}, who are {identity}, and I had to look that up, and I'm still not sure.",
-  'ci.whole-thing:0': "Meet {a} and {b}, who are {relTag} and also {identity}, which is apparently a whole thing.",
-  'ci.rehearsed:1': "Meet {a} and {b}, {identity} and {relTag}, who have clearly rehearsed that.",
-  'ci.packed:0': "Meet {a} and {b}, who are {identity}, and when I asked what that has to do with a race around the world, they said 'everything'.",
-  'ci.hometown:0': "Meet {a} and {b}, {relTag} and self-described {identity}.",
 };

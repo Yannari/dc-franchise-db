@@ -27,7 +27,7 @@ export default {
   'mm.r20:0': "In {placing} place, it's {team}, so please, nobody faint.",
   'mm.r21:0': "{team}, you're in {placing} place, and I've got a lot of teams to get through, so off you go.",
   'mm.r22:0': "{team}, you're the {placing} team to arrive, and well done, you two!",
-  'mm.16:2': "It's a place in the race, so please move along.",
+  'mm.16:2': "It's a good one, and you're still in the race!",
   'mm.17:0': "{team}, you're the {placing} team to arrive.",
   // the crown, and the runners-up
   'fn.1:7': "No, saying it once is plenty, so congratulations.",

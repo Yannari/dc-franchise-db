@@ -12,7 +12,7 @@ export default {
   'nb2.7:0': "Out in front, {team} hit {task}, so let's take a look at how things are going way, way back at {prevTask}. Ouch.",
   'ns.9:0': "The last {count} teams are fighting for their place in the race, not literally, but very nearly.",
   'nc.hc1:0': "This is the island airport, home of tiny planes, tiny sandwiches, and a runway I'm no longer allowed to drive on.",
-  'nc.hc2:2': "The last team to get here could be out of the race on the very first day, and just imagine the shame of that.",
+  'nc.hc2:2': "The last team to get here could be out of the race on the very first day!",
   'nc.rsd2:1': "This is the Chill Zone, and for once it's actually chilly, in here in the tent, anyway, because out there it's an oven.",
   'nc.itc1:0': "This is the museum, home of priceless paintings, very old statues, and a guard who has asked me twice to stop touching things.",
   'nc.itc2:1': "Welcome to this leg's Chill Zone, a place of art, history and culture, and also me.",

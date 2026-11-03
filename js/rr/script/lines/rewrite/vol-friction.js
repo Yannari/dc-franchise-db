@@ -23,8 +23,8 @@ export default {
         { by: 'a', say: "We'll see." },
       ] },
       { id: 'vf.t3', turns: [
-        { by: 'b', say: "You guys look rough. Bad day?" },
-        { by: 'd', say: "Not as bad as yours is about to be." },
+        { by: 'b', say: "You guys look nervous." },
+        { by: 'd', say: "Not as nervous as you're about to be." },
         { by: 'a', say: "What's that supposed to mean?" },
         { by: 'c', say: "It means we're coming for you." },
         { by: 'b', say: "Okay. Good luck with that." },

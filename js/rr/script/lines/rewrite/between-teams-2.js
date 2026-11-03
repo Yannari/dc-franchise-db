@@ -15,14 +15,14 @@ export default {
       { id: 'bt2.sf1', turns: [
         { by: 'a', say: "Hi! I don't think we've actually met yet." },
         { by: 'c', say: "We haven't. Hi. How's it going?" },
-        { by: 'b', say: "It's going. It's been a long day." },
-        { by: 'd', say: "Tell me about it. My feet are destroyed." },
+        { by: 'b', say: "It's going. Ask me later." },
+        { by: 'd', say: "Same. I'm so nervous." },
         { by: 'a', say: "Good luck out there, guys. Seriously." },
         { by: 'c', say: "You too. You seem really nice." },
       ] },
       { id: 'bt2.sf2', turns: [
-        { by: 'c', say: "You two look as tired as we feel." },
-        { by: 'a', say: "I don't think I've slept properly since this started." },
+        { by: 'c', say: "You two look as nervous as we feel." },
+        { by: 'a', say: "I don't think I slept at all last night." },
         { by: 'd', say: "Do you want a granola bar? We've got a few." },
         { by: 'b', say: "You'd give us food? We're your competition." },
         { by: 'c', say: "You're also hungry. Here." },

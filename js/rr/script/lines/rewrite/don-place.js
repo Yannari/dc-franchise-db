@@ -48,9 +48,9 @@ export default {
         don("{placing} is fine. Fine is the word I'd use."),
       ] },
       { id: 'dp2.t2', when: { matPlace: 'top' }, turns: [
-        don("{team}, you're {placing}. Not first. Not last. Pleasantly forgettable."),
-        { by: 'b', say: "Forgettable?" },
-        don("Pleasantly."),
+        don("{team}, you're {placing}. That's a really solid result!"),
+        { by: 'b', say: "Thank you!" },
+        don("Keep it going!"),
       ] },
       { id: 'dp2.t3', when: { matPlace: 'top' }, turns: [
         { beat: '{a} and {b} jog onto the mat, barely out of breath.' },

@@ -351,7 +351,7 @@ export default {
     ],
     'vendor.haggle-win': [
       { id: 'lm.vw1', turns: [
-        { by: 'a', say: "How much for two?" },
+        { by: 'a', say: "How much for two bottles of water?" },
         L("Twenty."),
         { by: 'b', say: "Twenty? For two? We'll give you eight." },
         L("Eight? No. Fifteen."),
@@ -369,7 +369,7 @@ export default {
     ],
     'vendor.ripped-off': [
       { id: 'lm.vr1', turns: [
-        { by: 'a', say: "How much for two?" },
+        { by: 'a', say: "How much for two bottles of water?" },
         L("Ten."),
         { beat: '{a} hands over ten. The vendor keeps holding out a hand.' },
         L("Ten each."),

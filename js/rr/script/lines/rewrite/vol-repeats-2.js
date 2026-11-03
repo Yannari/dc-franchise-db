@@ -92,7 +92,7 @@ export default {
         { by: 'a', say: "Is that smart, though?" },
         { by: 'b', say: "I don't know. Let's try it and see." },
       ] },
-      { id: 'vr2.ol3', turns: [
+      { id: 'vr2.ol3', when: { firstLeg: false }, turns: [
         { by: 'c', say: "We're running out of money, so from now on we walk everywhere we can." },
         { beat: '{b} nudges {a} and nods towards {c} and {d}.' },
         { by: 'b', say: "They're broke. They're going to be walking." },

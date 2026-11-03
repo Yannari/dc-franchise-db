@@ -75,7 +75,7 @@ export default {
       { id: 'vm2.b1', when: { matPlace: 'bottom' }, turns: [
         don("{team}, you're {placing}, and you're still in the race!"),
         { by: 'a', say: "Oh, thank God. Thank God." },
-        don("I'll be honest, I'm as surprised as you are."),
+        don("You made it, so go and sit down before your legs give out!"),
       ] },
       { id: 'vm2.b2', when: { matPlace: 'bottom' }, turns: [
         { beat: '{a} and {b} come in at a stagger and practically fall onto the mat.' },

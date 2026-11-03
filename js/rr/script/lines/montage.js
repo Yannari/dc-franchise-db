@@ -50,7 +50,7 @@ export default {
     { id: 'mm.16', turns: [
       { by: 'don', say: "{team}, {placing} place." },
       { by: 'b', ...V("Is that good?", "Is that good or not?", "Is that good?", "Is that GOOD?", "Is that... good?", "Is {placing} a good number?") },
-      { by: 'don', say: "It's a place. Move along." },
+      { by: 'don', say: "It's a good one! You're still in!" },
     ] },
     { id: 'mm.17', turns: [
       { by: 'don', say: "{team}. You're the {placing} team to arrive." },

@@ -1,6 +1,7 @@
-// More of Don checking teams in at the Chill Zone (the pool that repeats most: 17 a season of 83 aired, 2026-10-20).
-// Quick hits in his voice: a jab aimed at where they came in, the team answers, Don has the last word. The arriving
-// team is a and b. Gated on matPlace (first, top, mid, bottom) so the jab fits the placing.
+// More of Don checking teams in at the Chill Zone (the pool that repeats most). Quick hits in his voice: the placing
+// said like a host who loves his job, one quick tease, and the team's honest reaction. The arriving team is a and b.
+// Gated on matPlace (first, top, mid, bottom) so the line fits the placing. Written again 2026-11-03: these had gone
+// back to the bored deadpan Don is not ("You tell me. I was eating", "Then you're very loud agreers").
 const don = say => ({ by: 'don', say });
 
 export default {
@@ -9,96 +10,92 @@ export default {
     'don-place.plain': [
       // first
       { id: 'vm2.f1', when: { matPlace: 'first' }, turns: [
-        don("{team}. First. I had money on somebody else. Not a lot. But some."),
-        { by: 'a', say: "Who?" },
-        don("Not telling. They're still out there, and they can hear me."),
+        don("{team}! You are the first team to arrive!"),
+        { by: 'a', say: "Oh my God. Are you serious? First?" },
+        don("Dead serious, and I'll be honest, I had my money on somebody else."),
       ] },
       { id: 'vm2.f2', when: { matPlace: 'first' }, turns: [
         { beat: '{a} and {b} arrive at a walk, looking around for the other teams.' },
-        don("You can stop looking. There's nobody here. You're first."),
-        { by: 'b', say: "We thought we'd gone the wrong way." },
-        don("You did. It was shorter. Don't tell anyone."),
+        don("You can stop looking, because there's nobody else here. {team}, you're first!"),
+        { by: 'b', say: "No way. We thought we'd gone the wrong way!" },
       ] },
       { id: 'vm2.f3', when: { matPlace: 'first' }, turns: [
-        don("{team}, first place. Say something humble for the camera."),
-        { by: 'a', say: "We got lucky." },
-        don("Nobody believes you, but thank you for trying."),
+        don("{team}, you're first! Say something humble for the camera."),
+        { by: 'a', say: "Honestly? We just got lucky." },
+        don("Nobody believes that, but I love that you tried."),
       ] },
       // near the top
       { id: 'vm2.t1', when: { matPlace: 'top' }, turns: [
-        don("{team}. {placing}. Close. Not close enough to get anything, but close."),
-        { by: 'b', say: "What does first get?" },
-        don("A better spot on the mat. You're standing on the worse one."),
+        don("{team}! You're the {placing} team to arrive!"),
+        { by: 'b', say: "{placing}? We'll take it! We'll totally take it!" },
+        don("So close to the top, you can almost smell it."),
       ] },
       { id: 'vm2.t2', when: { matPlace: 'top' }, turns: [
-        don("{placing}, {team}. You were in the lead for a while. I was watching. Then I wasn't."),
-        { by: 'a', say: "What happened?" },
-        don("You tell me. I was eating."),
+        don("{team}, you're {placing}! You were leading for a while there."),
+        { by: 'a', say: "We were? What happened?" },
+        don("The rest of the race happened. Still, {placing}! Very nice."),
       ] },
       { id: 'vm2.t3', when: { matPlace: 'top' }, turns: [
-        { beat: '{a} steps on the mat; {b} is still bent over with hands on knees a few steps back.' },
-        don("Both feet, both of you. There. {team}, {placing}."),
-        { by: 'b', say: "Could you say it again? I missed it." },
-        don("No. Ask your partner. Off you go."),
+        { beat: '{a} steps on the mat; {b} is still a few steps back, bent over with {b.posAdj} hands on {b.posAdj} knees.' },
+        don("Both of you on the mat, please! There we go! {team}, you're {placing}!"),
+        { by: 'b', say: "Oh, thank God. Can I sit down now?" },
       ] },
       { id: 'vm2.t4', when: { matPlace: 'top' }, turns: [
-        don("{team}. {placing} team to arrive. The team ahead of you got here about a minute ago."),
-        { by: 'a', say: "A minute?" },
-        don("Maybe less. Something to think about tonight."),
+        don("{team}, you're {placing}! The team ahead of you got here about a minute ago."),
+        { by: 'a', say: "A minute? Are you kidding me?" },
+        don("Maybe less! Something to think about tonight."),
       ] },
       // the middle
       { id: 'vm2.m1', when: { matPlace: 'mid' }, turns: [
-        don("{team}. {placing}. Right in the middle. The safest place to be, and the hardest to remember."),
-        { by: 'b', say: "We'll take safe." },
-        don("Everyone says that until they've been safe for five legs."),
+        don("{team}! You're {placing}, right in the middle of the pack."),
+        { by: 'b', say: "Middle's good. Middle means we're safe." },
+        don("You are safe and sound, for now anyway!"),
       ] },
       { id: 'vm2.m2', when: { matPlace: 'mid' }, turns: [
-        don("{placing}, {team}. Not a word about it from me. Nothing happened. You arrived."),
-        { by: 'a', say: "A lot happened, actually." },
-        don("Not on my mat it didn't. Next."),
+        don("{team}, you're the {placing} team to arrive. Rough day?"),
+        { by: 'a', say: "So much happened. You have no idea." },
+        don("Oh, I have some idea. There were cameras."),
       ] },
       { id: 'vm2.m3', when: { matPlace: 'mid' }, turns: [
         { beat: '{a} and {b} walk on, arguing in whispers, and stop when they see Don.' },
-        don("Finish it. I've got all day. Actually, no. {team}, {placing}. Finish it over there."),
-        { by: 'b', say: "We weren't arguing." },
-        don("Then you're very loud agreers."),
+        don("Don't stop on my account! {team}, you're {placing}."),
+        { by: 'b', say: "We weren't arguing. We were... talking." },
       ] },
       { id: 'vm2.m4', when: { matPlace: 'mid' }, turns: [
-        don("{team}, you're {placing}. Which is exactly where I'd have put you."),
-        { by: 'a', say: "Is that a compliment?" },
-        don("It's a placing. Compliments are extra."),
+        don("{team}! You're {placing}!"),
+        { by: 'a', say: "Is that good? I honestly can't tell anymore." },
+        don("It's not first, and it's not last. I'd call that a win."),
       ] },
       { id: 'vm2.m5', when: { matPlace: 'mid' }, turns: [
-        don("{team}. {placing} team to arrive. I'd clap, but I've been clapping all afternoon and my hands are tired."),
-        { by: 'b', say: "We'll clap for ourselves." },
-        don("Please don't. Just stand there and be {placing}."),
+        don("{team}, you are the {placing} team to arrive!"),
+        { by: 'b', say: "We'll take that. We will absolutely take that." },
+        don("Good, because you don't get a choice!"),
       ] },
       // the bottom
       { id: 'vm2.b1', when: { matPlace: 'bottom' }, turns: [
-        don("{team}. You're {placing}. You're still in. And I'm as surprised as you are."),
-        { by: 'a', say: "We're not surprised." },
-        don("Then one of us wasn't watching, and it wasn't me."),
+        don("{team}, you're {placing}, and you're still in the race!"),
+        { by: 'a', say: "Oh, thank God. Thank God." },
+        don("I'll be honest, I'm as surprised as you are."),
       ] },
       { id: 'vm2.b2', when: { matPlace: 'bottom' }, turns: [
-        { beat: '{a} and {b} come in at a stagger and fall onto the mat more than step on it.' },
-        don("That's a mat, not a bed. {team}, {placing}. Still racing. Barely."),
-        { by: 'b', say: "Can we lie here a minute?" },
-        don("Thirty seconds. Then the next team lands on you."),
+        { beat: '{a} and {b} come in at a stagger and practically fall onto the mat.' },
+        don("Careful! That's a mat, not a bed. {team}, you're {placing}, and you're still racing."),
+        { by: 'b', say: "Can we just lie here for a minute?" },
       ] },
       { id: 'vm2.b3', when: { matPlace: 'bottom' }, turns: [
-        don("{team}. {placing}. I'll be honest, I'd stopped expecting you."),
-        { by: 'a', say: "We got lost. Twice." },
-        don("Once is a story. Twice is a habit. Go sit down before you get lost again."),
+        don("{team}, you're {placing}, and I'd almost stopped expecting you!"),
+        { by: 'a', say: "We got lost. Really, really lost." },
+        don("I could tell, so go and sit down before you get lost again."),
       ] },
       { id: 'vm2.b4', when: { matPlace: 'bottom' }, turns: [
-        don("{placing}, {team}. Nobody behind you is having a good day. Which makes this your good day."),
-        { by: 'b', say: "That's bleak." },
-        don("That's the back of the pack. Welcome to it."),
+        don("{team}, you're {placing}, and that was not your best day, huh?"),
+        { by: 'b', say: "Not even close. But we're still here." },
+        don("That's the spirit! Still here is all that counts."),
       ] },
       { id: 'vm2.b5', when: { matPlace: 'bottom' }, turns: [
-        don("{team}, you're {placing}. Still in the race. Say it with me: still in the race."),
+        don("{team}, you're {placing}, and you're still in the race! Say it with me: still in the race!"),
         { by: 'a', say: "Still in the race." },
-        don("Didn't sound like you believed it. Work on that."),
+        don("You don't sound like you believe it. Work on that."),
       ] },
     ],
   },

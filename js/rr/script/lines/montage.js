@@ -17,13 +17,13 @@ export default {
     { id: 'mm.9', turns: [{ by: 'don', say: "Next up, {team}. You're {placing}." }] },
     { id: 'mm.10', turns: [{ by: 'don', say: "{team}, {placing} place. Go find some shade." }] },
     { id: 'mm.11', turns: [{ by: 'don', say: "{team}. That's {placing}. Somebody get these two a towel." }] },
-    { id: 'mm.12', turns: [{ by: 'don', say: "{team}, you're {placing}, which is a fine place to be if you like the middle." }] },
+    { id: 'mm.12', turns: [{ by: 'don', say: "{team}, you're {placing}, right in the middle of the pack!" }] },
     { id: 'mm.13', turns: [{ by: 'don', say: "{team}, {placing}. I'd clap, but I'm holding a sandwich." }] },
     { id: 'mm.14', turns: [{ by: 'don', say: "Welcome to the Chill Zone, {team}. You're {placing}." }] },
     // more of Don running down the middle of the pack (director.js check-in runs, any cast size, 2026-10-19)
     { id: 'mm.r1', turns: [{ by: 'don', say: "{team}, {placing}. Lovely. Next!" }] },
     { id: 'mm.r2', turns: [{ by: 'don', say: "Hold on, hold on... {team}, {placing}." }] },
-    { id: 'mm.r3', turns: [{ by: 'don', say: "{team}! {placing}! Don't stop to chat, there's a queue." }] },
+    { id: 'mm.r3', turns: [{ by: 'don', say: "{team}! {placing}! Great run!" }] },
     { id: 'mm.r4', turns: [{ by: 'don', say: "And {team} make it {placing}." }] },
     { id: 'mm.r5', turns: [{ by: 'don', say: "{placing} place goes to {team}. Congratulations!" }] },
     { id: 'mm.r6', turns: [{ by: 'don', say: "{team}, you're {placing}. Hydrate." }] },
@@ -55,7 +55,7 @@ export default {
     { id: 'mm.17', turns: [
       { by: 'don', say: "{team}. You're the {placing} team to arrive." },
       { by: 'a', ...V("Can we sit down now?", "Can we sit now?", "Can we sit down?", "Can we PLEASE sit down now?", "Can we sit down now, please?", "Can we sit? My legs have filed a complaint.") },
-      { by: 'don', say: "Anywhere that isn't my mat." },
+      { by: 'don', say: "Of course! Go and sit down." },
     ] },
     { id: 'mm.18', turns: [
       { by: 'don', say: "{team}, you're {placing}." },

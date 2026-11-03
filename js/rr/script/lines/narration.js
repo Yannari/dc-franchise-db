@@ -19,7 +19,7 @@ export default {
     don("{winners} won the last leg, so they get the first tip of the day. Everybody else lines up behind them."),
     don("Rise and shine! Teams leave the Chill Zone one at a time, starting with {winners}."),
     don("First out of the gate are {winners}. The rest follow in the order they finished, and some of them are still yawning."),
-    don("A brand new leg, and {winners} lead the way out. I'd wave, but I've just done my nails."),
+    don("A brand new leg, and {winners} lead the way out!"),
     don("Teams leave in the order they arrived yesterday. That puts {winners} first, and some very tired people last."),
     don("Here we go! {winners} grab the first tip of the day, and the rest of the teams follow them out."),
     don("The Chill Zone empties out team by team, starting with yesterday's winners, {winners}."),

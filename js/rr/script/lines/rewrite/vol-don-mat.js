@@ -38,7 +38,7 @@ export default {
       { id: 'vdm.z5', turns: [
         { beat: 'Don is lying back on a sun lounger next to the mat, sunglasses on.' },
         don("Is that... {team}? You're {placing}. I'm not getting up. The tan's at a crucial stage."),
-        { by: 'a', say: "Fair enough." },
+        { by: 'a', say: "Thanks, Don!" },
       ] },
       { id: 'vdm.z6', turns: [
         { beat: 'Don is having his hair touched up by a stylist when {a} and {b} run in.' },
@@ -136,7 +136,7 @@ export default {
         don("{team}, I'm afraid you're the last team to arrive, and you've been eliminated."),
         { by: 'b', ...V("That's okay. That's okay. We did our best.", "It's okay. We did our best.", "Okay. We tried.", "That's OKAY! That's OKAY! We did our BEST!", "That's okay, honestly. We did our best.", "That's okay. Our best was simply not enough.") },
         { by: 'a', say: "Can we take a picture with the mat?" },
-        don("You can take a picture with me. That's better than the mat."),
+        don("Of course! Let's take one together."),
       ] },
       { id: 'vdm.e3', turns: [
         { beat: 'Don puts on his serious face. He\'s clearly been practising it.' },

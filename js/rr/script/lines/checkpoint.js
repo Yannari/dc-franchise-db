@@ -182,7 +182,7 @@ export default {
     { id: 'cm.22', when: { ahead: true }, turns: [{ beat: '{a} and {b} read their tip with nobody else around.' }] },
     { id: 'cm.23', when: { behind: true }, turns: [{ beat: '{a} and {b} take one of the last envelopes and read it at a run.' }] },
     { id: 'cm.24', when: { behind: true }, turns: [{ beat: '{b} reads the tip as fast as {b.sub} can, and {a} is already running before {b.sub} finishes.' }] },
-    { id: 'cm.25', when: { tod: 'night' }, turns: [{ beat: '{a} holds the tip up to the light of a phone, and {b} squints at it over {a.posAdj} shoulder.' }] },
+    { id: 'cm.25', when: { tod: 'night' }, turns: [{ beat: '{a} holds the tip up to a light from the camera crew, and {b} squints at it over {a.posAdj} shoulder.' }] },
     { id: 'cm.26', when: { tod: 'night' }, turns: [{ beat: '{a} and {b} read their tip under a street lamp, yawning.' }] },
     { id: 'cm.27', when: { tod: 'morning' }, turns: [{ beat: '{a} and {b} read the tip in the early light, both of them still half asleep.' }] },
     { id: 'cm.28', turns: [{ beat: '{a} reads the tip, says something rude under {a.posAdj} breath, and hands it to {b}.' }] },

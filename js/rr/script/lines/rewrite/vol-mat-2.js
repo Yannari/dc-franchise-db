@@ -12,7 +12,7 @@ export default {
       { id: 'vm2.f1', when: { matPlace: 'first' }, turns: [
         don("{team}! You are the first team to arrive!"),
         { by: 'a', say: "Oh my God. Are you serious? First?" },
-        don("Dead serious, and I'll be honest, I had my money on somebody else."),
+        don("Dead serious! Congratulations!"),
       ] },
       { id: 'vm2.f2', when: { matPlace: 'first' }, turns: [
         { beat: '{a} and {b} arrive at a walk, looking around for the other teams.' },
@@ -69,7 +69,7 @@ export default {
       { id: 'vm2.m5', when: { matPlace: 'mid' }, turns: [
         don("{team}, you are the {placing} team to arrive!"),
         { by: 'b', say: "We'll take that. We will absolutely take that." },
-        don("Good, because you don't get a choice!"),
+        don("Good, because it's a great result!"),
       ] },
       // the bottom
       { id: 'vm2.b1', when: { matPlace: 'bottom' }, turns: [
@@ -95,7 +95,7 @@ export default {
       { id: 'vm2.b5', when: { matPlace: 'bottom' }, turns: [
         don("{team}, you're {placing}, and you're still in the race! Say it with me: still in the race!"),
         { by: 'a', say: "Still in the race." },
-        don("You don't sound like you believe it. Work on that."),
+        don("Louder! You're still in the race!"),
       ] },
     ],
   },

@@ -19,8 +19,8 @@ const place = {
   'don-opener.annoyed': [
     { id: 'rn.op1', when: P, turns: [
       { beat: 'Don stands in the snow in an enormous fur hat, his breath steaming.' },
-      don("Rock North! Home of the northern lights, the world's loudest rock fans, and a cold that gets into places I didn't know I had."),
-      don("Teams will sweat in a sauna, swim a frozen river and rock out for a crowd. Not necessarily in that order. No, in that order."),
+      don("Rock North! Home of the northern lights, the world's loudest rock fans, and the coldest wind I've ever felt."),
+      don("Teams will sweat in a sauna, cross a frozen river and rock out for a crowd, in that order."),
       { beat: 'His teeth are chattering.' },
       don("Can we wrap this up? My face has stopped working."),
     ] },
@@ -40,26 +40,26 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'rn.ar1', when: P, turns: [
       { beat: 'Snow covers everything. The trees, the roofs, the cars, all of it white and silent.' },
-      { by: 'a', ...V("It's like a snow globe. We're inside a snow globe.", "We're in a snow globe.", "A snow globe.", "It's like a SNOW GLOBE! We're INSIDE a snow globe!", "It's like being inside a snow globe.", "We've been shaken into a snow globe.") },
-      { by: 'b', say: "A very cold snow globe." },
-      { by: 'a', say: "The most beautiful cold I've ever been." },
+      { by: 'a', say: "It's like a snow globe. It's so beautiful." },
+      { by: 'b', say: "And so cold." },
+      { by: 'a', say: "I don't care. Look at it." },
     ] },
     { id: 'rn.ar2', when: P, turns: [
       { by: 'b', say: "Everyone here is wearing black. And band shirts." },
-      { by: 'a', say: "I think we've landed in heavy metal country." },
-      { by: 'b', say: "I've always wanted to visit heavy metal country." },
+      { by: 'a', say: "I think everybody here is in a band." },
+      { by: 'b', say: "I love it already." },
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'rn.ad1', when: P, turns: [
       { beat: '{a} steps out of the airport and the cold hits like a slap.' },
       { by: 'a', say: "My eyelashes are freezing. Can eyelashes freeze?" },
-      { by: 'b', ...V("Yours just did.", "Yours just did.", "They just did.", "YOURS just DID!", "Well, yours just did.", "Yours have. They're little icicles now.") },
+      { by: 'b', say: "Pull your hat down. Come on." },
     ] },
     { id: 'rn.ad2', when: P, turns: [
       { by: 'b', say: "We packed for a desert. We have shorts. We only have shorts." },
       { by: 'a', say: "Then we run. Running keeps you warm." },
-      { by: 'b', say: "Running in shorts in the snow. My mother would be so worried." },
+      { by: 'b', say: "Okay. Run fast, then." },
     ] },
   ],
 };
@@ -77,7 +77,7 @@ const sauna = {
     { id: 'rn.sa-d2', when: SA, turns: [
       don("Two teams to a sauna. Step out before the ten minutes are up, and the clock starts again from zero."),
       don("Then it's straight into the river. Hot, then cold. It's very good for your skin, I'm told."),
-      { beat: 'He touches his own cheek. He seems pleased with his skin.' },
+      { beat: 'He touches his own cheek and smiles.' },
     ] },
   ],
   'task-start.any': [
@@ -88,8 +88,8 @@ const sauna = {
     ] },
     { id: 'rn.sa-s2', when: SA, turns: [
       { by: 'b', say: "Why do we have to keep our coats on? Who decided that?" },
-      { by: 'a', say: "Somebody who hates us. Somebody who's never met us and already hates us." },
-      { by: 'b', say: "Don. It was Don." },
+      { by: 'a', say: "I don't know. It's the rule." },
+      { by: 'b', say: "Then I hate the rule." },
     ] },
     { id: 'rn.sa-s3', when: SA, turns: [
       { beat: 'Another team is already on the other bench, staring at the wall in silence.' },
@@ -97,16 +97,16 @@ const sauna = {
       { by: 'b', say: "Don't make them talk. Talking makes it hotter." },
     ] },
     { id: 'rn.sa-s4', when: SA, turns: [
-      { by: 'a', say: "Think cold thoughts. Snow. Ice cream. Freezers." },
-      { by: 'b', say: "Ice cream melts. You just made me think about melting." },
-      { by: 'a', say: "Then think about snow. Only snow." },
+      { by: 'a', say: "Think about something cold. Snow. Ice." },
+      { by: 'b', say: "It's not working." },
+      { by: 'a', say: "Just breathe. Slowly. It's only ten minutes." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'rn.sa-f1', when: SA, turns: [
       { beat: '{a} and {b} sit perfectly still, eyes closed, breathing slowly, for the full ten minutes.' },
-      { by: 'a', say: "I went somewhere else in my head. A beach. A cold beach." },
-      { by: 'b', say: "I went to the freezer section of the supermarket. I lived there." },
+      { by: 'a', say: "I just closed my eyes and thought about snow." },
+      { by: 'b', say: "Me too. It worked." },
     ] },
     { id: 'rn.sa-f2', when: SA, turns: [
       { by: 'b', ...V("Is that the bell? Is it over? Tell me it's over.", "Is it over?", "Over?", "Is that the BELL? Is it OVER? Tell me it's OVER!", "Is that the bell? Is it over? Please tell me it's over.", "The bell, which means freedom, it's over!") },
@@ -114,44 +114,44 @@ const sauna = {
       { beat: 'They burst out of the sauna in a cloud of steam.' },
     ] },
     { id: 'rn.sa-f3', when: SA, turns: [
-      { by: 'a', say: "This isn't that bad. It's like a summer day back home." },
-      { by: 'b', say: "Where do you live? The sun?" },
-      { by: 'a', say: "Somewhere very hot. We're built for this." },
+      { by: 'a', say: "This isn't that bad. It's like summer back home." },
+      { by: 'b', say: "Where you're from is crazy." },
+      { by: 'a', say: "We're used to it. Keep going." },
     ] },
     { id: 'rn.sa-f4', when: SA, turns: [
       { beat: '{a} and {b} play a word game the whole time to keep their minds off the heat.' },
-      { by: 'b', say: "Something you'd find in a freezer. Frozen peas." },
-      { by: 'a', say: "Fish fingers. The bell! Ten minutes! We didn't even notice!" },
+      { by: 'b', say: "Something you'd find in a freezer. Go." },
+      { by: 'a', say: "Ice cream. Wait, that's the bell! Ten minutes! We didn't even notice!" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'rn.sa-a1', when: SA, turns: [
       { beat: 'Back on the bench for a second try, {b} sits right next to the door.' },
-      { by: 'a', say: "Don't sit by the door. You'll just look at it. You'll want it." },
-      { by: 'b', say: "I want to look at it. It's where the air is." },
+      { by: 'a', say: "Don't sit by the door. You'll just want to leave." },
+      { by: 'b', say: "I'm not going to leave. I promise." },
     ] },
     { id: 'rn.sa-a2', when: SA, turns: [
       { by: 'b', say: "Talk to me. Distract me. Say anything." },
       { by: 'a', ...V("Okay. Tell me every flavour of ice cream you know.", "Every ice cream flavour you know.", "Ice cream flavours. Go.", "OKAY! Tell me EVERY flavour of ICE CREAM you know!", "Okay. Tell me every flavour of ice cream you know.", "Name every frozen dessert in the world.") },
       { by: 'b', say: "Vanilla. Chocolate. Strawberry. Mint. Is it ten minutes yet?" },
-      { by: 'a', say: "Keep going. Rocky road." },
+      { by: 'a', say: "Keep going. Name more." },
     ] },
     { id: 'rn.sa-a3', when: SA, turns: [
       { beat: 'This time {a} lies flat on the lowest bench, where it\'s a few degrees cooler.' },
-      { by: 'a', say: "Heat rises. Stay low. Stay low and live." },
+      { by: 'a', say: "Heat rises. It's cooler down here." },
       { by: 'b', say: "Why didn't you say that the first time?" },
     ] },
     { id: 'rn.sa-a4', when: SA, turns: [
-      { by: 'b', say: "Unzip your coat. It says clothes on. It doesn't say zipped." },
-      { by: 'a', say: "That's a loophole." },
-      { by: 'b', say: "That's a life." },
+      { by: 'b', say: "Unzip your coat. It has to stay on, but it doesn't have to be zipped." },
+      { by: 'a', say: "Are you sure that's allowed?" },
+      { by: 'b', say: "Nobody said it isn't. Do it." },
     ] },
   ],
   'task-try.struggling': [
     { id: 'rn.sa-t1', when: SA, turns: [
-      { beat: '{a} grabs a bucket of water from the corner and tips it over {a.posAdj} head.' },
+      { beat: '{a} grabs the bucket of water from the corner and tips it over {a.posAdj} head.' },
       { by: 'a', say: "Oh, that's better. That's so much better." },
-      { by: 'b', say: "That was the other team's bucket. That was their sweat bucket." },
+      { by: 'b', say: "That's for the stones. You'll get us in trouble." },
     ] },
     { id: 'rn.sa-t2', when: SA, turns: [
       { by: 'b', say: "I can't see. My sweat's gone into my eyes." },
@@ -161,24 +161,24 @@ const sauna = {
     { id: 'rn.sa-t3', when: SA, turns: [
       { beat: 'The makeup is running down {b}\'s face in long dark streaks.' },
       { by: 'a', say: "Your face is melting." },
-      { by: 'b', say: "That's not my face. That's my face's makeup. My face is fine." },
+      { by: 'b', say: "It's just my makeup. I don't care." },
     ] },
   ],
   'task-done.any': [
     { id: 'rn.sa-dn1', when: SA, turns: [
-      { beat: 'The timer rings. {a} and {b} stagger out into the snow, steaming like kettles.' },
-      { by: 'b', ...V("Snow! Beautiful snow! I love snow now!", "Snow! I love snow now!", "Beautiful snow.", "SNOW! Beautiful SNOW! I LOVE snow now!", "Snow! I'm in love with snow now!", "Glorious, freezing, wonderful snow!") },
+      { beat: 'The timer rings. {a} and {b} stagger out into the snow, steam rising off their coats.' },
+      { by: 'b', say: "Snow! Oh, that feels so good!" },
       { by: 'a', say: "The river. Don't stop. The river's next." },
     ] },
     { id: 'rn.sa-dn2', when: SA, turns: [
       { by: 'a', say: "Ten minutes. We did it. We survived the sauna." },
       { by: 'b', say: "And now we jump in a frozen river." },
-      { by: 'a', say: "One thing at a time. Let me enjoy surviving." },
+      { by: 'a', say: "One thing at a time. Give me a second." },
     ] },
     { id: 'rn.sa-dn3', when: SA, turns: [
-      { beat: '{a} and {b} roll in the snow outside the sauna, laughing like children.' },
-      { by: 'b', say: "My whole body's sizzling." },
-      { by: 'a', say: "That's the good kind of sizzling. Up! The river!" },
+      { beat: '{a} and {b} roll in the snow outside the sauna, laughing.' },
+      { by: 'b', say: "My whole body is tingling." },
+      { by: 'a', say: "Mine too. Up! The river!" },
     ] },
   ],
   'attempt-fail.any': [
@@ -190,7 +190,7 @@ const sauna = {
     { id: 'rn.sa-x2', when: SA, turns: [
       { by: 'a', say: "I need air. I need a breath of air. One breath." },
       { beat: '{a} opens the door for one breath of air. The clock resets.' },
-      { by: 'b', say: "That was a very expensive breath." },
+      { by: 'b', say: "Back to zero. We have to start again." },
     ] },
     { id: 'rn.sa-x3', when: SA, turns: [
       { beat: '{b} takes off {b.posAdj} coat without thinking. A crew member taps on the window.' },
@@ -213,14 +213,14 @@ const river = {
     { id: 'rn.ir-d2', when: IR, turns: [
       don("Hop the ice, or swim the gaps. Fall in, and you climb out on the near side and start again."),
       don("Both partners on the far bank, and the tip is yours."),
-      { beat: 'A chunk of ice floats slowly past behind him, very cold and very silent.' },
+      { beat: 'A chunk of ice floats slowly past behind him.' },
     ] },
   ],
   'task-start.any': [
     { id: 'rn.ir-s1', when: IR, turns: [
       { beat: '{a} and {b} run straight from the sauna to the river bank, still steaming.' },
-      { by: 'a', say: "Hot, then cold. This is either going to kill us or make us immortal." },
-      { by: 'b', ...V("I'll take immortal.", "I'll take immortal.", "Immortal, please.", "I'll TAKE immortal!", "I'll take immortal, thank you.", "Immortality, please. Gift-wrapped.") },
+      { by: 'a', say: "Hot, then freezing. This is going to hurt." },
+      { by: 'b', say: "Just go. Don't think about it." },
     ] },
     { id: 'rn.ir-s2', when: IR, turns: [
       { by: 'b', say: "Which floe first? They're all moving." },
@@ -235,19 +235,19 @@ const river = {
     { id: 'rn.ir-s4', when: IR, turns: [
       { by: 'a', say: "Hold my hand. If one of us goes in, we both go in." },
       { by: 'b', say: "That's a terrible plan." },
-      { by: 'a', say: "It's a romantic plan. Or a family plan. Or a friend plan. It's a plan." },
+      { by: 'a', say: "Fine. Then don't let go, and don't go in." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'rn.ir-f1', when: IR, turns: [
       { beat: '{a} and {b} hop from floe to floe, arms out for balance, without one slip.' },
       { by: 'b', say: "We did it! Dry! We're completely dry!" },
-      { by: 'a', say: "Dry and freezing. But dry." },
+      { by: 'a', say: "Freezing, but dry." },
     ] },
     { id: 'rn.ir-f2', when: IR, turns: [
-      { by: 'a', ...V("Just like crossing a stream on stones. A very cold stream.", "Like a stream. A cold one.", "Cold stepping stones.", "JUST like crossing a STREAM on STONES! A VERY cold stream!", "It's just like crossing a stream on stones, only colder.", "Stepping stones, but they float and they hate you.") },
+      { by: 'a', say: "It's like crossing a stream on stones." },
       { beat: 'They make it across in a dozen quick hops.' },
-      { by: 'b', say: "That was fun. Why was that fun?" },
+      { by: 'b', say: "That was actually fun." },
     ] },
     { id: 'rn.ir-f3', when: IR, turns: [
       { beat: '{b} climbs onto {a}\'s back, and {a} wades straight across through the shallow part.' },
@@ -257,28 +257,28 @@ const river = {
     { id: 'rn.ir-f4', when: IR, turns: [
       { by: 'b', say: "Follow the path the ice is making. See? It's like a road." },
       { beat: 'They follow the line of floes, and it carries them right to the far bank.' },
-      { by: 'a', say: "An ice road. You found us an ice road." },
+      { by: 'a', say: "That was so smart. How did you see that?" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'rn.ir-a1', when: IR, turns: [
       { beat: '{a} climbs out of the river, blue and shaking, and starts again.' },
-      { by: 'a', say: "Th-th-that floe was a l-l-liar." },
+      { by: 'a', say: "Th-that one t-tipped. I d-didn't see it." },
       { by: 'b', say: "This time, step where I step. Exactly where I step." },
     ] },
     { id: 'rn.ir-a2', when: IR, turns: [
       { by: 'b', say: "We're already wet. We've been in once. We might as well swim it." },
-      { by: 'a', ...V("You're right. You can't get wetter than wet.", "Can't get wetter than wet.", "Wet is wet.", "You're RIGHT! You CAN'T get wetter than WET!", "You're right, you can't get any wetter than wet.", "Once you've fallen in, the river has no power over you.") },
+      { by: 'a', say: "You're right. We can't get any wetter." },
       { beat: 'They swim the last gap, gasping, and haul themselves out on the far bank.' },
     ] },
     { id: 'rn.ir-a3', when: IR, turns: [
       { beat: 'This time {a} tests every floe with one foot before trusting it.' },
       { by: 'b', say: "That's very slow." },
-      { by: 'a', say: "Slow and dry is better than fast and frozen." },
+      { by: 'a', say: "I'm not going in again." },
     ] },
     { id: 'rn.ir-a4', when: IR, turns: [
       { by: 'a', say: "Small jumps. The big jumps tip them." },
-      { by: 'b', say: "Small jumps. Small jumps. Small jumps." },
+      { by: 'b', say: "Small jumps. Okay." },
       { beat: 'Small jumps get them all the way across.' },
     ] },
   ],
@@ -290,13 +290,13 @@ const river = {
     ] },
     { id: 'rn.ir-t2', when: IR, turns: [
       { by: 'a', ...V("I can't feel my feet. I genuinely can't feel my feet.", "Can't feel my feet.", "Feet gone.", "I CAN'T FEEL my FEET! I GENUINELY can't feel my FEET!", "I honestly can't feel my feet anymore.", "My feet have frozen and left me.") },
-      { by: 'b', say: "Then don't think about them. Feet are overrated." },
-      { by: 'a', say: "Overrated, and also very useful for walking." },
+      { by: 'b', say: "Don't think about them. Just jump." },
+      { by: 'a', say: "Okay. Okay. Here I go." },
     ] },
     { id: 'rn.ir-t3', when: IR, turns: [
       { beat: 'Other teams are climbing out on the far bank. {a} and {b} are still on the first floe.' },
       { by: 'b', say: "Everyone's across but us." },
-      { by: 'a', say: "Then we have the river to ourselves." },
+      { by: 'a', say: "Then let's go. Just us." },
     ] },
   ],
   'task-done.any': [
@@ -308,12 +308,12 @@ const river = {
     { id: 'rn.ir-dn2', when: IR, turns: [
       { by: 'b', say: "I'm never complaining about being hot again." },
       { by: 'a', say: "I'm never complaining about anything again." },
-      { by: 'b', say: "You'll complain in the cab." },
+      { by: 'b', say: "We'll see." },
     ] },
     { id: 'rn.ir-dn3', when: IR, turns: [
-      { beat: 'A crew member wraps {a} and {b} in silver blankets. They look like two baked potatoes.' },
-      { by: 'a', say: "We look ridiculous." },
-      { by: 'b', say: "We look warm. Ridiculous and warm." },
+      { beat: 'A crew member wraps {a} and {b} in silver blankets.' },
+      { by: 'a', say: "Oh, that's so much better." },
+      { by: 'b', say: "I can feel my hands again." },
     ] },
   ],
   'attempt-fail.any': [
@@ -325,12 +325,12 @@ const river = {
     { id: 'rn.ir-x2', when: IR, turns: [
       { beat: '{b} jumps for the next floe and lands short. Splash.' },
       { by: 'b', ...V("That one moved! It moved away from me!", "It moved away!", "It moved!", "That one MOVED! It moved AWAY from me!", "That floe moved away from me, I swear!", "The ice fled from me!") },
-      { by: 'a', say: "They all move! It's a river!" },
+      { by: 'a', say: "They all move! Watch them first!" },
     ] },
     { id: 'rn.ir-x3', when: IR, turns: [
       { beat: 'Two teams try to stand on the same floe at once, and all of them end up in the river.' },
       { by: 'a', say: "Why did you get on our floe?" },
-      { by: 'b', say: "It's not your floe! Nobody owns a floe!" },
+      { by: 'b', say: "There was nowhere else to go!" },
     ] },
   ],
 };
@@ -348,21 +348,21 @@ const airGuitar = {
     { id: 'rn.ag-d2', when: AG, turns: [
       don("Rock out. The crowd decides. Cheers fill the meter, boos empty it. Fill it to the top and head backstage to the Chill Zone."),
       don("Don't fill it, and you wait for the next song and try again."),
-      { beat: 'Behind him, the crowd chants something that sounds very unfriendly.' },
+      { beat: 'Behind him, the crowd starts to chant.' },
     ] },
   ],
   'whose-botch.obvious': [
     { id: 'rn.ag-w1', when: AG, turns: [
-      { by: 'b', say: "It's performing. You're the performer. You sing in the shower so loud the neighbours complain." },
-      { by: 'a', ...V("That's singing. This is guitar.", "That's singing, not guitar.", "That's singing.", "That's SINGING! This is GUITAR!", "That's singing, though. This is guitar.", "Singing and guitar are different arts.") },
+      { by: 'b', say: "It's performing. That's you. You love being in front of people." },
+      { by: 'a', say: "Singing, maybe. Not guitar." },
       { by: 'b', say: "It's pretend guitar. You'll be fine." },
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'rn.ag-w2', when: AG, turns: [
       { by: 'a', say: "I've been waiting my whole life for this. Give me the stage." },
-      { by: 'b', say: "You've played air guitar before?" },
-      { by: 'a', say: "Every single day. In my bedroom. In the car. At funerals, once." },
+      { by: 'b', say: "Have you ever played air guitar?" },
+      { by: 'a', say: "All the time. In my bedroom. In the car. I'm ready." },
     ] },
   ],
   'whose-botch.pushed': [
@@ -383,7 +383,7 @@ const airGuitar = {
     { id: 'rn.ag-s1', when: AG, turns: [
       { beat: '{a} walks out onto the stage. The crowd is huge, and loud, and not smiling.' },
       { by: 'a', say: "Hello, everybody." },
-      { by: 'b', ...V("Don't say hello! Rock stars don't say hello! Just play!", "Don't say hello! Play!", "Just play!", "DON'T say HELLO! Rock stars DON'T say hello! Just PLAY!", "Don't say hello! Rock stars don't say hello, just play!", "No greetings! Rock stars only scream!") },
+      { by: 'b', say: "Don't talk! Just play!" },
     ] },
     { id: 'rn.ag-s2', when: AG, turns: [
       { beat: 'The music starts, very loud, and {a} freezes with both hands in the air.' },
@@ -392,25 +392,25 @@ const airGuitar = {
     ] },
     { id: 'rn.ag-s3', when: AG, turns: [
       { by: 'a', say: "What do I do? Do I jump? Do I kneel?" },
-      { by: 'b', say: "All of it! Do everything! Rock stars do everything!" },
-      { by: 'a', say: "Everything. Okay. Everything it is." },
+      { by: 'b', say: "All of it! Just do everything!" },
+      { by: 'a', say: "Okay. Okay, everything." },
     ] },
     { id: 'rn.ag-s4', when: AG, turns: [
       { beat: '{a} picks up an invisible guitar, slings an invisible strap over {a.posAdj} shoulder and nods at the drummer.' },
-      { by: 'b', say: "Look at that. Look at the confidence." },
-      { by: 'a', say: "The confidence is also invisible." },
+      { by: 'b', say: "Yes! That's it! Look at you!" },
+      { by: 'a', say: "I have no idea what I'm doing." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'rn.ag-f1', when: AG, turns: [
       { beat: '{a} slides across the stage on {a.posAdj} knees, head thrown back, and the crowd goes wild.' },
       { by: 'b', ...V("The meter! Look at the meter! It's full!", "The meter's full!", "Full meter!", "The METER! LOOK at the METER! It's FULL!", "Look at the meter! It's completely full!", "The meter overflows! They love you!") },
-      { by: 'a', say: "I'm a rock star. I've always been a rock star." },
+      { by: 'a', say: "I can't believe that worked!" },
     ] },
     { id: 'rn.ag-f2', when: AG, turns: [
-      { by: 'b', say: "Where did that come from? Who are you?" },
-      { by: 'a', say: "Twenty years of bedroom concerts. They finally paid off." },
-      { by: 'b', say: "I'm never making fun of your bedroom concerts again." },
+      { by: 'b', say: "Where did that come from?" },
+      { by: 'a', say: "I used to do it in my bedroom all the time." },
+      { by: 'b', say: "I'm never making fun of you for that again." },
     ] },
     { id: 'rn.ag-f3', when: AG, turns: [
       { beat: '{a} jumps off the stage into the crowd, and the crowd catches {a.obj} and carries {a.obj} back.' },
@@ -419,31 +419,31 @@ const airGuitar = {
     ] },
     { id: 'rn.ag-f4', when: AG, turns: [
       { beat: '{a} plays one invisible note, and holds it, and holds it, and the whole crowd holds it too.' },
-      { by: 'b', say: "That was beautiful. That was genuinely beautiful." },
-      { by: 'a', say: "It was nothing. It was literally nothing. It's air." },
+      { by: 'b', say: "That was amazing. They loved it." },
+      { by: 'a', say: "I didn't even know what I was doing." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'rn.ag-a1', when: AG, turns: [
       { beat: 'The second song starts. This time {a} doesn\'t think, just plays.' },
-      { by: 'b', say: "That's it! Stop thinking! You're better when you stop thinking!" },
-      { by: 'a', say: "I'm not thinking! I'm a guitar!" },
+      { by: 'b', say: "That's it! Don't think! Just play!" },
+      { by: 'a', say: "I'm not thinking!" },
     ] },
     { id: 'rn.ag-a2', when: AG, turns: [
-      { by: 'b', say: "Pull a face! Rock stars pull faces! Do the face!" },
+      { by: 'b', say: "Pull a face! Make a big face!" },
       { by: 'a', ...V("What face?", "What face?", "Which face?", "WHAT face?", "What face do you mean?", "Which face? I have several.") },
-      { by: 'b', say: "The face you make when you stub your toe!" },
-      { beat: '{a} makes the stubbed-toe face, and the meter shoots up.' },
+      { by: 'b', say: "Any face! Just make it big!" },
+      { beat: '{a} screws up {a.posAdj} face and screams, and the meter shoots up.' },
     ] },
     { id: 'rn.ag-a3', when: AG, turns: [
       { beat: 'This time, {a} plays to one person in the front row: a big man in a leather jacket who hasn\'t smiled once.' },
-      { by: 'a', say: "If I win him, I win them all." },
+      { by: 'a', say: "Okay. I'm playing for him." },
       { beat: 'The big man starts nodding. Then headbanging. The meter fills.' },
     ] },
     { id: 'rn.ag-a4', when: AG, turns: [
       { by: 'b', say: "Jump! Do the jump!" },
       { by: 'a', say: "I'll fall over!" },
-      { by: 'b', say: "Falling over is rock and roll!" },
+      { by: 'b', say: "It doesn't matter! Just jump!" },
       { beat: '{a} jumps, falls over, and the crowd loves it.' },
     ] },
   ],
@@ -461,24 +461,24 @@ const airGuitar = {
     { id: 'rn.ag-t3', when: AG, turns: [
       { beat: '{a} stands frozen in the middle of the stage. The music plays on without {a.obj}.' },
       { by: 'b', say: "Breathe! Then play! Breathe and play!" },
-      { by: 'a', say: "I can't do both at once!" },
+      { by: 'a', say: "I can't! I don't know what to do!" },
     ] },
   ],
   'task-done.any': [
     { id: 'rn.ag-dn1', when: AG, turns: [
       { beat: 'The meter hits the top. Fireworks shoot up from the side of the stage.' },
-      { by: 'a', say: "Fireworks! I got fireworks!" },
+      { by: 'a', say: "I did it! I actually did it!" },
       { by: 'b', ...V("Backstage! The Chill Zone's backstage!", "Backstage! Go!", "Backstage!", "BACKSTAGE! The CHILL ZONE'S backstage!", "Backstage, come on! The Chill Zone's backstage!", "To the backstage! Like real rock stars!") },
     ] },
     { id: 'rn.ag-dn2', when: AG, turns: [
       { by: 'b', say: "You were amazing. You were actually amazing." },
-      { by: 'a', say: "I know. I'm going to need a minute to come back down." },
-      { by: 'b', say: "Come back down in the Chill Zone. Walk." },
+      { by: 'a', say: "I know. My heart is going so fast." },
+      { by: 'b', say: "Come on. The Chill Zone." },
     ] },
     { id: 'rn.ag-dn3', when: AG, turns: [
-      { beat: '{a} throws an invisible guitar pick into the crowd. Three people fight over it.' },
-      { by: 'b', say: "There's no pick. They're fighting over nothing." },
-      { by: 'a', say: "That's rock and roll." },
+      { beat: '{a} throws an invisible guitar pick into the crowd, and the front row screams.' },
+      { by: 'b', say: "They loved you!" },
+      { by: 'a', say: "That was the best thing I've ever done." },
     ] },
   ],
   'attempt-fail.any': [
@@ -489,20 +489,20 @@ const airGuitar = {
     ] },
     { id: 'rn.ag-x2', when: AG, turns: [
       { beat: '{a} trips over a speaker cable and falls flat on the stage. The meter drops to zero.' },
-      { by: 'a', ...V("That wasn't part of it! That wasn't a move!", "That wasn't a move!", "Not a move!", "That WASN'T part of it! That WASN'T a MOVE!", "That wasn't part of the act, I promise!", "That fall was not choreographed!") },
-      { by: 'b', say: "Get up! Make it look like a move!" },
+      { by: 'a', say: "No! I tripped!" },
+      { by: 'b', say: "Get up! Keep playing!" },
     ] },
     { id: 'rn.ag-x3', when: AG, turns: [
-      { beat: '{a} plays a very gentle, very sweet air guitar ballad. The crowd boos it off the stage.' },
+      { beat: '{a} plays slow and gentle. The crowd boos.' },
       { by: 'b', say: "It's a rock concert! They want rock!" },
-      { by: 'a', say: "It was a rock ballad!" },
+      { by: 'a', say: "Okay! Okay! Faster!" },
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'rn.ag-v1', when: AG, turns: [
       { by: 'b', say: "That's my partner up there! That's my partner!" },
       { by: 'a', say: "Stop telling people! Just cheer!" },
-      { by: 'b', say: "I'm cheering by telling people!" },
+      { by: 'b', say: "Sorry! Go on! You're doing great!" },
     ] },
   ],
   'watching-botch.nerves': [
@@ -516,7 +516,7 @@ const airGuitar = {
     { id: 'rn.ag-v3', when: AG, turns: [
       { beat: '{b} jumps up on stage and starts playing air drums behind {a}.' },
       { by: 'a', say: "You can't be up here! Only one of us plays!" },
-      { beat: 'A stagehand carries {b} off, still drumming. Thirty minutes.' },
+      { beat: 'A stagehand walks {b} off the stage. Thirty minutes.' },
     ] },
   ],
   'watching-botch.quiet': [
@@ -530,7 +530,7 @@ const airGuitar = {
     { id: 'rn.ag-h1', when: AG, turns: [
       { beat: 'When the stagehand looks away, {b} turns the volume knob all the way up.' },
       { by: 'a', say: "Did you touch the sound desk?" },
-      { by: 'b', say: "The sound desk touched me." },
+      { by: 'b', say: "I didn't touch anything. Keep playing." },
     ] },
   ],
 };

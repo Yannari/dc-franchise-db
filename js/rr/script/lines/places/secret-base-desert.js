@@ -21,7 +21,7 @@ const place = {
       beat("Don stands on an empty desert road at dusk, beside a sign full of bullet holes that just says 'NO'. Somewhere, a helicopter thuds."),
       don("Welcome to Secret Base Desert! Officially, there is nothing out here. Unofficially, there's a fence, a lot of soldiers, and something they really don't want you to see."),
       don("Tonight, teams break in. And then they break out. With a souvenir. Please don't get me arrested."),
-      beat('A light streaks across the sky behind him, stops, and zips off sideways. Don does not turn round. He pretends he didn\'t see it.'),
+      beat('A light streaks across the sky behind him, stops, and zips off sideways. Don doesn\'t turn round.'),
     ] },
     { id: 'sbd.op2', when: P, turns: [
       don("Secret Base Desert. I've been told I'm not allowed to say where we are. I've also been told we're not here. So, welcome to nowhere."),
@@ -31,7 +31,7 @@ const place = {
   ],
   'don-opener.bored': [
     { id: 'sbd.op3', when: P, turns: [
-      beat("Don sits in a deckchair on the roof of a trailer, wearing a tinfoil hat, looking up at the stars through binoculars."),
+      beat("Don sits in a deckchair on the roof of a trailer, looking up at the stars through binoculars."),
       don("Secret Base Desert. I'm watching the skies. You're breaking in. Trucks are at the trailer."),
       don("If anything lands, call me. Actually, don't. I'll see it."),
     ] },
@@ -46,7 +46,7 @@ const place = {
     { id: 'sbd.ar2', when: P, turns: [
       by('b', "Look at the stars. There are so many."),
       by('a', "Is that one moving? That one's moving."),
-      by('b', "That's a plane. Probably. Please be a plane."),
+      by('b', "That's a plane. It has to be a plane."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -56,9 +56,9 @@ const place = {
       by('a', "They have real searchlights."),
     ] },
     { id: 'sbd.ad2', when: P, turns: [
-      beat("They pass a sign that says DO NOT ENTER, then another that says SERIOUSLY, then another that just says NO."),
-      by('b', "The signs are getting ruder."),
-      by('a', "The signs are getting more nervous."),
+      beat("They pass a sign that says DO NOT ENTER, then another, then another."),
+      by('b', "That's a lot of signs."),
+      by('a', "They really don't want anybody in there."),
     ] },
   ],
 };
@@ -98,9 +98,9 @@ const sneak = {
       by('b', "We run when it goes right. Get ready."),
     ] },
     { id: 'sbd.sn-s2', when: SN, turns: [
-      by('b', "Crawl. Low. Like a snake. Like a sneaky snake."),
-      by('a', "There might be actual snakes."),
-      by('b', "Then be sneakier than them."),
+      by('b', "Crawl. Stay low."),
+      by('a', "There might be actual snakes out here."),
+      by('b', "Don't think about it. Just crawl."),
     ] },
     { id: 'sbd.sn-s3', when: SN, turns: [
       beat("{a} crawls behind a warning sign, and {b} crawls behind {a}, and they both hold their breath."),
@@ -127,12 +127,12 @@ const sneak = {
     { id: 'sbd.sn-f3', when: SN, turns: [
       beat("{a} times every searchlight perfectly, counting under {a.posAdj} breath, and leads them through without being seen once."),
       by('b', "How did you do that?"),
-      by('a', "I've played a lot of video games."),
+      by('a', "I just watched him. He walks the same way every time."),
     ] },
     { id: 'sbd.sn-f4', when: SN, turns: [
       by('b', "First go. Not one alarm."),
       by('a', "We're spies. We're actual spies."),
-      by('b', "Very dusty spies."),
+      by('b', "We're covered in dirt, though."),
     ] },
   ],
   'task-try.after-fails': [
@@ -143,13 +143,13 @@ const sneak = {
     ] },
     { id: 'sbd.sn-a2', when: SN, turns: [
       beat("Second try. {a} and {b} wait twice as long between every move, and the soldier never sees a thing."),
-      by('a', "Patience! Patience was the answer!"),
+      by('a', "Waiting worked! We made it!"),
       by('b', "We're at the door! Finally!"),
     ] },
     { id: 'sbd.sn-a3', when: SN, turns: [
       by('a', "We keep getting caught by the same soldier. So we follow him. Right behind him. He never looks back."),
       beat("They tiptoe right behind the soldier all the way to the hangar door. He never once looks back."),
-      by('b', "The safest place is right behind him!"),
+      by('b', "He never looked back! Not once!"),
     ] },
     { id: 'sbd.sn-a4', when: SN, turns: [
       beat("After being marched back twice, {a} and {b} finally slip through the field and reach the hangar door unseen."),
@@ -161,24 +161,24 @@ const sneak = {
     { id: 'sbd.sn-t1', when: SN, turns: [
       beat("{a} and {b} are pinned behind a warning sign, a searchlight sitting right on top of them, not moving."),
       by('a', "Why isn't it moving?"),
-      by('b', "Maybe he's on his break."),
+      by('b', "I don't know. Just stay down."),
     ] },
     { id: 'sbd.sn-t2', when: SN, turns: [
       by('b', "That's the third time they've caught us."),
       by('a', "The same soldier, every time."),
-      by('b', "He's starting to recognise us."),
+      by('b', "He's going to know our names soon."),
     ] },
     { id: 'sbd.sn-t3', when: SN, turns: [
       beat("{a} sneezes in the dust. Every soldier turns round at once."),
       by('a', "Sorry. Sorry. It's the dust."),
-      by('b', "Don't move! Maybe they'll think it was a coyote!"),
+      by('b', "Don't move! Don't move!"),
     ] },
   ],
   'task-done.any': [
     { id: 'sbd.sn-dn1', when: SN, turns: [
-      by('a', "We snuck into a secret base."),
-      by('b', "That's probably illegal."),
-      by('a', "It's a challenge. It's allowed."),
+      by('a', "We actually snuck in."),
+      by('b', "I can't believe that worked."),
+      by('a', "Me neither. Come on, inside."),
     ] },
     { id: 'sbd.sn-dn2', when: SN, turns: [
       beat("{a} and {b} slip through the hangar door into the dark, and something inside glows faintly green."),
@@ -187,7 +187,7 @@ const sneak = {
     ] },
     { id: 'sbd.sn-dn3', when: SN, turns: [
       by('b', "My heart's going so fast."),
-      by('a', "Mine too. Spying is exhausting."),
+      by('a', "Mine too. I was so scared."),
       by('b', "And we're only halfway."),
     ] },
   ],
@@ -204,7 +204,7 @@ const sneak = {
     ] },
     { id: 'sbd.sn-x3', when: SN, turns: [
       beat("{a} steps on a can in the dark. Clank. Every light in the field swings round."),
-      by('a', "Who leaves a can in a secret base?"),
+      by('a', "Sorry! I didn't see it!"),
       by('b', "Back to the road! Again!"),
     ] },
   ],
@@ -234,47 +234,47 @@ const artifact = {
     ] },
     { id: 'sbd.ar-s2', when: AR, turns: [
       by('b', "Look for the glow. It said it glows."),
-      by('a', "Half the things in here glow."),
-      by('b', "Look for the glowiest glow."),
+      by('a', "There's stuff glowing everywhere."),
+      by('b', "Then look for the one that's humming too."),
     ] },
     { id: 'sbd.ar-s3', when: AR, turns: [
       beat("{a} lifts a sheet. Underneath is a smooth, green, humming shape, the size of a football."),
-      by('a', "Found it. I think. It's humming at me."),
+      by('a', "Found it. I think. It's humming."),
       by('b', "Pick it up! Gently!"),
     ] },
     { id: 'sbd.ar-s4', when: AR, turns: [
       by('a', "How do you carry an alien thing?"),
-      by('b', "Like a baby. Both hands. Don't shake it."),
-      by('a', "What if it shakes itself?"),
+      by('b', "Carefully. Both hands. Don't drop it."),
+      by('a', "Okay. Okay. Both hands."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'sbd.ar-f1', when: AR, turns: [
-      beat("{a} carries the artifact like a newborn, {b} leads the way through the shadows, and they hand it to the agent without a scratch."),
+      beat("{a} carries the artifact in both arms, {b} leads the way through the shadows, and they hand it to the agent without a scratch."),
       by('b', "He nodded! The agent nodded!"),
-      by('a', "First try! We stole an alien thing!"),
+      by('a', "First try! We actually did it!"),
     ] },
     { id: 'sbd.ar-f2', when: AR, turns: [
-      by('a', "Slow. Slow. Slower than slow."),
+      by('a', "Slow. Really slow."),
       beat("They walk it out so slowly that the guards never notice them. The agent takes it, checks it, and hands over the tip."),
-      by('b', "Slow and invisible!"),
+      by('b', "Slow worked!"),
     ] },
     { id: 'sbd.ar-f3', when: AR, turns: [
-      beat("{b} wraps the artifact in a sheet, tucks it under one arm like laundry, and strolls right out past a guard."),
+      beat("{b} wraps the artifact in a sheet, tucks it under one arm, and walks right out past a guard."),
       by('a', "You just walked past him!"),
-      by('b', "He thought it was laundry!"),
+      by('b', "He didn't even look!"),
     ] },
     { id: 'sbd.ar-f4', when: AR, turns: [
       by('b', "First go. Not a scratch on it."),
       by('a', "It stopped humming when the agent took it. Did you notice?"),
-      by('b', "I'm choosing not to think about that."),
+      by('b', "Don't. I don't want to think about it."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'sbd.ar-a1', when: AR, turns: [
-      by('b', "We dropped it because it's slippery. So we carry it in a sheet. Like a hammock."),
-      beat("They carry it between them in a sheet like a hammock, all the way to the agent, without a wobble."),
-      by('a', "The hammock idea! Genius!"),
+      by('b', "We dropped it because it's slippery. So we carry it in a sheet, between us."),
+      beat("They carry it between them in the sheet, all the way to the agent, without a wobble."),
+      by('a', "The sheet worked!"),
     ] },
     { id: 'sbd.ar-a2', when: AR, turns: [
       beat("Second try. This time {a} and {b} wait for the guards to change shifts, and walk straight out in the gap."),
@@ -284,7 +284,7 @@ const artifact = {
     { id: 'sbd.ar-a3', when: AR, turns: [
       by('a', "We keep getting caught at the door. So we go out the back. Through the vent."),
       beat("They squeeze through the back vent with the artifact between them, and come out right beside the agent."),
-      by('b', "The vent! Always the vent!"),
+      by('b', "The vent worked!"),
     ] },
     { id: 'sbd.ar-a4', when: AR, turns: [
       beat("After one drop and one capture, {a} and {b} finally hand the artifact over without a single mark."),
@@ -296,12 +296,12 @@ const artifact = {
     { id: 'sbd.ar-t1', when: AR, turns: [
       beat("{a} and {b} are crouched behind a crate, the artifact between them, a guard standing right in front of the way out."),
       by('a', "He's not moving. He's just standing there."),
-      by('b', "Maybe he's guarding."),
+      by('b', "Then we wait. He has to move eventually."),
     ] },
     { id: 'sbd.ar-t2', when: AR, turns: [
       by('b', "It's getting heavier. Why is it getting heavier?"),
       by('a', "It's not getting heavier. You're getting tired."),
-      by('b', "It feels like it's getting heavier."),
+      by('b', "Can we put it down for a second?"),
     ] },
     { id: 'sbd.ar-t3', when: AR, turns: [
       beat("The artifact suddenly starts humming louder in {a}'s arms, and glowing brighter."),
@@ -313,7 +313,7 @@ const artifact = {
     { id: 'sbd.ar-dn1', when: AR, turns: [
       by('a', "What do you think it actually was?"),
       by('b', "I don't want to know."),
-      by('a', "Me neither. But I really want to know."),
+      by('a', "Me neither. Okay, I do a little."),
     ] },
     { id: 'sbd.ar-dn2', when: AR, turns: [
       beat("{a} and {b} walk out into the desert night, towards the Chill Zone lights in the dark, looking up at the stars."),
@@ -321,26 +321,26 @@ const artifact = {
       by('a', "Walk faster."),
     ] },
     { id: 'sbd.ar-dn3', when: AR, turns: [
-      by('b', "We broke into a secret base and stole an alien thing."),
+      by('b', "We broke into a secret base."),
       by('a', "And gave it straight back."),
-      by('b', "Best night of my life."),
+      by('b', "Best night of the whole race."),
     ] },
   ],
   'attempt-fail.any': [
     { id: 'sbd.ar-x1', when: AR, turns: [
-      beat("The artifact slips out of {b}'s hands and hits the floor with a crack. Every light in the hangar comes on."),
+      beat("The artifact slips out of {b}'s hands and hits the floor with a crack, and an alarm goes off."),
       by('b', "It cracked! It cracked a tiny bit!"),
       by('a', "Put it back! We have to start again!"),
     ] },
     { id: 'sbd.ar-x2', when: AR, turns: [
       beat("A guard steps out from behind a crate, right in front of them, and points back into the hangar."),
-      by('a', "We were just admiring it!"),
+      by('a', "Sorry! Sorry!"),
       by('b', "He doesn't believe us. Put it back."),
     ] },
     { id: 'sbd.ar-x3', when: AR, turns: [
       beat("The agent takes the artifact, turns it over, finds a tiny scratch, and hands it straight back."),
       by('a', "It's a tiny scratch!"),
-      by('b', "Tiny is still a scratch! Back to the hangar!"),
+      by('b', "It still counts! Back to the hangar!"),
     ] },
   ],
 };

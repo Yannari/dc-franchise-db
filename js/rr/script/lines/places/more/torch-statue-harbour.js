@@ -11,7 +11,7 @@ const statue = {
     { id: 'tsh2.sc-s1', when: SC, turns: [
       { beat: 'A sign at the bottom of the staircase reads "Please walk". {a} and {b} run past it.' },
       { by: 'b', say: "It says please walk." },
-      { by: 'a', say: "It says please. That means it's optional." },
+      { by: 'a', say: "We're in a race. Go!" },
     ] },
     { id: 'tsh2.sc-s2', when: SC, turns: [
       { by: 'a', say: "Count the steps out loud. It helps." },
@@ -44,7 +44,7 @@ const statue = {
     { id: 'tsh2.sc-f3', when: SC, turns: [
       { beat: 'Halfway down, {a} lets go of the rope with one hand to wave at the boats.' },
       { by: 'b', say: "Both hands! BOTH HANDS!" },
-      { by: 'a', say: "I'm waving at our future! Hi, future!" },
+      { by: 'a', say: "Sorry! Sorry! Both hands!" },
     ] },
   ],
   'task-try.after-fails': [
@@ -56,13 +56,13 @@ const statue = {
     { id: 'tsh2.sc-a2', when: SC, turns: [
       { beat: 'Back in the crown for another try, {b} picks a different carriage from the row.' },
       { by: 'a', say: "Why that one?" },
-      { by: 'b', say: "The last one had a squeaky wheel. It was cursed." },
-      { beat: 'The new one is not cursed. They land smoothly.' },
+      { by: 'b', say: "The last one kept getting stuck. Let's try this one." },
+      { beat: 'The new one runs smoothly, and they land without a problem.' },
     ] },
     { id: 'tsh2.sc-a3', when: SC, turns: [
-      { by: 'b', ...V("Up again. All those stairs again. I hate this statue.", "Stairs again. I hate this statue.", "Stairs. Again.", "UP again! ALL those STAIRS again!", "Up all those stairs again, and I really hate this statue.", "The statue and I are no longer friends.") },
-      { by: 'a', say: "Don't let her hear you. She's holding the rope." },
-      { beat: 'Second time down, the statue seems to forgive them.' },
+      { by: 'b', say: "Up again. All those stairs again. I hate these stairs." },
+      { by: 'a', say: "Last time. Then we never do them again." },
+      { beat: 'The second time down, nothing goes wrong.' },
     ] },
     { id: 'tsh2.sc-a4', when: SC, turns: [
       { by: 'a', say: "Watch how they're doing it. They push off the wall first." },
@@ -73,29 +73,29 @@ const statue = {
   'task-done.any': [
     { id: 'tsh2.sc-dn1', when: SC, turns: [
       { by: 'b', say: "My knees are shaking. Is that from the stairs or the rope?" },
-      { by: 'a', say: "Both. Your knees have had a very full day." },
-      { by: 'b', say: "And it's only the morning." },
+      { by: 'a', say: "Both. Mine are too." },
+      { by: 'b', say: "And we're not even halfway." },
     ] },
     { id: 'tsh2.sc-dn2', when: SC, turns: [
       { beat: '{a} and {b} drag the carriage off the boat and look back up at the crown, high above.' },
       { by: 'a', say: "We were up there. Right up there." },
-      { by: 'b', say: "Wave at her. Say thank you." },
-      { by: 'a', say: "Thank you, statue." },
+      { by: 'b', say: "I can't believe we did that." },
+      { by: 'a', say: "Me neither. Come on." },
     ] },
     { id: 'tsh2.sc-dn3', when: SC, turns: [
       { by: 'a', say: "Why do they want us to keep the pram?" },
-      { by: 'b', say: "Maybe we're having a baby. On the race." },
+      { by: 'b', say: "I don't know. I don't like it." },
       { by: 'a', say: "Read the tip, please. Just read the tip." },
     ] },
     { id: 'tsh2.sc-dn4', when: SC, turns: [
       { beat: 'The boat driver hands over the tip and points at a dark tunnel in the harbour wall.' },
       { by: 'b', say: "In there? With the pram?" },
-      { by: 'a', say: "He's nodding. He's nodding very sadly." },
+      { by: 'a', say: "He's nodding. Oh no." },
     ] },
     { id: 'tsh2.sc-dn5', when: SC, turns: [
       { by: 'a', say: "Three hundred and fifty steps, and one big slide. Not bad." },
-      { by: 'b', say: "My legs say it was bad." },
-      { by: 'a', say: "Your legs aren't on the team. You are." },
+      { by: 'b', say: "My legs are shaking." },
+      { by: 'a', say: "They can rest later. Come on." },
     ] },
   ],
 };
@@ -105,7 +105,7 @@ const sewer = {
     { id: 'tsh2.sw-s1', when: SW, turns: [
       { beat: '{a} switches on the torch taped to the carriage. It lights up about one step of tunnel.' },
       { by: 'b', say: "That's it? That's the whole light?" },
-      { by: 'a', say: "It's a pram torch. It's for small adventures." },
+      { by: 'a', say: "It's all we've got. Hold it up." },
     ] },
     { id: 'tsh2.sw-s2', when: SW, turns: [
       { by: 'b', say: "Promise me something. If something grabs me, you run." },
@@ -133,7 +133,7 @@ const sewer = {
     { id: 'tsh2.sw-f2', when: SW, turns: [
       { beat: '{a} pushes without slowing down once, splashing through every puddle.' },
       { by: 'b', say: "I'm soaked. You've soaked me." },
-      { by: 'a', say: "You're soaked, but you're winning. That's the deal." },
+      { by: 'a', say: "Sorry! We're nearly out!" },
     ] },
     { id: 'tsh2.sw-f3', when: SW, turns: [
       { by: 'a', say: "Uphill. Water runs down, so the way out goes up." },
@@ -145,9 +145,9 @@ const sewer = {
   'task-try.after-fails': [
     { id: 'tsh2.sw-a1', when: SW, turns: [
       { beat: 'The tunnel ends at a locked grate. {a} turns the carriage round, again.' },
-      { by: 'b', say: "We've been here before. I recognise that rat." },
-      { by: 'a', say: "Then we go the other way from the rat." },
-      { beat: 'The other way from the rat is the right way.' },
+      { by: 'b', say: "We've been here before. I remember this pipe." },
+      { by: 'a', say: "Then we go the other way." },
+      { beat: 'The other way is the right way.' },
     ] },
     { id: 'tsh2.sw-a2', when: SW, turns: [
       { by: 'b', say: "Listen. Can you hear traffic?" },
@@ -157,8 +157,8 @@ const sewer = {
     ] },
     { id: 'tsh2.sw-a3', when: SW, turns: [
       { beat: '{a} stops pushing, takes a breath, and wipes {a.posAdj} face with a sleeve.' },
-      { by: 'a', say: "Okay. I'm calm. I'm calm in a sewer." },
-      { by: 'b', ...V("You're doing so well. You're the best pusher in the world.", "You're the best pusher alive.", "Best pusher.", "You're doing SO well! The BEST pusher in the WORLD!", "You're doing so well, you're the best pusher in the world.", "History will remember you as a great pusher.") },
+      { by: 'a', say: "Okay. I'm calm. I'm calm." },
+      { by: 'b', say: "You're doing so well. Keep going." },
       { beat: 'Calm, {a} finds the right tunnel first time.' },
     ] },
     { id: 'tsh2.sw-a4', when: SW, turns: [
@@ -177,12 +177,12 @@ const sewer = {
     { id: 'tsh2.sw-dn2', when: SW, turns: [
       { by: 'a', say: "I pushed you through a sewer. Remember that next time you're mad at me." },
       { by: 'b', say: "I'll remember it forever." },
-      { by: 'a', say: "Good. Use it." },
+      { by: 'a', say: "Good." },
     ] },
     { id: 'tsh2.sw-dn3', when: SW, turns: [
       { beat: 'A dog in the park sniffs {a} and {b}, sneezes, and walks away.' },
       { by: 'b', say: "Even the dog thinks we smell." },
-      { by: 'a', say: "Dogs love bad smells. We smell worse than bad." },
+      { by: 'a', say: "We need a shower so badly." },
     ] },
     { id: 'tsh2.sw-dn4', when: SW, turns: [
       { by: 'b', say: "Did we ever find out what was roaring?" },
@@ -192,8 +192,8 @@ const sewer = {
     { id: 'tsh2.sw-dn5', when: SW, turns: [
       { beat: '{a} pours a puddle of sewer water out of each shoe.' },
       { by: 'a', say: "These were my good shoes." },
-      { by: 'b', say: "They were your only shoes." },
-      { by: 'a', say: "That's what made them good." },
+      { by: 'b', say: "They'll dry. Come on." },
+      { by: 'a', say: "They'd better." },
     ] },
   ],
 };
@@ -207,13 +207,13 @@ const apple = {
       { by: 'a', say: "Cleaner than the sewer. I'll take it." },
     ] },
     { id: 'tsh2.ap-s2', when: AP, turns: [
-      { by: 'b', say: "Open wide. Wider. Like a snake." },
-      { by: 'a', say: "Snakes unhinge their jaws. I can't do that." },
-      { by: 'b', say: "Not with that attitude." },
+      { by: 'b', say: "Open wide. Wider." },
+      { by: 'a', say: "I'm trying! It's so big!" },
+      { by: 'b', say: "Then go for the stalk." },
     ] },
     { id: 'tsh2.ap-s3', when: AP, turns: [
       { beat: 'A duck paddles over and floats next to {a}, watching closely.' },
-      { by: 'a', say: "There's a duck. It's judging me." },
+      { by: 'a', say: "There's a duck right next to me." },
       { by: 'b', ...V("Ignore the duck. Focus on the apple.", "Ignore the duck.", "Apple. Not duck.", "IGNORE the DUCK! FOCUS on the APPLE!", "Just ignore the duck and focus on the apple.", "The duck is not your competition. Or is it?") },
     ] },
     { id: 'tsh2.ap-s4', when: AP, turns: [
@@ -234,9 +234,9 @@ const apple = {
       { by: 'a', say: "Done. First go. Push." },
     ] },
     { id: 'tsh2.ap-f3', when: AP, turns: [
-      { beat: '{a} gets a perfect bite on the very first try and walks the apple out of the pond like a dog with a ball.' },
-      { by: 'b', say: "Good! Good! Who's the best?" },
-      { by: 'a', say: "Don't. Don't talk to me like a dog." },
+      { beat: '{a} gets a perfect bite on the very first try and walks the apple out of the pond.' },
+      { by: 'b', say: "Yes! First try!" },
+      { by: 'a', say: "Mmmf. Take it. Take it out of my mouth." },
     ] },
   ],
   'task-try.after-fails': [
@@ -248,9 +248,9 @@ const apple = {
     ] },
     { id: 'tsh2.ap-a2', when: AP, turns: [
       { beat: 'The apple slips out of {a}\'s mouth halfway to the bank and bobs away.' },
-      { by: 'a', say: "It's escaping. The apple is escaping." },
-      { by: 'b', say: "Chase it! It can't swim faster than you!" },
-      { beat: 'It can\'t. {a} catches it at the edge and brings it in.' },
+      { by: 'a', say: "It's getting away!" },
+      { by: 'b', say: "Go after it! Quick!" },
+      { beat: '{a} catches it at the edge and brings it in.' },
     ] },
     { id: 'tsh2.ap-a3', when: AP, turns: [
       { by: 'a', ...V("My jaw's locked. I can't open it any more.", "My jaw's locked.", "Jaw. Stuck.", "My JAW'S locked! I CAN'T open it!", "I think my jaw has locked, I can't open it any more.", "My jaw has gone on strike.") },
@@ -259,30 +259,30 @@ const apple = {
     ] },
     { id: 'tsh2.ap-a4', when: AP, turns: [
       { beat: 'The apple falls out of the carriage on a bump in the path and rolls back down into the pond.' },
-      { by: 'b', say: "No! Not the pond! Anywhere but the pond!" },
-      { by: 'a', say: "This time I'm holding it in the pram with my chin." },
+      { by: 'b', say: "No! Not again!" },
+      { by: 'a', say: "This time I'm holding it in with one hand." },
     ] },
   ],
   'task-done.any': [
     { id: 'tsh2.ap-dn1', when: AP, turns: [
       { beat: '{a} and {b} roll the carriage up to the fountain. A crowd of joggers stops to watch.' },
       { by: 'b', say: "Why are they clapping?" },
-      { by: 'a', say: "Because we're pushing a giant apple in a pram. It's very impressive." },
+      { by: 'a', say: "I don't know! Wave back!" },
     ] },
     { id: 'tsh2.ap-dn2', when: AP, turns: [
       { by: 'a', say: "I still have pond in my ears." },
       { by: 'b', say: "And a leaf in your hair." },
-      { by: 'a', say: "Leave the leaf. It's a souvenir." },
+      { by: 'a', say: "Leave it. I don't care." },
     ] },
     { id: 'tsh2.ap-dn3', when: AP, turns: [
       { by: 'b', say: "A statue, a sewer and a pond. In one day." },
-      { by: 'a', say: "Nobody back home is ever going to complain to me about their commute again." },
-      { by: 'b', say: "They will. And you'll tell them this story. Twice." },
+      { by: 'a', say: "Nobody back home is going to believe this." },
+      { by: 'b', say: "They'll see it on TV." },
     ] },
     { id: 'tsh2.ap-dn4', when: AP, turns: [
-      { beat: '{a} takes a huge bite out of the apple before they reach the fountain.' },
-      { by: 'b', say: "You're eating it? It's ours to deliver!" },
-      { by: 'a', say: "It's still a giant apple. Just slightly less giant." },
+      { beat: '{a} checks the apple one last time before they reach the fountain.' },
+      { by: 'b', say: "Is it still there?" },
+      { by: 'a', say: "It's there. Go!" },
     ] },
     { id: 'tsh2.ap-dn5', when: AP, turns: [
       { by: 'a', say: "Run. The fountain's right there. Run!" },

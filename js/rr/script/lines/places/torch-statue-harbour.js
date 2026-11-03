@@ -40,12 +40,12 @@ const place = {
       { beat: 'The boat swings round, and the giant statue towers over them, torch raised to the sky.' },
       { by: 'a', ...V("She's huge. She's so much bigger than I thought.", "She's huge.", "So much bigger.", "She's HUGE! She's SO much BIGGER than I thought!", "She's enormous, so much bigger than I imagined.", "She's a giant. A copper giant with a torch.") },
       { by: 'b', say: "I've wanted to see her since I was little." },
-      { by: 'a', say: "And now we get to climb her. Respectfully." },
+      { by: 'a', say: "And now we get to climb her. That's crazy." },
     ] },
     { id: 'tsh.ar2', when: P, turns: [
       { by: 'b', say: "Look at all those buildings. They go up forever." },
-      { by: 'a', say: "Everything here is the biggest version of itself." },
-      { by: 'b', say: "Even the pigeons are bigger. Look at that pigeon." },
+      { by: 'a', say: "Everything here is so big." },
+      { by: 'b', say: "And so loud. I love it." },
     ] },
   ],
   'arrival-awe.dread': [
@@ -97,14 +97,14 @@ const statue = {
     { id: 'tsh.sc-s4', when: SC, turns: [
       { by: 'a', say: "How many steps is it?" },
       { by: 'b', say: "Don said three hundred and something." },
-      { by: 'a', say: "The something is what worries me." },
+      { by: 'a', say: "Okay. Don't tell me any more. Just climb." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'tsh.sc-f1', when: SC, turns: [
       { beat: '{a} and {b} reach the crown, haul in a carriage, and ride it all the way down the rope, whooping.' },
       { by: 'b', ...V("That was amazing! Like a zipline, but with a pram!", "Like a zipline with a pram!", "Pram zipline!", "That was AMAZING! Like a ZIPLINE, but with a PRAM!", "That was amazing, like a zipline but in a pram!", "We flew in a pram, like the world's bravest babies!") },
-      { by: 'a', say: "I'm keeping the carriage. I love the carriage." },
+      { by: 'a', say: "And we keep the carriage. We need it later." },
     ] },
     { id: 'tsh.sc-f2', when: SC, turns: [
       { by: 'a', say: "The view from the crown. Look. The whole city." },
@@ -113,13 +113,13 @@ const statue = {
     ] },
     { id: 'tsh.sc-f3', when: SC, turns: [
       { beat: '{a} takes the stairs two at a time and is first to the crown, with {b} right behind.' },
-      { by: 'b', say: "How are you not tired?" },
-      { by: 'a', say: "I'm very tired. I'm just tired quickly." },
+      { by: 'b', say: "How are you going so fast?" },
+      { by: 'a', say: "I'm not thinking about it. Just keep up." },
     ] },
     { id: 'tsh.sc-f4', when: SC, turns: [
       { by: 'b', say: "Hold the rope with both hands. Don't let go, whatever happens." },
       { by: 'a', say: "Both hands. Whatever happens." },
-      { beat: 'Something happens, a lot of wind, but neither lets go, and they land with the carriage.' },
+      { beat: 'A gust hits them halfway down, but neither of them lets go, and they land with the carriage.' },
     ] },
   ],
   'task-try.after-fails': [
@@ -131,8 +131,8 @@ const statue = {
     ] },
     { id: 'tsh.sc-a2', when: SC, turns: [
       { by: 'a', ...V("Three hundred and fifty steps again. I don't think I can do it again.", "Three hundred and fifty steps again?", "All the steps again?", "THREE HUNDRED and FIFTY steps AGAIN! I don't think I can DO it again!", "Three hundred and fifty steps again? I don't know if I can.", "The staircase calls us back. It's a cruel staircase.") },
-      { by: 'b', say: "Then we do it slowly. Slow is still up." },
-      { beat: 'Slow is still up. They make it, and ride down properly.' },
+      { by: 'b', say: "Then we go slowly. Slowly is fine." },
+      { beat: 'They take it slowly, make it to the crown, and ride down properly.' },
     ] },
     { id: 'tsh.sc-a3', when: SC, turns: [
       { beat: 'Halfway down the rope, the carriage spins and tangles. They have to climb all the way back up.' },
@@ -149,18 +149,18 @@ const statue = {
   'task-try.struggling': [
     { id: 'tsh.sc-t1', when: SC, turns: [
       { beat: '{b} is sitting on a step halfway up the statue, not moving.' },
-      { by: 'b', say: "My legs. My legs have stopped. Tell them to start." },
-      { by: 'a', say: "Legs. Start. Please." },
+      { by: 'b', say: "My legs have stopped. I can't." },
+      { by: 'a', say: "Yes, you can. One step. Come on." },
     ] },
     { id: 'tsh.sc-t2', when: SC, turns: [
       { beat: 'At the crown, the wind is so strong the carriage keeps blowing back in through the window.' },
       { by: 'a', ...V("The wind won't let us go!", "The wind won't let us go!", "Wind's too strong!", "The WIND won't LET us GO!", "The wind just won't let us go!", "The sky is pushing us back in!") },
-      { by: 'b', say: "Wait for a gap! Wait for the wind to breathe!" },
+      { by: 'b', say: "Wait for a gap! Wait for it to drop!" },
     ] },
     { id: 'tsh.sc-t3', when: SC, turns: [
       { beat: 'Team after team rides down past them while {a} and {b} are still climbing.' },
       { by: 'b', say: "Everyone's going down, and we're still going up." },
-      { by: 'a', say: "Then we'll be the last ones down. Someone has to be." },
+      { by: 'a', say: "Then we have to be faster at the next one." },
     ] },
   ],
   'task-done.any': [
@@ -188,8 +188,8 @@ const statue = {
     ] },
     { id: 'tsh.sc-x2', when: SC, turns: [
       { beat: '{b} lets go of the rope for one second to wave at a tourist boat, and the carriage swings back to the crown.' },
-      { by: 'b', ...V("I waved! I only waved!", "I only waved!", "I waved!", "I WAVED! I ONLY WAVED!", "I only waved at them!", "A friendly wave! Punished!") },
-      { by: 'a', say: "No waving. Never wave. Again." },
+      { by: 'b', say: "I only let go for a second!" },
+      { by: 'a', say: "Don't let go again. Back up." },
     ] },
     { id: 'tsh.sc-x3', when: SC, turns: [
       { beat: '{a} reaches the crown, looks out of the window, and climbs straight back in.' },
@@ -225,8 +225,8 @@ const sewer = {
   'whose-botch.volunteer': [
     { id: 'tsh.sw-w2', when: SW, turns: [
       { by: 'a', say: "Get in. I'll push. You've done enough today." },
-      { by: 'b', say: "You'd push me through a sewer for me?" },
-      { by: 'a', say: "I'd push you through a sewer for a million dollars. You're a bonus." },
+      { by: 'b', say: "You'd push me through a sewer?" },
+      { by: 'a', say: "For you? Yes. For a million dollars? Definitely." },
     ] },
   ],
   'whose-botch.pushed': [
@@ -246,7 +246,7 @@ const sewer = {
   'task-start.any': [
     { id: 'tsh.sw-s1', when: SW, turns: [
       { beat: '{a} pushes the carriage, with {b} in it, down a ramp into the dark sewer tunnel.' },
-      { by: 'b', say: "The smell. The smell is like a living thing." },
+      { by: 'b', say: "Oh my God, the smell. I'm going to be sick." },
       { by: 'a', ...V("Breathe through your mouth.", "Mouth-breathe.", "Use your mouth.", "BREATHE through your MOUTH!", "Just breathe through your mouth.", "Breathe through your mouth. Your nose is retired.") },
       { by: 'b', say: "Then I can taste it." },
     ] },
@@ -257,13 +257,13 @@ const sewer = {
     ] },
     { id: 'tsh.sw-s3', when: SW, turns: [
       { beat: 'The water is ankle deep and cold, and the carriage wheels squeak with every turn.' },
-      { by: 'b', say: "This is the most uncomfortable I've ever been in a pram." },
-      { by: 'a', say: "How many prams have you been in?" },
+      { by: 'b', say: "My legs don't fit in here." },
+      { by: 'a', say: "Just stay in. Hold on to the sides." },
     ] },
     { id: 'tsh.sw-s4', when: SW, turns: [
       { by: 'b', say: "Did you hear that? Something roared. Something roared!" },
-      { by: 'a', say: "It's the pipes. It's just the pipes. Pipes roar." },
-      { by: 'b', say: "Pipes don't roar." },
+      { by: 'a', say: "It's the pipes. It's just the pipes." },
+      { by: 'b', say: "That was not the pipes." },
     ] },
   ],
   'task-try.first-try': [
@@ -274,13 +274,13 @@ const sewer = {
     ] },
     { id: 'tsh.sw-f2', when: SW, turns: [
       { by: 'a', say: "Follow the arrows. Somebody painted arrows on the walls." },
-      { by: 'b', say: "Who paints arrows in a sewer?" },
-      { by: 'a', say: "A kind person. A kind sewer person." },
+      { by: 'b', say: "Are you sure we can trust them?" },
+      { by: 'a', say: "No. But they're all we've got." },
     ] },
     { id: 'tsh.sw-f3', when: SW, turns: [
       { beat: 'A pair of eyes glows in the dark ahead. {a} pushes faster and the eyes stay behind.' },
       { by: 'b', say: "Was that an alligator? That was an alligator." },
-      { by: 'a', say: "It was a very large rat. Keep telling yourself it was a very large rat." },
+      { by: 'a', say: "Don't think about it. Just hold on." },
     ] },
     { id: 'tsh.sw-f4', when: SW, turns: [
       { by: 'b', say: "You're going so fast. Slow down for the corners." },
@@ -303,7 +303,7 @@ const sewer = {
     { id: 'tsh.sw-a3', when: SW, turns: [
       { beat: 'The carriage wheel comes loose. {a} jams it back on and keeps pushing, wobbling.' },
       { by: 'b', say: "Is that wheel going to stay on?" },
-      { by: 'a', say: "It's going to stay on through sheer stubbornness." },
+      { by: 'a', say: "I hope so. Just keep going." },
     ] },
     { id: 'tsh.sw-a4', when: SW, turns: [
       { by: 'a', say: "Talk to me. Tell me which way. You're facing forwards." },
@@ -318,9 +318,9 @@ const sewer = {
       { by: 'a', say: "No! You stay in the pram! That's the rule!" },
     ] },
     { id: 'tsh.sw-t2', when: SW, turns: [
-      { by: 'a', ...V("We've been down here forever. I've forgotten what the sun looks like.", "I've forgotten the sun.", "We've been here forever.", "We've been DOWN here FOREVER! I've FORGOTTEN what the SUN looks like!", "We've been down here forever, I've forgotten what the sun looks like.", "I live in the sewer now. I have a sewer name.") },
-      { by: 'b', say: "It's yellow. Round. Warm. You'll see it again." },
-      { by: 'a', say: "Yellow, round, warm. Okay. Keep describing it while I push." },
+      { by: 'a', say: "How long have we been down here?" },
+      { by: 'b', say: "Not long. Keep going. We're nearly out." },
+      { by: 'a', say: "Okay. Keep talking to me while I push." },
     ] },
     { id: 'tsh.sw-t3', when: SW, turns: [
       { beat: 'Something splashes in the dark tunnel behind them.' },
@@ -342,14 +342,14 @@ const sewer = {
     { id: 'tsh.sw-dn3', when: SW, turns: [
       { beat: 'A passing jogger takes one sniff of {a} and {b} and runs the other way.' },
       { by: 'b', say: "We smell terrible." },
-      { by: 'a', say: "We smell like we won a sewer." },
+      { by: 'a', say: "I know. Sorry, everybody." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'tsh.sw-x1', when: SW, turns: [
       { beat: 'The tunnel ends in a rusty grate. No way through.' },
       { by: 'b', say: "Dead end. Back. All the way back." },
-      { by: 'a', say: "In reverse. Pushing a pram backwards through a sewer. My life." },
+      { by: 'a', say: "Backwards. Great. Okay, hold on." },
     ] },
     { id: 'tsh.sw-x2', when: SW, turns: [
       { beat: '{b} steps out of the carriage to look round a corner. A crew member blows a whistle.' },
@@ -394,7 +394,7 @@ const sewer = {
     { id: 'tsh.sw-h1', when: SW, turns: [
       { beat: 'On a steep ramp, {b} quietly hops out of the carriage and pushes from the side.' },
       { by: 'a', say: "Get back in! Get back in before the crew sees!" },
-      { by: 'b', say: "I'm a very heavy baby who stretches." },
+      { by: 'b', say: "I'm only helping a little! Push!" },
     ] },
   ],
 };
@@ -423,13 +423,13 @@ const apple = {
     ] },
     { id: 'tsh.ap-s2', when: AP, turns: [
       { by: 'b', say: "Who's going in? Who's getting wet?" },
-      { by: 'a', say: "I'll go. I've got the bigger mouth." },
-      { by: 'b', say: "You do have the bigger mouth." },
+      { by: 'a', say: "I'll go. I don't mind getting wet." },
+      { by: 'b', say: "Okay. Go. Go." },
     ] },
     { id: 'tsh.ap-s3', when: AP, turns: [
       { beat: 'Something brushes past {a}\'s leg in the murky water.' },
       { by: 'a', say: "Something touched me. Something just touched my leg." },
-      { by: 'b', say: "Apples don't have hands. Keep going." },
+      { by: 'b', say: "It's probably a fish. Keep going." },
     ] },
     { id: 'tsh.ap-s4', when: AP, turns: [
       { by: 'a', say: "Hands behind my back. Hold my hands behind my back so I don't cheat." },
@@ -441,12 +441,12 @@ const apple = {
     { id: 'tsh.ap-f1', when: AP, turns: [
       { beat: '{a} sinks {a.posAdj} teeth into the stalk and drags the giant apple to the bank in one go.' },
       { by: 'b', say: "Got it! Into the carriage! Into the carriage!" },
-      { by: 'a', ...V("My jaw. My jaw is never going to close again.", "My jaw won't close.", "Jaw. Stuck.", "My JAW! My JAW is NEVER going to CLOSE again!", "My jaw is never going to close properly again.", "My mouth is now permanently apple-shaped.") },
+      { by: 'a', say: "Ow. My jaw. Ow." },
     ] },
     { id: 'tsh.ap-f2', when: AP, turns: [
       { by: 'b', say: "Push it with your nose! Roll it to the edge!" },
-      { beat: '{a} nudges the apple across the pond with {a.posAdj} nose, like a seal, all the way to the bank.' },
-      { by: 'b', say: "You're a seal! A brilliant seal!" },
+      { beat: '{a} nudges the apple across the pond with {a.posAdj} nose, all the way to the bank.' },
+      { by: 'b', say: "That's it! Keep going!" },
     ] },
     { id: 'tsh.ap-f3', when: AP, turns: [
       { beat: '{a} and {b} load the apple into the carriage and push it towards the fountain at a run.' },
@@ -455,15 +455,15 @@ const apple = {
     ] },
     { id: 'tsh.ap-f4', when: AP, turns: [
       { by: 'a', say: "That was easy. Why did everyone say it was hard?" },
-      { by: 'b', say: "Because everyone else doesn't have a mouth like yours." },
-      { by: 'a', say: "I'll take that as a compliment." },
+      { by: 'b', say: "Don't say that yet. We still have to get it to the fountain." },
+      { by: 'a', say: "Okay. Push." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'tsh.ap-a1', when: AP, turns: [
       { beat: 'Second try. This time {a} goes for a smaller apple near the edge.' },
-      { by: 'b', say: "Smart! The little one! It's still giant, but it's a little giant!" },
-      { beat: 'The little giant apple comes out on the first bite.' },
+      { by: 'b', say: "Smart! That one's smaller!" },
+      { beat: 'The smaller apple comes out on the first bite.' },
     ] },
     { id: 'tsh.ap-a2', when: AP, turns: [
       { by: 'a', ...V("It keeps rolling away! Every time I bite, it rolls!", "It keeps rolling away!", "It rolls!", "It KEEPS ROLLING AWAY! Every TIME I bite, it ROLLS!", "It keeps rolling away from me every time I bite!", "The apple fears my teeth!") },
@@ -473,12 +473,12 @@ const apple = {
     { id: 'tsh.ap-a3', when: AP, turns: [
       { beat: 'They\'re halfway to the fountain when the apple bounces out. Back to the pond.' },
       { by: 'b', say: "Sit on it this time. Get in the carriage and hold it." },
-      { by: 'a', say: "I'm sitting in a pram, holding a giant apple. My life has gone very strange." },
+      { by: 'a', say: "Okay. I've got it. Push." },
     ] },
     { id: 'tsh.ap-a4', when: AP, turns: [
       { by: 'b', say: "Turn round. Go in backwards. Bite it from behind." },
-      { by: 'a', say: "Apples don't have a behind." },
-      { by: 'b', say: "Then bite it from the other side. Just try." },
+      { by: 'a', say: "What does that even mean?" },
+      { by: 'b', say: "Just try it from the other side!" },
     ] },
   ],
   'task-try.struggling': [
@@ -490,25 +490,25 @@ const apple = {
     { id: 'tsh.ap-t2', when: AP, turns: [
       { by: 'a', ...V("My teeth hurt. All of my teeth hurt.", "My teeth hurt.", "Teeth hurt.", "My TEETH hurt! ALL of my TEETH hurt!", "All of my teeth hurt now.", "My teeth have filed a complaint.") },
       { by: 'b', say: "One more try. One more bite. You can do one more bite." },
-      { by: 'a', say: "One more bite. Then I'm getting dentures." },
+      { by: 'a', say: "One more. Okay. One more." },
     ] },
     { id: 'tsh.ap-t3', when: AP, turns: [
       { beat: 'Every other team has its apple. {a} is still splashing in the pond.' },
       { by: 'b', say: "They took all the easy apples." },
-      { by: 'a', say: "There are no easy apples. They're all giants." },
+      { by: 'a', say: "Then we take a hard one. Come on." },
     ] },
   ],
   'task-done.any': [
     { id: 'tsh.ap-dn1', when: AP, turns: [
       { beat: '{a} and {b} push the carriage up to the fountain, apple safely inside.' },
       { by: 'b', say: "We made it! Apple and all!" },
-      { by: 'a', say: "Let's just check it's our carriage this time." },
-      { by: 'b', say: "Why wouldn't it be our carriage?" },
+      { by: 'a', say: "Is the apple still in there?" },
+      { by: 'b', say: "It's in. We did it." },
     ] },
     { id: 'tsh.ap-dn2', when: AP, turns: [
-      { by: 'a', say: "Can we eat the apple now?" },
-      { by: 'b', ...V("You've had your mouth on it. You can have the whole thing.", "It's all yours.", "You eat it.", "You've had your MOUTH on it! You can have the WHOLE thing!", "You've had your mouth all over it, it's all yours.", "The apple is yours, by right of bite.") },
-      { by: 'a', say: "Then I'm eating it at the Chill Zone. All of it." },
+      { by: 'a', say: "Can we eat it now?" },
+      { by: 'b', say: "It's been in a pond and a sewer pram." },
+      { by: 'a', say: "Okay. Maybe not." },
     ] },
     { id: 'tsh.ap-dn3', when: AP, turns: [
       { beat: '{a} wrings out {a.posAdj} soaking wet clothes as they reach the fountain.' },
@@ -524,13 +524,13 @@ const apple = {
     ] },
     { id: 'tsh.ap-x2', when: AP, turns: [
       { beat: 'The apple slips out of {a}\'s teeth and floats back into the middle of the pond.' },
-      { by: 'a', ...V("Come back! Come back, apple!", "Come back, apple!", "Apple!", "COME BACK! COME BACK, APPLE!", "Come back here, apple!", "The apple has chosen freedom!") },
+      { by: 'a', say: "No! Come back!" },
       { by: 'b', say: "It's not coming back. Go and get it." },
     ] },
     { id: 'tsh.ap-x3', when: AP, turns: [
-      { beat: 'They push a carriage to the fountain. A baby inside it starts to cry.' },
-      { by: 'a', say: "That's not our apple. That's a baby." },
-      { by: 'b', say: "That's not our carriage! Back! Back to the pond! Give the baby back!" },
+      { beat: 'They push a carriage all the way to the fountain, and the crew points out that it\'s another team\'s, with another team\'s apple in it.' },
+      { by: 'a', say: "This isn't ours? It looks exactly like ours!" },
+      { by: 'b', say: "Back to the pond. We have to get our own." },
     ] },
   ],
 };

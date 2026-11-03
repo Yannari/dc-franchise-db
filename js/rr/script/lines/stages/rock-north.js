@@ -29,17 +29,17 @@ export default {
     { id: 'rn.st.ht2', when: at('sauna', 'the-heat'), turns: [
       by('b', "Don't move. It's worse when you move."),
       beat('They sit perfectly still, side by side, sweating through every layer they own.'),
-      by('a', "My socks are wet. How are my socks wet?"),
+      by('a', "I'm sweating through everything. Everything."),
     ] },
     { id: 'rn.st.ht3', when: at('sauna', 'the-heat'), turns: [
-      beat('Another team squeezes onto the bench beside them, and now four people in winter coats are melting together in silence.'),
+      beat('Another team squeezes onto the bench beside them, and now four people in winter coats sit sweating in silence.'),
       by('a', "Hi."),
       by('b', "Don't talk. Save your air."),
     ] },
     { id: 'rn.st.ml1', when: at('sauna', 'the-melt'), turns: [
-      beat('Eight minutes in. {a}\'s face is bright red, {b}\'s hair is stuck flat to {b.posAdj} head, and there is a bucket at their feet.'),
-      by('b', "Is that water? Pour it on me."),
-      by('a', "I don't think that's water."),
+      beat('Eight minutes in. {a}\'s face is bright red, and {b}\'s hair is stuck flat to {b.posAdj} head.'),
+      by('b', "I feel sick. How long?"),
+      by('a', "Two minutes. You can do two minutes."),
     ] },
     { id: 'rn.st.ml2', when: at('sauna', 'the-melt'), turns: [
       by('a', "Two more minutes. Think about something cold."),
@@ -53,7 +53,7 @@ export default {
     ] },
     { id: 'rn.st.tr2', when: at('sauna', 'timer-rings'), turns: [
       by('a', "Ten minutes! Out! Go, go!"),
-      beat('They stagger out into the cold, steaming like two baked potatoes, and the next tip is pinned to the door.'),
+      beat('They stagger out into the cold, steam rising off their coats, and the next tip is pinned to the door.'),
       by('b', "You're actually steaming."),
     ] },
 
@@ -66,7 +66,7 @@ export default {
     { id: 'rn.st.rb2', when: at('ice-river', 'river-bank'), turns: [
       by('a', "Pick the big flat ones. Not the wobbly ones."),
       beat('{a} points out a path across the floes, one big chunk of ice after another, all the way to the Don Box on the other side.'),
-      by('b', "That's not a path. You're just guessing."),
+      by('b', "Are you sure? They're all moving."),
     ] },
     { id: 'rn.st.fh1', when: at('ice-river', 'floe-hop'), turns: [
       beat('{a} jumps onto the first floe. It rocks, settles, and holds. {b} lands beside {a.obj} a second later.'),
@@ -75,7 +75,7 @@ export default {
     ] },
     { id: 'rn.st.fh2', when: at('ice-river', 'floe-hop'), turns: [
       by('a', "Small jumps. Land soft."),
-      beat('They hop across the river from floe to floe, arms out for balance, like two people crossing a room full of toys.'),
+      beat('They hop across the river from floe to floe, arms out for balance.'),
       by('b', "Okay, this is actually kind of fun."),
     ] },
     { id: 'rn.st.fh3', when: at('ice-river', 'floe-hop'), turns: [
@@ -99,37 +99,37 @@ export default {
       by('a', "Mine don't either. Hang on."),
     ] },
     { id: 'rn.st.fb2', when: at('ice-river', 'far-bank-box'), turns: [
-      by('a', "\"Take a cab downtown.\" A warm cab. Yes."),
-      by('b', "I'm sitting right next to the heater."),
+      by('a', "It says take a cab downtown. A warm cab. Yes."),
+      by('b', "I'm sitting right in front of the heater."),
       beat('They run for the road, leaving two wet trails in the snow.'),
     ] },
 
     // ── air guitar ──
     { id: 'rn.st.bs1', when: at('air-guitar', 'backstage'), turns: [
       beat('Backstage, the crowd outside is roaring, and {a} is pacing up and down between the speaker boxes.'),
-      by('b', "You've got this. You're a rock star."),
+      by('b', "You've got this. Just go for it."),
       by('a', "I've never even played guitar."),
-      by('b', "It's air guitar. Nobody has."),
+      by('b', "It's air guitar. You don't need to. Just go crazy."),
     ] },
     { id: 'rn.st.bs2', when: at('air-guitar', 'backstage'), turns: [
-      by('a', "I need a rock name."),
-      by('b', "Thunder. You're Thunder."),
-      beat('{a} nods slowly, stands up straighter, and walks out onto the stage as Thunder.'),
+      by('a', "Okay. Okay. Just go crazy."),
+      by('b', "Go crazy. Don't hold back. I'll be right here."),
+      beat('{a} nods, takes a deep breath, and walks out onto the stage.'),
     ] },
     { id: 'rn.st.rf1', when: at('air-guitar', 'the-riff'), turns: [
-      beat('The music blasts out of the speakers. {a} drops to one knee, throws back {a.posAdj} head and shreds an invisible guitar like {a.posAdj} life depends on it.'),
-      by('b', "Yes! Yes! Go, Thunder!"),
+      beat('The music blasts out of the speakers. {a} drops to one knee, throws back {a.posAdj} head and plays the invisible guitar as hard as {a.sub} can.'),
+      by('b', "Yes! Yes! Go on!"),
       beat('The crowd starts to cheer, and the appeal meter starts to climb.'),
     ] },
     { id: 'rn.st.rf2', when: at('air-guitar', 'the-riff'), turns: [
       by('b', "Use the whole stage! Run around!"),
       beat('{a} runs from one side of the stage to the other, playing a solo the whole way, and slides across the floor on {a.posAdj} knees.'),
-      by('b', "Knee slide! The crowd loves a knee slide!"),
+      by('b', "They love it! Keep going!"),
     ] },
     { id: 'rn.st.mt1', when: at('air-guitar', 'the-meter'), turns: [
       beat('The meter beside the stage is climbing: halfway, two-thirds, nearly at the top.'),
       by('b', "One more big move! Come on!"),
-      beat('{a} leaps off the drum riser, lands it, and windmills the air guitar so hard that the front row ducks.'),
+      beat('{a} jumps off the drum riser, lands it, and swings the air guitar round in big circles.'),
     ] },
     { id: 'rn.st.mt2', when: at('air-guitar', 'the-meter'), turns: [
       by('b', "Make them clap! Get them clapping!"),
@@ -137,21 +137,21 @@ export default {
       by('b', "It's working! Keep going!"),
     ] },
     { id: 'rn.st.en1', when: at('air-guitar', 'encore'), turns: [
-      beat('The meter hits the top, the lights flash, and the crowd screams. {a} throws the invisible guitar into the crowd, and somebody catches it.'),
+      beat('The meter hits the top, the lights flash, and the crowd screams.'),
       by('a', "Thank you! You've been amazing!"),
-      by('b', "Come on, Thunder. Time to go."),
+      by('b', "You did it! Come on, time to go."),
     ] },
     { id: 'rn.st.en2', when: at('air-guitar', 'encore'), turns: [
       by('a', "Did you see that? Did you see them?"),
-      by('b', "I saw. They loved you. Okay, let's go before it goes to your head."),
-      beat('It has already gone to {a}\'s head. {a} signs an autograph on the way off the stage.'),
+      by('b', "I saw. They loved you. Now come on, the Chill Zone."),
+      beat('{a} is still grinning all the way off the stage.'),
     ] },
   ],
 
   'task-stage.fail': [
     // ── the sauna ──
     { id: 'rn.sf.ht1', when: at('sauna', 'the-heat'), turns: [
-      beat('{b} lasts four minutes, then stands up, says "nope" and walks straight out of the door into the snow.'),
+      beat('{b} lasts four minutes, then stands up and walks straight out of the door into the snow.'),
       by('a', "No! The timer! You've reset the timer!"),
       by('b', "I don't care! I was dying in there!"),
     ] },
@@ -161,9 +161,9 @@ export default {
       by('b', "No! That counts!"),
     ] },
     { id: 'rn.sf.ml1', when: at('sauna', 'the-melt'), turns: [
-      beat('Nine minutes in, {a} pours the bucket over {a.posAdj} head, finds out what was in it, and runs out of the sauna screaming.'),
+      beat('Nine minutes in, {a} tips the bucket of water onto the stones by mistake, and a wall of steam drives {a.obj} out of the door.'),
       by('b', "Nine minutes! We were at nine minutes!"),
-      by('a', "It was sweat! Everybody's sweat!"),
+      by('a', "I couldn't breathe! I'm sorry!"),
     ] },
     { id: 'rn.sf.ml2', when: at('sauna', 'the-melt'), turns: [
       by('b', "I'm dizzy. I need air."),
@@ -175,21 +175,21 @@ export default {
     { id: 'rn.sf.rb1', when: at('ice-river', 'river-bank'), turns: [
       beat('{b} puts one foot on the first floe, and it dips into the water, and {b} pulls the foot straight back.'),
       by('b', "It moved. It sank."),
-      by('a', "It's ice! It's supposed to do that! Jump!"),
+      by('a', "It's floating! It's supposed to do that! Jump!"),
     ] },
     { id: 'rn.sf.rb2', when: at('ice-river', 'river-bank'), turns: [
       by('a', "Why are you just standing there?"),
-      by('b', "I'm cooling down first. I don't want a heart attack."),
+      by('b', "Give me a second. I'm still so hot."),
       beat('{b} is still standing on the bank, steaming, while another team hops past.'),
     ] },
     { id: 'rn.sf.fh1', when: at('ice-river', 'floe-hop'), turns: [
-      beat('{a} lands on the edge of a floe. It tips up like a seesaw, and {a} slides straight off into the freezing river.'),
+      beat('{a} lands on the edge of a floe. It tips up, and {a} slides straight off into the freezing river.'),
       by('a', "Aaaah! So cold!"),
       by('b', "Get out! Back to the bank!"),
     ] },
     { id: 'rn.sf.fh2', when: at('ice-river', 'floe-hop'), turns: [
       by('b', "Wait for me on that one!"),
-      beat('{b} jumps onto the same floe as {a}. It is not big enough for two, and it sinks under both of them with a gentle gurgle.'),
+      beat('{b} jumps onto the same floe as {a}. It isn\'t big enough for two, and it sinks under both of them.'),
       by('a', "Why would you jump on mine?"),
     ] },
     { id: 'rn.sf.gp1', when: at('ice-river', 'the-gap'), turns: [
@@ -210,19 +210,19 @@ export default {
       by('a', "There are so many people!"),
     ] },
     { id: 'rn.sf.bs2', when: at('air-guitar', 'backstage'), turns: [
-      by('a', "I need the bathroom. Right now."),
+      by('a', "I can't. I can't go out there."),
       by('b', "No you don't. You're just scared."),
       beat('The song starts without {a}, and they have to wait for the next one.'),
     ] },
     { id: 'rn.sf.rf1', when: at('air-guitar', 'the-riff'), turns: [
-      beat('{a} plays the air guitar very carefully and very politely, like someone playing a cello at a wedding.'),
+      beat('{a} plays the air guitar very carefully and very stiffly, barely moving.'),
       beat('Somebody in the crowd boos, and then everybody boos.'),
-      by('b', "Harder! Rock harder!"),
+      by('b', "Move! Move around!"),
     ] },
     { id: 'rn.sf.rf2', when: at('air-guitar', 'the-riff'), turns: [
       by('b', "Do the knee slide!"),
       beat('{a} tries the knee slide, gets about half a metre, and stops dead on a sticky patch of the stage.'),
-      beat('The crowd laughs, and not in a good way. The meter drops.'),
+      beat('The crowd laughs at {a.obj}, and the meter drops.'),
     ] },
     { id: 'rn.sf.mt1', when: at('air-guitar', 'the-meter'), turns: [
       beat('The song ends with the meter just under the top. The crowd claps politely, and nothing happens.'),

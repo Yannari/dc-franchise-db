@@ -23,7 +23,7 @@ const place = {
     { id: 'sky.op2', when: P, turns: [
       don("This is it, everybody! The final leg of the Ridonculous Race!"),
       don("All around the world, all those legs, all those tips, all those very, very bad smells. And it all comes down to this."),
-      { beat: 'A helicopter passes low overhead. Don\'s hair holds firm. He looks very proud of his hair.' },
+      { beat: 'A helicopter passes low overhead. Don\'s hair doesn\'t move at all.' },
       don("One team is going to be a million dollars richer by tonight. Let's find out who!"),
     ] },
   ],
@@ -51,8 +51,8 @@ const place = {
   'arrival-awe.dread': [
     { id: 'sky.ad1', when: P, turns: [
       { by: 'a', say: "I feel sick. I've felt sick since the plane took off." },
-      { by: 'b', say: "That's the money. That's what a million dollars feels like before you've got it." },
-      { by: 'a', say: "I don't like it. I'd like to feel it after." },
+      { by: 'b', say: "Me too. It's just nerves. It's the last day." },
+      { by: 'a', say: "I just want it to be over. I want to know." },
     ] },
     { id: 'sky.ad2', when: P, turns: [
       { beat: 'The traffic outside the airport is bumper to bumper as far as the eye can see.' },
@@ -81,7 +81,7 @@ const roads = {
       { by: 'a', say: "Excuse me! Which way to the boathouse?" },
       { beat: 'A candy-floss seller points confidently across the park. They run all the way there.' },
       { by: 'b', ...V("There are no boats here. This boathouse has no boats.", "This boathouse has no boats.", "No boats here.", "There are NO BOATS here! This boathouse has NO BOATS!", "There aren't any boats here, this boathouse has no boats.", "A boathouse without boats. Just a house.") },
-      { by: 'a', say: "Never trust a man selling candy floss." },
+      { by: 'a', say: "He sent us the wrong way. Come on, the other side!" },
     ] },
   ],
 };
@@ -120,8 +120,8 @@ const stairs = {
     ] },
     { id: 'sky.ts-s4', when: TS, turns: [
       { by: 'a', say: "Last stairs of the whole race. After this, we never climb anything again." },
-      { by: 'b', say: "I'm moving into a bungalow." },
-      { by: 'a', say: "We're both moving into bungalows." },
+      { by: 'b', say: "And after this, no more stairs. Ever." },
+      { by: 'a', say: "Deal. Come on." },
     ] },
   ],
   'task-try.first-try': [
@@ -149,9 +149,9 @@ const stairs = {
   'task-try.after-fails': [
     { id: 'sky.ts-a1', when: TS, turns: [
       { beat: '{b} grabs {b.posAdj} leg on the landing, face twisted. Cramp.' },
-      { by: 'b', say: "Banana. Do we have a banana? I packed a banana for exactly this." },
-      { by: 'a', ...V("It's black. It's completely black.", "It's black.", "Black banana.", "It's BLACK! It's COMPLETELY BLACK!", "That banana is completely black, though.", "That banana has seen things.") },
-      { by: 'b', say: "Give it to me." },
+      { by: 'b', say: "Cramp. I've got a cramp. My calf." },
+      { by: 'a', say: "Stretch it out. Pull your toes up." },
+      { by: 'b', say: "Okay. Okay, it's going." },
     ] },
     { id: 'sky.ts-a2', when: TS, turns: [
       { by: 'a', say: "I need ten seconds. Ten seconds and then I'm fine." },
@@ -161,8 +161,8 @@ const stairs = {
     { id: 'sky.ts-a3', when: TS, turns: [
       { beat: '{a} sits down on a step halfway up, completely out of breath.' },
       { by: 'b', say: "Get up. We didn't come all the way round the world to sit on a step." },
-      { by: 'a', say: "This is a very nice step. I've earned this step." },
-      { by: 'b', say: "You've earned a million dollars. Get up." },
+      { by: 'a', say: "One minute. Please. Just one." },
+      { by: 'b', say: "We don't have a minute. Get up. I'll help you." },
     ] },
     { id: 'sky.ts-a4', when: TS, turns: [
       { by: 'a', say: "What floor is this? Why is there never a number?" },
@@ -184,7 +184,7 @@ const stairs = {
     { id: 'sky.ts-t3', when: TS, turns: [
       { beat: '{a} and {b} are climbing in silence, one hand each on the rail, very, very slowly.' },
       { by: 'b', say: "Talk to me. Say anything. Tell me what you'll buy." },
-      { by: 'a', say: "A lift. I'm going to buy a lift for my house." },
+      { by: 'a', say: "A house for my mom. And a holiday where I don't have to run anywhere." },
     ] },
   ],
   'task-done.any': [
@@ -200,19 +200,19 @@ const stairs = {
     ] },
     { id: 'sky.ts-dn3', when: TS, turns: [
       { beat: '{a} grabs the briefcase and hugs it to {a.posAdj} chest.' },
-      { by: 'b', say: "Don't get attached to it. It's not the money." },
-      { by: 'a', say: "It's money-adjacent. I'm attached." },
+      { by: 'b', say: "Don't hug it. Open it." },
+      { by: 'a', say: "It's locked. We need the numbers first." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'sky.ts-x1', when: TS, turns: [
       { beat: '{a} reaches the deck alone. {b} is still three floors down.' },
       { by: 'a', say: "Come on! It won't give me the briefcase without you!" },
-      { by: 'b', say: "I'm coming! I'm coming! Stop shouting at me while I'm coming!" },
+      { by: 'b', say: "I'm coming! I'm coming! Two more floors!" },
     ] },
     { id: 'sky.ts-x2', when: TS, turns: [
-      { beat: '{a} and {b} come out on the wrong floor, a quiet office full of very confused people.' },
-      { by: 'b', say: "This isn't the deck. This is accounts." },
+      { beat: '{a} and {b} come out on the wrong floor, into a quiet office.' },
+      { by: 'b', say: "This isn't the deck. It's an office." },
       { by: 'a', say: "Sorry. Sorry, everyone. Back to the stairs." },
     ] },
     { id: 'sky.ts-x3', when: TS, turns: [
@@ -254,7 +254,7 @@ const buoys = {
     { id: 'sky.bu-s3', when: BU, turns: [
       { beat: 'The lake is calm, the city all around it, and the buoys bob gently in the sun.' },
       { by: 'a', say: "It's so peaceful out here." },
-      { by: 'b', say: "It's the least peaceful moment of my life. Row." },
+      { by: 'b', say: "I'm too nervous to enjoy it. Just row." },
     ] },
     { id: 'sky.bu-s4', when: BU, turns: [
       { by: 'b', say: "Three numbers, and a million dollars. Three numbers." },
@@ -271,8 +271,8 @@ const buoys = {
     ] },
     { id: 'sky.bu-f2', when: BU, turns: [
       { by: 'b', say: "That one! And that one! And there's the last one, by the bridge!" },
-      { by: 'a', say: "You've got eyes like an eagle." },
-      { by: 'b', say: "I've got eyes like somebody who wants a million dollars." },
+      { by: 'a', say: "How did you see all of those?" },
+      { by: 'b', say: "I don't know! I just looked! Row!" },
     ] },
     { id: 'sky.bu-f3', when: BU, turns: [
       { beat: '{a} and {b} row in a straight line through the buoys, reading each one aloud as they pass.' },
@@ -281,8 +281,8 @@ const buoys = {
     ] },
     { id: 'sky.bu-f4', when: BU, turns: [
       { by: 'a', say: "Our numbers are on the buoys by the fountain. I saw them from the bridge on the way in." },
-      { by: 'b', say: "You were looking at buoys on the way in?" },
-      { by: 'a', say: "I was looking at everything. It's the finale." },
+      { by: 'b', say: "You noticed that? On the way in?" },
+      { by: 'a', say: "I was looking at everything. It's the last leg." },
     ] },
   ],
   'task-try.after-fails': [
@@ -294,8 +294,8 @@ const buoys = {
     ] },
     { id: 'sky.bu-a2', when: BU, turns: [
       { by: 'b', say: "Back out. We missed one. There's one we didn't check by the reeds." },
-      { by: 'a', ...V("My arms are going to fall off.", "My arms will fall off.", "Arms. Falling off.", "My ARMS are going to FALL OFF!", "My arms are honestly going to fall off.", "My arms are writing their resignation letter.") },
-      { by: 'b', say: "They can fall off on the stage." },
+      { by: 'a', say: "My arms are killing me." },
+      { by: 'b', say: "They can hurt tomorrow. Row." },
     ] },
     { id: 'sky.bu-a3', when: BU, turns: [
       { by: 'a', say: "Read me the numbers again. Slowly." },
@@ -317,7 +317,7 @@ const buoys = {
     { id: 'sky.bu-t2', when: BU, turns: [
       { by: 'b', say: "We're going round in circles." },
       { by: 'a', ...V("Because you keep rowing with one arm harder than the other.", "You row with one arm harder.", "One arm's stronger.", "Because you keep ROWING with ONE ARM HARDER than the OTHER!", "That's because you keep rowing harder with one arm.", "Your left arm is ambitious. Your right arm isn't.") },
-      { by: 'b', say: "My left arm is very tired." },
+      { by: 'b', say: "Sorry. My left arm is dead." },
     ] },
     { id: 'sky.bu-t3', when: BU, turns: [
       { beat: 'The sun is going down over the lake, and the numbers on the buoys are getting harder to read.' },
@@ -339,7 +339,7 @@ const buoys = {
     { id: 'sky.bu-dn3', when: BU, turns: [
       { beat: '{a} and {b} jump out of the boat before it even reaches the dock and wade the last few metres.' },
       { by: 'a', say: "My shoes! I don't care about my shoes! Run!" },
-      { by: 'b', say: "I'm running! I'm running in wet shoes!" },
+      { by: 'b', say: "I don't care either! Go!" },
     ] },
   ],
   'attempt-fail.any': [
@@ -371,7 +371,7 @@ const footrace = {
     ] },
     { id: 'sky.fr-s2', when: FR, turns: [
       { by: 'b', say: "Don't stop. Whatever happens, don't stop running." },
-      { by: 'a', ...V("I won't stop. I'll never stop. I'll be running in my sleep for a year.", "I won't stop.", "Not stopping.", "I WON'T stop! I'll NEVER stop!", "I won't stop. I'll probably be running in my sleep for a year.", "I won't stop. Not till the stage. Not till the end of time."), keep: ['stop'] },
+      { by: 'a', say: "I won't stop. I promise.", keep: ['stop'] },
       { by: 'b', say: "Good. Neither will I. Go!" },
     ] },
   ],

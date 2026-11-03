@@ -81,7 +81,7 @@ export default {
     ] },
     { id: 'tsh.st.tn2', when: at('sewer', 'the-tunnels'), turns: [
       by('a', "This thing is so hard to push in water."),
-      by('b', "You're doing great. Push. Push. Splash."),
+      by('b', "You're doing great. Keep pushing."),
       beat('{a} pushes on through the ankle-deep water, round one bend and then another.'),
     ] },
     { id: 'tsh.st.gt1', when: at('sewer', 'the-gator'), turns: [
@@ -128,8 +128,8 @@ export default {
     ] },
     { id: 'tsh.st.lu1', when: at('big-apple', 'load-up'), turns: [
       beat('{a} drops the apple into the baby carriage, and {b} tucks the blanket round it.'),
-      by('b', "Look at our big apple baby."),
-      by('a', "Don't. My jaw hurts. Push."),
+      by('b', "Careful with it. Don't let it roll out."),
+      by('a', "I won't. My jaw hurts. Push."),
     ] },
     { id: 'tsh.st.lu2', when: at('big-apple', 'load-up'), turns: [
       by('a', "Is it in? Is it safe?"),
@@ -149,7 +149,7 @@ export default {
     { id: 'tsh.st.ft1', when: at('big-apple', 'the-fountain'), turns: [
       beat('They roll the carriage up to the fountain, apple and all, and the Chill Zone is right there.'),
       by('b', "We made it. With the apple."),
-      by('a', "My teeth are never going to be the same."),
+      by('a', "My jaw is killing me."),
     ] },
     { id: 'tsh.st.ft2', when: at('big-apple', 'the-fountain'), turns: [
       by('a', "Still in there? The apple?"),
@@ -251,8 +251,8 @@ export default {
     ] },
     { id: 'tsh.sf.lu2', when: at('big-apple', 'load-up'), turns: [
       by('b', "That's not our carriage."),
-      beat('There\'s a real baby in that carriage. They give it back to a very surprised mother and find their own.'),
-      by('a', "I'm so sorry! It looked just like ours!"),
+      beat('It belongs to another team. They swap back, red in the face, and find their own.'),
+      by('a', "Sorry! They all look exactly the same!"),
     ] },
     { id: 'tsh.sf.pi1', when: at('big-apple', 'push-it'), turns: [
       beat('The carriage hits a bump, the apple bounces out, and rolls away across the grass.'),

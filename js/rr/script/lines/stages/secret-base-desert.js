@@ -18,7 +18,7 @@ export default {
     { id: 'sbd.st.or2', when: at('sneak-in', 'off-the-road'), turns: [
       by('a', "Stay low. Move when I move."),
       by('b', "Why are you whispering? There's nobody here."),
-      by('a', "That's what they want you to think."),
+      by('a', "Just in case. Stay down."),
     ] },
     { id: 'sbd.st.sl1', when: at('sneak-in', 'searchlights'), turns: [
       beat('A searchlight sweeps slowly across the sand. They flatten themselves behind a sign until it passes.'),
@@ -33,7 +33,7 @@ export default {
     { id: 'sbd.st.fn1', when: at('sneak-in', 'the-fence'), turns: [
       beat('The fence hums. There\'s a gap at the bottom, just big enough to crawl through.'),
       by('a', "Don't touch the wire. Not even a little."),
-      by('b', "I'm not touching anything. I'm the flattest I've ever been."),
+      by('b', "I'm not touching anything. I'm as flat as I can get."),
     ] },
     { id: 'sbd.st.fn2', when: at('sneak-in', 'the-fence'), turns: [
       by('b', "You first. I'll hold up the bottom of it."),
@@ -46,8 +46,8 @@ export default {
       by('a', "Tip's taped to the keypad. Grab it."),
     ] },
     { id: 'sbd.st.hd2', when: at('sneak-in', 'hangar-door'), turns: [
-      by('a', "We're spies. We're actual spies now."),
-      by('b', "Spies don't say that out loud."),
+      by('a', "We did it. Nobody saw us."),
+      by('b', "Don't say that yet. We're not done."),
       beat('{a} peels the tip off the keypad, and they slip inside.'),
     ] },
 
@@ -73,13 +73,13 @@ export default {
       by('a', "That's it. Open it."),
     ] },
     { id: 'sbd.st.lf1', when: at('artifact', 'lift-it'), turns: [
-      beat('They lift the artifact out together. It\'s heavy, smooth and warm, and it glows brighter when they touch it.'),
-      by('b', "It likes us."),
+      beat('They lift the artifact out together. It\'s heavy, smooth and warm, and it glows a soft green.'),
+      by('b', "It's warm. Why is it warm?"),
       by('a', "Don't drop it. Whatever it is, don't drop it."),
     ] },
     { id: 'sbd.st.lf2', when: at('artifact', 'lift-it'), turns: [
       by('a', "One end each. On three."),
-      beat('They lift it out of the crate and hold it between them like a very precious, very strange cake.'),
+      beat('They lift it out of the crate and hold it carefully between them.'),
       by('b', "Okay. Got it. Walk slowly."),
     ] },
     { id: 'sbd.st.pg1', when: at('artifact', 'past-guards'), turns: [
@@ -94,7 +94,7 @@ export default {
     ] },
     { id: 'sbd.st.ag1', when: at('artifact', 'the-agent'), turns: [
       beat('At the fence, an agent in dark glasses takes the artifact, looks it over for scratches, and nods.'),
-      by('b', "Not a scratch. We were so careful."),
+      by('b', "Is it okay? Not a scratch?"),
       by('a', "What is it, though? What does it do?"),
       beat('The agent says nothing, hands over the tip, and walks away.'),
     ] },
@@ -114,29 +114,29 @@ export default {
     ] },
     { id: 'sbd.sf.sl2', when: at('sneak-in', 'searchlights'), turns: [
       by('a', "Wait for the light to pass."),
-      beat('{b} doesn\'t wait, runs straight into the beam, and freezes like a rabbit.'),
+      beat('{b} doesn\'t wait, runs straight into the beam, and freezes.'),
       by('b', "Sorry! I thought it had gone!"),
     ] },
     { id: 'sbd.sf.fn1', when: at('sneak-in', 'the-fence'), turns: [
       beat('{a}\'s backpack catches the wire. There\'s a loud buzz, and an alarm starts wailing across the base.'),
-      by('a', "That wasn't me! That was my bag!"),
+      by('a', "It was my bag! It caught on the wire!"),
       by('b', "Run! Back to the road!"),
     ] },
     { id: 'sbd.sf.fn2', when: at('sneak-in', 'the-fence'), turns: [
       by('b', "Is it actually electric?"),
-      beat('{b} touches it, just to check. It is.'),
-      by('a', "Why would you touch it? Why?"),
+      beat('{b} brushes it with one hand, and it buzzes loud enough to set off the alarm.'),
+      by('a', "Run! Back to the road!"),
     ] },
 
     // ── the artifact ──
     { id: 'sbd.sf.cr1', when: at('artifact', 'the-crates'), turns: [
-      beat('They open a crate, then another, then another. Packing straw. Old boots. A box of forks.'),
-      by('b', "Forks. Why would a secret base need forks?"),
+      beat('They open a crate, then another, then another. Packing straw. Old boots. Nothing.'),
+      by('b', "Nothing. There's nothing in any of them."),
       by('a', "Keep looking. It glows. Look for the glow."),
     ] },
     { id: 'sbd.sf.cr2', when: at('artifact', 'the-crates'), turns: [
       by('a', "This one's glowing!"),
-      beat('It\'s a lamp. Somebody left a lamp on in the crate.'),
+      beat('It\'s a work lamp, left on inside the crate.'),
       by('b', "Next crate."),
     ] },
     { id: 'sbd.sf.lf1', when: at('artifact', 'lift-it'), turns: [
@@ -151,7 +151,7 @@ export default {
     ] },
     { id: 'sbd.sf.pg1', when: at('artifact', 'past-guards'), turns: [
       beat('A soldier steps out from behind a jeep right in front of them, and looks straight at the glowing artifact.'),
-      by('a', "It's a lamp. We're just moving a lamp."),
+      by('a', "Hi. We're just, um... moving this."),
       beat('The soldier is not convinced. They have to take it back to the hangar.'),
     ] },
     { id: 'sbd.sf.pg2', when: at('artifact', 'past-guards'), turns: [

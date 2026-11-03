@@ -33,7 +33,7 @@ export default {
     'boomerang-found.torn': [
       { id: 'tw.bt1', turns: [
         { by: 'b', say: "The team right behind us is {c} and {d}. If we use it, it has to be them." },
-        { by: 'a', ...V("They're our friends. They shared their food with us on the first night.", "They're our friends. They shared their food.", "They're friends. The food, remember.", "They're our FRIENDS! They SHARED their FOOD with us on the first NIGHT!", "They're our friends, though. They shared their food with us the first night.", "They're our friends. They fed us. You don't Boomerang people who fed you.") },
+        { by: 'a', say: "They're our friends. They've been so nice to us." },
         { by: 'b', say: "And they're the only team close enough to catch us." },
         { by: 'a', say: "I hate this. I hate that it makes sense." },
         { beat: '{a} turns the Boomerang over and over in {a.posAdj} hands.' },
@@ -86,7 +86,7 @@ export default {
       ] },
       { id: 'tw.dt1', turns: [
         { by: 'a', say: "It's not about who we like. It's about who can beat us." },
-        { by: 'b', ...V("Then it's {c} and {d}. They've been in the top three every single leg.", "Then {c} and {d}. Top three every leg.", "{c} and {d}. Top three, every leg.", "Then it's {c} and {d}! They've been in the TOP THREE every SINGLE leg!", "Then it's {c} and {d}. They've been in the top three every leg.", "Then it's {c} and {d}. They're machines. Friendly, terrifying machines.") },
+        { by: 'b', say: "Then it's {c} and {d}. They're the team most likely to beat us." },
         { by: 'a', say: "And they're nice. I really like them." },
         { by: 'b', say: "I like them too. I like the million dollars more." },
         { beat: 'They pin it up on {c} and {d}\'s photo, and don\'t look at each other while they do.' },
@@ -352,7 +352,7 @@ export default {
       ] },
       { id: 'tw.vd2', turns: [
         { beat: 'Don pulls the cards out of the Don Box one by one. Nearly every card says {target}.' },
-        { by: 'b', say: "That's what happens when you win three legs in a row." },
+        { by: 'b', say: "That's what happens when you keep winning." },
         { by: 'a', ...V("Hey, don't look at us. We picked somebody else. Probably.", "Don't look at us. We picked someone else.", "Not us. We picked someone else.", "HEY, don't LOOK at us! We picked somebody ELSE! PROBABLY!", "Hey, don't look at us, we picked somebody else. Probably.", "Don't look at us. Our card was a mystery. To us as well.") },
         { by: 'c', opt: true, say: "Everybody's going to say that." },
         { by: 'e', opt: true, say: "We actually did pick somebody else." },
@@ -400,8 +400,8 @@ export default {
       { id: 'tw.yc1', turns: [
         { beat: 'Under the Yield sign is their photo. Under that, a second photo: the team that put them there.' },
         { by: 'b', ...V("It's got {teamB} on it. They did this. They did this to us.", "It's {teamB}. They did this.", "{teamB}. Them.", "It's got {teamB} on it! They DID this! They did this to US!", "It's got {teamB} on it. They're the ones who did this to us.", "{teamB}. Their faces. Right there. Smiling at us from a sign.") },
-        { by: 'a', say: "After we helped them at the last stop." },
-        { by: 'b', say: "After we gave them our water." },
+        { by: 'a', say: "After everything." },
+        { by: 'b', say: "We were nice to them!" },
         { beat: 'They sit down by the hourglass. {a} stares at the photo of {teamB} the whole time.' },
         { by: 'a', say: "I'm memorising their faces. For later." },
       ] },
@@ -434,7 +434,7 @@ export default {
     ],
     'express-give.to-the-weakest': [
       { id: 'tw.ew1', turns: [
-        { by: 'a', say: "{c}. You've been last three legs in a row. Take this." },
+        { by: 'a', say: "{c}. You've had a really rough time. Take this." },
         { by: 'c', ...V("Are you being nice, or are you being mean? I can't tell.", "Nice or mean? I can't tell.", "Is this nice or mean?", "Are you being NICE, or are you being MEAN? I CAN'T TELL!", "Are you being nice, or are you being mean? I honestly can't tell.", "Is this charity or an insult? It feels like both.") },
         { by: 'b', say: "A bit of both. But mostly nice." },
         { by: 'd', say: "We'll take it. We need all the help we can get." },
@@ -570,7 +570,7 @@ export default {
       ] },
       { id: 'tw.mr2', turns: [
         { by: 'b', say: "If we can't finish it, somebody should finish it for us." },
-        { by: 'a', ...V("{c} and {d}. They gave us half their money when we were broke.", "{c} and {d}. They gave us money when we were broke.", "{c} and {d}. They helped us.", "{c} and {d}! They gave us HALF their MONEY when we were BROKE!", "{c} and {d}. They gave us half their money when we were broke.", "{c} and {d}. They shared their last coins with us. That's a debt.") },
+        { by: 'a', say: "{c} and {d}. They helped us when we really needed it." },
         { by: 'c', say: "We're back? We're actually back in the race?" },
         { by: 'b', say: "Go and win it. Win it for both of us." },
         { by: 'd', say: "We will. We promise we will." },

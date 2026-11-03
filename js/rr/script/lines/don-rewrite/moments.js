@@ -119,14 +119,14 @@ export default {
   'dr.al2:3': "There is a rule book, and it's very thick, and I've read the first page.",
   // Don arriving to end a team's race
   'gb.ah1:1': "{team}, you were so far behind that I had to come all the way out here to find you.",
-  'gb.ah1:3': "It is, because you're out of the race, and by the way, the helicopter isn't for you, so you're walking.",
+  'gb.ah1:3': "It is, and I'm sorry, but you're out of the race.",
   'gb.ah4:1': "{team}, I'm sorry, but you're too far behind, and your race is over.",
   'gb.ao1:1': "{team}, you never made it to the Chill Zone, so the Chill Zone came to you, because I'm the Chill Zone.",
-  'gb.ao1:3': "You're out, and I walked all the way here, so think about that.",
+  'gb.ao1:3': "You're out, and I'm sorry. I wanted to tell you myself.",
   'gb.ao2:1': "Hi there, {team}, and I'm sorry, but the race is over for you.",
-  'gb.ao2:3': "I've been there for an hour, which was long enough to get this, and it's very good fruit, so goodbye.",
+  'gb.ao2:3': "I've been waiting a while, and I'm sorry it's me with the bad news.",
   'gb.as1:0': "{team}, you didn't make it to the stage, so I've brought the bad news to you.",
-  'gb.as1:2': "You could hear them, but they were cheering for somebody else, and I'm sorry.",
+  'gb.as1:2': "I know you could, and I'm so sorry. You came so close.",
   'gb.as2:1': "{team}, I'm sorry, but the race is over for you.",
   // the non-elimination fake-out
   'gb.fr2:0': "{team}, you are the last team to arrive.",

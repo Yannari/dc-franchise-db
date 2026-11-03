@@ -23,7 +23,7 @@ export default {
         ['a', "There was a pool. Our friends had a pool on when we'd go out."],
         ['b', "And whoever had today just won about forty dollars. Good for them."]),
       iv('gb.eg3', { relFam: 'family' },
-        ['a', "Before this, we hadn't spent a whole day together since we were kids."],
+        ['a', "Before this, we hadn't spent a whole day together in years."],
         ['b', "And now we've spent every single day together, in cabs and on planes and everywhere."],
         ['a', "I'd do it all again. Every single part of it."]),
       iv('gb.eg4', { relFam: 'romantic' },
@@ -54,8 +54,8 @@ export default {
         ['a', "That it was your fault, and that I love you anyway. In that order."]),
       iv('gb.eb4', { exitHow: 'on-location' },
         ['b', "Don came out to us, on a road in the middle of nowhere, just to tell us we were done."],
-        ['a', "He didn't even get out of the car properly."],
-        ['b', "He leaned out of the window. It was humiliating. I'd like that on the record."]),
+        ['a', "He came all that way just to say it to our faces."],
+        ['b', "It was humiliating. I'd like that on the record."]),
     ],
 
     'int-bleachers.roots-for': [
@@ -84,7 +84,7 @@ export default {
       iv('gb.bu2', null,
         ['b', "Honestly, I don't care who wins."],
         ['a', "You care a little."],
-        ['b', "I care that it isn't the ones who stole our cab. Other than that, I'm here for the snacks."]),
+        ['b', "I care that it's somebody nice. Other than that, I'm here for the snacks."]),
     ],
 
     'don-elim.accepts': [
@@ -132,20 +132,20 @@ export default {
       ] },
       { id: 'gb.dt2', turns: [
         don("{team}, I'm sorry. You're out of the race."),
-        { by: 'b', say: "This is because of the cab driver. You know it's because of the cab driver." },
+        { by: 'b', say: "This is because of that last challenge. You know it is." },
         don("It's because you came in last."),
-        { by: 'a', ...V("Because of the cab driver!", "Because of the cab driver.", "The cab driver did this.", "BECAUSE of the CAB DRIVER!", "Because of the cab driver, though!", "Because of the cab driver! Who sang! The whole way!") },
+        { by: 'a', say: "Because of that challenge!" },
         { beat: 'They storm off without another word.' },
       ] },
     ],
     'don-fakeout.relief': [
       { id: 'gb.fr1', turns: [
         don("{team}, you're the last team to arrive."),
-        { beat: 'Don waits. And waits. Somebody in the crowd starts to cry.' },
+        { beat: 'Don waits. And waits. {a} grabs {b}\'s hand.' },
         don("And I'm happy to tell you this was a non-elimination leg. You're still in the race."),
         { by: 'a', ...V("We're still in? We're still in!", "We're still in.", "Still in. We're still in.", "We're STILL IN? We're STILL IN!", "We're still in? We're actually still in!", "We're still in! I've already written a farewell speech!") },
         { by: 'b', say: "Why would you wait that long? Why would you do that to us?" },
-        don("Because it's funny."),
+        don("Because the pause is the best part!"),
       ] },
       { id: 'gb.fr2', turns: [
         don("{team}. You're last."),
@@ -224,7 +224,7 @@ export default {
         { beat: 'Don meets {a} and {b} at the bottom of the stage steps, before they can climb them.' },
         don("{team}, I'm sorry. The race is over for you."),
         { by: 'b', ...V("We can see the stage. We're right here.", "We're right here. The stage is right there.", "The stage is right there.", "We can SEE the STAGE! We're RIGHT here!", "We can see the stage from here. We're right here.", "The stage is right there. We could touch it. We will not touch it.") },
-        don("And it's a lovely view. Enjoy it."),
+        don("I know, and you were so close. I'm so sorry."),
       ] },
     ],
 

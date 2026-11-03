@@ -17,7 +17,7 @@ export default {
     ] },
     { id: 'cpi.st.ed2', when: at('falls-dive', 'the-edge'), turns: [
       by('a', "Feet first, arms in, right?"),
-      by('b', "Feet first, arms in, and don't scream with your mouth open."),
+      by('b', "Feet first, arms in. And breathe before you hit the water."),
       beat('{a} steps right up to the edge.'),
     ] },
     { id: 'cpi.st.jp1', when: at('falls-dive', 'the-jump'), turns: [
@@ -43,7 +43,7 @@ export default {
     { id: 'cpi.st.cp1', when: at('falls-dive', 'cliff-path'), turns: [
       beat('{a} climbs the slippery cliff path back up, the chest under one arm, one hand on the rock.'),
       by('b', "Careful! The rocks are wet!"),
-      by('a', "Everything's wet! I'm wet! The chest is wet!"),
+      by('a', "I know! I'm going slow!"),
     ] },
     { id: 'cpi.st.cp2', when: at('falls-dive', 'cliff-path'), turns: [
       by('a', "This chest is heavier than it looks."),
@@ -53,11 +53,11 @@ export default {
     { id: 'cpi.st.cu1', when: at('falls-dive', 'chest-up'), turns: [
       beat('{a} sets the chest down at the top of the falls and collapses next to it.'),
       by('b', "You did it! Open it! What's in it?"),
-      by('a', "The tip. It's just the tip. I was hoping for gold."),
+      by('a', "The tip. It's the tip. We've got it."),
     ] },
     { id: 'cpi.st.cu2', when: at('falls-dive', 'chest-up'), turns: [
       by('b', "Bobsled next. On a tropical island."),
-      by('a', "Of course it is. Let me drip for a minute first."),
+      by('a', "Okay. Give me one second to catch my breath."),
       beat('{a} wrings out {a.posAdj} shirt, and they head for the track.'),
     ] },
 
@@ -75,7 +75,7 @@ export default {
     { id: 'cpi.st.r11', when: at('bobsled', 'run-one'), turns: [
       beat('The sled rattles down the wooden track, round one bend, then another, faster and faster.'),
       by('b', "Lean! Lean into it!"),
-      by('a', "I'm leaning! Everything's leaning!"),
+      by('a', "I'm leaning! I'm leaning!"),
     ] },
     { id: 'cpi.st.r12', when: at('bobsled', 'run-one'), turns: [
       by('a', "That felt fast. Was that fast?"),
@@ -85,7 +85,7 @@ export default {
     { id: 'cpi.st.lp1', when: at('bobsled', 'the-loop'), turns: [
       beat('The track goes into a full loop. The sled goes up, upside down for one second, and comes round the other side.'),
       by('b', "We went upside down! We were upside down!"),
-      by('a', "My stomach is still up there!"),
+      by('a', "I didn't think we'd make it round!"),
     ] },
     { id: 'cpi.st.lp2', when: at('bobsled', 'the-loop'), turns: [
       by('a', "Here comes the loop. Hold on tight."),
@@ -124,7 +124,7 @@ export default {
     { id: 'cpi.sf.ed2', when: at('falls-dive', 'the-edge'), turns: [
       by('b', "Go on. On three."),
       beat('{b} counts to three. {a} doesn\'t move. {b} counts again.'),
-      by('a', "Count slower. Count much slower."),
+      by('a', "Sorry. Count again. I'll go this time."),
     ] },
     { id: 'cpi.sf.bt1', when: at('falls-dive', 'the-bottom'), turns: [
       beat('{a} comes up from the bottom gasping, with nothing in {a.posAdj} hands.'),
@@ -133,8 +133,8 @@ export default {
     ] },
     { id: 'cpi.sf.bt2', when: at('falls-dive', 'the-bottom'), turns: [
       by('b', "Have you got a chest?"),
-      beat('{a} holds up a rock. It\'s a chest-shaped rock.'),
-      by('a', "It looked like a chest from up close."),
+      beat('{a} holds up a rock. It isn\'t a chest.'),
+      by('a', "It looked like one down there. I'm going again."),
     ] },
     { id: 'cpi.sf.cp1', when: at('falls-dive', 'cliff-path'), turns: [
       beat('Halfway up the cliff path, {a}\'s foot slips, and the chest tumbles all the way back down into the lagoon.'),
@@ -166,11 +166,11 @@ export default {
     { id: 'cpi.sf.r12', when: at('bobsled', 'run-one'), turns: [
       by('b', "Why did you brake?"),
       by('a', "I didn't brake! I just put my foot down!"),
-      beat('A foot down is a brake.'),
+      beat('The sled slows right down.'),
     ] },
     { id: 'cpi.sf.lp1', when: at('bobsled', 'the-loop'), turns: [
       beat('The sled goes into the loop too slow, stalls at the top, and falls off sideways.'),
-      by('a', "Ow. Ow. That's a lot of wood to fall on."),
+      by('a', "Ow. Okay. I'm okay."),
       by('b', "Back to the top. Fresh set of three."),
     ] },
     { id: 'cpi.sf.lp2', when: at('bobsled', 'the-loop'), turns: [
@@ -185,8 +185,8 @@ export default {
     ] },
     { id: 'cpi.sf.r32', when: at('bobsled', 'run-three'), turns: [
       by('a', "Did we make it?"),
-      beat('They did not. The board flashes red, and the man with the clipboard points at the top of the hill.'),
-      by('b', "My legs. My poor legs."),
+      beat('They didn\'t. The board flashes red, and the man with the clipboard points back up the hill.'),
+      by('b', "Again? Okay. Okay, again."),
     ] },
   ],
 };

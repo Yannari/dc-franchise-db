@@ -119,12 +119,12 @@ export default {
         { by: 'a', say: "I thought they did. Let's just go back." },
       ] },
       { id: 'vr2.om3', turns: [
-        { by: 'b', say: "They said it closes at six. We've got loads of time." },
-        { by: 'a', say: "Are you sure they didn't say it opens at six?" },
-        { by: 'b', say: "Why would they say that?" },
-        { beat: 'When they get there, a sign by the entrance says it opens at six.' },
-        { by: 'a', say: "Because that's what it says." },
-        { by: 'b', say: "Okay, I'm never listening in on anyone again." },
+        { by: 'b', say: "I heard them. They said it's left at the end of this street." },
+        { by: 'a', say: "Left? Are you sure? I thought they said right." },
+        { by: 'b', say: "I'm sure. Left. Come on." },
+        { beat: 'They go left. Five minutes later, they are at a dead end.' },
+        { by: 'a', say: "It was right. They said right." },
+        { by: 'b', say: "Okay. I'm never listening in on anyone again." },
       ] },
     ],
     'small-talk.overshare': [

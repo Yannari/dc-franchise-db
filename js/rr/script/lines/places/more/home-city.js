@@ -13,12 +13,12 @@ const tower = {
       { beat: 'A sign by the first step says "1". {a} and {b} look up the stairwell. It disappears into the dark.' },
       { by: 'b', say: "One. We've done one." },
       { by: 'a', say: "Only a hundred and forty-three to go." },
-      { by: 'b', say: "Why would you tell me that?" },
+      { by: 'b', say: "Don't count. Please don't count." },
     ] },
     { id: 'hc2.st-s2', when: STAIRS, turns: [
       { by: 'a', ...V("Elevators are for people who want to lose. We're climbing.", "Elevators are for losers.", "We climb.", "ELEVATORS are for LOSERS! We're CLIMBING!", "I think elevators are for people who want to lose, so we're climbing.", "The stairs are honest. The elevator lies.") },
       { by: 'b', say: "Say that again on floor ninety." },
-      { by: 'a', say: "I will. Quieter, probably." },
+      { by: 'a', say: "I will. We're not stopping." },
     ] },
     { id: 'hc2.sd-s1', when: DECK, turns: [
       { beat: 'The glass elevator rises up the side of the tower. The city drops away under their feet.' },
@@ -30,8 +30,8 @@ const tower = {
   'task-try.first-try': [
     { id: 'hc2.sd-s2', when: DECK, turns: [
       { by: 'a', say: "We picked the elevator. The easy one." },
-      { by: 'b', say: "Then why is a man strapping me to a rope?" },
-      { by: 'a', say: "Because the easy one has a catch." },
+      { by: 'b', say: "I know. And now we have to walk round the outside." },
+      { by: 'a', say: "Just hold the rail and don't look down." },
     ] },
     { id: 'hc2.st-f1', when: STAIRS, turns: [
       { beat: '{a} and {b} run every flight with the same steady stomp, never stopping, never talking.' },
@@ -47,12 +47,12 @@ const tower = {
     { id: 'hc2.sd-f1', when: DECK, turns: [
       { beat: 'On the outside of the deck, {a} and {b} walk the rail hand over hand, the wind tugging at their clothes.' },
       { by: 'a', say: "Keep going. Hand, then foot. Hand, then foot." },
-      { by: 'b', say: "This is the best view I've ever been terrified of." },
+      { by: 'b', say: "The view is amazing. I'm also terrified." },
     ] },
     { id: 'hc2.sd-f2', when: DECK, turns: [
-      { by: 'b', say: "Lean back. The man said lean back. Trust the rope." },
-      { beat: '{a} leans back over the city, arms wide, and the rope holds.' },
-      { by: 'a', say: "I'm flying! I'm flying over the whole city!" },
+      { by: 'b', say: "Keep your back to the wall. One hand on the rail." },
+      { beat: '{a} edges along the rail, one hand after the other, all the way to the corner.' },
+      { by: 'a', say: "Okay. Okay, I'm doing it. I'm actually doing it." },
     ] },
   ],
   'task-try.after-fails': [
@@ -64,7 +64,7 @@ const tower = {
     ] },
     { id: 'hc2.st-a2', when: STAIRS, turns: [
       { by: 'b', say: "Hold the rail and pull. Let your arms do some of it." },
-      { by: 'a', say: "My arms didn't sign up for this." },
+      { by: 'a', say: "Okay. It's helping. It's actually helping." },
       { beat: 'Pulling on the rail, flight by flight, they make it all the way.' },
     ] },
     { id: 'hc2.sd-a1', when: DECK, turns: [
@@ -95,7 +95,7 @@ const tower = {
     { id: 'hc2.tw-dn3', when: TW, turns: [
       { by: 'a', say: "My legs are shaking." },
       { by: 'b', say: "Mine have been shaking since we got out of the cab." },
-      { by: 'a', say: "Then we're shaking together." },
+      { by: 'a', say: "We made it, though. Come on." },
     ] },
     { id: 'hc2.tw-dn4', when: TW, turns: [
       { beat: '{b} reads the tip and turns very slowly towards the window, and the long cable stretching across the lake.' },
@@ -112,7 +112,7 @@ const zipline = {
       { beat: 'The zipline cable hums in the wind. The pole with the tip sticks out of the lake halfway across.' },
       { by: 'b', say: "We grab the tip off that pole? While we're flying?" },
       { by: 'a', say: "While we're flying. One hand." },
-      { by: 'b', say: "I'm going to need both hands to scream." },
+      { by: 'b', say: "Okay. I can do that. I think I can do that." },
     ] },
     { id: 'hc2.zl-s2', when: ZL, turns: [
       { by: 'a', say: "Feet up when you pass the pole. Arm out. Grab." },
@@ -126,34 +126,34 @@ const zipline = {
     ] },
     { id: 'hc2.zl-s4', when: ZL, turns: [
       { by: 'a', say: "Have you ever done one of these?" },
-      { by: 'b', say: "I've seen one on a holiday advert." },
+      { by: 'b', say: "Never. Not once." },
       { by: 'a', say: "Same. Let's go." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'hc2.zl-f1', when: ZL, turns: [
-      { beat: '{b} reaches out at exactly the right moment and plucks the tip off the pole like an apple from a tree.' },
-      { by: 'b', say: "GOT IT!" },
-      { by: 'a', say: "YOU GOT IT! I'M SO PROUD OF YOU!" },
+      { beat: '{b} reaches out at exactly the right moment and pulls the tip clean off the pole.' },
+      { by: 'b', say: "I got it!" },
+      { by: 'a', say: "Yes! That was perfect!" },
     ] },
     { id: 'hc2.zl-f2', when: ZL, turns: [
       { by: 'a', say: "Arm out! Now!" },
-      { beat: '{a} grabs the tip, nearly drops it, catches it in {a.posAdj} teeth and lands on the island holding it.' },
-      { by: 'b', say: "Did you catch that with your mouth?" },
-      { by: 'a', say: "Mmm-hmm." },
+      { beat: '{a} grabs the tip, nearly drops it, gets it back against {a.posAdj} chest, and lands on the island holding it.' },
+      { by: 'b', say: "I thought you dropped it!" },
+      { by: 'a', say: "So did I! I've got it!" },
     ] },
     { id: 'hc2.zl-f3', when: ZL, turns: [
       { beat: '{a} and {b} land on the island, spin round, and look back up at the tower they came from.' },
       { by: 'b', say: "We came from up there?" },
-      { by: 'a', say: "On a wire. With the tip. First go." },
+      { by: 'a', say: "Yeah. And we got the tip first go." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'hc2.zl-a1', when: ZL, turns: [
       { by: 'b', say: "Stop flapping. You're spinning because you're flapping." },
       { by: 'a', say: "I'm not flapping. I'm reaching." },
-      { by: 'b', say: "You're reaching like a bird." },
-      { beat: 'This time {a} reaches like a person, and gets the tip.' },
+      { by: 'b', say: "Just one arm. Keep the other one on the handle." },
+      { beat: 'This time {a} keeps one hand on the handle, reaches with the other, and gets the tip.' },
     ] },
     { id: 'hc2.zl-a2', when: ZL, turns: [
       { beat: '{a} climbs out of the lake, dripping, and back up the steps to the platform.' },
@@ -163,8 +163,8 @@ const zipline = {
     ] },
     { id: 'hc2.zl-a3', when: ZL, turns: [
       { by: 'a', ...V("Watch the pole, not the water. The water isn't going anywhere.", "Watch the pole.", "Pole. Not water.", "Watch the POLE! NOT the WATER!", "Just watch the pole and not the water, it isn't going anywhere.", "The pole is your future. The water is your past.") },
-      { by: 'b', say: "The water keeps waving at me." },
-      { by: 'a', say: "Don't wave back. Grab." },
+      { by: 'b', say: "I know. I keep looking down at it." },
+      { by: 'a', say: "Then stop looking down. Look at the pole and grab." },
       { beat: 'Eyes on the pole, {b} grabs the tip.' },
     ] },
     { id: 'hc2.zl-a4', when: ZL, turns: [
@@ -188,13 +188,13 @@ const zipline = {
     { id: 'hc2.zl-dn3', when: ZL, turns: [
       { by: 'a', say: "Do you think everyone at home is watching?" },
       { by: 'b', say: "Not yet. It's not on yet." },
-      { by: 'a', say: "Then I can tell them I didn't scream." },
+      { by: 'a', say: "Good. Then nobody knows I screamed yet." },
     ] },
     { id: 'hc2.zl-dn4', when: ZL, turns: [
       { beat: '{b} holds the tip up and gives it a kiss.' },
-      { by: 'b', say: "Our first tip. I'm keeping it forever." },
-      { by: 'a', say: "You need it to get to the next place." },
-      { by: 'b', say: "Then I'm keeping it for one more minute." },
+      { by: 'b', say: "Our first tip. I can't believe we're doing this." },
+      { by: 'a', say: "Believe it on the way. Come on, let's find Don." },
+      { by: 'b', say: "Okay. Okay, I'm coming." },
     ] },
     { id: 'hc2.zl-dn5', when: ZL, turns: [
       { by: 'a', say: "The tower and the zipline. Both done." },

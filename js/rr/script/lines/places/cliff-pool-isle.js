@@ -20,7 +20,7 @@ const place = {
   'don-opener.annoyed': [
     { id: 'cpi.op1', when: P, turns: [
       beat("Don stands on a white beach under a palm tree, in sunglasses and a flowered shirt, reggae drifting from a beach bar behind him."),
-      don("Welcome to Cliff Pool Isle! Waterfalls, white sand, and the most relaxed people on earth. Everybody here is so calm. It's making me very nervous."),
+      don("Welcome to Cliff Pool Isle! Waterfalls, white sand, and the most relaxed people on earth, and I love it here!"),
       don("Today, teams dive off a waterfall for treasure, and then ride a bobsled. On a tropical island. Don't ask me how. Somebody built it."),
       beat('A man on the beach bar waves at Don, slowly. Don waves back, quickly. The man laughs.'),
     ] },
@@ -42,7 +42,7 @@ const place = {
       beat("The minibus rounds a bend, and there it is: a waterfall pouring off a green cliff into a lagoon so clear they can see the bottom."),
       by('a', "That's the most beautiful thing I've ever seen."),
       by('b', "And we have to jump off it."),
-      by('a', "It's still the most beautiful thing I've ever seen."),
+      by('a', "I know. It's still beautiful."),
     ] },
     { id: 'cpi.ar2', when: P, turns: [
       by('b', "Everybody here is so happy. Everybody's waving."),
@@ -53,13 +53,13 @@ const place = {
   'arrival-awe.dread': [
     { id: 'cpi.ad1', when: P, turns: [
       by('a', "The tip says 'bobsled'. Bobsled? It's thirty degrees."),
-      by('b', "Maybe it's a typo."),
-      by('a', "It's in big letters. With a picture of a bobsled."),
+      by('b', "On an island? How does that work?"),
+      by('a', "I don't know. We'll find out."),
     ] },
     { id: 'cpi.ad2', when: P, turns: [
       by('b', "'Who is a strong swimmer?' Why do they always ask that?"),
-      by('a', "Because they're always about to throw one of us into water."),
-      by('b', "That makes sense, actually."),
+      by('a', "Because one of us is going in the water."),
+      by('b', "Okay. That's fair."),
     ] },
   ],
 };
@@ -70,7 +70,7 @@ const roads = {
     { id: 'cpi.tm1', when: { taskId: 'coast-minibus', mishap: 'goat-on-the-bus' }, turns: [
       beat("The minibus stops for a woman at the roadside, who gets on with a goat. Then it stops for her cousin. Then her cousin's cousin."),
       by('a', "Is this bus ever going to move?"),
-      by('b', "The goat's sitting on my bag. I've made peace with it."),
+      by('b', "It'll move. Just relax. There's nothing we can do."),
       beat('Twenty minutes, four relatives and one goat later, the bus reaches the falls.'),
     ] },
   ],
@@ -94,30 +94,30 @@ const falls = {
   ],
   'whose-botch.obvious': [
     { id: 'cpi.fd-w1', when: FD, turns: [
-      by('b', "You did the last one? No, that was me. So it's you."),
-      by('a', "Are you sure it was you?"),
-      by('b', "I remember it very clearly. I still have a bruise. Jump."),
+      by('b', "I did the last one. So this one's yours."),
+      by('a', "Are you sure?"),
+      by('b', "I'm sure. I still have the bruise. You're jumping."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'cpi.fd-w2', when: FD, turns: [
       by('a', "I'll jump. I've always wanted to jump off a waterfall."),
       by('b', "Have you ever jumped off anything?"),
-      by('a', "A diving board. Once. Belly first. But I wanted to do it."),
+      by('a', "A diving board, once. It didn't go well. But I want to do this."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'cpi.fd-w3', when: FD, turns: [
       by('b', "I'm not going off that. No way. You."),
       by('a', "What if I'm scared too?"),
-      by('b', "Then you'll be scared and wet. Go."),
+      by('b', "Then be scared and do it anyway. Go on."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'cpi.fd-w4', when: FD, turns: [
       by('a', "'Who is a strong swimmer?' You swim every morning."),
-      by('b', "In a pool. With lanes. And a lifeguard."),
-      by('a', "That's still swimming."),
+      by('b', "In a pool. This is a waterfall."),
+      by('a', "It's still water. You'll be fine."),
     ] },
   ],
   'task-start.any': [
@@ -129,7 +129,7 @@ const falls = {
     { id: 'cpi.fd-s2', when: FD, turns: [
       by('b', "Feet first. Arms in. And hold your nose."),
       by('a', "Why hold my nose?"),
-      by('b', "Trust me. Hold your nose."),
+      by('b', "So you don't get water up it. Trust me."),
     ] },
     { id: 'cpi.fd-s3', when: FD, turns: [
       // (the jump is its own stage, drawn there: the start stays at the edge; 2026-10-21)
@@ -139,15 +139,15 @@ const falls = {
     ] },
     { id: 'cpi.fd-s4', when: FD, turns: [
       by('a', "How deep is the lagoon?"),
-      by('b', "Deep enough to jump into. Hopefully not too deep to find a chest."),
-      by('a', "Hopefully."),
+      by('b', "Deep enough to jump into. That's all I know."),
+      by('a', "Okay. Here I go."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'cpi.fd-f1', when: FD, turns: [
       beat("{a} jumps, dives, comes up with a little wooden chest, and climbs the cliff path without a single slip."),
       by('b', "You got it! First go! And you didn't fall!"),
-      by('a', "I'm a treasure hunter now. That's my job."),
+      by('a', "I can't believe that worked!"),
     ] },
     { id: 'cpi.fd-f2', when: FD, turns: [
       by('b', "There! On the bottom! I can see it from up here!"),
@@ -162,14 +162,14 @@ const falls = {
     { id: 'cpi.fd-f4', when: FD, turns: [
       by('a', "First jump. First chest. First climb."),
       by('b', "That was amazing."),
-      by('a', "It really was. Can I do it again? For fun?"),
+      by('a', "It really was. Okay, what's next?"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'cpi.fd-a1', when: FD, turns: [
       by('b', "You keep slipping on the path. Go barefoot. Your shoes are the problem."),
       beat("{a} kicks off the wet shoes, climbs barefoot, and sets the chest down at the top."),
-      by('a', "Barefoot! Why didn't I think of that?"),
+      by('a', "That's so much better. Why didn't I do that before?"),
     ] },
     { id: 'cpi.fd-a2', when: FD, turns: [
       beat("Second jump. This time {a} doesn't hesitate at the edge, just jumps, and finds a chest on the first dive."),
@@ -179,29 +179,29 @@ const falls = {
     { id: 'cpi.fd-a3', when: FD, turns: [
       by('a', "I keep coming up with nothing because I'm looking in the middle. They're all at the edges."),
       beat("{a} dives at the edge of the lagoon, and comes up holding a chest."),
-      by('b', "The edges! It was always the edges!"),
+      by('b', "Good! Now bring it up! Carefully!"),
     ] },
     { id: 'cpi.fd-a4', when: FD, turns: [
       beat("After one refusal and one dropped chest, {a} finally carries a chest all the way to the top."),
       by('a', "Third time! Finally at the top!"),
-      by('b', "I was starting to think we'd live here."),
+      by('b', "Finally! Come on, let's go."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'cpi.fd-t1', when: FD, turns: [
       beat("{a} has been standing at the edge of the waterfall for five minutes, not moving."),
-      by('a', "I'm going. I'm going. I'm nearly going."),
+      by('a', "I'm going. I'm going. Give me a second."),
       by('b', "You've been nearly going for five minutes!"),
     ] },
     { id: 'cpi.fd-t2', when: FD, turns: [
       by('b', "That's three dives with nothing. Can you see them down there?"),
-      by('a', "I can see fish. And rocks. And more fish."),
-      by('b', "Look past the fish!"),
+      by('a', "I can't see them. It's all rocks down there."),
+      by('b', "Look near the edges! Try the edges!"),
     ] },
     { id: 'cpi.fd-t3', when: FD, turns: [
       beat("{a} slips on the cliff path, catches a vine, and dangles there, clutching the chest in the other arm."),
       by('a', "I'm holding on! I'm holding the chest!"),
-      by('b', "Hold both! Don't let go of either!"),
+      by('b', "Hold on! Don't let go!"),
     ] },
   ],
   'task-done.any': [
@@ -213,11 +213,11 @@ const falls = {
     { id: 'cpi.fd-dn2', when: FD, turns: [
       beat("{a} stands dripping at the top of the falls, chest in hand, as {b} gives {a.obj} a big, soggy hug."),
       by('b', "You're so wet."),
-      by('a', "You hugged me. Now you're wet too."),
+      by('a', "I don't care. We did it."),
     ] },
     { id: 'cpi.fd-dn3', when: FD, turns: [
       by('b', "Bobsled next. On a tropical island."),
-      by('a', "This is the strangest place we've ever been."),
+      by('a', "This is such a weird place for a bobsled."),
       by('b', "And the most beautiful."),
     ] },
   ],
@@ -235,14 +235,14 @@ const falls = {
     { id: 'cpi.fd-x3', when: FD, turns: [
       beat("{a} walks to the edge, looks down, and steps straight back."),
       by('a', "I can't. Not yet. Give me a minute."),
-      by('b', "Take your minute. Then jump."),
+      by('b', "Okay. Take a breath. Then jump."),
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'cpi.fd-v1', when: FD, turns: [
-      by('b', "Jump! You can do it! You're a dolphin! You're a dolphin!"),
-      by('a', "Dolphins don't jump off waterfalls!"),
-      by('b', "This one does!"),
+      by('b', "Jump! You can do it! Just go!"),
+      by('a', "I'm going! I'm going!"),
+      by('b', "Go! Now!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -263,14 +263,14 @@ const falls = {
     { id: 'cpi.fd-v4', when: FD, turns: [
       beat("{b} sits on a rock at the top, saying nothing, eyes fixed on the lagoon far below."),
       by('a', "You're very quiet up there."),
-      by('b', "I'm praying. Silently. With all my might."),
+      by('b', "I'm just nervous. Watching is worse than doing it."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'cpi.fd-h1', when: FD, turns: [
       beat("While the guide is looking the other way, {b} tosses a rope down the steepest bit of the path for {a} to hold."),
       by('a', "Where did this rope come from?"),
-      by('b', "The island provides. Climb."),
+      by('b', "Don't worry about it. Just climb."),
     ] },
   ],
 };
@@ -295,12 +295,12 @@ const sled = {
     { id: 'cpi.bs-s1', when: BS, turns: [
       beat("{a} and {b} grab the handles at the back of the bobsled, at the top of the track, and look down the first bend."),
       by('a', "Push on three, jump in on four."),
-      by('b', "There is no four in a countdown!"),
+      by('b', "Okay. Push on three, jump on four."),
     ] },
     { id: 'cpi.bs-s2', when: BS, turns: [
       by('b', "I'll steer. You lean."),
       by('a', "Lean which way?"),
-      by('b', "The way I scream."),
+      by('b', "Into the bends. Just follow me."),
     ] },
     { id: 'cpi.bs-s3', when: BS, turns: [
       beat("{a} and {b} push the sled off the line, run three steps, and jump in, just in time."),
@@ -309,15 +309,15 @@ const sled = {
     ] },
     { id: 'cpi.bs-s4', when: BS, turns: [
       by('a', "Three runs. What's the time on the board?"),
-      by('b', "Faster than any of the teams so far."),
-      by('a', "Then we'd better be the fastest team so far."),
+      by('b', "I can't see it from here. Just go fast."),
+      by('a', "Okay. Fast. Got it."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'cpi.bs-f1', when: BS, turns: [
       beat("{a} and {b} fly down the track three times, each run faster than the last, and the total flashes up under the board's number."),
       by('b', "We beat it! First set of three!"),
-      by('a', "We're bobsledders! On a tropical island!"),
+      by('a', "We did it! Three good runs!"),
     ] },
     { id: 'cpi.bs-f2', when: BS, turns: [
       by('a', "Lean left! Lean right! Lean left!"),
@@ -326,20 +326,20 @@ const sled = {
     ] },
     { id: 'cpi.bs-f3', when: BS, turns: [
       beat("The sled shoots across the finish line, and the island crowd on the hillside erupts."),
-      by('b', "They're cheering for us! A whole hill of people!"),
-      by('a', "We're famous here now. We're island famous."),
+      by('b', "They're cheering for us!"),
+      by('a', "That was amazing. That was so much fun."),
     ] },
     { id: 'cpi.bs-f4', when: BS, turns: [
       by('b', "First try. Three runs. Beat the board."),
-      by('a', "I've got sunburn and track burn."),
-      by('b', "Small price."),
+      by('a', "Everything hurts, but we got it."),
+      by('b', "Worth it. Come on."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'cpi.bs-a1', when: BS, turns: [
       by('b', "We're losing time on the push. Push longer, jump in later."),
       beat("They push for twice as long, jump in at the last moment, and the total beats the board."),
-      by('a', "A longer push! That's the whole trick!"),
+      by('a', "It worked! The longer push worked!"),
     ] },
     { id: 'cpi.bs-a2', when: BS, turns: [
       beat("Second set of three. {a} and {b} are tucked so low in the sled their heads barely show, and every run is quicker."),
@@ -349,12 +349,12 @@ const sled = {
     { id: 'cpi.bs-a3', when: BS, turns: [
       by('a', "We tipped on the big bend. So on the big bend, we both lean in. Hard."),
       beat("They lean in hard on the big bend, stay upright, and post their best total yet."),
-      by('b', "The big bend didn't beat us!"),
+      by('b', "That's it! We stayed on!"),
     ] },
     { id: 'cpi.bs-a4', when: BS, turns: [
       beat("After one tip-over and one slow set, {a} and {b} finally post three runs fast enough to beat the board."),
       by('a', "Beat it! Finally beat it!"),
-      by('b', "My bottom will never be the same."),
+      by('b', "Finally. Let's go before anything else happens."),
     ] },
   ],
   'task-try.struggling': [
@@ -371,24 +371,24 @@ const sled = {
     { id: 'cpi.bs-t3', when: BS, turns: [
       beat("{a} misses the jump into the sled, and runs after it down the track as it disappears round the bend."),
       by('a', "Wait! Wait for me!"),
-      by('b', "I can't wait! It's a sled!"),
+      by('b', "I can't stop it! Run!"),
     ] },
   ],
   'task-done.any': [
     { id: 'cpi.bs-dn1', when: BS, turns: [
       by('a', "I never thought I'd bobsled on a beach."),
       by('b', "I never thought I'd bobsled at all."),
-      by('a', "Life is full of surprises."),
+      by('a', "Neither did I. Let's go."),
     ] },
     { id: 'cpi.bs-dn2', when: BS, turns: [
       beat("{a} and {b} walk down to the resort, shaking the dust off, past people cheering from their porches."),
       by('b', "Everybody here is so nice."),
-      by('a', "Everybody here is so calm. I want to be this calm."),
+      by('a', "They're all so calm. I want to live here."),
     ] },
     { id: 'cpi.bs-dn3', when: BS, turns: [
       by('b', "The pool. The Chill Zone is by the pool."),
       by('a', "Can we get in the pool?"),
-      by('b', "We've earned the pool."),
+      by('b', "After we check in. Come on."),
     ] },
   ],
   'attempt-fail.any': [

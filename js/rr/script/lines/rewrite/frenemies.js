@@ -515,7 +515,7 @@ export default {
         { by: 'b', say: "We did it! That was so good!" },
         { by: 'a', say: "I'm just glad I figured it out in time." },
         { by: 'b', say: "You were amazing." },
-        { by: 'a', conf: "{b} figured it out, actually. But {b.sub} wasn't going to say so, so I did." },
+        { by: 'a', conf: "Honestly? {b} figured it out. But {b.sub} wasn't going to take the credit, so I took it." },
         { by: 'b', say: "I barely did anything." },
         { by: 'a', say: "You did your best, and that's what counts." },
       ] },

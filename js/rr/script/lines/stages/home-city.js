@@ -11,8 +11,8 @@ export default {
     // ── the stairs ──
     { id: 'hc.st.sw1', when: at('tower', 'stairwell'), turns: [
       beat('{a} hauls open the heavy stairwell door. A sign on the wall says FLIGHT 1 OF 144.'),
-      by('b', "Why would they put that on a sign?"),
-      by('a', "So we know how much longer we have to suffer."),
+      by('b', "A hundred and forty-four. Oh my God."),
+      by('a', "Don't look at the sign. Just climb."),
       beat('They take the first steps two at a time.'),
     ] },
     { id: 'hc.st.sw2', when: at('tower', 'stairwell'), turns: [
@@ -23,9 +23,9 @@ export default {
       by('a', "That's what I'm hoping."),
     ] },
     { id: 'hc.st.sw3', when: at('tower', 'stairwell'), turns: [
-      beat('The stairwell is concrete, grey and echoing, and it smells of whoever climbed it last.'),
-      by('b', "I took the stairs at work once. Ten floors. I still remember it."),
-      by('a', "This is a hundred and forty-four."),
+      beat('The stairwell is concrete, grey and echoing, and it is already hot.'),
+      by('b', "My legs are already burning, and we're on flight twelve."),
+      by('a', "Don't think about it. Just keep going."),
     ] },
     { id: 'hc.st.bu1', when: at('tower', 'burn'), turns: [
       beat('Somewhere around flight sixty, the talking stops. There is only breathing, and the slap of feet on concrete.'),
@@ -47,7 +47,7 @@ export default {
       by('a', "Then count out loud. Count really loud."),
     ] },
     { id: 'hc.st.lf1', when: at('tower', 'last-flights'), turns: [
-      beat('FLIGHT 140, says the wall. {a} and {b} look at the sign as if it were an old friend.'),
+      beat('The sign on the wall says FLIGHT 140.'),
       by('b', "Four more. Only four more."),
       by('a', "Four. I can do four."),
     ] },
@@ -227,10 +227,10 @@ export default {
       beat('It takes a long, painful while before they can climb again.'),
     ] },
     { id: 'hc.sf.bu3', when: at('tower', 'burn'), turns: [
-      beat('{a} and {b} lie flat on a landing, staring at the ceiling, breathing like old bellows.'),
-      by('b', "If we lie here long enough, do you think they'll send the elevator?"),
+      beat('{a} and {b} lie flat on a landing, staring at the ceiling, too out of breath to talk.'),
+      by('b', "Two minutes. Just give me two minutes."),
       by('a', "No. Get up."),
-      by('b', "You get up first."),
+      by('b', "Okay. Okay, I'm up."),
     ] },
     { id: 'hc.sf.lf1', when: at('tower', 'last-flights'), turns: [
       beat('With the top almost in sight, {b} misses a step and goes down hard on {b.posAdj} knees.'),
@@ -240,15 +240,15 @@ export default {
     ] },
     { id: 'hc.sf.lf2', when: at('tower', 'last-flights'), turns: [
       by('a', "That's the top. That's the door to the top."),
-      beat('{a} pushes it. It\'s a cupboard full of mops.'),
+      beat('{a} pushes it. It\'s locked, and the sign says ROOF ACCESS, STAFF ONLY.'),
       by('b', "That's not the top."),
-      by('a', "No. It's a cupboard. Keep climbing."),
+      by('a', "It's the wrong door. Keep climbing."),
     ] },
     // ── the Sky-deck ──
     { id: 'hc.sf.cl1', when: at('tower', 'clip-on'), turns: [
       beat('{a} clips both carabiners onto {a.posAdj} own belt loop instead of the rail.'),
       by('b', "You're clipped to yourself!"),
-      by('a', "Oh. Well, at least I'm safe."),
+      by('a', "Oh, no. Sorry. Sorry."),
       beat('The crew member makes them take everything off and start the check again.'),
     ] },
     { id: 'hc.sf.cl2', when: at('tower', 'clip-on'), turns: [
@@ -271,15 +271,15 @@ export default {
     ] },
     { id: 'hc.sf.ra3', when: at('tower', 'rail'), turns: [
       beat('Halfway round, {b} sits down on the deck, back against the glass, and refuses to stand.'),
-      by('b', "I'm not moving. I live here now."),
-      by('a', "You can't stay out here."),
+      by('b', "I can't. I can't do it. I need a minute."),
+      by('a', "You can. You're clipped on. You're safe. Look at me."),
       beat('By the time {a} coaxes {b} back up, the crew has sent them back to the start.'),
     ] },
     // ── the zipline ──
     { id: 'hc.sf.ci1', when: at('zipline', 'clip-in'), turns: [
       beat('{a} clips the trolley on upside down. The crew member flips it round without a word.'),
-      by('a', "I knew that. I was checking."),
-      by('b', "Sure you were."),
+      by('a', "Sorry. My hands are shaking."),
+      by('b', "It's okay. Take a breath."),
     ] },
     { id: 'hc.sf.ci2', when: at('zipline', 'clip-in'), turns: [
       by('b', "I'm not going. You go first. I'll be right behind you."),
@@ -290,7 +290,7 @@ export default {
       beat('{a} stops dead in the middle of the line, dangling over the water, not quite heavy enough to reach the end.'),
       by('a', "Why have I stopped?"),
       by('b', "Pull yourself along! Hand over hand!"),
-      beat('{a} hauls {a.ref} along the cable, very slowly, while the boats below enjoy the show.'),
+      beat('{a} hauls {a.ref} along the cable, very slowly, while the teams behind wait at the top.'),
     ] },
     { id: 'hc.sf.ol2', when: at('zipline', 'over-lake'), turns: [
       beat('Halfway out, {b} spins round on the trolley and ends up going backwards.'),

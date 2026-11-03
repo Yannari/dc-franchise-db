@@ -11,7 +11,7 @@ export default {
   'task-stage.ok': [
     // ── Squeegee ──
     { id: 'gtg.st.hu1', when: at(T, 'harness-up'), turns: [
-      beat('On the roof of the glass tower, a worker clips {a} and {b} into harnesses and points at the edge, and the edge is the edge of everything.'),
+      beat('On the roof of the glass tower, a worker clips {a} and {b} into harnesses and points at the edge.'),
       by('b', "How high up are we?"),
       by('a', "Don't ask me that right now."),
     ] },
@@ -33,17 +33,17 @@ export default {
     { id: 'gtg.st.wa1', when: at(T, 'wash'), turns: [
       beat('{a} soaps the pane, {b} squeegees it, and the glass comes up shining like a mirror.'),
       by('a', "Look at that! It's so shiny!"),
-      by('b', "I can see my face. I look terrified."),
+      by('b', "I can see my face in it."),
     ] },
     { id: 'gtg.st.wa2', when: at(T, 'wash'), turns: [
       by('b', "Top to bottom, one long stroke. Then wipe the blade."),
       by('a', "How do you know how to do this?"),
-      by('b', "I washed cars one summer. Same thing, just higher."),
+      by('b', "I washed cars one summer. It's the same thing."),
     ] },
     { id: 'gtg.st.wa3', when: at(T, 'wash'), turns: [
       beat('On the other side of the glass, a hotel guest in a bathrobe looks up from breakfast and stares at them.'),
       by('a', "Morning!"),
-      beat('The guest closes the curtains.'),
+      beat('The guest waves back, smiling.'),
     ] },
     { id: 'gtg.st.co1', when: at(T, 'the-column'), turns: [
       beat('Pane after pane, the platform inches down the face of the tower, leaving a long, shining stripe of clean glass above it.'),
@@ -52,7 +52,7 @@ export default {
     ] },
     { id: 'gtg.st.co2', when: at(T, 'the-column'), turns: [
       by('a', "How many more?"),
-      by('b', "Twelve. Don't count. It makes it worse."),
+      by('b', "Twelve. Don't count. Just keep going."),
       beat('They wash the next one, and the next, and the next, until their arms ache and the whole column sparkles.'),
     ] },
     { id: 'gtg.st.st1', when: at(T, 'squeegee-tip'), turns: [
@@ -62,13 +62,13 @@ export default {
     ] },
     { id: 'gtg.st.st2', when: at(T, 'squeegee-tip'), turns: [
       by('a', "Solid ground. I've never been so happy to stand on a floor."),
-      by('b', "\"Take a taxi to the gold market.\" Can you walk to a taxi?"),
-      beat('{a} can walk to a taxi, but only by holding onto {b}\'s arm all the way.'),
+      by('b', "It says take a taxi to the gold market. Can you walk?"),
+      beat('{a} walks to the taxi holding onto {b}\'s arm all the way.'),
     ] },
 
     // ── Serve ──
     { id: 'gtg.st.ru1', when: at(T, 'racket-up'), turns: [
-      beat('The rooftop court looks out over the sea, and across the net sits the launcher, a squat, humming machine with a ball loaded in its mouth.'),
+      beat('The rooftop court looks out over the sea, and across the net sits the launcher, a squat, humming machine with a ball loaded in it.'),
       by('a', "It's just a ball machine. How hard can it be?"),
       by('b', "It says it's the toughest one in the world."),
     ] },
@@ -78,17 +78,17 @@ export default {
       beat('They take a racket each and get into position on the baseline.'),
     ] },
     { id: 'gtg.st.sv1', when: at(T, 'the-serve'), turns: [
-      beat('The launcher whirs, clicks, and fires. The ball comes over the net like a cannonball, and {a} swings, and somehow, the racket finds it.'),
+      beat('The launcher whirs, clicks, and fires. The ball comes over the net so fast, and {a} swings, and somehow, the racket finds it.'),
       by('b', "You hit it! You touched it!"),
       by('a', "I hit it! My arm's numb, but I hit it!"),
     ] },
     { id: 'gtg.st.sv2', when: at(T, 'the-serve'), turns: [
-      by('a', "Watch its mouth. When the light goes red, it fires."),
+      by('a', "Watch the light. When it goes red, it fires."),
       beat('The light goes red. {b} is already moving before the ball comes out, racket up, and gets a clean piece of it.'),
       by('b', "Ha! I knew it was coming!"),
     ] },
     { id: 'gtg.st.rt1', when: at(T, 'the-return'), turns: [
-      beat('The ball flies back over the net, drops inside the line, and bounces past the launcher before it can do anything about it.'),
+      beat('The ball flies back over the net, drops inside the line, and bounces past the launcher.'),
       by('a', "In! It was in! Was it in?"),
       by('b', "It was in! We beat the machine!"),
     ] },
@@ -98,13 +98,13 @@ export default {
       by('a', "That was so soft. And it worked!"),
     ] },
     { id: 'gtg.st.vt1', when: at(T, 'serve-tip'), turns: [
-      beat('The launcher powers down with a sad little whine, and a hatch in its side opens to show the tip.'),
+      beat('The launcher powers down, and a hatch in its side opens to show the tip.'),
       by('a', "Ha! Good game."),
       by('b', "Don't gloat. Let's go."),
     ] },
     { id: 'gtg.st.vt2', when: at(T, 'serve-tip'), turns: [
-      by('b', "\"Take a taxi to the gold market.\" Gold!"),
-      by('a', "I'm never playing tennis again. I'm retiring undefeated."),
+      by('b', "It says take a taxi to the gold market. Gold!"),
+      by('a', "I'm never playing tennis again."),
       beat('They leave the rackets on the court and run for the lift.'),
     ] },
   ],
@@ -129,7 +129,7 @@ export default {
     { id: 'gtg.sf.dr2', when: at(T, 'the-drop'), turns: [
       by('a', "Why have we stopped?"),
       by('b', "I pressed stop. I don't know which one's go."),
-      beat('They spend a long time hanging very still beside a window, pressing buttons.'),
+      beat('They spend a long time hanging beside a window, pressing buttons.'),
     ] },
     { id: 'gtg.sf.wa1', when: at(T, 'wash'), turns: [
       beat('{a} steps back to admire the pane, and in the sunlight it is covered in long, wavy, soapy streaks.'),
@@ -142,9 +142,9 @@ export default {
       beat('They have to wash the whole pane again, with fresh water this time.'),
     ] },
     { id: 'gtg.sf.wa3', when: at(T, 'wash'), turns: [
-      beat('{b} drops the squeegee. It falls a very, very long way, and they both watch it go.'),
+      beat('{b} drops the squeegee, and they both watch it fall a long, long way.'),
       by('b', "I'm so sorry."),
-      by('a', "Use your sleeve, then."),
+      by('a', "It's okay. They'll send another one down."),
     ] },
     { id: 'gtg.sf.co1', when: at(T, 'the-column'), turns: [
       by('a', "Wait. Did we miss one? That one looks dirty."),
@@ -152,7 +152,7 @@ export default {
       by('b', "We have to go back up for one window."),
     ] },
     { id: 'gtg.sf.co2', when: at(T, 'the-column'), turns: [
-      beat('A seagull lands on the platform rail, looks at {a}, and then flies off, leaving something white on the window they just cleaned.'),
+      beat('A gust of wind blows dust back across the window they just cleaned.'),
       by('a', "No. No! I just cleaned that!"),
       by('b', "Get the squeegee."),
     ] },
@@ -169,9 +169,9 @@ export default {
       by('b', "Ow. That didn't count. I wasn't ready."),
     ] },
     { id: 'gtg.sf.sv3', when: at(T, 'the-serve'), turns: [
-      beat('{a} swings so hard at the ball that {a.sub} spins right round in a full circle and misses it completely.'),
-      by('b', "Nice spin."),
-      by('a', "That was not on purpose."),
+      beat('{a} swings so hard at the ball that {a.sub} spins round and misses it completely.'),
+      by('b', "You missed it."),
+      by('a', "I know. I know."),
     ] },
     { id: 'gtg.sf.rt1', when: at(T, 'the-return'), turns: [
       beat('{a} hits the ball, and it soars up over the net, over the court, over the fence, and out into the sky over the sea.'),
@@ -180,7 +180,7 @@ export default {
     ] },
     { id: 'gtg.sf.rt2', when: at(T, 'the-return'), turns: [
       by('b', "Just get it over the net!"),
-      beat('{b} gets it into the net, very firmly. The ball drops and rolls back to {b}\'s feet.'),
+      beat('{b} hits it straight into the net, and the ball rolls back to {b}\'s feet.'),
       by('a', "Over the net, not into it."),
     ] },
   ],

@@ -13,7 +13,7 @@ export default {
     { id: 'gpc.st.pl1', when: at('broken-statue', 'the-plinth'), turns: [
       beat('In the middle of the hall, behind a red rope, lies a marble statue in pieces, and the head, the body and the legs are all missing.'),
       by('b', "We have to find the pieces? In this whole museum?"),
-      by('a', "Head, body, legs. Let's split up. No, let's not. Let's stay together."),
+      by('a', "Head, body, legs. Let's stay together."),
     ] },
     { id: 'gpc.st.pl2', when: at('broken-statue', 'the-plinth'), turns: [
       by('a', "Look at the plinth. It shows where each piece goes."),
@@ -27,8 +27,8 @@ export default {
     ] },
     { id: 'gpc.st.gl2', when: at('broken-statue', 'galleries'), turns: [
       by('a', "The legs were in the mummy room. Leaning on a coffin."),
-      by('b', "Who hides statue legs next to a mummy?"),
-      beat('They carry the legs back between them, shuffling like movers with a sofa.'),
+      by('b', "Okay. Let's go and get them."),
+      beat('They carry the legs back between them, very slowly.'),
     ] },
     { id: 'gpc.st.br1', when: at('broken-statue', 'the-bear'), turns: [
       beat('A brown bear from a travelling show wanders round the corner, sniffs the air, and sits down in the middle of the gallery.'),
@@ -48,7 +48,7 @@ export default {
     { id: 'gpc.st.fi2', when: at('broken-statue', 'fit-it'), turns: [
       by('a', "On three. Lift. One, two, three."),
       beat('The body clicks onto the legs, and the head sits neatly on top.'),
-      by('b', "Like it never broke."),
+      by('b', "It looks perfect."),
     ] },
     { id: 'gpc.st.cn1', when: at('broken-statue', 'curator-nod'), turns: [
       beat('The curator walks round the statue twice, adjusts the head a tiny bit, and nods.'),
@@ -56,14 +56,14 @@ export default {
       by('a', "Don't touch it. Read the tip."),
     ] },
     { id: 'gpc.st.cn2', when: at('broken-statue', 'curator-nod'), turns: [
-      by('a', "\"Walk the runway.\" A fashion runway?"),
+      by('a', "It says walk the runway. A fashion runway?"),
       by('b', "In here? In the museum?"),
       beat('They follow the music towards the grand hall.'),
     ] },
 
     // ── the runway ──
     { id: 'gpc.st.ou1', when: at('runway', 'the-outfit'), turns: [
-      beat('Backstage, the designer hands {a} an outfit: a huge feathered collar, a skirt like a lampshade and shoes that are mostly heel.'),
+      beat('Backstage, the designer hands {a} an outfit: a huge feathered collar, a wide stiff skirt and very high heels.'),
       by('a', "I'm supposed to walk in this?"),
       by('b', "You're supposed to strut in it."),
     ] },
@@ -79,7 +79,7 @@ export default {
     ] },
     { id: 'gpc.st.wk2', when: at('runway', 'the-walk'), turns: [
       by('b', "Slow. Slow and serious. Don't smile."),
-      beat('{a} walks with a face like stone, and the feathers bounce at every step.'),
+      beat('{a} walks with a completely straight face, and the feathers bounce at every step.'),
       by('b', "Yes. Like that. Exactly like that."),
     ] },
     { id: 'gpc.st.po1', when: at('runway', 'the-pose'), turns: [
@@ -99,7 +99,7 @@ export default {
     ] },
     { id: 'gpc.st.wb2', when: at('runway', 'walk-back'), turns: [
       by('a', "These shoes. These shoes are so hard to walk in."),
-      by('b', "Nobody can tell. You look like you were born in them."),
+      by('b', "Nobody can tell. You look amazing."),
       beat('{a} makes it all the way back to the start.'),
     ] },
     { id: 'gpc.st.ap1', when: at('runway', 'applause'), turns: [
@@ -118,7 +118,7 @@ export default {
     // ── the statue ──
     { id: 'gpc.sf.gl1', when: at('broken-statue', 'galleries'), turns: [
       beat('{a} carries a marble head all the way back to the plinth, and the curator points at the label on it. It\'s a real exhibit.'),
-      by('a', "Oh. It's somebody else's head."),
+      by('a', "Oh. It's not ours."),
       by('b', "Put it back. Put it back exactly where it was."),
     ] },
     { id: 'gpc.sf.gl2', when: at('broken-statue', 'galleries'), turns: [
@@ -133,7 +133,7 @@ export default {
     ] },
     { id: 'gpc.sf.br2', when: at('broken-statue', 'the-bear'), turns: [
       by('a', "Just walk past it."),
-      beat('The bear follows them. All the way down the gallery. They have to hide in the mummy room until it leaves.'),
+      beat('The bear follows them all the way down the gallery, and they have to wait in the mummy room until it leaves.'),
       by('b', "Is it gone? Look. You look."),
     ] },
     { id: 'gpc.sf.fi1', when: at('broken-statue', 'fit-it'), turns: [
@@ -143,8 +143,8 @@ export default {
     ] },
     { id: 'gpc.sf.fi2', when: at('broken-statue', 'fit-it'), turns: [
       by('b', "Careful! Careful with the head!"),
-      beat('The head slips out of {a}\'s hands and rolls across the floor. It\'s fine. It\'s still the wrong way up.'),
-      by('a', "Sorry. Sorry. It's fine. Nobody saw."),
+      beat('The head slips out of {a}\'s hands and rolls across the floor. It isn\'t broken, but it\'s still on the wrong way.'),
+      by('a', "Sorry. Sorry. It's fine. It's not broken."),
     ] },
 
     // ── the runway ──
@@ -154,14 +154,14 @@ export default {
       by('b', "Ask for another outfit!"),
     ] },
     { id: 'gpc.sf.ou2', when: at('runway', 'the-outfit'), turns: [
-      by('b', "Why are you wearing the skirt on your head?"),
-      by('a', "Isn't it a hat?"),
-      beat('It isn\'t a hat. They start again.'),
+      by('b', "That's not how it goes on."),
+      by('a', "How does it go on, then?"),
+      beat('It takes them a while to work it out.'),
     ] },
     { id: 'gpc.sf.wk1', when: at('runway', 'the-walk'), turns: [
       beat('Three steps down the runway, {a}\'s heel catches, and {a} goes down in a heap of feathers.'),
       by('b', "Are you okay? Get up!"),
-      by('a', "I'm fine. I need another outfit. This one's broken now."),
+      by('a', "I'm fine. I need another outfit."),
     ] },
     { id: 'gpc.sf.wk2', when: at('runway', 'the-walk'), turns: [
       by('b', "You're wobbling. Stop wobbling."),

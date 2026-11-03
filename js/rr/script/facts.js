@@ -44,6 +44,8 @@ export const RR_FACT_KEYS = [
   'behind', 'ahead', 'broke', 'snapped',
   // the hour, as a word: night (22-5), morning (5-11), day (11-17), evening (17-22)
   'tod',
+  // a plane full of teams (travel.js same-flight): the first one out, a later one, or the connection nobody was told about
+  'flight',
   // the stretch and how the task went; the task's main type (water, stomach, perform, heights...); how they travel
   'stretchKind', 'taskType', 'mode', 'fails', 'switched', 'quit', 'place',
   // what the challenge's scary part makes them do (fears.js: jump, drop, climb, rail, rope, cross, ride, swim, creature,
@@ -154,6 +156,7 @@ export function factsFor(scene, roles, state) {
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
+    flight: scene.kind !== 'same-flight' ? null : d.connection ? 'connection' : d.flight === 0 ? 'first' : 'later',
     stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach') && !s.noEat, puzzle: types.includes('brains'), handsOn: types.some(x => x === 'hands' || x === 'brains'),
     sacred: !!PLACES[s.place]?.sacred,
     indoor: INDOOR.has(d.stretch),

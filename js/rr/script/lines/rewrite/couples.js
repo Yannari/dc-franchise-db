@@ -114,32 +114,6 @@ export default {
     ],
 
     // a couple fighting, and the couple making up
-    'snap.snap': [
-      { id: 'cp.sn1', when: ROM, turns: [
-        by('a', "You always do this. You always decide for both of us."),
-        by('b', "Because if I don't, we'd still be standing at the first Don Box."),
-        by('a', "That's not fair."),
-        by('b', "No, what's not fair is me doing all the thinking and you doing all the sulking."),
-        beat("{a} walks a few steps ahead, and doesn't wait."),
-        by('b', "Great. Perfect. Very mature."),
-      ] },
-      { id: 'cp.sn2', when: ROM, turns: [
-        by('b', "Can you just hold my hand for one second?"),
-        by('a', "We're running. I need my hands."),
-        by('b', "You never need them when it's me."),
-        by('a', "Where is this coming from?"),
-        by('b', "Everywhere. All week. It's coming from everywhere."),
-        beat('They run on, a little apart, and both of them notice it.'),
-      ] },
-      { id: 'cp.sn3', when: EX, turns: [
-        by('a', "This is exactly why we broke up."),
-        by('b', "Here we go."),
-        by('a', "You never listen. Not once. Not then and not now."),
-        by('b', "I listened. I just didn't agree. That's different."),
-        by('a', "It isn't, actually."),
-        beat("Neither of them says anything else until the next Don Box."),
-      ] },
-    ],
     'makeup.apology': [
       { id: 'cp.mk1', when: ROM, turns: [
         by('a', "I'm sorry. I was horrible back there."),

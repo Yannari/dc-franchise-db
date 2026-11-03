@@ -557,12 +557,15 @@ export function airLeg(state, leg) {
   let budget = legBudget(leg.order.length) - INTERVIEWS;
   // an episode airs at most two of the same optional kind (the third small talk is the one a viewer notices)
   const PER_KIND = 2;
+  // ...and one plane conversation: a leg's flights are Don's to narrate, and every flight talking aired thirty a season
+  // from a pool of eighteen (measured 2026-11-03)
+  const capOf = k => (k === 'same-flight' ? 1 : PER_KIND);
   const optional = {};
   // a chained moment brings its cause, and the pair costs two (both inside the budget, or neither); a cause whose
   // kind already aired twice stays off, and the moment's own lines say what it was
   const causeOf = s => {
     const c = s?.data?.cause != null && !s.kind.startsWith('int-') ? byId.get(s.data.cause) : null;
-    return c && !picked.has(c.id) && ok(c) && (optional[c.kind] || 0) < PER_KIND ? c : null;
+    return c && !picked.has(c.id) && ok(c) && (optional[c.kind] || 0) < capOf(c.kind) ? c : null;
   };
   const takeCause = c => { take(c, 2); optional[c.kind] = (optional[c.kind] || 0) + 1; };
   // a moment somebody talks about to camera is worth its airtime: without this, the moments that had a confessional
@@ -585,13 +588,27 @@ export function airLeg(state, leg) {
     const least = ts.length ? Math.min(...ts.map(id => seen[id] || 0)) : avg;
     return airWeight(s) + FAIR * (avg - least) + (s.data?.other && ts.length > 1 ? BETWEEN : 0);
   };
+  // A team has one moment at a time: an optional one within a quarter of an hour of another moment of the same team's
+  // waits (2026-11-03, read: a gloat, a cold shoulder and a gush in one minute; a thank-you, then a snap). What the race
+  // itself does (the clue, the box, the task, the ride) and Don are not moments; a chained moment's own cause is its pair.
+  const NEAR = 15;
+  const PROCEDURE = /^(clue|box-grab|decide-side|task-|ride$|attempt-fail$|don-|int-|mat-montage$|same-flight$|team-intro$)/;
+  const crowded = x => {
+    if (PROCEDURE.test(x.kind)) return false;
+    const ts = sceneTeams(x), t = x.data?.t ?? 0;
+    return [...picked.keys()].some(id => {
+      const p = byId.get(id);
+      return p && p.id !== x.data?.cause && p.data?.cause !== x.id && !PROCEDURE.test(p.kind) && Math.abs((p.data?.t ?? 0) - t) < NEAR
+        && sceneTeams(p).some(tid => ts.includes(tid));
+    });
+  };
   for (const tier of [2, 3]) {
     const cands = scenes.filter(s => !picked.has(s.id) && tierOf(s) === tier && !s.kind.startsWith('int-'))
       .sort((x, y) => airWeight(y) - airWeight(x) || x.id - y.id);
     while (budget > 0) {
       let s = null, best = -Infinity;
       for (const x of cands) {
-        if (picked.has(x.id) || !ok(x) || (optional[x.kind] || 0) >= PER_KIND) continue;
+        if (picked.has(x.id) || !ok(x) || (optional[x.kind] || 0) >= capOf(x.kind) || crowded(x)) continue;
         if (causeOf(x) && budget < 2) continue;
         const v = score(x);
         if (v > best) { best = v; s = x; }

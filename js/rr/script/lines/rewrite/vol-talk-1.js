@@ -97,12 +97,12 @@ export default {
         { beat: '{a} and {b} head for the earlier flight, still grinning.' },
       ] },
       { id: 'vk.g12', turns: [
-        { by: 'b', say: "So, who do you think's going home today?" },
+        { by: 'b', say: "So, how are you feeling about today?" },
         { by: 'c', say: "Don't." },
-        { by: 'a', say: "We're not saying it's you. We're just saying you're pretty close to the bottom." },
+        { by: 'a', say: "We're not saying anything. We're just saying you look like you're struggling." },
         { by: 'd', say: "Thanks. Really helpful." },
         { by: 'b', say: "Anytime!" },
-        { by: 'c', say: "I hope it's you. I really, really hope it's you." },
+        { by: 'c', say: "I hope you trip. I really, really hope you trip." },
       ] },
     ],
     'plan-the-leg.strategy': [

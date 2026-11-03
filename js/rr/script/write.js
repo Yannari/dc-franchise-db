@@ -186,7 +186,9 @@ const TASKY = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => 
 const VEHICLE_TALK = /\b(roundabouts?|taxis?|cabs?|bus|buses|the driver|our driver|drivers|steering wheel|petrol|gas station|parking (space|spot|lot)|park the car|the car\b|our car)\b/i;
 const RIDING = new Set(['taxi', 'drive', 'bus', 'car', 'jeep', 'truck']);
 const VETERAN_TALK = /\b(doing this (kind of thing )?(a lot )?longer than you|I've done this before|done this kind of thing|last time I was on (a show|television|TV))\b/i;
-const MUST_WORDS = /^(don-|team-intro$|int-exit$|int-bleachers$|goodbye|farewell|.*-montage$|medevac|boomerang|task-|attempt-fail$|ride$)/;
+// (not the bleachers: fourteen gone teams, and two by two they said the same "I've screamed for them so much my voice is
+// gone" word for word, read 2026-11-03; when every bleachers line has aired, the rest of them don't)
+const MUST_WORDS = /^(don-|team-intro$|int-exit$|goodbye|farewell|.*-montage$|medevac|boomerang|task-|attempt-fail$|ride$)/;
 const linesWith = re => new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => re.test([t.say, t.conf, t.beat].join(' ')))));
 const YESTERDAY = linesWith(/\byesterday/i);
 const MORNING = linesWith(/\b(good morning|rise and shine|first tip of the day|still yawning)\b/i);

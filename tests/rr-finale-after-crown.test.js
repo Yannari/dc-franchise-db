@@ -22,7 +22,12 @@ describe('rr finale after the crown', () => {
       finales++;
       // (the winners' own moments stay after it: a proposal on the mat)
       const won = ep.segments[k].teams[0];
-      for (const s of ep.segments.slice(k + 1)) if (s.kind !== 'don-crown' && !s.kind.startsWith('int-') && !s.teams.includes(won)) late.push(`seed ${seed}: ${s.kind}/${s.ending} @${s.stretch}`);
+      // (...and the runners-up reaching the stage, just before Don names them: cut in before the crown, "the stage
+      // comes into view, we step on together" read as them finishing first, seed 5 read 2026-11-03)
+      const after = ep.segments.slice(k + 1);
+      const arriving = (s, i) => s.stretch === 'footrace' && ['task-done', 'celebrate'].includes(s.kind)
+        && after.slice(i + 1).find(x => x.kind === 'don-crown')?.teams.some(id => s.teams.includes(id));
+      after.forEach((s, i) => { if (s.kind !== 'don-crown' && !s.kind.startsWith('int-') && !s.teams.includes(won) && !arriving(s, i)) late.push(`seed ${seed}: ${s.kind}/${s.ending} @${s.stretch}`); });
     }
     // (seed 43: the runners-up were named at 13:26 the next day, after their chase had been cut in before the crown)
     for (const seed of [43]) {

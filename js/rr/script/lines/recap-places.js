@@ -57,7 +57,7 @@ export default {
   ],
   'carnival-rainforest': [
     "Last time on The Ridonculous Race, after {summary}, our teams felt pain, fear and feathers. Mostly feathers.",
-    "Last time on The Ridonculous Race, after {summary}, our teams learned that bullet ants don't do high fives, or low fives, or any fives at all.",
+    "Last time on The Ridonculous Race, after {summary}, our teams learned exactly how much a bullet ant can hurt.",
   ],
   'haunted-castle': [
     "Last time on The Ridonculous Race, after {summary}, our teams had a frightfully good time. Heavy on the frightfully.",

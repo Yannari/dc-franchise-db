@@ -36,7 +36,7 @@ export default {
         ['a', "It was not an honour. But it was a nice view."]),
       iv('gb.eg6', { exitHow: 'midpoint' },
         ['b', "Third place. In the final. Out of everybody who started."],
-        ['a', "We were so close I could see the stage."],
+        ['a', "One more mat, and we'd have been running for the money."],
         ['b', "We're going to be watching from the bleachers now. Best seats in the house, honestly."]),
     ],
     'int-exit.bitter': [

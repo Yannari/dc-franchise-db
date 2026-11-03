@@ -915,13 +915,22 @@ export function airLeg(state, leg) {
       // the race is won: they don't air)
       // (in the crown's own minute too: it sorts after the crown, 2026-10-22, a flight landing aired after the winners)
       for (let i = segs.length - 1; i >= 0; i--) if (segs[i].kind === 'don-narrate' && segs[i].t >= crown.t) segs.splice(i, 1);
-      const chase = segs.filter(x => x.t > crown.t && x.kind !== 'don-crown' && !x.kind.startsWith('int-') && !x.teams.includes(won));
+      // (but not their arrival at the stage: "the stage comes into view... we step on together" and a hug cut in before
+      // the crown read as the runners-up finishing first, seed 5 read 2026-11-03; it airs after the crown, just before
+      // Don names them)
+      const arrival = x => x.stretch === 'footrace' && (x.kind === 'task-done' || x.kind === 'celebrate');
+      const chase = segs.filter(x => x.t > crown.t && x.kind !== 'don-crown' && !x.kind.startsWith('int-') && !x.teams.includes(won) && !arrival(x));
       const lo = Math.max(crown.t - 1, ...segs.filter(x => x.t < crown.t && !chase.includes(x)).map(x => x.t));
       chase.forEach((x, i) => { x.t = lo + ((crown.t - lo) * (i + 1)) / (chase.length + 1); });
       // ...and a team whose chase was cut in is named straight after the crown, not hours later on the clock
       const chased = new Set(chase.flatMap(x => x.teams));
-      segs.filter(x => x.kind === 'don-crown' && x !== crown && x.teams.some(id => chased.has(id))).sort((x, y) => x.t - y.t)
-        .forEach((x, i) => { x.t = crown.t + 0.2 * (i + 1); });
+      segs.filter(x => x.kind === 'don-crown' && x !== crown && x.teams.some(id => chased.has(id) || segs.some(y => arrival(y) && y.t > crown.t && y.teams.includes(id))))
+        .sort((x, y) => x.t - y.t)
+        .forEach((x, i) => {
+          x.t = crown.t + 0.2 * (i + 1);
+          const own = segs.filter(y => arrival(y) && y.t > crown.t && y.teams.some(id => x.teams.includes(id)) && y !== x).sort((p, q) => p.t - q.t);
+          own.forEach((y, k) => { y.t = x.t - 0.1 + (0.09 * (k + 1)) / (own.length + 1); });
+        });
       segs.sort((x, y) => x.t - y.t || phase(x.kind) - phase(y.kind)
         || (typeof x.scene === 'number' ? x.scene : 1e9) - (typeof y.scene === 'number' ? y.scene : 1e9));
     }

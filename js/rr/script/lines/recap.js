@@ -18,7 +18,7 @@ export default {
   winners: ["The winners were {winners}.", "Taking first place were {winners}, who will not stop bringing it up.",
     "First to the Chill Zone were {winners}, which makes everybody else, by definition, slower, and yes, I checked.",
     "The winners were {winners}, who were very smug about it, and I respect smug.",
-    "Coming in first were {winners}, so everyone else, please try a little harder, for me.",
+    "Coming in first were {winners}, and they made it look easy.",
     "The leg went to {winners}, and they were so happy about it.",
     "Top of the pile were {winners}, and nobody saw that coming, least of all them.",
     "First place went to {winners}, and I've never seen two people so happy to stand on a mat."],

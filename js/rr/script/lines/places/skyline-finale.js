@@ -363,6 +363,22 @@ const buoys = {
 
 // ── the run to the stage ──
 const footrace = {
+  // (its own: the generic demo said "get it wrong and you start again, and you get your next tip" over the run to the
+  // stage, seed 5 read 2026-11-03)
+  'don-demo.gag': [
+    { id: 'sky.fr-d1', when: FR, turns: [
+      don("Teams, this is the final run, through the park to the stage, where every team you raced against is waiting in the bleachers."),
+      { beat: 'He points down the path, towards the noise of the crowd.' },
+      don("The first team to step on that mat wins one million dollars!"),
+    ] },
+  ],
+  'don-demo.dry': [
+    { id: 'sky.fr-d2', when: FR, turns: [
+      don("The last stretch is a run, on foot, all the way to the stage."),
+      don("There are no more tasks and no more tips, so the first team on the mat wins the race!"),
+      { beat: 'Behind him, the bleachers are already on their feet.' },
+    ] },
+  ],
   'task-start.any': [
     { id: 'sky.fr-s1', when: FR, turns: [
       { beat: '{a} and {b} hit the park path at a sprint. Somewhere ahead, a crowd is cheering.' },

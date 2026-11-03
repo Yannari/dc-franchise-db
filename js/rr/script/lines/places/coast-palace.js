@@ -20,7 +20,7 @@ const place = {
   'don-opener.annoyed': [
     { id: 'cpl.op1', when: P, turns: [
       beat('Don stands on a yacht in the harbour, in a white suit, holding a tiny cup of coffee.'),
-      don("Welcome to Coast Palace! Home of yachts, casinos, a royal palace, and people who are richer than me. I hate it."),
+      don("Welcome to Coast Palace! Home of yachts, casinos, a royal palace, and people who are even richer than me!"),
       don("Today, teams take a tip off a shark, and build a palace out of sand for the toughest critic on the coast."),
       beat('A gull lands on the rail and stares at his coffee.'),
       don("Not the coffee. That coffee cost more than your flights."),
@@ -28,7 +28,7 @@ const place = {
     { id: 'cpl.op2', when: P, turns: [
       don("Coast Palace. The sea is blue, the cars are fast, and the sharks are, I'm told, mostly friendly."),
       don("Mostly. Racers, your train leaves in five minutes. Try not to fall in love with the view. It's mine."),
-      beat('A yacht in the background sounds its horn. Don waves at it like an old friend.'),
+      beat('A yacht in the background sounds its horn, and Don waves.'),
     ] },
   ],
   'don-opener.bored': [
@@ -41,27 +41,27 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'cpl.ar1', when: P, turns: [
       beat('The train comes out of a tunnel, and the whole coast is suddenly there: blue water, white yachts, a palace on the cliff.'),
-      by('a', "Look at the water. Look at the colour of it. That's not a real colour."),
+      by('a', "Look at the water. Look at the colour of it."),
       by('b', "Every boat down there is worth more than my whole street."),
-      by('a', "Then don't touch any of them."),
+      by('a', "Don't touch anything, then."),
     ] },
     { id: 'cpl.ar2', when: P, turns: [
       by('b', "There's a palace. On the cliff. With actual guards outside."),
       by('a', "Do you think the challenge is in the palace?"),
-      by('b', "Look at us. They are not letting us in the palace."),
+      by('b', "Look at us. They're not letting us anywhere near it."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'cpl.ad1', when: P, turns: [
-      by('a', "I just read the word 'shark' on the tip. Just the word. That's all I needed."),
-      by('b', "Maybe it's a boat called The Shark."),
-      by('a', "It has a picture of a fin on it."),
+      by('a', "The tip says shark. Shark."),
+      by('b', "Maybe it's not a real one."),
+      by('a', "There's a picture of a fin on it."),
     ] },
     { id: 'cpl.ad2', when: P, turns: [
       beat('A cyclist in head-to-toe designer clothing sweeps past them on the promenade.'),
       by('b', "Everybody here is dressed better than us."),
       by('a', "We've been in the same clothes for four days."),
-      by('b', "Exactly my point."),
+      by('b', "I know. I can smell us."),
     ] },
   ],
 };
@@ -72,13 +72,13 @@ const roads = {
     { id: 'cpl.tm1', when: { taskId: 'coast-train', mishap: 'wrong-carriage' }, turns: [
       beat('At the second stop, the back half of the train uncouples and goes the other way. {a} and {b} are in the back half.'),
       by('a', "Why are we going backwards?"),
-      by('b', "We're not going backwards. We're going somewhere else. Completely somewhere else."),
+      by('b', "We're going the wrong way. The train split."),
       beat('Fifteen minutes and one very fast change of trains later, they are back on the coast line.'),
     ] },
     { id: 'cpl.tm2', when: { taskId: 'motorboat', mishap: 'engine-cuts-out' }, turns: [
       beat('Halfway across the harbour, the motorboat coughs twice and goes silent.'),
       by('b', "It stopped. Why did it stop?"),
-      by('a', "I don't know. I've driven a boat once, and it was a pedalo."),
+      by('a', "I don't know. I've never driven a boat."),
       beat('{b} pulls the cord eleven times. On the twelfth, it roars back to life.'),
     ] },
   ],
@@ -104,7 +104,7 @@ const shark = {
     { id: 'cpl.sh-w1', when: SH, turns: [
       by('b', "You're the swimmer. You've always been the swimmer."),
       by('a', "I swim in pools. Pools don't have sharks."),
-      by('b', "This is just a big pool. With a shark."),
+      by('b', "You'll be fine. Just don't look at it."),
     ] },
   ],
   'whose-botch.volunteer': [
@@ -117,15 +117,15 @@ const shark = {
   'whose-botch.pushed': [
     { id: 'cpl.sh-w3', when: SH, turns: [
       by('b', "It's your turn. I did the last one."),
-      by('a', "The last one was a crossword."),
-      by('b', "And I did it beautifully. Off you go."),
+      by('a', "The last one was easy!"),
+      by('b', "Still mine. Off you go."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'cpl.sh-w4', when: SH, turns: [
       by('a', "'Who's scared of sharks?' Everybody. Everybody is scared of sharks. That's the answer."),
       by('b', "Then it's you. You're the least scared of everything."),
-      by('a', "That is not a compliment right now."),
+      by('a', "Great. Thanks."),
     ] },
   ],
   'task-start.any': [
@@ -137,8 +137,8 @@ const shark = {
     ] },
     { id: 'cpl.sh-s2', when: SH, turns: [
       by('b', "Wait for it to come past, then grab. Don't chase it. Let it come to you."),
-      by('a', "Let the shark come to me. Great. Brilliant advice."),
-      by('b', "I'm a great coach. Go."),
+      by('a', "Let the shark come to me. Okay."),
+      by('b', "You'll be fine. Go."),
     ] },
     { id: 'cpl.sh-s3', when: SH, turns: [
       beat('{a} lowers into the water, eyes huge behind the mask.'),
@@ -146,39 +146,39 @@ const shark = {
       by('b', "Focus on the fin, not the temperature!"),
     ] },
     { id: 'cpl.sh-s4', when: SH, turns: [
-      by('a', "If I don't come back, tell everybody I was brave."),
-      by('b', "You're getting in a sea, not going to war."),
-      by('a', "A sea with a shark in it is basically a war."),
+      by('a', "I'm so scared. I'm so scared."),
+      by('b', "You'll be fine. It's not going to hurt you."),
+      by('a', "You don't know that."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'cpl.sh-f1', when: SH, turns: [
       beat('The shark glides past. {a} reaches out, unclips the tip off the fin in one smooth move, and is back on the ladder before it turns.'),
       by('b', "That was amazing! You didn't even flinch!"),
-      by('a', "I flinched on the inside. A lot."),
+      by('a', "I was so scared."),
     ] },
     { id: 'cpl.sh-f2', when: SH, turns: [
       by('a', "Got it! I touched a shark! I touched a shark and it didn't care!"),
-      by('b', "Get out of the water before it starts caring!"),
+      by('b', "Get out of the water! Now!"),
       beat('{a} is up the ladder so fast the crew member has to step back.'),
     ] },
     { id: 'cpl.sh-f3', when: SH, turns: [
       beat('{a} waits, perfectly still, and grabs at exactly the right moment. The tip comes away clean.'),
       by('b', "How were you so calm?"),
-      by('a', "I wasn't. I just couldn't move."),
+      by('a', "I wasn't. I was too scared to move."),
     ] },
     { id: 'cpl.sh-f4', when: SH, turns: [
-      by('a', "First go. First go! Write it down!"),
-      by('b', "I'm writing it down. In my heart. Now climb."),
-      by('a', "Climbing! Climbing very fast!"),
+      by('a', "First go. First go!"),
+      by('b', "I'm so proud of you! Now climb!"),
+      by('a', "I'm climbing!"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'cpl.sh-a1', when: SH, turns: [
       by('b', "Don't grab at the fin. Grab where the fin is going to be."),
-      by('a', "That's physics. I can't do physics in a sea."),
+      by('a', "Okay. Reach ahead of it."),
       beat('On the next pass, {a} reaches ahead of the fin, and the tip comes away in {a.posAdj} hand.'),
-      by('a', "Physics! I did physics!"),
+      by('a', "It worked! I got it!"),
     ] },
     { id: 'cpl.sh-a2', when: SH, turns: [
       beat('Third time round, {a} finally stops thinking about it, grabs, and holds on.'),
@@ -200,29 +200,29 @@ const shark = {
     { id: 'cpl.sh-t1', when: SH, turns: [
       beat('{a} has climbed back up the ladder for the third time without touching the fin.'),
       by('a', "I can't. Every time it gets close, my arm just doesn't go."),
-      by('b', "Your arm will go. Your arm is very brave. It's the rest of you."),
+      by('b', "You can do it. Just reach."),
     ] },
     { id: 'cpl.sh-t2', when: SH, turns: [
-      by('a', "It looked at me. It actually looked at me."),
-      by('b', "Sharks don't look at people."),
-      by('a', "This one does. This one has opinions."),
+      by('a', "It looked right at me."),
+      by('b', "It's just swimming. It's not looking at you."),
+      by('a', "It was. I saw it."),
     ] },
     { id: 'cpl.sh-t3', when: SH, turns: [
       beat("{a} is clinging to the ladder, half in the water, half out. The fin goes past again, untouched."),
       by('b', "That's the fifth time it's gone past!"),
-      by('a', "I know! I counted! I'm aware!"),
+      by('a', "I know! I'm trying!"),
     ] },
   ],
   'task-done.any': [
     { id: 'cpl.sh-dn1', when: SH, turns: [
       beat('{a} hauls up onto the deck, dripping, tip held high.'),
-      by('a', "I want it known that I touched a shark."),
-      by('b', "It's known. Everybody on this boat knows."),
+      by('a', "I can't believe I just did that."),
+      by('b', "You were amazing."),
     ] },
     { id: 'cpl.sh-dn2', when: SH, turns: [
       by('b', "Read it. What does it say?"),
       by('a', "It's wet. It's very wet. It says... beach. Something about a beach."),
-      by('b', "Good. Beaches don't have sharks. Mostly."),
+      by('b', "Good. No sharks on a beach."),
     ] },
     { id: 'cpl.sh-dn3', when: SH, turns: [
       by('a', "My legs are shaking."),
@@ -249,8 +249,8 @@ const shark = {
   ],
   'watching-botch.cheer': [
     { id: 'cpl.sh-v1', when: SH, turns: [
-      by('b', "You can do it! It's just a big fish! A big, friendly fish!"),
-      by('a', "Friendly fish don't have that many teeth!"),
+      by('b', "You can do it! Just stay still!"),
+      by('a', "I'm trying!"),
       by('b', "Don't look at the teeth! Look at the tip!"),
     ] },
   ],
@@ -264,7 +264,7 @@ const shark = {
   'watching-botch.coach-illegal': [
     { id: 'cpl.sh-v3', when: SH, turns: [
       beat('{b} leans over the side and slaps the water to draw the shark closer.'),
-      by('b', "Here, sharky! Over here!"),
+      by('b', "Come on! Over here!"),
       beat('The crew member shakes his head and taps his watch. A penalty.'),
     ] },
   ],
@@ -272,14 +272,14 @@ const shark = {
     { id: 'cpl.sh-v4', when: SH, turns: [
       beat("{b} doesn't say a word, watching the fin circle, holding {b.posAdj} breath."),
       by('a', "Say something! Anything!"),
-      by('b', "I'm being quiet so the shark doesn't notice you."),
+      by('b', "I'm too nervous to talk."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'cpl.sh-h1', when: SH, turns: [
       beat("When the crew member looks away, {b} reaches over the side and grabs at the fin too."),
       by('a', "You can't help! You're not allowed to touch it!"),
-      by('b', "I'm not touching it, I'm pointing at it very closely!"),
+      by('b', "Sorry! Sorry! I'll stop!"),
     ] },
   ],
 };
@@ -290,14 +290,14 @@ const palace = {
     { id: 'cpl.sp-d1', when: SP, turns: [
       don("In this All-In, teams build a replica of the palace up there, out of sand. Every tower, every wall, every window."),
       beat('A small boy in surf shorts, about eight years old, stands beside him with his arms folded.'),
-      don("And this is your judge. He has never liked anything. He didn't like me."),
+      don("And this is your judge, and he is very, very hard to please!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'cpl.sp-d2', when: SP, turns: [
       don("A tower missing, a wall that slumps, or a wave that gets it, and you rebuild what he points at."),
-      beat('The boy points at Don. Don looks down at himself.'),
-      don("What? What's wrong with me? Don't answer that."),
+      beat('The boy looks at Don and shakes his head.'),
+      don("What? I haven't built anything!"),
     ] },
   ],
   'task-start.any': [
@@ -305,11 +305,11 @@ const palace = {
       beat('{a} and {b} kneel in the sand with two buckets, a spade and a photo of the palace.'),
       by('a', "How many towers is that? Is that four? Five?"),
       by('b', "It's six. Two of them are hiding behind the others."),
-      by('a', "Sneaky palace."),
+      by('a', "Okay. Six. Let's go."),
     ] },
     { id: 'cpl.sp-s2', when: SP, turns: [
-      by('b', "The trick is wet sand. Wet sand holds. Dry sand just sort of gives up."),
-      by('a', "Like us at the end of every leg."),
+      by('b', "The trick is wet sand. Wet sand holds. Dry sand falls apart."),
+      by('a', "Okay. Wet sand."),
       by('b', "Get water. Lots of water."),
     ] },
     { id: 'cpl.sp-s3', when: SP, turns: [
@@ -320,7 +320,7 @@ const palace = {
     { id: 'cpl.sp-s4', when: SP, turns: [
       by('a', "I made sandcastles every summer as a kid."),
       by('b', "And?"),
-      by('a', "And they were terrible. But I made a lot of them."),
+      by('a', "And they were terrible. But I know how to start."),
     ] },
   ],
   'task-try.first-try': [
@@ -331,13 +331,13 @@ const palace = {
     ] },
     { id: 'cpl.sp-f2', when: SP, turns: [
       by('a', "Six towers, the gate, the gardens, and the little flag on top."),
-      beat('The boy looks at the flag, which is a sweet wrapper on a stick, for a long time. He hands over the tip.'),
-      by('b', "The flag sold it. I knew the flag would sell it."),
+      beat('The boy looks at the flag for a long time. Then he hands over the tip.'),
+      by('b', "Yes! I told you the flag was a good idea."),
     ] },
     { id: 'cpl.sp-f3', when: SP, turns: [
-      beat('{a} and {b} step back from their palace. It is, honestly, beautiful.'),
-      by('b', "We should be architects."),
-      by('a', "We should be sand architects. That's a job, right?"),
+      beat('{a} and {b} step back from their palace. It looks great.'),
+      by('b', "We actually did it."),
+      by('a', "It looks just like the photo."),
     ] },
     { id: 'cpl.sp-f4', when: SP, turns: [
       by('b', "He's smiling. Is he smiling? I think that's a smile."),
@@ -349,11 +349,11 @@ const palace = {
     { id: 'cpl.sp-a1', when: SP, turns: [
       by('a', "He said the towers were too short. So we make them taller. Much taller."),
       beat('Their sixth tower is now taller than the little judge. He looks at it, then up at it, and nods.'),
-      by('b', "Size matters to him. Noted."),
+      by('b', "Taller worked."),
     ] },
     { id: 'cpl.sp-a2', when: SP, turns: [
       beat('{b} smooths the last wall with the edge of the photo, perfectly flat, and stands back.'),
-      by('a', "That's the one. That's palace quality."),
+      by('a', "That's the one. That's the best one yet."),
       beat('The boy hands over the tip without a word, already walking to the next team.'),
     ] },
     { id: 'cpl.sp-a3', when: SP, turns: [
@@ -364,14 +364,14 @@ const palace = {
     { id: 'cpl.sp-a4', when: SP, turns: [
       by('a', "He wanted windows. Fine. Windows."),
       beat('{a} pokes a neat row of windows into every wall with a straw. The boy inspects each one and finally nods.'),
-      by('b', "It was the windows. It was always going to be the windows."),
+      by('b', "Yes! The windows!"),
     ] },
   ],
   'task-try.struggling': [
     { id: 'cpl.sp-t1', when: SP, turns: [
       beat('A wave rolls up the beach, further than any wave has gone all day, and takes two of their towers with it.'),
       by('a', "No! No, no, no!"),
-      by('b', "The sea did it on purpose. I saw it look at us."),
+      by('b', "The tide's coming in. Move back."),
     ] },
     { id: 'cpl.sp-t2', when: SP, turns: [
       by('b', "He said no again. That's three no's."),
@@ -381,24 +381,24 @@ const palace = {
     { id: 'cpl.sp-t3', when: SP, turns: [
       beat("The sun has dried their palace out, and the walls are cracking and sliding down, one grain at a time."),
       by('a', "It's melting. Why is it melting?"),
-      by('b', "It's not melting, it's drying. Get the water!"),
+      by('b', "It's drying out. Get the water!"),
     ] },
   ],
   'task-done.any': [
     { id: 'cpl.sp-dn1', when: SP, turns: [
       by('a', "Can we take a picture of it before we go? It's the best thing I've ever made."),
       by('b', "Quickly. Then run."),
-      beat('{a} takes one photo, then a second, then a third from a better angle, and {b} drags {a.obj} away by the arm.'),
+      beat('{a} takes one photo, then another, and {b} pulls {a.obj} away by the arm.'),
     ] },
     { id: 'cpl.sp-dn2', when: SP, turns: [
-      beat('As they run for the harbour, a dog trots up to their sand palace and sits on it.'),
+      beat('As they run for the harbour, a wave comes up and takes the front of their sand palace.'),
       by('b', "Don't look back. Just don't look back."),
-      by('a', "Why? What's happening behind us?"),
+      by('a', "Why? What happened?"),
     ] },
     { id: 'cpl.sp-dn3', when: SP, turns: [
-      by('a', "That kid is going to be a judge on a cooking show one day."),
-      by('b', "He's going to make a lot of chefs cry."),
-      by('a', "He's going to be brilliant at it."),
+      by('a', "That kid was so strict."),
+      by('b', "He was. But he liked ours."),
+      by('a', "In the end."),
     ] },
   ],
   'attempt-fail.any': [
@@ -410,12 +410,12 @@ const palace = {
     { id: 'cpl.sp-x2', when: SP, turns: [
       beat('The boy shakes his head, points at the photo, then at their palace, then shakes his head again.'),
       by('b', "What does that mean? What's missing?"),
-      by('a', "Everything, apparently."),
+      by('a', "I don't know. Everything?"),
     ] },
     { id: 'cpl.sp-x3', when: SP, turns: [
       beat('{a} steps back to admire their work, and treads straight through the gardens.'),
-      by('a', "That was... that wasn't part of the palace, was it?"),
-      by('b', "It was the whole of the gardens."),
+      by('a', "That wasn't part of it, was it?"),
+      by('b', "That was the gardens."),
     ] },
   ],
 };

@@ -12,12 +12,12 @@ export default {
     // ── the longship ──
     { id: 'fs.st.hp1', when: at('longship', 'the-heap'), turns: [
       beat('On the stony shore lies a heap of planks, oars, shields and a striped sail, with an instruction sheet that has no words on it.'),
-      by('b', "It's just pictures. Little drawings of a man with a hammer."),
-      by('a', "Then we do what the little man does."),
+      by('b', "There are no words. It's just pictures."),
+      by('a', "Then we copy the pictures."),
     ] },
     { id: 'fs.st.hp2', when: at('longship', 'the-heap'), turns: [
       by('a', "That's a whole ship. In pieces."),
-      by('b', "We've built furniture before. How different can it be?"),
+      by('b', "We've built furniture before. We can do this."),
       beat('They start sorting the planks into piles.'),
     ] },
     { id: 'fs.st.hl1', when: at('longship', 'the-hull'), turns: [
@@ -28,12 +28,12 @@ export default {
     { id: 'fs.st.hl2', when: at('longship', 'the-hull'), turns: [
       by('a', "Hold this end. I'll do the nails."),
       beat('{b} holds the planks steady while {a} hammers along the side.'),
-      by('b', "Don't hit my fingers. Those are my rowing fingers."),
+      by('b', "Don't hit my fingers."),
     ] },
     { id: 'fs.st.ms1', when: at('longship', 'mast-and-sail'), turns: [
       beat('They heave the mast upright, slot it into the middle of the hull, and tie off the striped sail.'),
       by('a', "Stripes going across, like the picture."),
-      by('b', "It's beautiful. We made a Viking ship."),
+      by('b', "It looks amazing. We made a ship."),
     ] },
     { id: 'fs.st.ms2', when: at('longship', 'mast-and-sail'), turns: [
       by('b', "Push! Push it up!"),
@@ -43,7 +43,7 @@ export default {
     { id: 'fs.st.cs1', when: at('longship', 'the-crossing'), turns: [
       beat('They push the longship off the stones and row out across the cold, flat fjord.'),
       by('a', "It floats! Check the floor. Is the floor dry?"),
-      by('b', "Bone dry. Keep rowing."),
+      by('b', "It's dry. Keep rowing."),
     ] },
     { id: 'fs.st.cs2', when: at('longship', 'the-crossing'), turns: [
       by('b', "Row together. In, out. In, out."),
@@ -57,25 +57,25 @@ export default {
     ] },
     { id: 'fs.st.fr2', when: at('longship', 'far-shore'), turns: [
       by('a', "Tip! It's the cannon next."),
-      by('b', "I want to keep the ship. Can we keep the ship?"),
-      by('a', "We need it for the cannon. So yes, for now."),
+      by('b', "I love this ship."),
+      by('a', "Good, because we need it for the cannon."),
     ] },
 
     // ── the cannon ──
     { id: 'fs.st.ld1', when: at('meatball-cannon', 'load-up'), turns: [
       beat('{a} scoops up a handful of meatballs and packs them down the barrel of the old iron cannon.'),
       by('b', "How many do you put in?"),
-      by('a', "All of them, I think. More meatballs, more chance."),
+      by('a', "A handful. I don't know. Let's try it."),
     ] },
     { id: 'fs.st.ld2', when: at('meatball-cannon', 'load-up'), turns: [
-      by('a', "They're still warm."),
-      by('b', "Don't eat them! They're ammunition!"),
+      by('a', "Okay. That's packed."),
+      by('b', "Push them down! Right down!"),
       beat('{a} pushes the meatballs down the barrel with a stick.'),
     ] },
     { id: 'fs.st.am1', when: at('meatball-cannon', 'take-aim'), turns: [
       beat('Far out on the fjord, a round target bobs on the water. {a} squints down the barrel at it.'),
       by('b', "A bit left. No, your left."),
-      by('a', "I know which left. Stop helping."),
+      by('a', "Okay, okay. Like that?"),
     ] },
     { id: 'fs.st.am2', when: at('meatball-cannon', 'take-aim'), turns: [
       by('a', "Is the wind blowing that way?"),
@@ -99,7 +99,7 @@ export default {
     ] },
     { id: 'fs.st.be2', when: at('meatball-cannon', 'bullseye'), turns: [
       by('a', "Tip! Row to the buoy. That's the Chill Zone."),
-      by('b', "I'm so proud of you. You and your meatballs."),
+      by('b', "I'm so proud of you."),
       beat('They grab the oars and row for the buoy.'),
     ] },
   ],
@@ -108,7 +108,7 @@ export default {
     // ── the longship ──
     { id: 'fs.sf.hl1', when: at('longship', 'the-hull'), turns: [
       beat('They step back to look. The hull is curved the wrong way, like a big wooden bowl turned upside down.'),
-      by('a', "That's not a boat. That's a roof."),
+      by('a', "That's not right. It's the wrong way round."),
       by('b', "We put the planks on backwards. All of them."),
     ] },
     { id: 'fs.sf.hl2', when: at('longship', 'the-hull'), turns: [
@@ -118,12 +118,12 @@ export default {
     ] },
     { id: 'fs.sf.ms1', when: at('longship', 'mast-and-sail'), turns: [
       beat('The mast wobbles, leans, and crashes down across the hull.'),
-      by('b', "Timber!"),
-      by('a', "It's not a tree! Don't say timber!"),
+      by('b', "Watch out!"),
+      by('a', "It fell! Lift it back up!"),
     ] },
     { id: 'fs.sf.ms2', when: at('longship', 'mast-and-sail'), turns: [
       by('a', "Why are the stripes going up and down?"),
-      by('b', "Because that's how sails go."),
+      by('b', "Isn't that how they go?"),
       beat('The captain shakes their head. The sail is on sideways. They take it down and start again.'),
     ] },
     { id: 'fs.sf.cs1', when: at('longship', 'the-crossing'), turns: [
@@ -133,7 +133,7 @@ export default {
     ] },
     { id: 'fs.sf.cs2', when: at('longship', 'the-crossing'), turns: [
       by('b', "Is that supposed to come off?"),
-      beat('A plank floats away from the side of the ship. The fjord comes in to replace it.'),
+      beat('A plank floats away from the side of the ship, and the water pours in.'),
       by('a', "Swim! Back to shore! We'll fix it!"),
     ] },
 
@@ -149,8 +149,8 @@ export default {
       beat('{a} pulls them all out again, one by one.'),
     ] },
     { id: 'fs.sf.fi1', when: at('meatball-cannon', 'fire'), turns: [
-      beat('The cannon booms. The meatballs plop into the water well short of the target, and a fish swims up to eat one.'),
-      by('b', "You fed a fish."),
+      beat('The cannon booms. The meatballs splash into the water well short of the target.'),
+      by('b', "Too short! Way too short!"),
       by('a', "Reload. More gunpowder this time."),
     ] },
     { id: 'fs.sf.fi2', when: at('meatball-cannon', 'fire'), turns: [
@@ -160,7 +160,7 @@ export default {
     ] },
     { id: 'fs.sf.fi3', when: at('meatball-cannon', 'fire'), turns: [
       beat('{a} lights the fuse. Nothing happens. Then, very slowly, one meatball rolls out of the barrel and drops in the fjord.'),
-      by('a', "That's it? That's all it does?"),
+      by('a', "That's it? One meatball?"),
       by('b', "Load it again. Pack it tighter."),
     ] },
   ],

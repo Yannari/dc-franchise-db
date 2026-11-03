@@ -10,36 +10,36 @@ const shark = {
   'task-start.any': [
     { id: 'cpl2.sh-s1', when: SH, turns: [
       { beat: '{a} pulls the mask down. It immediately fogs up on the inside.' },
-      { by: 'a', say: "I can't see anything. Is that good? Maybe that's good." },
+      { by: 'a', say: "I can't see anything." },
       { by: 'b', say: "Spit in it! That's what divers do!" },
-      { by: 'a', say: "I'm not spitting in a mask in front of a shark." },
+      { by: 'a', say: "Okay. Okay. Gross, but okay." },
     ] },
     { id: 'cpl2.sh-s2', when: SH, turns: [
       { by: 'b', say: "Remember, the tip's clipped on. You unclip it. You don't pull." },
-      { by: 'a', say: "Unclip. With a shark attached. Fine." },
-      { by: 'b', say: "The shark's not attached. The shark's the boss of the clip." },
+      { by: 'a', say: "Unclip it. Okay." },
+      { by: 'b', say: "You'll be fine. Just unclip it." },
     ] },
     { id: 'cpl2.sh-s3', when: SH, turns: [
       { beat: '{a} climbs down one rung, then climbs straight back up one rung.' },
-      { by: 'b', say: "That's not down. That's the same place." },
-      { by: 'a', say: "I'm warming up. Ladders need a warm-up." },
+      { by: 'b', say: "Come on. You have to go down." },
+      { by: 'a', say: "I'm going. I'm going. Give me a second." },
     ] },
     { id: 'cpl2.sh-s4', when: SH, turns: [
       { by: 'a', say: "What do I do if it bumps me?" },
-      { by: 'b', ...V("Say sorry. Be polite. It's its sea.", "Say sorry. Its sea.", "Apologise.", "SAY SORRY! It's ITS sea!", "Just say sorry, it's the shark's sea.", "Bump it back. Gently. As a greeting.") },
-      { beat: '{a} lowers into the water muttering "sorry" in advance.' },
+      { by: 'b', say: "It won't. Just stay still." },
+      { beat: '{a} lowers into the water, breathing fast.' },
     ] },
   ],
   'task-try.first-try': [
     { id: 'cpl2.sh-f1', when: SH, turns: [
-      { beat: 'The fin comes past close enough to touch. {a} flicks the clip open with two fingers, like a waiter taking a coat.' },
+      { beat: 'The fin comes past close enough to touch, and {a} flicks the clip open with two fingers.' },
       { by: 'b', say: "That was so smooth!" },
       { by: 'a', say: "Thank you. Now get me out." },
     ] },
     { id: 'cpl2.sh-f2', when: SH, turns: [
-      { by: 'a', say: "I've got it! I've got the tip and all my fingers!" },
-      { by: 'b', say: "Count them on the boat!" },
-      { beat: '{a} counts them on the boat. Ten. {a} counts again anyway.' },
+      { by: 'a', say: "I've got it! I've got the tip!" },
+      { by: 'b', say: "Get out! Quick!" },
+      { beat: '{a} climbs out onto the boat, shaking.' },
     ] },
   ],
   'task-try.after-fails': [
@@ -47,7 +47,7 @@ const shark = {
       { by: 'b', say: "Stop kicking! Every time you kick, it swims wide!" },
       { by: 'a', say: "I'm kicking because I don't want to sink!" },
       { by: 'b', say: "Hold the ladder with one hand and float!" },
-      { beat: '{a} hangs off the ladder, still as a buoy. The shark cruises in close, and the tip comes off in {a.posAdj} hand.' },
+      { beat: '{a} hangs off the ladder, completely still. The shark cruises in close, and the tip comes off in {a.posAdj} hand.' },
     ] },
     { id: 'cpl2.sh-a2', when: SH, turns: [
       { beat: 'Four passes in, {a} has stopped screaming and started humming.' },
@@ -63,9 +63,9 @@ const shark = {
       { beat: '{a} drifts out from the ladder, then paddles straight back to it.' },
     ] },
     { id: 'cpl2.sh-t2', when: SH, turns: [
-      { beat: 'On the boat, {b} is acting out the grab with both hands, over and over, like a mime.' },
+      { beat: 'On the boat, {b} is acting out the grab with both hands, over and over.' },
       { by: 'b', say: "Like this! Reach, pinch, pull!" },
-      { by: 'a', say: "Your shark is invisible! Mine has a face!" },
+      { by: 'a', say: "It's different when it's right there!" },
     ] },
   ],
   'attempt-fail.any': [
@@ -83,19 +83,19 @@ const shark = {
   'task-done.any': [
     { id: 'cpl2.sh-dn1', when: SH, turns: [
       { beat: '{a} sits on the deck in a towel, staring at the sea.' },
-      { by: 'a', say: "We had a moment, me and that shark." },
-      { by: 'b', say: "You screamed in its face." },
-      { by: 'a', say: "That was the moment." },
+      { by: 'a', say: "I can't believe I did that." },
+      { by: 'b', say: "You screamed the whole time." },
+      { by: 'a', say: "I know. But I did it." },
     ] },
     { id: 'cpl2.sh-dn2', when: SH, turns: [
       { by: 'b', say: "Next one's on a beach. With sand. No teeth." },
-      { by: 'a', say: "I'm going to kiss the sand." },
-      { by: 'b', say: "Please don't. People walk on it." },
+      { by: 'a', say: "Good. I never want to see the sea again." },
+      { by: 'b', say: "We'll see. Come on." },
     ] },
     { id: 'cpl2.sh-dn3', when: SH, turns: [
       { beat: 'As the boat turns for shore, the fin follows it for a little while.' },
       { by: 'a', say: "Why is it following us?" },
-      { by: 'b', say: "It wants its tip back. Don't look at it. Drive faster." },
+      { by: 'b', say: "I don't know. Don't look at it. Drive faster." },
     ] },
   ],
 };
@@ -105,22 +105,22 @@ const palace = {
     { id: 'cpl2.sp-s1', when: SP, turns: [
       { beat: '{a} holds the photo up against the real palace on the cliff, squinting from one to the other.' },
       { by: 'a', say: "It's smaller in the photo." },
-      { by: 'b', say: "Everything's smaller in a photo. Ours is going to be smaller still. Dig." },
+      { by: 'b', say: "It doesn't matter. Ours just has to look like it. Dig." },
     ] },
     { id: 'cpl2.sp-s2', when: SP, turns: [
       { by: 'b', say: "You do walls, I do towers. Nobody touches anybody else's bit." },
       { by: 'a', say: "What about the gardens?" },
-      { by: 'b', say: "We'll fight about the gardens later." },
+      { by: 'b', say: "We'll do the gardens together." },
     ] },
     { id: 'cpl2.sp-s3', when: SP, turns: [
       { beat: 'The little judge walks past, sees their bucket and quietly shakes his head.' },
-      { by: 'a', say: "He's judging the bucket. We haven't started and he hates the bucket." },
-      { by: 'b', say: "Then we'll do it with our hands. Like proper palace builders." },
+      { by: 'a', say: "He's already judging us. We haven't even started." },
+      { by: 'b', say: "Then let's give him something to look at." },
     ] },
     { id: 'cpl2.sp-s4', when: SP, turns: [
       { by: 'a', say: "How far up is the tide going to come?" },
       { by: 'b', say: "See the line of seaweed? Not past that." },
-      { by: 'a', say: "Then we build behind the seaweed. Way behind the seaweed." },
+      { by: 'a', say: "Then we build behind the seaweed." },
     ] },
   ],
   'task-try.first-try': [
@@ -128,12 +128,12 @@ const palace = {
       { beat: 'The boy crouches down level with their gate and looks through it, one eye shut, for a long time.' },
       { by: 'a', say: "What's he looking for?" },
       { beat: 'He stands up, nods once, and hands over the tip.' },
-      { by: 'b', say: "Whatever it was, we had it." },
+      { by: 'b', say: "I don't know. But we got it." },
     ] },
     { id: 'cpl2.sp-f2', when: SP, turns: [
       { by: 'b', say: "We even did the guards. Look, two little guards, out of pebbles." },
       { beat: 'The boy picks up one pebble guard, turns it over, and puts it back exactly where it was. Then he nods.' },
-      { by: 'a', say: "He respected the guards." },
+      { by: 'a', say: "He liked the guards!" },
     ] },
   ],
   'task-try.after-fails': [
@@ -144,8 +144,8 @@ const palace = {
     ] },
     { id: 'cpl2.sp-a2', when: SP, turns: [
       { beat: 'The second wave in a row takes their front wall. {b} builds a little wall in front of the wall.' },
-      { by: 'b', say: "A sea wall. For the palace wall." },
-      { by: 'a', say: "That's genius. That's actual engineering." },
+      { by: 'b', say: "A wall in front of the wall. For the waves." },
+      { by: 'a', say: "That's so smart." },
       { beat: 'The next wave stops dead at the sea wall. The boy nods.' },
     ] },
   ],
@@ -156,9 +156,9 @@ const palace = {
       { by: 'a', say: "I can't do pointy! Sand doesn't do pointy!" },
     ] },
     { id: 'cpl2.sp-t2', when: SP, turns: [
-      { beat: 'A toddler from the next towel waddles over and starts helping. By sitting in the gardens.' },
-      { by: 'b', say: "No, no, thank you, but no." },
-      { by: 'a', say: "Are we allowed to move a toddler?" },
+      { beat: 'A gust of wind blows sand across the gardens, and flattens them.' },
+      { by: 'b', say: "No! The gardens!" },
+      { by: 'a', say: "Okay. We'll do them again." },
     ] },
   ],
   'attempt-fail.any': [
@@ -169,26 +169,26 @@ const palace = {
     ] },
     { id: 'cpl2.sp-x2', when: SP, turns: [
       { by: 'b', say: "What's he saying? He's saying something." },
-      { beat: 'The boy points at their gardens and says one word in a language neither of them speaks. It is clearly not a compliment.' },
+      { beat: 'The boy points at their gardens and shakes his head.' },
       { by: 'a', say: "Gardens again. Back to the gardens." },
     ] },
   ],
   'task-done.any': [
     { id: 'cpl2.sp-dn1', when: SP, turns: [
-      { by: 'a', say: "I've got sand in places I didn't know I had places." },
-      { by: 'b', say: "Good thing we're getting on a boat. Into the sea it goes." },
-      { by: 'a', say: "Not the shark sea." },
+      { by: 'a', say: "I've got sand everywhere." },
+      { by: 'b', say: "We'll wash it off later." },
+      { by: 'a', say: "Not in that sea." },
     ] },
     { id: 'cpl2.sp-dn2', when: SP, turns: [
       { beat: 'As they leave, the boy is already frowning at the palace next door.' },
-      { by: 'b', say: "We passed. We passed the scariest person on this coast." },
-      { by: 'a', say: "Scarier than the shark?" },
-      { by: 'b', say: "The shark just wanted to swim. He wants perfection." },
+      { by: 'b', say: "We passed. He was so strict." },
+      { by: 'a', say: "Stricter than the shark." },
+      { by: 'b', say: "Way scarier than the shark." },
     ] },
     { id: 'cpl2.sp-dn3', when: SP, turns: [
-      { by: 'a', say: "When I'm rich, I'm going to buy that palace." },
-      { by: 'b', say: "The real one?" },
-      { by: 'a', say: "The sand one. I'm attached to it." },
+      { by: 'a', say: "I'm going to miss our palace." },
+      { by: 'b', say: "It'll be gone by tonight." },
+      { by: 'a', say: "I know. I took a picture." },
     ] },
   ],
 };

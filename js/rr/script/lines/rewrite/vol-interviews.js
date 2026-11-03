@@ -45,7 +45,7 @@ export default {
       iv('vi.b1', undefined,
         ['a', "We were better than half the teams still in this. Everybody knows it."],
         ['b', "Being better doesn't help if you're slower."],
-        ['a', "Don't be wise at me right now."]),
+        ['a', "Please don't be clever about it. Not right now."]),
       iv('vi.b2', undefined,
         ['b', "One wrong turn. That's all it was. One."],
         ['a', "Three wrong turns."],

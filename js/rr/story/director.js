@@ -816,7 +816,8 @@ export function airLeg(state, leg) {
     // ...another team's: the end of its own run, else the nearest minute with room (a run that ends in this minute)
     const to = Math.round(b.data.to ?? b.data.t);
     const tries = !own && to > b.data.t && to <= hi ? [to] : [];
-    for (let d = 1; d <= 6; d++) tries.push(b.data.t + d, ...(own ? [] : [b.data.t - d]));
+    // (forward only: a beat moved back a minute aired a celebration before a row it had followed)
+    for (let d = 1; d <= 6; d++) tries.push(b.data.t + d);
     const t = tries.find(x => x >= lo && x <= hi && room(x));
     if (t != null) move(t);
   }

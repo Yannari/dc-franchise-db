@@ -116,7 +116,9 @@ function clipOf(ep, sceneId, max = 2) {
   // (a clip opens on a line that stands on its own: "> Jiwon: Deal." and "> Jisoo: Which is?" opened a recap clip in the
   // middle of an exchange, read 2026-11-03)
   const REPLY = /^(and|but|which|then|so|or|because|yes|yeah|no|nope|okay|ok|deal|fine|right|sure|exactly|that's|it's not|me too)\b/i;
-  const opener = l => l.text.split(/\s+/).length >= 4 && !REPLY.test(l.text.replace(/^\W+/, ''));
+  // (Don answers: "> Don: Nobody at all, so savour it" opened a clip; his first line of the scene can open one)
+  const opener = l => l.text.split(/\s+/).length >= 4 && !REPLY.test(l.text.replace(/^\W+/, ''))
+    && !(l.by === 'Don' && said.indexOf(l) > 0);
   const anyOpener = said.some((l, i) => opener(l) && i + Math.min(max, said.length) <= said.length);
   let best = 0, bestScore = -1;
   for (let i = 0; i + Math.min(max, said.length) <= said.length; i++) {

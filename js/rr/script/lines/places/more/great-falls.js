@@ -95,7 +95,7 @@ const slots = {
     { id: 'grf2.ws-dn6', when: WS, turns: [
       { by: 'b', say: "My arm hurts from watching you pull that lever." },
       { by: 'a', say: "My arm hurts from pulling it." },
-      { by: 'b', say: "We both have arm pain. That's a kind of wedding." },
+      { by: 'b', say: "Then we'll both be sore at the altar. Very romantic." },
     ] },
   ],
 };

@@ -81,7 +81,8 @@ export default {
         { by: 'b', ...V("That's the worst okay you've ever said. That's a terrible okay.", "That's your worst okay ever.", "Worst okay you've ever said.", "That's the WORST okay you've EVER said!", "That's honestly the worst okay you've ever said.", "That okay had no soul in it.") },
         { beat: '{a} walks on ahead, and stays a few steps ahead for the rest of the leg.' },
       ] },
-      { id: 'sn.c-fam1', when: { relFam: 'family' }, turns: [
+      // (their father: two siblings, read 2026-11-03 over an aunt and her nephew)
+      { id: 'sn.c-fam1', when: { rel: 'siblings' }, turns: [
         { by: 'b', say: "You're doing the thing Dad does. The quiet thing." },
         { by: 'a', say: "I'm not doing anything." },
         { by: 'b', ...V("You are. The jaw, the walking ahead, the very polite answers. It's the Dad thing.", "The jaw, the walking ahead, the polite answers. It's Dad.", "The jaw. The walking ahead. It's Dad.", "You ARE! The JAW, the walking AHEAD, the very POLITE answers! It's the DAD thing!",

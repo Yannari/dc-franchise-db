@@ -67,11 +67,14 @@ describe('rr director', () => {
     const byId = Object.fromEntries(st.scenes.map(s => [s.id, s]));
     for (const ep of aired) {
       const rows = new Set(), blows = {}, romance = {};
+      let crowned = false;
       for (const seg of ep.segments) {
+        // (the winners' hug once Don has crowned them is the end of the race, whatever they said an hour before)
+        if (seg.kind === 'don-crown') crowned = true;
         const sc = byId[seg.scene];
         if (!sc) continue;
         const pair = sc.who.slice(0, 2).sort().join('|');
-        if (WARM.has(sc.kind)) expect(rows.has(pair), `warm after a row: #${sc.id} ${sc.kind}`).toBe(false);
+        if (WARM.has(sc.kind) && !crowned) expect(rows.has(pair), `warm after a row: #${sc.id} ${sc.kind}`).toBe(false);
         if (ROW.has(sc.kind)) {
           rows.add(pair);
           if (sc.data.team) { blows[sc.data.team] = (blows[sc.data.team] || 0) + 1; expect(blows[sc.data.team]).toBeLessThanOrEqual(1); }

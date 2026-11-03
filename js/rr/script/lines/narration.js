@@ -30,7 +30,7 @@ export default {
     don("The first flight is up, up and away. The next one leaves in {gap}, so {count} teams get to sit and think about their choices."),
     don("{count} teams missed the first flight. They'll have to wait {gap} for the next one."),
     don("While the first flight takes off, {count} teams are left at the gate with {gap} to kill."),
-    don("Flight number two doesn't leave for another {gap}, and {count} teams are waiting for it. Not patiently."),
+    don("Flight number two doesn't leave for {gap}, and {count} teams are waiting for it. Not patiently."),
     don("{count} teams wait for flight number two. That's {gap} of airport food. My condolences."),
     don("The early flight is gone. {count} teams sit at the gate for {gap}, watching it go."),
     don("For {count} teams, it's {gap} of waiting for flight number two. Anything can happen in {gap}. Mostly snacking."),

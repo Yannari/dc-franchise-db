@@ -63,9 +63,8 @@ export default {
         { by: 'a', ...V("Is there any doubt? Is there any doubt at all?", "Any doubt at all?", "Any doubt?", "Is there ANY doubt? Is there ANY doubt at ALL?", "Is there any doubt? Any doubt at all?", "Is there a single doubt in your body?") },
         { by: 'b', say: "{c} and {d}. It was always going to be {c} and {d}." },
         { beat: '{a} pins the Boomerang onto their photo, and pushes it in hard.' },
-        { by: 'a', say: "That's for the hedge." },
-        { by: 'b', say: "And the fake directions. And the queue." },
-        { by: 'a', say: "That's for everything." },
+        { by: 'a', say: "That's for every single thing they've done to us." },
+        { by: 'b', say: "Every single thing. In one pin." },
       ] },
       { id: 'tw.dr2', turns: [
         { by: 'b', say: "Should we really? They're going to hate us forever." },

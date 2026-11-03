@@ -2,6 +2,7 @@
 import { K, register } from './registry.js';
 import { identityOf } from '../identities.js';
 import { teamLevel } from '../skill.js';
+import { INDOOR } from '../places.js';
 
 const types = c => c.stretch?.types || (c.stretch?.sides || []).flatMap(s => s.types) || [];
 const good = c => { const id = identityOf(c.state.teams[c.tid]); return !!id && types(c).some(t => id.good.includes(t)); };
@@ -14,7 +15,9 @@ register([
     homecoming: { w: 0.2, fx: (fx, c) => fx.mind(c.A, 'morale', 10) },
   } }),
   K({ id: 'identity-moment', family: 10, moments: ['tip'], when: c => (good(c) || bad(c) ? 0.6 : 0), endings: {
-    'in-their-element': { w: c => (good(c) ? 2 : 0), fx: (fx, c) => { fx.mind(c.A, 'morale', 6); fx.pass(c.tid, 0.03); } },
+    // (not the moment a team gave up, or after failing it again and again: "I've been doing this my whole life" aired
+    // as the Father & Daughter quit the wedding dresses, read 2026-11-03)
+    'in-their-element': { w: c => (good(c) && c.event?.passed !== false && (c.event?.fails || 0) < 2 ? 2 : 0), fx: (fx, c) => { fx.mind(c.A, 'morale', 6); fx.pass(c.tid, 0.03); } },
     'out-of-element': { w: c => (bad(c) ? 2 : 0), fx: (fx, c) => fx.mind(c.A, 'morale', -5) },
   } }),
   K({ id: 'cultural-task', family: 10, moments: ['pass'], when: c => (types(c).some(t => ['perform', 'people'].includes(t)) ? 0.2 : 0), endings: {
@@ -33,7 +36,7 @@ register([
     accept: { w: c => c.S(c.A, 'temperament') / 5, fx: (fx, c) => fx.bond(c.A, c.B, 2) },
   } }),
   // (not on a plane or at the gate: "it nearly blew us off a hill" at an airport, read 2026-11-03)
-  K({ id: 'weather', family: 10, moments: ['travel', 'tip'], when: c => (c.stretch?.mode === 'flight' ? 0 : 0.03), endings: {
+  K({ id: 'weather', family: 10, moments: ['travel', 'tip'], when: c => (c.stretch?.mode === 'flight' || INDOOR.has(c.stretch?.id) ? 0 : 0.03), endings: {
     'wait-it-out': { w: 1, fx: (fx, c) => fx.time(c.tid, 30) },
     'push-on': { w: c => teamLevel(c.state, c.tid, ['nerve']) / 5, fx: (fx, c) => { fx.time(c.tid, 10); fx.mind(c.A, 'stress', 6); } },
   } }),

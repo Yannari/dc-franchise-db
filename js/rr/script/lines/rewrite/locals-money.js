@@ -585,7 +585,7 @@ export default {
     ],
     'repay.paid': [
       { id: 'lm.rp1', turns: [
-        { by: 'a', say: "Here. Your {amount}. Every cent of it." },
+        { by: 'a', say: "Here. The {amount} we owe you, every cent of it." },
         { by: 'c', ...V("You actually paid us back. Nobody pays anybody back.", "You paid us back. Nobody does that.", "Nobody pays back. You did.", "You ACTUALLY paid us BACK! NOBODY pays ANYBODY back!", "You actually paid us back. Nobody ever pays anybody back.", "You paid us back. You're unicorns.") },
         { by: 'b', say: "We said we would." },
         { by: 'd', say: "People say a lot of things." },

@@ -106,6 +106,11 @@ const toSteps = (lines, who) => lines.map(l => (l.kind === 'conf' ? { k: 'conf',
     : { k: 'say', by: l.by, text: l.text, focus: who, loud: /!/.test(l.text) && l.text.length < 70 }));
 
 // everyone in it on the set, the host among them (on the plate's host mark when it has one)
+// ...and somewhere the host is not: a camp before the rest of its tribe walks in
+function gatherAlone(venue, spot, tod, people) {
+  const key = plateKey(venue, spot, tod) || plateKey(venue, VENUES[venue].public, tod);
+  return { key, places: placeScene(key, people.slice(0, 10), []) };
+}
 function gather(venue, spot, tod, people, host) {
   const key = plateKey(venue, spot, tod) || plateKey(venue, VENUES[venue].public, tod);
   const shown = people.slice(0, 10);
@@ -269,6 +274,7 @@ export function tdMiscTwistScreen(ep, id, o = {}) {
   // First Impressions and the auction play as dialogue (td/story/twist.js); the auction's three classic
   // pages become one stepped screen
   if (id === 'first-impressions' && ep.tdFirstImp?.length) return tdFirstImpressionsScreen(ep, o);
+  if (id === 'tribe-leaders' && ep.tdTribeLeaders?.tribes?.length) return tdTribeLeadersScreen(ep, o);
   if (id === 'auction-title' && ep.tdAuction?.lots?.length) return tdAuctionScreen(ep, o);
   if (/^auction-(floor|results)$/.test(id) && ep.tdAuction?.lots?.length) return 'skip';
   if (id === 'feast' && (ep.feastEvents || []).length) {
@@ -400,6 +406,91 @@ export function tdFirstImpressionsScreen(ep, o = {}) {
     parts.push({ id: `first-impressions-${i}`, kind: 'twist', venue, ep: ep.num, label: `First Impressions: ${r.tribe}`, team: r.tribe, host, steps });
   });
   return { id: 'first-impressions', kind: 'twist', venue, ep: ep.num, label: 'First Impressions', host, steps: parts.flatMap(p => p.steps), parts };
+}
+
+/**
+ * First Impressions: Tribe Leaders (Kaôh Rōng): the rules to the whole cast; one screen per tribe for
+ * its leader vote and the weakest named; the helicopter, which takes the named away to camp (the twist
+ * lands as it lifts off); then one screen per camp: the landing, the choice between the clue and the
+ * rice, and the tribe walking in to hear about it. A clue kept quiet goes on the side panel only.
+ */
+export function tdTribeLeadersScreen(ep, o = {}) {
+  const TL = ep.tdTribeLeaders;
+  if (!TL?.tribes?.length) return null;
+  const host = o.host || 'Chris';
+  const venue = venueOf(ep, o);
+  const V = VENUES[venue];
+  const day = ep.num === 1 ? 'Day 1, ' : '';
+  const membersOf = r => [...new Set(r.members || [r.leader, r.picked, ...r.booth.map(b => b.voter)])];
+  const everyone = [...new Set(TL.tribes.flatMap(membersOf))];
+  const allKey = plateKey(venue, V.public, 'day');
+  const circles = placeTeams(allKey, TL.tribes.map(r => ({ name: r.tribe, members: membersOf(r) })), host, o.colorOf);
+  const rules = [{ k: 'scene', spot: V.public, tod: 'day', plate: allKey, place: placeName(V.public), time: `${day}1:00 PM`, card: true, focus: [], bg: [], places: circles.places, flags: circles.flags, host }];
+  rules.push({ k: 'say', by: host, host: true, text: `Before anybody heads to camp, every tribe needs a leader.` });
+  rules.push({ k: 'title', kicker: 'Twist', name: 'Tribe Leaders', faces: everyone.slice(0, 8) });
+  rules.push({ k: 'say', by: host, host: true, text: `You've known each other for a few hours, so this is all first impressions. Each tribe votes, and whoever gets the most votes leads.` });
+  rules.push({ k: 'say', by: host, host: true, text: `Your leader makes one decision for the whole tribe, and it's coming right after the vote. Go talk it over.` });
+  rules.push({ k: 'beat', text: `The tribes split up. Everybody is already looking at everybody else.`, focus: [], tense: true });
+  const parts = [{ id: 'tribe-leaders-rules', kind: 'twist', venue, ep: ep.num, label: 'Tribe Leaders: the rules', host, steps: rules }];
+  // the vote and the naming, per tribe
+  TL.tribes.forEach((r, i) => {
+    const people = membersOf(r);
+    const slot = campSlot(ep, r.tribe, venue);
+    const pub = gather(venue, teamSpot(venue, V.public, slot), 'day', people, host);
+    const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: pub.key, place: `${r.tribe}`, time: `${day}${2 + i}:00 PM`, card: true, focus: [], bg: [], places: pub.places, host }];
+    steps.push({ k: 'title', kicker: 'Tribe Leaders', name: r.tribe, faces: people.slice(0, 8) });
+    steps.push(...talkSteps(r.huddle, host, people.slice(0, 4)));
+    steps.push({ k: 'say', by: host, host: true, text: `${r.tribe}, it's time. One at a time, tell me who you want to lead.` });
+    for (const b of r.booth) {
+      const s = talkSteps(b.lines, host);
+      if (!s.length) s.push({ k: 'conf', by: b.voter, text: `${b.voted}.` });
+      s[0] = { ...s[0], side: [{ tab: 'tally', voter: b.voter, target: b.voted }] };
+      steps.push(...s);
+    }
+    steps.push({ k: 'title', kicker: `${r.tribe} is led by`, name: r.leader, faces: [r.leader] });
+    steps.push({ k: 'beat', text: `${r.leader} steps forward.`, focus: [r.leader], act: { kind: 'fire', who: [r.leader] } });
+    steps.push(...talkSteps(r.lead, host, [r.leader]));
+    const ws = talkSteps(r.weak, host, [r.leader, r.picked]);
+    const at = ws.findIndex(s => s.by === r.picked);
+    if (at >= 0 && r.react) ws[at] = { ...ws[at], act: { kind: r.react, who: [r.picked] } };
+    steps.push(...ws);
+    steps.push({ k: 'title', kicker: 'The weakest of ' + r.tribe, name: r.picked, faces: [r.picked], tone: 'out' });
+    steps.push(...talkSteps(r.namedConf, host));
+    parts.push({ id: `tribe-leaders-${i}`, kind: 'twist', venue, ep: ep.num, label: `Tribe Leaders: ${r.tribe}`, team: r.tribe, host, steps });
+  });
+  // the helicopter: the named, together, and the twist as it lifts off
+  const named = TL.named || TL.tribes.map(r => r.picked);
+  const pad = gather(venue, V.public, 'day', named, host);
+  const fly = [{ k: 'scene', spot: V.public, tod: 'day', plate: pad.key, place: placeName(V.public), time: `${day}5:00 PM`, card: true, focus: [], bg: [], places: pad.places, host }];
+  fly.push(...talkSteps(TL.chopper, host, named));
+  fly.push({ k: 'title', kicker: 'Twist', name: 'The weakest ride to camp', faces: named, tone: 'fire' });
+  fly.push({ k: 'beat', text: `The helicopter comes down beside them, and ${named.length === 2 ? `${named[0]} and ${named[1]}` : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`} climb aboard.`, focus: named, act: { kind: 'ride', ride: 'helicopter' } });
+  parts.push({ id: 'tribe-leaders-chopper', kind: 'twist', venue, ep: ep.num, label: 'Tribe Leaders: the helicopter', host, steps: fly });
+  // each camp: the landing, the choice, the tribe walking in
+  TL.tribes.forEach((r, i) => {
+    const people = membersOf(r);
+    const slot = campSlot(ep, r.tribe, venue);
+    const alone = gatherAlone(venue, teamSpot(venue, V.public, slot), 'day', [r.picked]);
+    const clue = r.choice === 'clue';
+    const steps = [{ k: 'scene', spot: V.public, tod: 'day', plate: alone.key, place: `${r.tribe} camp`, time: `${day}5:30 PM`, card: true, focus: [r.picked], bg: [], places: alone.places, host }];
+    steps.push({ k: 'beat', text: `The helicopter sets ${r.picked} down at the empty ${r.tribe} camp.`, focus: [r.picked], act: { kind: 'arrive', who: [r.picked], ride: 'helicopter' } });
+    steps.push(...talkSteps(r.choose, host, [r.picked]));
+    steps.push({ k: 'beat', text: clue ? `${r.picked} picks up the envelope and leaves the rice where it is.` : `${r.picked} hoists the bag of rice${r.riceOnly ? '' : ' and leaves the envelope sealed'}.`,
+      focus: [r.picked], gain: { who: r.picked, stat: clue ? 'IDOL CLUE' : 'RICE', up: true } });
+    steps.push({ k: 'title', kicker: `${r.picked} takes`, name: clue ? 'The idol clue' : 'The extra rice', faces: [r.picked], tone: clue ? 'fire' : undefined });
+    if (clue) steps.push({ k: 'beat', text: `${r.picked} reads the clue twice, then puts it away and starts looking.`, focus: [r.picked], act: { kind: 'search', who: [r.picked] },
+      ...(r.told === 'lie' ? { side: [{ tab: 'room', text: `Only ${r.picked} knows about the clue.` }] } : {}) });
+    const camp = gatherAlone(venue, teamSpot(venue, V.public, slot), 'day', people);
+    const walkers = people.filter(n => n !== r.picked);
+    steps.push({ k: 'scene', spot: V.public, tod: 'day', plate: camp.key, place: `${r.tribe} camp`, time: 'An hour later', card: false, focus: [r.picked], bg: [], places: camp.places, host });
+    steps.push({ k: 'beat', text: `The rest of ${r.tribe} finally walks into camp.`, focus: walkers.slice(0, 4), act: { kind: 'arrive', who: walkers } });
+    const ts = talkSteps(r.tell, host, [r.picked, r.leader]);
+    if (ts[0] && clue && r.told === 'lie') ts[0] = { ...ts[0], side: [{ tab: 'room', text: `${r.picked} has the clue. ${r.tribe} doesn't know.` }] };
+    steps.push(...ts);
+    steps.push(...talkSteps(r.after, host));
+    parts.push({ id: `tribe-leaders-camp-${i}`, kind: 'twist', venue, ep: ep.num, label: `Tribe Leaders: ${r.tribe} camp`, team: r.tribe, host, steps });
+  });
+  return { id: 'tribe-leaders', kind: 'twist', venue, ep: ep.num, label: 'Tribe Leaders', host, steps: parts.flatMap(p => p.steps), parts };
 }
 
 /** The auction: every lot put up, bid on, sold and opened, in the bidders' own words. */

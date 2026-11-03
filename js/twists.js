@@ -858,6 +858,130 @@ export function executeFirstImpressions(ep, twistObj) {
   gs.sitOutHistory = {}; // reset sit-out tracking after roster change
 }
 
+// ── First Impressions: Tribe Leaders (Survivor: Kaôh Rōng, day one) ──
+// 1. Each tribe votes for a leader on first impressions alone.
+// 2. The leader names the weakest person on the tribe, in front of everybody.
+// 3. Being named is the reward: the named ride to camp in the helicopter and get there first.
+// 4. At camp each of them chooses an idol clue (for themselves) or an extra bag of rice (for the tribe),
+//    then tells the tribe what they took, or (a schemer with a clue) says it was nothing.
+// Nobody changes tribe. The leader is a leader for this vote only.
+// Stores twistObj.tribeLeaders = [{ tribe, leader, votes, log, picked, pickWhy, choice, told, riceOnly }].
+export function executeTribeLeaders(ep, twistObj) {
+  if (gs.phase !== 'pre-merge' || !gs.tribes?.length) return;
+  const arch = n => players.find(x => x.name === n)?.archetype || '';
+  const ageOf = n => Number(players.find(x => x.name === n)?.age) || 0;
+  const epNum = ep.num || (gs.episode || 0) + 1;
+  const NICE = ['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat'];
+  const VILLAIN = ['villain', 'mastermind', 'schemer'];
+  // a leader on sight: who takes charge, who people warm to, who looks capable
+  const LEAD_ARCH = { hero: 0.8, 'loyal-soldier': 0.5, mastermind: 0.5, 'challenge-beast': 0.4, 'social-butterfly': 0.3, villain: 0.2,
+    floater: -0.8, goat: -1.0, underdog: -0.6, 'perceptive-player': -0.2 };
+  const pop = (n, d) => { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; };
+  const idolsOn = !!seasonConfig.advantages?.idol?.enabled;
+  const results = [];
+
+  gs.tribes.forEach(tribe => {
+    const members = tribe.members.filter(m => gs.activePlayers.includes(m));
+    if (members.length < 2) return;
+
+    // Step 1: the leader vote
+    const leaderPull = {};
+    members.forEach(p => {
+      const s = pStats(p);
+      leaderPull[p] = s.boldness * 0.35 + s.social * 0.25 + s.strategic * 0.1 + s.loyalty * 0.1 + s.physical * 0.1
+        + (LEAD_ARCH[arch(p)] || 0) + Math.random() * 2;
+    });
+    const votes = {}, log = [];
+    members.forEach(voter => {
+      const vs = pStats(voter);
+      const pick = members.filter(m => m !== voter).map(t => ({ t, s: leaderPull[t] + getBond(voter, t) * 0.4 + Math.random() }))
+        .sort((x, y) => y.s - x.s)[0].t;
+      votes[pick] = (votes[pick] || 0) + 1;
+      const ts = pStats(pick);
+      // the same read as a word, for the dialogue (td/story/twist.js writeTribeLeaders): what stands out about
+      // the pick to THIS voter (a sharp voter notices the sharp one, a strong voter the strong one)
+      const reads = [['bold', ts.boldness + vs.boldness * 0.2], ['strong', ts.physical + vs.physical * 0.2],
+        ['smart', Math.max(ts.mental, ts.strategic) + Math.max(vs.mental, vs.strategic) * 0.2], ['kind', ts.social + vs.social * 0.2]]
+        .sort((x, y) => y[1] - x[1]);
+      const why = getBond(voter, pick) >= 2 ? 'liked' : reads[0][1] >= 8.5 ? reads[0][0] : vs.intuition >= 7 ? 'gut' : 'nothing';
+      log.push({ voter, voted: pick, why });
+    });
+    const top = Math.max(...Object.values(votes));
+    const leader = Object.keys(votes).filter(n => votes[n] === top).sort((x, y) => leaderPull[y] - leaderPull[x])[0];
+    // the people who chose the leader start out on the leader's good side
+    log.filter(l => l.voted === leader).forEach(l => addBond(l.voter, leader, 0.4));
+    pop(leader, 1);
+
+    // Step 2: the leader names the weakest. Weak on sight is the body (and age); a villain names someone they dislike.
+    const ls = pStats(leader);
+    const grudge = VILLAIN.includes(arch(leader)) ? 0.6 : 0.3;
+    const weakness = members.filter(m => m !== leader).map(t => {
+      const s = pStats(t), age = ageOf(t);
+      const w = (10 - s.physical) * 0.35 + (10 - s.endurance) * 0.25 + (10 - s.boldness) * 0.1 + (10 - s.social) * 0.05
+        + Math.max(0, age - 30) * 0.04 - getBond(leader, t) * grudge + Math.random() * 1.2;
+      return { t, w };
+    }).sort((x, y) => y.w - x.w);
+    const picked = weakness[0].t;
+    const ps = pStats(picked);
+    const pickWhy = getBond(leader, picked) <= -2 ? 'enemy' : ageOf(picked) >= 35 ? 'old'
+      : ps.physical <= 4 || ps.endurance <= 4 ? 'weak' : ps.boldness <= 4 || ps.social <= 4 ? 'quiet' : 'weak';
+    // called the weakest in front of everyone: it stings, and the audience feels for them
+    addBond(picked, leader, -1.5);
+    pop(picked, 1);
+    if (!gs.playerStates) gs.playerStates = {};
+    if (!gs.playerStates[picked]) gs.playerStates[picked] = { emotional: 'content', votesReceived: 0, lastVotedEp: null, bigMoves: 0 };
+
+    // Step 3/4: the helicopter, then the choice. The clue is for them; the rice is for everybody.
+    const riceOnly = !idolsOn || !(gs.idolSlots?.[tribe.name] > 0);
+    const pClue = Math.max(0.05, Math.min(0.9, 0.4 + (ps.strategic - 5) * 0.07 + (ps.boldness - 5) * 0.03 + (ps.intuition - 5) * 0.02
+      - (ps.loyalty - 5) * 0.05 - (ps.social - 5) * 0.02));
+    const choice = riceOnly ? 'rice' : Math.random() < pClue ? 'clue' : 'rice';
+    let told = null;
+    if (choice === 'rice') {
+      if (seasonConfig.foodWater === 'enabled') {
+        if (!gs.tribeFood) gs.tribeFood = {};
+        gs.tribeFood[tribe.name] = Math.min(100, (gs.tribeFood[tribe.name] ?? 60) + 25);
+      }
+      members.filter(m => m !== picked).forEach(m => addBond(m, picked, 0.5));
+      pop(picked, 1);
+    } else {
+      if (!gs.idolClues) gs.idolClues = {};
+      gs.idolClues[picked] = { tribe: tribe.name, ep: epNum };
+      // a lie is scheming: nice archetypes never; neutrals only with strategic >= 6 and loyalty <= 4
+      const a = arch(picked);
+      const canLie = VILLAIN.includes(a) || (!NICE.includes(a) && ps.strategic >= 6 && ps.loyalty <= 4);
+      const pLie = canLie ? Math.min(0.85, 0.25 + (ps.strategic - 5) * 0.08 + (5 - ps.loyalty) * 0.05) : 0;
+      told = Math.random() < pLie ? 'lie' : 'truth';
+      if (told === 'truth') {
+        // honest, but the tribe went without the rice, and now they know who is looking for an idol
+        members.filter(m => m !== picked).forEach(m => addBond(m, picked, -0.4));
+        if (!gs._idolClueHeat) gs._idolClueHeat = {};
+        gs._idolClueHeat[picked] = { amount: 0.8, expiresEp: epNum + 3 };
+      }
+    }
+    results.push({ tribe: tribe.name, leader, votes, log, picked, pickWhy, choice, told, riceOnly, members: [...members] });
+  });
+  if (!results.length) return;
+
+  // camp events, so the day reaches every screen (the stepped viewer airs them as the twist itself)
+  if (!ep.campEvents) ep.campEvents = {};
+  results.forEach(r => {
+    if (!ep.campEvents[r.tribe]) ep.campEvents[r.tribe] = { pre: [], post: [] };
+    const pr = pronouns(r.picked);
+    ep.campEvents[r.tribe].pre.push({ type: 'tribeLeaderChosen', players: [r.leader, r.picked],
+      text: `${r.tribe} chose ${r.leader} to lead. ${r.leader}'s first decision as leader was to name ${r.picked} the weakest of the tribe.`,
+      badgeText: 'TRIBE LEADER', badgeClass: 'gold' });
+    ep.campEvents[r.tribe].pre.push({ type: 'chopperChoice', players: [r.picked],
+      text: r.choice === 'rice'
+        ? `${r.picked} rode to camp in the helicopter and chose the extra bag of rice for ${r.tribe}.`
+        : r.told === 'lie'
+          ? `${r.picked} rode to camp in the helicopter and took the idol clue, and told ${r.tribe} there was nothing there to take.`
+          : `${r.picked} rode to camp in the helicopter and took the idol clue for ${pr.ref}, and told ${r.tribe} so.`,
+      badgeText: r.choice === 'rice' ? 'EXTRA RICE' : 'IDOL CLUE', badgeClass: r.choice === 'rice' ? 'green' : 'gold' });
+  });
+  twistObj.tribeLeaders = results;
+}
+
 // ── Shared reward social-effects engine (used by BOTH generic reward-challenge and reward-twist-challenge) ──
 // Reads from twistObj: rewardWinner, rewardWinnerType, rewardItemLabel, rewardChalPlacements ([winnerObj,...loserObjs] for tribe).
 // Writes to twistObj: rewardCompanions, rewardPickReasons, rewardPickStrategy, rewardMaxCompanions, rewardSnubs,
@@ -1409,6 +1533,9 @@ export function applyTwist(ep, twist, isPrimary = true) {
     // Generate dock arrival data for Episode 1 VP
     if ((gs.episode || 0) === 0) generateDockArrivals(ep);
     executeFirstImpressions(ep, twistObj);
+
+  } else if (engineType === 'tribe-leaders') {
+    executeTribeLeaders(ep, twistObj);
 
   } else if (engineType === 'schoolyard-pick') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
@@ -4253,6 +4380,9 @@ export function generateTwistScenes(ep) {
 
       case 'first-impressions':
         break; // dedicated VP screen — rpBuildFirstImpressions
+
+      case 'tribe-leaders':
+        break; // dedicated VP screen — rpBuildTribeLeaders
 
       case 'journey':
         break; // journey scenes generated separately from ep.journey data below

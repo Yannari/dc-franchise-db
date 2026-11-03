@@ -30,7 +30,7 @@ const KINDS = [
 ];
 const SKIP_BADGE = /^(blindside|credible-pitch|pitch-|confessional|clue|advance|climb|dig|event|search|reset|stuck|descent|cart|clean|phase|round|entrance|costume|demo|crowd|judge|winner|cut|descend|boarded|tier-up|track-fail|hazard|obstacle|navigation|delivery|evasion|hide|run$|reaction|survive)/i;
 const SKIP = new Set(['campEvents', 'gsSnapshot', 'tribalStory', 'campStory', 'twistStory', 'votingLog', 'campAccess', 'tribesAtStart', 'alliances', 'votePitches',
-  'pitchIntel', 'pitchCounterplay', 'tdFirstImp', 'tdAuction', 'tdPreviously', 'exileStory', 'twists', 'adaptationEvents', 'idolPlays', 'chalMemberScores']);
+  'pitchIntel', 'pitchCounterplay', 'tdFirstImp', 'tdTribeLeaders', 'tdAuction', 'tdPreviously', 'exileStory', 'twists', 'adaptationEvents', 'idolPlays', 'chalMemberScores']);
 
 export function kindOfBadge(badge, type = '') {
   const s = `${badge || ''} ${type || ''}`.toLowerCase();

@@ -41,7 +41,7 @@ import { registerOf, factsFor } from '../script/facts.js';
 import { writeTribal, multiTribalView, firstVoteView, secondVoteView, isTwoVoteNight, whyOf as ballotWhy, writeCrashReplies, writeExit } from './tribal.js';
 import { relationalReason, nameNewAlliance } from '../../alliances.js';
 import { dressConfessionals } from './captions.js';
-import { writeTwistStory, writeExile, writeFirstImpressions, writeAuctionScript } from './twist.js';
+import { writeTwistStory, writeExile, writeFirstImpressions, writeTribeLeaders, writeAuctionScript } from './twist.js';
 import { needOf, psycheCast } from './psyche.js';
 import { runnerDue } from './runners.js';
 import { recordThreads, threadDue, threadKnown } from './threads.js';
@@ -1954,8 +1954,8 @@ export function airTdEpisode(ep) {
     // A First Impressions swap is told on the twist's own screen (td/story/twist.js: the vote, the walk over,
     // the new team's welcome). The camp's copy of it had no scene, got a generic aside bolted on, and aired as
     // "I saw what you did" / "Don't make it a thing" with nothing seen (the user, 2026-10-10: "she did what
-    // exactly?"): it stays off the camp feed.
-    for (const ph of ['pre', 'post']) for (const ev of eventsOf(ep, camp, ph)) if (ev && ev.aired == null && ev.type === 'firstImpressionsSwap') ev.aired = 'covered';
+    // exactly?"): it stays off the camp feed. So does the Tribe Leaders day (its leader and the helicopter choice).
+    for (const ph of ['pre', 'post']) for (const ev of eventsOf(ep, camp, ph)) if (ev && ev.aired == null && (ev.type === 'firstImpressionsSwap' || ev.type === 'tribeLeaderChosen' || ev.type === 'chopperChoice')) ev.aired = 'covered';
     for (const phase of ['pre', 'post']) {
       const events = eventsOf(ep, camp, phase);
       // an engine moment that casts somebody already gone (as one of its parts, or speaking) never airs: talk ABOUT the
@@ -3288,6 +3288,7 @@ export function airTdEpisode(ep) {
   if (ep.exileStory === undefined) ep.exileStory = writeExile(ep);
   // First Impressions and the auction play as dialogue on their own stepped screens (twist.js)
   if (ep.tdFirstImp === undefined) { const fi = (ep.twists || []).find(t => t.type === 'first-impressions' && t.firstImpressions?.length); ep.tdFirstImp = fi ? writeFirstImpressions(ep, fi) : null; }
+  if (ep.tdTribeLeaders === undefined) { const tl = (ep.twists || []).find(t => t.type === 'tribe-leaders' && t.tribeLeaders?.length); ep.tdTribeLeaders = tl ? writeTribeLeaders(ep, tl) : null; }
   if (ep.tdAuction === undefined) { const A = (ep.twists || []).find(t => t.type === 'auction')?.auction; ep.tdAuction = A ? writeAuctionScript(ep, A) : null; }
   // the twists, as the people in them talk (twist.js; the twist screen plays them)
   if (ep.twistStory === undefined) {

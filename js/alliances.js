@@ -172,6 +172,9 @@ export function computeHeat(name, tribalPlayers, alliances) {
   }
   // Betrayed idol holder — their secret is out, they're now a priority target
   if (gs.knownIdolHoldersThisEp?.has(name)) heat += 2.0;
+  // Told the tribe they took the idol clue off the helicopter (twists.js executeTribeLeaders): they're hunting
+  const _clueHeat = gs._idolClueHeat?.[name];
+  if (_clueHeat && _clueHeat.expiresEp >= (gs.episode || 0) + 1) heat += _clueHeat.amount;
   // Known Second Life Amulet holder — reaction depends on who's evaluating
   // Challenge beasts/bold players want to flush it (they'd win the duel)
   // Strategic players avoid (wasteful vote). Weak players are terrified of being picked.

@@ -122,6 +122,13 @@ const GUARANTEED = [
   [/^auc\.win\./, ['lot', 'amount']],
   [/^auc\.switch\./, ['lot', 'thing']],
   [/^fi\.(huddle|booth|after)\./, ['target']],
+  // Tribe Leaders (td/story/twist.js writeTribeLeaders): what each moment of the day always carries
+  [/^tl\.(huddle|booth|weak|after)\./, ['target']],
+  [/^tl\.(lead|weak)\./, ['tribe']],
+  [/^tl\.named\./, ['leader']],
+  [/^tl\.chopper\./, ['named']],
+  [/^tl\.(choose|tell)\./, ['tribe', 'staple']],
+  [/^tl\.tell\./, ['leader']],
   [/^(room|after)\.burned$/, ['lastBoot', 'item', 'target']],
   [/^room\./, ['lastBoot', 'item']],
   [/^(reveal|exit|after)\./, ['lastBoot', 'item']],

@@ -266,6 +266,60 @@ export function writeFirstImpressions(ep, tw) {
   });
 }
 
+// ── First Impressions: Tribe Leaders (twists.js executeTribeLeaders) ─────────────────────────
+// Day one, Kaôh Rōng: each tribe votes in a leader, the leader names the weakest, the named fly to
+// camp and choose an idol clue or the tribe's extra rice. Per tribe: the huddle before the vote (the
+// leader pitching themselves when they are the boldest of their voters, else the boldest voter
+// putting the leader forward, a doubter who did not vote that way), every voter's booth line for
+// their own read (log.why), the leader named, the leader naming the weakest (pickWhy), the named to
+// the camera, then the choice alone at camp, telling the tribe when it walks in, and the leader after.
+// Once for all of them: the host telling the named what being named got them.
+// ep.tdTribeLeaders = { named: [..], chopper, tribes: [{ tribe, leader, picked, choice, told, riceOnly, votes,
+//   huddle, booth: [{ voter, voted, lines }], lead, weak, namedConf, choose, tell, after }] }.
+export function writeTribeLeaders(ep, tw) {
+  const write = writer(ep, { voteYet: true });
+  const host = seasonConfig?.host || 'Chris';
+  const st = n => { try { return pStats(n) || {}; } catch { return {}; } };
+  const by = k => (x, y) => (st(y)[k] || 0) - (st(x)[k] || 0) || x.localeCompare(y);
+  const closest = (a, pool) => [...pool].sort((x, y) => getBond(a, y) - getBond(a, x) || x.localeCompare(y))[0] || null;
+  const lines = w => w?.lines || [];
+  const pub = { place: 'public', noSetup: true };
+  const listOf = xs => xs.length < 2 ? (xs[0] || '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
+  const rs = tw.tribeLeaders || [];
+  const tribes = rs.map(r => {
+    const { leader, picked } = r;
+    const others = (r.members || []).filter(m => m !== leader);
+    const backers = (r.log || []).filter(l => l.voted === leader).map(l => l.voter);
+    const doubter = closest(picked, (r.log || []).filter(l => l.voted !== leader && l.voter !== leader).map(l => l.voter));
+    const boldBacker = [...backers].sort(by('boldness'))[0] || null;
+    const self = !boldBacker || (st(leader).boldness || 0) >= (st(boldBacker).boldness || 0);
+    const ha = self ? leader : boldBacker;
+    const hb = closest(ha, backers.filter(x => x !== ha && x !== leader)) || closest(ha, others.filter(x => x !== ha));
+    const hc = doubter && doubter !== ha && doubter !== hb ? doubter : null;
+    const huddle = lines(write('tl.huddle', self ? 'self' : 'other', { a: ha, ...(hb ? { b: hb } : {}), ...(hc ? { c: hc } : {}) }, { target: leader }, 'soft', pub));
+    const booth = (r.log || []).map(l => { const w = { a: l.voter }, d = { target: l.voted };
+      return { voter: l.voter, voted: l.voted, lines: lines(write('tl.booth', l.why || 'nothing', w, d, true) || write('tl.booth', 'nothing', w, d, true) || write('tl.booth', l.why || 'nothing', w, d)) }; });
+    const runnerUp = Object.entries(r.votes || {}).filter(([n]) => n !== leader).sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))[0]?.[0] || hb;
+    const lead = lines(write('tl.lead', 'any', { a: leader, ...(runnerUp ? { b: runnerUp } : {}), h: host }, { tribe: r.tribe }, 'soft', pub));
+    const friend = closest(picked, others.filter(x => x !== picked));
+    const weak = lines(write('tl.weak', r.pickWhy || 'weak', { a: leader, b: picked, ...(friend ? { c: friend } : {}), h: host }, { tribe: r.tribe, target: picked }, 'soft', pub));
+    const namedConf = lines(write('tl.named', 'any', { a: picked }, { leader }));
+    const choose = lines(write('tl.choose', r.riceOnly ? 'riceonly' : r.choice, { a: picked }, { tribe: r.tribe, staple: 'rice' }));
+    const talker = [...others.filter(x => x !== picked)].sort(by('social'))[0] || null;
+    const tell = lines(write('tl.tell', r.riceOnly ? 'riceonly' : r.choice === 'rice' ? 'rice' : r.told || 'truth', { a: picked, b: leader, ...(talker ? { c: talker } : {}) }, { tribe: r.tribe, leader, staple: 'rice' }, 'soft', pub));
+    const after = lines(write('tl.after', 'any', { a: leader }, { target: picked }));
+    // how being named lands, for the stepped screen: a short fuse shouts, a soft one is hurt, a steady one takes it
+    const ps = st(picked);
+    const react = (ps.temperament ?? 5) <= 4 || (ps.boldness ?? 5) >= 8 ? 'shout' : (ps.temperament ?? 5) >= 7 ? null : 'cry';
+    return { tribe: r.tribe, leader, picked, choice: r.choice, told: r.told, riceOnly: r.riceOnly, votes: r.votes, members: r.members,
+      react, huddle, booth, lead, weak, namedConf, choose, tell, after };
+  });
+  const named = rs.map(r => r.picked);
+  const [ca, cb, cc] = named;
+  const chopper = ca ? lines(write('tl.chopper', 'any', { a: ca, ...(cb ? { b: cb } : {}), ...(cc ? { c: cc } : {}), h: host }, { named: listOf(named) }, 'soft', pub)) : [];
+  return { named, chopper, tribes };
+}
+
 // ── The auction (auction.js), lot by lot ─────────────────────────────────────────────────────
 // The host puts each lot up; the people bidding say their bids (the opener, the raises, a bidding
 // war between two of them as an exchange, a jump, a loan given, a loan refused); the host sells

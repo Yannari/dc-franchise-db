@@ -125,7 +125,7 @@ export function _vpPhaseForScreen(id = '') {
   const own = id.includes('-') ? _PHASE_BY_SCREEN[id.slice(0, id.indexOf('-'))] : null;
   if (own) return own(id);
   if (id === 'debug') return { id:'debug', label:'Debug', icon:'⚙' };
-  if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions') return { id:'previously', label:'Previously On', icon:'◀' };
+  if (id === 'cold-open' || id.includes('previous') || id === 'first-impressions' || id === 'tribe-leaders') return { id:'previously', label:'Previously On', icon:'◀' };
   if (id === 'votes' || id.startsWith('votes-') || id === 'jury-vote' || id === 'jury-votes' || id === 'ftc') return { id:'reveal', label:'Vote Reveal', icon:'✦' };
   if (id === 'tribal' || id.startsWith('tribal-') || id === 'jury-convenes' || id === 'jury-elimination') return { id:'tribal', label:'Tribal', icon:'▲' };
   if (id === 'aftermath' || id.startsWith('aftermath-') || id.startsWith('aftermayhem-') || id === 'post-twist' || id === 'reunion' || id === 'season-stats' || id === 'winner-ceremony') return { id:'aftermath', label:'Aftermath', icon:'■' };
@@ -820,7 +820,7 @@ const _BED_CAMPNIGHT_EXACT = new Set([
 const _BED_CAMPNIGHT_PREFIX = ['voting-plans-', 'camp-post-'];
 // Camp-day phase: pre-challenge / general daytime camp & early-game twists.
 const _BED_CAMPDAY_EXACT = new Set([
-  'cold-open', 'pf-confessions', 'first-impressions', 'second-chance', 'rescue-return',
+  'cold-open', 'pf-confessions', 'first-impressions', 'tribe-leaders', 'second-chance', 'rescue-return',
   'ri-return', 'ambassadors', 'merge', 'twist', 'schoolyard-pick', 'fan-vote-return',
   'tied-destinies', 'spirit-island', 'feast', 'exile-island', 'exile-format', 'kidnapping',
   'shared-immunity', 'double-safety', 'hero-duel', 'guardian-angel', 'firemaking-duel',

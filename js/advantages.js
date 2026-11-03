@@ -70,18 +70,27 @@ export function findAdvantages(ep) {
       const _tribeCoaches = isMergeSlot || !coachCanFind('idol', 'camp')
         ? [] : coachesOf(tribe.name).map(c => c.name);
       const shuffled = [...tribe.members, ..._tribeCoaches].sort(() => Math.random() - 0.5);
+      // An idol clue (the Tribe Leaders helicopter, twists.js executeTribeLeaders) is for its own tribe's idol:
+      // its holder searches first and knows where to look
+      const _clueFor = n => !isMergeSlot && gs.idolClues?.[n]?.tribe === tribe.name;
+      shuffled.sort((x, y) => _clueFor(y) - _clueFor(x));
       for (const name of shuffled) {
         const s = pStats(name);
         // ep1: ~0.6% per player → ~3.5% tribe (6p). ep5: ~1.4% → ~8%. Idols typically ep 4–7.
         const epScale = Math.min(ep.num * 0.002, 0.02);
         const eavBoostFind = gs.playerStates[name]?.eavesdropBoostThisEp ? 0.008 + s.intuition * 0.001 : 0;
+        // ~0.29 a night for intuition 6 (measured 2026-11-03: at ~0.17, 4 clues in 15 found their idol)
+        const clueBoost = _clueFor(name) ? 0.2 + s.intuition * 0.015 : 0;
         // Learned-behavior: a searcher who's been idol-paranoid across seasons hunts harder (1.0 when meta-less)
         const _metaFind = 1 + (gs.franchiseMeta?.profiles?.[name]?.idolParanoia || 0) * META_WEIGHTS.idolParanoiaSearchBoost;
-        if (Math.random() < (0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005 + eavBoostFind) * _metaFind) {
-          gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num, foundTribe: isMergeSlot ? 'merge' : tribe.name });
+        if (Math.random() < (0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005 + eavBoostFind + clueBoost) * _metaFind) {
+          gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num, foundTribe: isMergeSlot ? 'merge' : tribe.name, ...(clueBoost ? { fromClue: true } : {}) });
           if (isMergeSlot) gs.mergeIdolHidden = Math.max(0, (gs.mergeIdolHidden || 1) - 1);
           else gs.idolSlots[tribe.name] = Math.max(0, (gs.idolSlots[tribe.name] || 1) - 1);
-          ep.idolFinds.push({ finder: name, type: 'idol', tribe: isMergeSlot ? 'merge' : tribe.name });
+          ep.idolFinds.push({ finder: name, type: 'idol', tribe: isMergeSlot ? 'merge' : tribe.name, ...(clueBoost ? { fromClue: true } : {}) });
+          // the clue is spent when it finds its idol, or once its tribe's idols are gone, whoever found them
+          if (clueBoost) delete gs.idolClues[name];
+          if (!isMergeSlot && !gs.idolSlots[tribe.name] && gs.idolClues) for (const k of Object.keys(gs.idolClues)) if (gs.idolClues[k].tribe === tribe.name) delete gs.idolClues[k];
           break;
         }
       }

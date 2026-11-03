@@ -177,6 +177,7 @@ export function patchEpisodeHistory(ep) {
   if (!h.tribalStory1 && ep.tribalStory1) h.tribalStory1 = ep.tribalStory1;
   if (!h.exileStory && ep.exileStory) h.exileStory = ep.exileStory;
   if (!h.tdFirstImp && ep.tdFirstImp) h.tdFirstImp = ep.tdFirstImp;
+  if (!h.tdTribeLeaders && ep.tdTribeLeaders) h.tdTribeLeaders = ep.tdTribeLeaders;
   if (!h.tdAuction && ep.tdAuction) h.tdAuction = ep.tdAuction;
   if (!h.tdPreviously && ep.tdPreviously) h.tdPreviously = ep.tdPreviously;
   // Tribal data

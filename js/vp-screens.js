@@ -4103,6 +4103,87 @@ export function rpBuildFirstImpressions(ep, twistObj) {
   return html;
 }
 
+// ── First Impressions: Tribe Leaders (twists.js executeTribeLeaders) ──
+// Per tribe: the leader vote (one card per voter), the leader, the weakest named. Then the twist: the
+// named fly to camp, and each one's choice (idol clue or extra rice) and what they told the tribe.
+const TL_VOTE_WHY = { liked: (v, t) => `${v} already gets along with ${t}.`, bold: (v, t) => `${t} took charge from the start.`,
+  strong: (v, t) => `${t} looks the most capable.`, smart: (v, t) => `${t} seems the sharpest.`, kind: (v, t) => `${t} is easy to talk to.`,
+  gut: () => `A gut feeling.`, nothing: (v, t) => `No strong reason: ${t} was the name going around.` };
+const TL_PICK_WHY = { weak: 'the weakest in a challenge, on sight', old: 'the oldest of the tribe', quiet: 'has barely said a word', enemy: 'the one the leader already clashes with' };
+export function rpBuildTribeLeaders(ep, twistObj) {
+  const tl = twistObj.tribeLeaders;
+  if (!tl?.length) return null;
+  const stateKey = String(ep.num) + '_tl';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: 0 };
+  const state = _tvState[stateKey];
+  const steps = [];
+  tl.forEach((t, i) => {
+    steps.push({ type: 'tribe-header', t });
+    (t.log || []).forEach(v => steps.push({ type: 'vote', t, v }));
+    steps.push({ type: 'leader', t });
+    steps.push({ type: 'weakest', t });
+  });
+  steps.push({ type: 'chopper' });
+  tl.forEach(t => steps.push({ type: 'choice', t }));
+  const visible = steps.slice(0, state.idx + 1);
+  const allRevealed = state.idx >= steps.length - 1;
+  const go = idx => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:0};_tvState['${stateKey}'].idx=${idx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let html = `<div class="rp-page tod-dawn">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:20px;animation:scrollDrop 0.5s var(--ease-broadcast) both">TRIBE LEADERS</div>
+    <div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:8px">Every tribe votes for a leader on first impressions alone.</div>
+    <div style="text-align:center;font-size:12px;color:#6e7681;margin-bottom:20px">The leader then has one decision to make: name the weakest person on the tribe, in front of everybody.</div>`;
+  visible.forEach(s => {
+    if (s.type === 'tribe-header') {
+      html += `<div style="font-family:var(--font-display);font-size:18px;color:#e6edf3;text-align:center;margin:20px 0 10px;letter-spacing:1px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px">${s.t.tribe}</div>`;
+    } else if (s.type === 'vote') {
+      html += `<div class="vp-card" style="border-color:rgba(227,179,65,0.15);margin-bottom:6px;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:10px">${rpPortrait(s.v.voter, 'sm')}
+          <div style="flex:1"><div style="font-size:12px;color:#cdd9e5"><strong>${s.v.voter}</strong> votes for <strong style="color:var(--accent-gold)">${s.v.voted}</strong> to lead</div>
+          <div style="font-size:10px;color:#8b949e;margin-top:2px">${(TL_VOTE_WHY[s.v.why] || TL_VOTE_WHY.nothing)(s.v.voter, s.v.voted)}</div></div>
+        </div></div>`;
+    } else if (s.type === 'leader') {
+      const tally = Object.entries(s.t.votes || {}).sort(([, a], [, b]) => b - a).map(([n, c]) => `${n}: ${c}`).join(' · ');
+      html += `<div style="text-align:center;margin:14px 0;padding:12px;background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.25);border-radius:8px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        ${rpPortrait(s.t.leader, 'md')}
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8b949e;margin-top:8px">${s.t.tribe.toUpperCase()} LEADER</div>
+        <div style="font-family:var(--font-display);font-size:16px;color:var(--accent-gold);margin-top:2px">${s.t.leader}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">${tally}</div></div>`;
+    } else if (s.type === 'weakest') {
+      html += `<div style="text-align:center;margin:14px 0;padding:12px;background:rgba(244,112,103,0.08);border:1px solid rgba(244,112,103,0.2);border-radius:8px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px">${rpPortrait(s.t.leader, 'sm')}<span style="color:#8b949e;font-size:18px">→</span>${rpPortrait(s.t.picked, 'md')}</div>
+        <div style="font-size:13px;color:#e6edf3;margin-top:8px"><strong>${s.t.leader}</strong> names <strong style="color:#f47067">${s.t.picked}</strong> the weakest of ${s.t.tribe}.</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">${TL_PICK_WHY[s.t.pickWhy] || TL_PICK_WHY.weak}</div></div>`;
+    } else if (s.type === 'chopper') {
+      html += `<div style="text-align:center;margin:20px 0 14px;padding:16px;background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.25);border-radius:8px;animation:scrollDrop 0.5s var(--ease-broadcast) both">
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--accent-gold);letter-spacing:2px;text-shadow:0 0 15px var(--accent-gold)">TWIST</div>
+        <div style="font-size:14px;color:#e6edf3;margin-top:10px">Being named the weakest was the reward.</div>
+        <div style="font-size:12px;color:#8b949e;margin-top:6px">They fly to camp in the helicopter and land long before their tribes walk in. ${tl.some(t => !t.riceOnly) ? 'Each finds a choice waiting: a clue to the hidden immunity idol, or an extra bag of rice for the tribe.' : 'Each finds an extra bag of rice waiting for the tribe.'}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px">${tl.map(t => rpPortrait(t.picked, 'md')).join('')}</div></div>`;
+    } else if (s.type === 'choice') {
+      const t = s.t, pr = pronouns(t.picked), rice = t.choice === 'rice';
+      const what = t.riceOnly ? `found only the bag of rice waiting, and kept it for ${t.tribe}`
+        : rice ? `chose the extra bag of rice for ${t.tribe}` : `chose the idol clue for ${pr.ref}`;
+      const told = rice ? `${t.tribe} walks in to extra food.`
+        : t.told === 'lie' ? `${pr.Sub} told ${t.tribe} there was nothing to take. Nobody knows about the clue.`
+        : `${pr.Sub} told ${t.tribe} the truth. They went without the rice, and they know ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} hunting for the idol.`;
+      html += `<div class="vp-card" style="border-color:${rice ? 'rgba(87,171,90,0.3)' : 'rgba(227,179,65,0.3)'};margin-bottom:8px;animation:scrollDrop 0.35s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:12px">${rpPortrait(t.picked, 'md')}
+          <div style="flex:1;text-align:left"><div style="font-size:13px;color:#e6edf3"><strong>${t.picked}</strong> ${what}.</div>
+          <div style="font-size:11px;color:#8b949e;margin-top:3px">${told}</div></div>
+          <span class="rp-brant-badge ${rice ? 'green' : 'gold'}" style="white-space:nowrap">${rice ? 'EXTRA RICE' : 'IDOL CLUE'}</span>
+        </div></div>`;
+    }
+  });
+  if (!allRevealed) {
+    html += `<div style="text-align:center;margin-top:16px">
+      <button class="rp-btn" onclick="${go(state.idx + 1)}">Reveal Next</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${go(steps.length - 1)}">Reveal All</button></div>`;
+  }
+  return html + `</div>`;
+}
+
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 /**
  * The one episode all season where the cast gets BIGGER.
@@ -4250,7 +4331,7 @@ export function rpBuildLateArrival(ep) {
 /** The twist blocks the pre-challenge twist screen shows (both viewers read this). */
 export function preTwistBlocks(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction');
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tribe-leaders' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge' && t.type !== 'hide-and-be-sneaky' && t.type !== 'off-the-chain' && t.type !== 'auction');
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   return _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -8434,6 +8515,8 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'allianceBlindspot'         ? (evt.badgeText || 'ONE-SIDED')
                      : evt.type === 'betrayalDenial'            ? (evt.badgeText || 'ONE-SIDED')
                      : evt.type === 'firstImpressionsSwap'      ? (evt.badgeText || 'SWAPPED')
+                     : evt.type === 'tribeLeaderChosen'         ? (evt.badgeText || 'TRIBE LEADER')
+                     : evt.type === 'chopperChoice'             ? (evt.badgeText || 'HELICOPTER')
                      : evt.type === 'yetiWinBond'          ? (evt.badgeText || 'PAIR BOND')
                      : evt.type === 'yetiBlame'            ? (evt.badgeText || 'BLAME')
                      : evt.type === 'yetiLoserStress'      ? (evt.badgeText || 'POST-YETI STRESS')
@@ -8582,6 +8665,7 @@ export function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'loyaltyTestPassed' ? 'green'
                      : evt.type === 'loyaltyTestFailed' || evt.type === 'loyaltyTestCaught' || evt.type === 'conflictingDeals' || evt.type === 'perceptionRealization' || evt.type === 'falseInfoBlowup' || evt.type === 'votePitchFailed' ? 'red'
                      : evt.type === 'villainManipulation' || evt.type === 'goatKeeping' || evt.type === 'swapLoyaltyAssumption' || evt.type === 'providerEntitlement' || evt.type === 'showmanceBlindspot' || evt.type === 'allianceBlindspot' || evt.type === 'betrayalDenial' || evt.type === 'firstImpressionsSwap' ? 'gold'
+                     : evt.type === 'tribeLeaderChosen' || evt.type === 'chopperChoice' ? (evt.badgeClass || 'gold')
                      : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'yetiWinBond' || evt.type === 'yetiSasquatchStory' || evt.type === 'yetiGratitude' ? (evt.badgeClass || 'green')
                      : evt.type === 'yetiBlame' || evt.type === 'yetiTheftConfrontation' ? (evt.badgeClass || 'red')
@@ -14313,6 +14397,12 @@ function _buildVPScreensClassic(epRecord) {
     // Don't delete _tvState — the reveal must persist across rebuilds
     const _fiHtml = rpBuildFirstImpressions(ep, _fiTw);
     if (_fiHtml) vpScreens.push({ id:'first-impressions', label:'First Impressions', html: _fiHtml });
+  }
+  // ── First Impressions: Tribe Leaders — leader vote, the weakest named, the helicopter, clue or rice ──
+  const _tlTw = (ep.twists || []).find(t => t.type === 'tribe-leaders' && t.tribeLeaders?.length);
+  if (_tlTw) {
+    const _tlHtml = rpBuildTribeLeaders(ep, _tlTw);
+    if (_tlHtml) vpScreens.push({ id:'tribe-leaders', label:'Tribe Leaders', html: _tlHtml });
   }
 
   // ── Second Chance Vote — always right after Cold Open ──

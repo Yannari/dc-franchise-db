@@ -801,6 +801,28 @@ export function _textTwistStory(ep, ln, sec) {
     ln(`  ${r.boot} is voted out — and joins ${r.sentTo}.`);
     [...(r.read || []), ...(r.twist || []), ...(r.welcome || []), ...(r.after || [])].forEach(say);
   }
+  // Tribe Leaders (twist.js writeTribeLeaders): each tribe's vote and naming, the helicopter, each camp
+  const TL = ep.tdTribeLeaders;
+  for (const r of TL?.tribes || []) {
+    sec(`TRIBE LEADERS — ${r.tribe.toUpperCase()}`);
+    (r.huddle || []).forEach(say);
+    for (const b of r.booth || []) { ln(`  [${b.voter} votes ${b.voted} to lead]`); (b.lines || []).forEach(say); }
+    ln(`  ${r.leader} leads ${r.tribe}.`);
+    (r.lead || []).forEach(say);
+    ln(`  ${r.leader} names ${r.picked} the weakest of ${r.tribe}.`);
+    [...(r.weak || []), ...(r.namedConf || [])].forEach(say);
+  }
+  if (TL?.tribes?.length) {
+    sec('TRIBE LEADERS — THE HELICOPTER');
+    (TL.chopper || []).forEach(say);
+    ln(`  The helicopter takes ${TL.named.join(', ')} to camp.`);
+    for (const r of TL.tribes) {
+      sec(`TRIBE LEADERS — ${r.tribe.toUpperCase()} CAMP`);
+      (r.choose || []).forEach(say);
+      ln(`  ${r.picked} takes ${r.choice === 'clue' ? 'the idol clue' : 'the extra rice'}.`);
+      [...(r.tell || []), ...(r.after || [])].forEach(say);
+    }
+  }
   if (ep.tdAuction?.lots?.length) {
     sec('THE AUCTION');
     (ep.tdAuction.open || []).forEach(say);
@@ -3693,6 +3715,35 @@ export function _textFirstImpressions(ep, ln, sec) {
   }
 }
 
+// First Impressions: Tribe Leaders — the same story the VP page reveals (vp-screens.js rpBuildTribeLeaders)
+const _TL_VOTE_WHY = { liked: (v, t) => `${v} already gets along with ${t}.`, bold: (v, t) => `${t} took charge from the start.`,
+  strong: (v, t) => `${t} looks the most capable.`, smart: (v, t) => `${t} seems the sharpest.`, kind: (v, t) => `${t} is easy to talk to.`,
+  gut: () => `A gut feeling.`, nothing: (v, t) => `No strong reason: ${t} was the name going around.` };
+const _TL_PICK_WHY = { weak: 'the weakest in a challenge, on sight', old: 'the oldest of the tribe', quiet: 'has barely said a word', enemy: 'the one the leader already clashes with' };
+export function _textTribeLeaders(ep, ln, sec) {
+  const tl = (ep.twists || []).find(t => t.type === 'tribe-leaders')?.tribeLeaders;
+  if (!tl?.length) return;
+  sec('TRIBE LEADERS');
+  ln('Every tribe votes for a leader on first impressions alone. The leader then has one decision to make: name the weakest person on the tribe, in front of everybody.');
+  tl.forEach(t => {
+    ln(`${t.tribe}:`);
+    (t.log || []).forEach(v => ln(`  ${v.voter} votes for ${v.voted} to lead. ${(_TL_VOTE_WHY[v.why] || _TL_VOTE_WHY.nothing)(v.voter, v.voted)}`));
+    const tally = Object.entries(t.votes || {}).sort(([, a], [, b]) => b - a).map(([n, c]) => `${n}: ${c}`).join(', ');
+    ln(`  ${t.tribe} leader: ${t.leader} (${tally})`);
+    ln(`  ${t.leader} names ${t.picked} the weakest of ${t.tribe}: ${_TL_PICK_WHY[t.pickWhy] || _TL_PICK_WHY.weak}.`);
+  });
+  ln(`TWIST: Being named the weakest was the reward. They fly to camp in the helicopter and land long before their tribes walk in. ${tl.some(t => !t.riceOnly) ? 'Each finds a choice waiting: a clue to the hidden immunity idol, or an extra bag of rice for the tribe.' : 'Each finds an extra bag of rice waiting for the tribe.'}`);
+  tl.forEach(t => {
+    const pr = pronouns(t.picked);
+    const what = t.riceOnly ? `found only the bag of rice waiting, and kept it for ${t.tribe}`
+      : t.choice === 'rice' ? `chose the extra bag of rice for ${t.tribe}` : `chose the idol clue for ${pr.ref}`;
+    const told = t.choice === 'rice' ? `${t.tribe} walks in to extra food.`
+      : t.told === 'lie' ? `${pr.Sub} told ${t.tribe} there was nothing to take. Nobody knows about the clue.`
+      : `${pr.Sub} told ${t.tribe} the truth. They went without the rice, and they know ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} hunting for the idol.`;
+    ln(`  ${t.picked} ${what}. ${told}`);
+  });
+}
+
 export function _textSecondChanceVote(ep, ln, sec) {
   const _tw = (ep.twists || []).find(t => t.type === 'second-chance' || t.catalogId === 'second-chance' || (t.type === 'returning-player' && t.catalogId === 'second-chance'));
   if (!_tw?.returnee) return;
@@ -4053,6 +4104,7 @@ ${chStepText(ep)}`; } catch (e) { console.warn('Challenge step text failed:', e)
   _textReturns(ep, ln, sec);
   _textDockArrivals(ep, ln, sec);
   _textFirstImpressions(ep, ln, sec);
+  _textTribeLeaders(ep, ln, sec);
   _textFanVoteReturn(ep, ln, sec);
   _textSecondChanceVote(ep, ln, sec);
   _textMerge(ep, ln, sec);

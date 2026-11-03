@@ -32,7 +32,7 @@ export default {
         by('b', "There's room for one more. On a trial basis."),
         by('d', "A trial? Like probation?"),
         by('a', "One leg. If nobody stabs anybody in the back, you're in for good."),
-        by('c', "That's the strangest job interview I've ever had."),
+        by('c', "Okay. That's fair. One leg."),
       ] },
     ],
     'alliance-pitch.refused': [

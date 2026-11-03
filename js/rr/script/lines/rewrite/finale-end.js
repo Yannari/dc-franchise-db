@@ -31,9 +31,9 @@ export default {
         { by: 'a', say: "We won. That's it. That's the whole message." },
       ] },
       { id: 'fe.w5', when: { relFam: 'romantic' }, turns: [
-        { by: 'a', say: "We fought in airports, on boats, and halfway up a mountain." },
+        { by: 'a', say: "We fought in so many airports. So, so many airports." },
         { by: 'b', say: "And we're still together at the end of it, with a million dollars." },
-        { by: 'a', say: "If we can survive this race, we can survive anything, including your driving." },
+        { by: 'a', say: "If we can get through this race together, we can get through anything." },
       ] },
       { id: 'fe.w6', when: { relFam: 'family' }, turns: [
         { by: 'b', say: "Wait until the family hears about this. They're going to want to come to every dinner now." },
@@ -42,8 +42,8 @@ export default {
       ] },
       { id: 'fe.w7', when: { relFam: 'friends' }, turns: [
         { by: 'a', say: "We've been friends since we were kids, and this is the best thing we've ever done together." },
-        { by: 'b', say: "Better than the treehouse?" },
-        { by: 'a', say: "The treehouse fell down, so yes, it's better than the treehouse." },
+        { by: 'b', say: "Better than anything?" },
+        { by: 'a', say: "Better than anything. By a mile." },
       ] },
       { id: 'fe.w8', turns: [
         { beat: '{b} hasn\'t let go of {a}\'s hand since they stepped on the mat.' },

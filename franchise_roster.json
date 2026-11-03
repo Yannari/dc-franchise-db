@@ -10102,16 +10102,17 @@
       "stats": {
         "physical": 7,
         "endurance": 7,
-        "mental": 6,
-        "social": 8,
-        "strategic": 4,
+        "mental": 5,
+        "social": 7,
+        "strategic": 3,
         "loyalty": 9,
         "boldness": 6,
-        "intuition": 6,
-        "temperament": 9
+        "intuition": 5,
+        "temperament": 8
       },
       "sexuality": "straight",
       "voice": "Easygoing, warm and full of dad jokes, tells stories to calm people down and calls his daughter 'kiddo'. #warm #goofy #calm",
+      "profileSources": {},
       "speakingVoice": "Man around fifty, Oklahoma American accent. Low, warm and rumbling, with a relaxed chuckle. Slow, easy pace with long, friendly pauses. Sounds patient, kind and amused.",
       "ties": [
         {
@@ -10120,7 +10121,7 @@
           "role": "parent"
         }
       ],
-      "age": 49,
+      "age": 50,
       "birthdate": "1977-04-18",
       "ethnicity": "Lenape",
       "nationality": "American",
@@ -10136,18 +10137,19 @@
       "gender": "f",
       "archetype": "villain",
       "stats": {
-        "physical": 6,
+        "physical": 4,
         "endurance": 5,
         "mental": 7,
-        "social": 8,
-        "strategic": 8,
-        "loyalty": 4,
-        "boldness": 6,
+        "social": 7,
+        "strategic": 9,
+        "loyalty": 3,
+        "boldness": 9,
         "intuition": 7,
-        "temperament": 6
+        "temperament": 3
       },
       "sexuality": "straight",
       "voice": "Sweet, polite and bubbly on the surface, full of backhanded compliments, with a cold little laugh when she wins. #cruel #proud #theatrical",
+      "profileSources": {},
       "speakingVoice": "Young woman in her early twenties, polished upper-class New England American accent. Medium-high pitch, light and sparkly, with a giggle that turns cold. Quick, sweet pace; slow and icy when she drops the act. Sounds well-mannered and quietly vicious.",
       "ties": [
         {
@@ -10169,20 +10171,21 @@
       "name": "Arthur",
       "slug": "arthur",
       "gender": "m",
-      "archetype": "underdog",
+      "archetype": "loyal-soldier",
       "stats": {
         "physical": 4,
-        "endurance": 6,
-        "mental": 7,
-        "social": 5,
+        "endurance": 4,
+        "mental": 5,
+        "social": 4,
         "strategic": 5,
         "loyalty": 9,
         "boldness": 7,
-        "intuition": 5,
-        "temperament": 7
+        "intuition": 4,
+        "temperament": 6
       },
       "sexuality": "straight",
       "voice": "Earnest and theatrical, slips into a medieval king's voice when nervous, gives speeches and apologises a lot. #theatrical #earnest #nerdy",
+      "profileSources": {},
       "speakingVoice": "Young man in his mid twenties, Upper Midwest American accent. Medium pitch, slightly reedy, dropping into a grand, deeper theatrical voice when he is in character. Quick, nervous pace in normal talk; slow and booming during speeches.",
       "ties": [
         {
@@ -10204,20 +10207,21 @@
       "name": "Blake",
       "slug": "blake",
       "gender": "m",
-      "archetype": "wildcard",
+      "archetype": "chaos-agent",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 4,
+        "physical": 3,
+        "endurance": 4,
+        "mental": 8,
         "social": 7,
-        "strategic": 3,
-        "loyalty": 7,
+        "strategic": 6,
+        "loyalty": 4,
         "boldness": 9,
-        "intuition": 4,
+        "intuition": 7,
         "temperament": 5
       },
       "sexuality": "straight",
       "voice": "Rambling, laid-back and silly, says 'dude' and 'wait, wait, wait', and teases his sister constantly. #goofy #chaotic #warm",
+      "profileSources": {},
       "speakingVoice": "Teenage boy of fifteen, General American accent with a relaxed Western drawl. Medium-high pitch, his voice still cracking upward when he is excited. Loose, quick, rambling pace, lots of 'like' and laughing mid-sentence. Sounds carefree and young.",
       "ties": [
         {
@@ -10225,7 +10229,7 @@
           "kin": "siblings"
         }
       ],
-      "age": 15,
+      "age": 16,
       "birthdate": "2011-03-22",
       "ethnicity": "White",
       "nationality": "American",
@@ -10243,15 +10247,15 @@
       "stats": {
         "physical": 10,
         "endurance": 8,
-        "mental": 5,
-        "social": 6,
+        "mental": 1,
+        "social": 4,
         "strategic": 4,
-        "loyalty": 8,
-        "boldness": 7,
+        "loyalty": 7,
+        "boldness": 8,
         "intuition": 4,
-        "temperament": 5
+        "temperament": 4
       },
-      "sexuality": "straight",
+      "sexuality": "gay",
       "voice": "Short, direct and fired up, counts things down and talks in instructions. Laughs big when the pressure is off. #competitive #tough #blunt",
       "profileSources": {},
       "speakingVoice": "Man in his mid twenties, General American accent. Deep, strong and resonant, a bit gravelly when he pushes. Clipped, punchy delivery during action, relaxed and warm when joking. Sounds like a coach on the floor.",
@@ -10279,13 +10283,13 @@
       "stats": {
         "physical": 8,
         "endurance": 7,
-        "mental": 4,
-        "social": 8,
+        "mental": 2,
+        "social": 6,
         "strategic": 3,
-        "loyalty": 6,
+        "loyalty": 7,
         "boldness": 6,
         "intuition": 4,
-        "temperament": 6
+        "temperament": 4
       },
       "sexuality": "straight",
       "voice": "Upbeat, cocky and friendly, says 'bro' a lot and hypes everything up. Flirts without thinking about it. #flirty #goofy #warm",
@@ -10313,18 +10317,19 @@
       "gender": "f",
       "archetype": "floater",
       "stats": {
-        "physical": 5,
-        "endurance": 6,
+        "physical": 4,
+        "endurance": 5,
         "mental": 7,
-        "social": 5,
+        "social": 4,
         "strategic": 5,
         "loyalty": 7,
-        "boldness": 3,
-        "intuition": 7,
-        "temperament": 7
+        "boldness": 6,
+        "intuition": 8,
+        "temperament": 5
       },
       "sexuality": "straight",
       "voice": "Flat, deadpan and unimpressed, answers in as few words as possible and sighs at her brother. Softer in private moments. #dry #quiet #calm",
+      "profileSources": {},
       "speakingVoice": "Young woman of eighteen, General American accent. Medium-low pitch, smooth and flat, a hint of vocal fry. Slow, measured pace with long pauses before a sarcastic reply. Sounds tired and amused at once, and young under the deadpan.",
       "ties": [
         {
@@ -10332,7 +10337,7 @@
           "kin": "siblings"
         }
       ],
-      "age": 18,
+      "age": 19,
       "birthdate": "2008-04-17",
       "ethnicity": "White",
       "nationality": "American",
@@ -10386,15 +10391,16 @@
         "physical": 6,
         "endurance": 7,
         "mental": 9,
-        "social": 6,
-        "strategic": 9,
-        "loyalty": 8,
+        "social": 3,
+        "strategic": 7,
+        "loyalty": 3,
         "boldness": 7,
-        "intuition": 7,
-        "temperament": 6
+        "intuition": 8,
+        "temperament": 5
       },
       "sexuality": "straight",
       "voice": "Quick, clever and precise, lays out plans in steps and uses fantasy terms for strategy. Fierce in defence of her king. #nerdy #schemer #theatrical",
+      "profileSources": {},
       "speakingVoice": "Young woman in her mid twenties, Upper Midwest American accent. Medium pitch, clear and bright, with a confident edge. Brisk, articulate pace that slows into a storyteller's cadence when she is in character. Sounds smart and determined.",
       "ties": [
         {
@@ -10402,7 +10408,7 @@
           "kin": "teammates"
         }
       ],
-      "age": 24,
+      "age": 25,
       "birthdate": "2002-07-04",
       "ethnicity": "Irish American",
       "nationality": "American",
@@ -10420,16 +10426,17 @@
       "stats": {
         "physical": 6,
         "endurance": 4,
-        "mental": 7,
+        "mental": 4,
         "social": 7,
         "strategic": 6,
-        "loyalty": 5,
-        "boldness": 7,
+        "loyalty": 4,
+        "boldness": 8,
         "intuition": 6,
-        "temperament": 5
+        "temperament": 3
       },
       "sexuality": "gay",
       "voice": "Smooth, posh and condescending, full of backhanded compliments, and openly bored by anything that looks like work. #proud #cruel #dry",
+      "profileSources": {},
       "speakingVoice": "Man in his late twenties, polished upper-class New England American accent. Medium pitch, smooth and silky, with a lazy drawl. Slow, languid pace, sighing between sentences. Sounds bored, rich and amused.",
       "ties": [
         {
@@ -10437,7 +10444,7 @@
           "kin": "siblings"
         }
       ],
-      "age": 27,
+      "age": 28,
       "birthdate": "1999-05-21",
       "ethnicity": "White",
       "nationality": "American",
@@ -10451,13 +10458,13 @@
       "name": "Jisoo",
       "slug": "jisoo",
       "gender": "m",
-      "archetype": "hothead",
+      "archetype": "wildcard",
       "stats": {
         "physical": 7,
         "endurance": 6,
-        "mental": 5,
+        "mental": 3,
         "social": 7,
-        "strategic": 4,
+        "strategic": 3,
         "loyalty": 5,
         "boldness": 8,
         "intuition": 5,
@@ -10465,14 +10472,15 @@
       },
       "sexuality": "bi",
       "voice": "Fast, loud and sarcastic, with a lot of slang and big reactions. Snaps back at his brother instantly, but is easy and friendly with everyone else. #loud #blunt #goofy",
+      "profileSources": {},
       "speakingVoice": "Young man in his mid twenties, General American accent with a relaxed Los Angeles drawl. Medium pitch, bright and energetic, quick pace that speeds up when he argues. Lots of laughter in his voice with strangers; sharp, raised and defensive with his brother.",
       "ties": [
         {
           "name": "Jiwon",
-          "kin": "siblings"
+          "kin": "twins"
         }
       ],
-      "age": 24,
+      "age": 25,
       "birthdate": "2002-07-19",
       "ethnicity": "Korean American",
       "nationality": "American",
@@ -10489,25 +10497,26 @@
       "archetype": "perceptive-player",
       "stats": {
         "physical": 5,
-        "endurance": 6,
+        "endurance": 5,
         "mental": 8,
         "social": 5,
         "strategic": 7,
         "loyalty": 6,
-        "boldness": 4,
+        "boldness": 3,
         "intuition": 8,
-        "temperament": 6
+        "temperament": 8
       },
       "sexuality": "straight",
       "voice": "Measured, dry and exact. Speaks in full sentences, corrects small mistakes, and goes clipped and cold with his brother. #dry #calm #blunt",
+      "profileSources": {},
       "speakingVoice": "Man in his late twenties, General American accent from Southern California. Medium-low pitch, even and controlled, slightly clipped consonants. Steady, unhurried pace; patient with strangers, flat and sharp when annoyed. Dry rather than warm, with little vocal range.",
       "ties": [
         {
           "name": "Jisoo",
-          "kin": "siblings"
+          "kin": "twins"
         }
       ],
-      "age": 27,
+      "age": 28,
       "birthdate": "1999-03-08",
       "ethnicity": "Korean American",
       "nationality": "American",
@@ -10533,16 +10542,17 @@
         "intuition": 4,
         "temperament": 9
       },
-      "sexuality": "straight",
+      "sexuality": "gay",
       "voice": "Sweet, slow and delighted by everything, tells stories nobody asked for and calls his wife 'mi amor'. Never angry, mostly confused. #warm #ditzy #calm",
+      "profileSources": {},
       "speakingVoice": "Older man in his early sixties, Texan accent with a light Mexican Spanish lilt. Medium-low, soft and warm, slightly hoarse. Slow, unhurried pace with chuckles between sentences. Sounds kind, happy and a little bewildered.",
       "ties": [
         {
           "name": "Octavia",
-          "kin": "married"
+          "kin": "best-friends"
         }
       ],
-      "age": 61,
+      "age": 62,
       "birthdate": "1965-06-03",
       "ethnicity": "Mexican American",
       "nationality": "American",
@@ -10558,18 +10568,19 @@
       "gender": "f",
       "archetype": "schemer",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
-        "mental": 7,
+        "physical": 4,
+        "endurance": 4,
+        "mental": 6,
         "social": 8,
         "strategic": 8,
         "loyalty": 4,
         "boldness": 7,
-        "intuition": 7,
-        "temperament": 5
+        "intuition": 5,
+        "temperament": 4
       },
       "sexuality": "straight",
       "voice": "Bright, sugary and fast, compliments people while sizing them up; turns cold and clipped when she is crossed. #schemer #proud #warm",
+      "profileSources": {},
       "speakingVoice": "Young woman around twenty, Southern American accent from Atlanta, polished rather than heavy. Medium-high pitch, bright and sweet, with an upward lilt. Quick, confident pace; turns slow, cool and precise when she is displeased.",
       "ties": [
         {
@@ -10577,7 +10588,7 @@
           "kin": "best-friends"
         }
       ],
-      "age": 21,
+      "age": 22,
       "birthdate": "2005-02-14",
       "ethnicity": "White",
       "nationality": "American",
@@ -10591,10 +10602,10 @@
       "name": "Lyon",
       "slug": "lyon",
       "gender": "f",
-      "archetype": "villain",
+      "archetype": "hothead",
       "stats": {
         "physical": 6,
-        "endurance": 7,
+        "endurance": 6,
         "mental": 6,
         "social": 3,
         "strategic": 6,
@@ -10605,6 +10616,7 @@
       },
       "sexuality": "lesbian",
       "voice": "Low, sneering and blunt, hands out insults casually and swears often. Gentle only with Mandy. #cruel #blunt #dry",
+      "profileSources": {},
       "speakingVoice": "Young woman in her early twenties, Pacific Northwest American accent. Low, raspy pitch with a sardonic edge. Lazy, drawn-out pace that turns sharp and fast when she insults someone. Sounds bored, mocking and unafraid.",
       "ties": [
         {
@@ -10628,18 +10640,19 @@
       "gender": "f",
       "archetype": "loyal-soldier",
       "stats": {
-        "physical": 7,
-        "endurance": 8,
-        "mental": 5,
-        "social": 5,
+        "physical": 5,
+        "endurance": 5,
+        "mental": 4,
+        "social": 4,
         "strategic": 3,
         "loyalty": 10,
         "boldness": 4,
         "intuition": 5,
-        "temperament": 7
+        "temperament": 5
       },
       "sexuality": "bi",
       "voice": "Quiet, mumbling and loyal, agrees with Lyon first and asks questions later. Polite with strangers. #quiet #earnest #anxious",
+      "profileSources": {},
       "speakingVoice": "Young woman in her early twenties, Pacific Northwest accent. Medium-low pitch, soft and slightly husky. Slow, hesitant pace with trailing endings and nervous laughs. Gets steadier and firmer when defending her friend.",
       "ties": [
         {
@@ -10647,7 +10660,7 @@
           "kin": "childhood-friends"
         }
       ],
-      "age": 22,
+      "age": 23,
       "birthdate": "2004-03-12",
       "ethnicity": "White",
       "nationality": "American",
@@ -10664,17 +10677,18 @@
       "archetype": "underdog",
       "stats": {
         "physical": 6,
-        "endurance": 7,
+        "endurance": 5,
         "mental": 7,
-        "social": 7,
-        "strategic": 5,
+        "social": 6,
+        "strategic": 4,
         "loyalty": 8,
         "boldness": 4,
-        "intuition": 6,
-        "temperament": 7
+        "intuition": 5,
+        "temperament": 8
       },
       "sexuality": "straight",
       "voice": "Polite and practical, explains things clearly like a safety briefing, then admits her nerves in confessionals. #earnest #warm #anxious",
+      "profileSources": {},
       "speakingVoice": "Woman around thirty, Midwestern American accent. Medium pitch, clear and pleasant, with a professional politeness. Even, clear pace that speeds up and wavers when she is nervous. Warm and sincere.",
       "ties": [
         {
@@ -10682,7 +10696,7 @@
           "kin": "engaged"
         }
       ],
-      "age": 29,
+      "age": 30,
       "birthdate": "1997-06-24",
       "ethnicity": "Irish American",
       "nationality": "American",
@@ -10699,17 +10713,18 @@
       "archetype": "chaos-agent",
       "stats": {
         "physical": 4,
-        "endurance": 5,
-        "mental": 7,
+        "endurance": 4,
+        "mental": 6,
         "social": 7,
         "strategic": 5,
-        "loyalty": 6,
-        "boldness": 8,
+        "loyalty": 7,
+        "boldness": 6,
         "intuition": 6,
         "temperament": 4
       },
       "sexuality": "bi",
       "voice": "Rapid, playful and extremely online; narrates what is happening as if to a live chat, gives everyone nicknames, and goes small and quiet when she is actually upset. #chaotic #goofy #loud",
+      "profileSources": {},
       "speakingVoice": "Young woman in her early twenties, General American accent from the Bay Area. High-medium pitch, bright and expressive, with vocal fry at the end of sentences. Fast, chattering pace with sudden drops into a whisper for a joke. Lively and teasing.",
       "ties": [
         {
@@ -10733,23 +10748,24 @@
       "gender": "f",
       "archetype": "hothead",
       "stats": {
-        "physical": 4,
-        "endurance": 5,
-        "mental": 7,
-        "social": 6,
-        "strategic": 6,
-        "loyalty": 9,
-        "boldness": 8,
-        "intuition": 7,
+        "physical": 6,
+        "endurance": 6,
+        "mental": 5,
+        "social": 5,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 9,
+        "intuition": 6,
         "temperament": 3
       },
-      "sexuality": "straight",
+      "sexuality": "lesbian",
       "voice": "Firm, quick and commanding, talks like she is breaking up a fight in a hallway. Loving and exasperated with her husband in the same breath. #bossy #blunt #loud",
+      "profileSources": {},
       "speakingVoice": "Woman in her late fifties, Southern Texan accent. Medium-low pitch, full and authoritative, with a sharp edge when she raises it. Crisp, fast pace and strong emphasis on key words. Warm underneath, but always in charge.",
       "ties": [
         {
           "name": "Julio",
-          "kin": "married"
+          "kin": "best-friends"
         }
       ],
       "age": 58,
@@ -10766,19 +10782,21 @@
       "name": "Penelope",
       "slug": "penelope",
       "gender": "f",
-      "archetype": "chaos-agent",
+      "archetype": "mastermind",
       "stats": {
-        "physical": 3,
-        "endurance": 4,
-        "mental": 7,
-        "social": 4,
-        "strategic": 5,
-        "loyalty": 7,
-        "boldness": 8,
-        "intuition": 9,
+        "physical": 2,
+        "endurance": 3,
+        "mental": 8,
+        "social": 5,
+        "strategic": 9,
+        "loyalty": 1,
+        "boldness": 9,
+        "intuition": 10,
         "temperament": 5
       },
-      "voice": "Soft, singsong and eerie, says morbid things cheerfully and stares while she talks. Still a little kid underneath. #theatrical #chaotic #quiet",
+      "sexuality": "straight",
+      "voice": "Soft, singsong and eerie, says morbid things cheerfully and stares while she talks. Still a little kid underneath. #cruel #schemer #quiet",
+      "profileSources": {},
       "speakingVoice": "Girl of ten, New England American accent. High, light and breathy child's voice. Slow, drifting pace with odd pauses and sudden giggles. Sounds sweet and deeply unsettling.",
       "ties": [
         {
@@ -10786,7 +10804,7 @@
           "kin": "cousins"
         }
       ],
-      "age": 10,
+      "age": 11,
       "birthdate": "2016-06-13",
       "ethnicity": "White",
       "nationality": "American",
@@ -10802,18 +10820,19 @@
       "gender": "m",
       "archetype": "loyal-soldier",
       "stats": {
-        "physical": 8,
-        "endurance": 9,
+        "physical": 5,
+        "endurance": 8,
         "mental": 6,
         "social": 6,
-        "strategic": 4,
+        "strategic": 3,
         "loyalty": 9,
-        "boldness": 6,
-        "intuition": 7,
-        "temperament": 8
+        "boldness": 4,
+        "intuition": 3,
+        "temperament": 9
       },
       "sexuality": "straight",
       "voice": "Steady, patient and practical, gives clear instructions and safety warnings, and is gently funny. #calm #earnest #warm",
+      "profileSources": {},
       "speakingVoice": "Man in his mid thirties, Texan American accent with a light Mexican Spanish influence. Medium-low pitch, steady and reassuring. Measured, unhurried pace and clear instructions. Sounds dependable and kind.",
       "ties": [
         {
@@ -10835,20 +10854,21 @@
       "name": "Silas",
       "slug": "silas",
       "gender": "m",
-      "archetype": "perceptive-player",
+      "archetype": "goat",
       "stats": {
-        "physical": 3,
-        "endurance": 5,
-        "mental": 8,
-        "social": 4,
-        "strategic": 6,
-        "loyalty": 8,
+        "physical": 7,
+        "endurance": 7,
+        "mental": 1,
+        "social": 2,
+        "strategic": 2,
+        "loyalty": 10,
         "boldness": 4,
-        "intuition": 9,
-        "temperament": 8
+        "intuition": 4,
+        "temperament": 10
       },
       "sexuality": "asexual",
-      "voice": "Slow, low and morbid, answers questions with dark facts and very dry humour. Never excited. #dry #quiet #nerdy",
+      "voice": "Slow, low and morbid, answers questions with dark facts and very dry humour. Never excited. #quiet ",
+      "profileSources": {},
       "speakingVoice": "Man in his late twenties, New England American accent. Deep, low and hollow, with a tired rasp. Very slow, monotone pace with long pauses. Sounds gloomy, deadpan and calm.",
       "ties": [
         {
@@ -10856,7 +10876,7 @@
           "kin": "cousins"
         }
       ],
-      "age": 29,
+      "age": 30,
       "birthdate": "1997-02-02",
       "ethnicity": "White",
       "nationality": "American",
@@ -10864,7 +10884,7 @@
       "occupation": "Museum night guard and amateur historian",
       "descriptor": "The Gloomy Cousin",
       "backstory": "Silas Marsh is Penelope's cousin, nineteen years older than her, and the camera operator, sound man, editor and babysitter of her ghost-hunting series. He works overnight as a security guard at a history museum in Salem and spends his days reading about old shipwrecks, witch trials and plagues. He sleeps very little and eats less. He has never left New England, and he agreed to the race because Penelope's parents would not let her go with anyone else, and because she promised him there would be ruins.",
-      "personality": "Silas is quiet, gloomy and observant. He speaks slowly, rarely smiles and notices things others miss: who is lying, who is tired, which clue was folded twice. He is physically weak and complains about the sun, but he is patient and steady when a task needs focus. He takes being Penelope's guardian on the race more seriously than anything he has ever done, in his own deadpan way, and he is far funnier than people realise."
+      "personality": "Silas is quiet, gloomy and observant. He speaks slowly, rarely smiles and notices things others miss: who is lying, who is tired, which clue was folded twice. He is physically strong and complains about the sun, but he is patient and steady when a task needs focus. He takes being Penelope's guardian on the race more seriously than anything he has ever done, in his own deadpan way, and he is far funnier than people realise."
     },
     {
       "name": "Suki",
@@ -10873,17 +10893,18 @@
       "archetype": "challenge-beast",
       "stats": {
         "physical": 9,
-        "endurance": 9,
-        "mental": 6,
+        "endurance": 8,
+        "mental": 5,
         "social": 5,
         "strategic": 5,
         "loyalty": 7,
-        "boldness": 7,
-        "intuition": 5,
-        "temperament": 4
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 3
       },
       "sexuality": "straight",
       "voice": "Brisk, focused and impatient, gives directions and gets sharp when she is coddled. Softens with her dad when it matters. #competitive #blunt #earnest",
+      "profileSources": {},
       "speakingVoice": "Young woman around twenty, General American accent with a light Oklahoma twang. Medium pitch, clear and athletic, a little breathy. Quick, clipped pace, sharper when frustrated. Sounds determined.",
       "ties": [
         {
@@ -10892,7 +10913,7 @@
           "role": "child"
         }
       ],
-      "age": 20,
+      "age": 21,
       "birthdate": "2006-03-07",
       "ethnicity": "Lenape and Japanese American",
       "nationality": "American",
@@ -10908,18 +10929,19 @@
       "gender": "f",
       "archetype": "showmancer",
       "stats": {
-        "physical": 6,
-        "endurance": 6,
-        "mental": 6,
-        "social": 9,
+        "physical": 5,
+        "endurance": 5,
+        "mental": 8,
+        "social": 8,
         "strategic": 4,
-        "loyalty": 6,
-        "boldness": 6,
-        "intuition": 7,
-        "temperament": 7
+        "loyalty": 5,
+        "boldness": 7,
+        "intuition": 4,
+        "temperament": 6
       },
       "sexuality": "bi",
       "voice": "Bubbly, flirty and affectionate, calls people 'babe' and laughs a lot; turns calm and practical in an emergency. #flirty #warm #goofy",
+      "profileSources": {},
       "speakingVoice": "Young woman around twenty, Central Florida American accent with a slight Puerto Rican Spanish lilt. Medium pitch, warm and playful, with an easy laugh. Lively, quick pace that slows and steadies when someone is hurt.",
       "ties": [
         {
@@ -10927,7 +10949,7 @@
           "kin": "best-friends"
         }
       ],
-      "age": 21,
+      "age": 22,
       "birthdate": "2005-06-09",
       "ethnicity": "Puerto Rican American",
       "nationality": "American",
@@ -10946,15 +10968,16 @@
         "physical": 7,
         "endurance": 6,
         "mental": 5,
-        "social": 7,
+        "social": 6,
         "strategic": 3,
         "loyalty": 7,
         "boldness": 10,
-        "intuition": 5,
-        "temperament": 5
+        "intuition": 4,
+        "temperament": 7
       },
       "sexuality": "straight",
       "voice": "Brash, cheerful and full of flying slang, tells tall tales and treats danger like a joke. #loud #goofy #proud",
+      "profileSources": {},
       "speakingVoice": "Man in his early thirties, rural Midwestern accent. Medium-low pitch, warm and booming, with a grin in his voice. Quick, confident pace, loud laughter and dramatic pauses when telling a story. Sounds fearless.",
       "ties": [
         {
@@ -10978,18 +11001,19 @@
       "gender": "f",
       "archetype": "hero",
       "stats": {
-        "physical": 8,
+        "physical": 6,
         "endurance": 8,
         "mental": 7,
-        "social": 6,
-        "strategic": 6,
+        "social": 7,
+        "strategic": 2,
         "loyalty": 8,
         "boldness": 7,
-        "intuition": 9,
+        "intuition": 4,
         "temperament": 8
       },
       "sexuality": "straight",
       "voice": "Calm, sure and sparing with words, explains what she sees and expects people to keep up. Dry humour with Rodrigo. #calm #proud #warm",
+      "profileSources": {},
       "speakingVoice": "Woman around thirty, Upper Midwest American accent. Medium-low pitch, calm and grounded, a little husky. Slow, deliberate pace with short, confident sentences. Sounds steady and certain.",
       "ties": [
         {

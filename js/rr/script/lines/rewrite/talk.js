@@ -15,8 +15,8 @@ export default {
   pools: {
     [CK]: [
       { id: 'tk.c-air1', when: { at: 'airport' }, turns: [
-        { beat: 'Four people, one charging socket, and a long wait at the gate.' },
-        { by: 'c', say: "You can go first. Your phone looks like it's dying faster than mine." },
+        { beat: 'Four people, one bench, and a long wait at the gate.' },
+        { by: 'c', say: "You sit. You look like you're about to fall over." },
         { by: 'a', say: "Are you sure? Thank you. That's really nice." },
         { by: 'b', say: "Honestly, nobody's been that nice to us all day." },
         { by: 'd', say: "It's been a long day for everybody." },
@@ -81,7 +81,7 @@ export default {
         { by: 'c', say: "Honestly, same." },
         { by: 'a', say: "Okay, good luck out there. Seriously." },
       ] },
-      { id: 'tk.c-any5', turns: [
+      { id: 'tk.c-any5', when: { relB: ['siblings', 'cousins', 'bffs'] }, turns: [
         { by: 'a', say: "How long have you two known each other?" },
         { by: 'c', say: "Forever. Since we were really little." },
         { by: 'd', say: "Too long, honestly." },
@@ -141,7 +141,7 @@ export default {
         { by: 'c', say: "You asked!" },
         { by: 'b', say: "We did. We did ask. I hope you get some sleep." },
       ] },
-      { id: 'tk.o-any3', when: { relFamB: 'family' }, turns: [
+      { id: 'tk.o-any3', when: { relB: 'siblings' }, turns: [
         { by: 'a', say: "You two seem really close. Have you always been close?" },
         { by: 'c', say: "Oh, no. We didn't talk for four years. Not one word." },
         { by: 'd', say: "This race is kind of us trying again." },

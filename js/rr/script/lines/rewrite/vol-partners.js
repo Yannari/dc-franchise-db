@@ -167,12 +167,12 @@ export default {
         { beat: 'They sit there together for a while, not saying anything.' },
       ] },
       { id: 'vp.c5', turns: [
-        { by: 'a', say: "Hey. Before you go. Can I borrow your charger one last time?" },
+        { by: 'a', say: "Hey. Before you go. Can I borrow your jacket one last time? It's freezing." },
         { by: 'c', say: "Keep it." },
         { by: 'b', say: "Are you sure?" },
         { by: 'd', say: "Keep it. We won't need it where we're going." },
         { by: 'a', say: "Thank you. Seriously." },
-        { by: 'c', say: "Think of us every time your phone dies." },
+        { by: 'c', say: "Think of us every time you're cold." },
       ] },
       { id: 'vp.c6', turns: [
         { by: 'b', say: "I'm going to miss you two. I'm really going to miss you." },

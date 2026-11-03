@@ -68,8 +68,8 @@ export default {
       ] },
       { id: 'vr.m12', when: MID, turns: [
         don("{team}, you're in {placing} place! Your families must be so proud."),
-        { by: 'a', say: "I hope they're watching. I really hope they're watching." },
-        don("Oh, they're watching, believe me. Everybody's watching!"),
+        { by: 'a', say: "I hope so. I really hope so." },
+        don("Oh, they will be, when they see this!"),
       ] },
       { id: 'vr.m13', when: MID, turns: [
         don("{team}, you're the {placing} team to arrive! Drink some water and sit down before you fall down."),
@@ -169,7 +169,7 @@ export default {
     ],
     'bond-moment.memory': [
       { id: 'vr.bm1', turns: [
-        { by: 'a', say: "This line reminds me of the time we waited all night for concert tickets." },
+        { by: 'a', say: "This reminds me of the time we waited all night for concert tickets." },
         { by: 'b', say: "Oh my God. Eleven hours on the pavement." },
         { by: 'a', say: "And they sold out two people in front of us." },
         { by: 'b', say: "So we went home and played the album really loud instead." },

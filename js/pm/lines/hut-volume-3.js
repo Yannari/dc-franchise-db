@@ -156,12 +156,19 @@ export const HUT_VOLUME_3 = {
       "Poor {b}. {b} thinks it's about something {b} did. It isn't.",
       "The ick is a very useful thing to have this week.",
     ]),
-    ...lines('hutv3.gkiss.t', K('game-kiss', { role: 0 }), [
+    // (A kiss that was more than a game: a partner's peck "started a whole row", season 41 ep 13.)
+    ...lines('hutv3.gkiss.t', K('game-kiss', { role: 0, of: ['crush', 'stir'] }), [
       "Everyone's arguing about that kiss. Brilliant. Nobody's arguing about anything else.",
       "It was a game. If anyone asks, it was just a game. It might not have been just a game.",
       "I'll be paying for that kiss later. It was worth it.",
       "That kiss started a whole row, and I'm going to stand well back and watch it happen.",
       "In a game, you can do anything you like and say it was the rules. I love the rules.",
+    ]),
+    // …and a kiss for the partner, from somebody hiding something from them.
+    ...lines('hutv3.gkiss.tp', K('game-kiss', { role: 0, of: 'partner' }), [
+      "I kissed {b} in front of everyone, and it looked lovely. It's not as simple as it looked.",
+      "Everyone said aww. I smiled. I'm good at smiling this week.",
+      "{b} has no idea what's going on in my head. That kiss didn't help.",
     ]),
   ],
 };

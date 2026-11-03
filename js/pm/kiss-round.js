@@ -21,6 +21,7 @@
 import { addBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
 import { heartOf } from './just-friends.js';
+import { today } from './events.js';
 import { romance, friendship, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, compatible } from './chemistry.js';
 import { feel, jealousyHit } from './emotions.js';
@@ -71,6 +72,10 @@ function choose(state, rng, a, targets) {
   const own = p ? romance(a, p) / 10 : 0;
   const shut = p ? Math.max(closedness(state, a, p), Math.min(1, Math.max(0, (own - 0.4) / 0.4))) : 0;
   const opts = [];
+  // Not somebody a turned down today (season 41 ep 13: Theo told Keisha "Why are we
+  // even talking about this?" at lunch, and kissed her in the game "I've wanted to for a while").
+  const turnedDown = new Set(today(state).filter(e => (e.kind === 'loyalty' && e.players[1] === a)
+    || (e.kind === 'pull' && e.extra?.rebuffed && e.players[1] === a) || (e.kind === 'graft-shut' && e.players[0] === a)).map(e => e.kind === 'graft-shut' ? e.players[1] : e.players[0]));
   for (const t of targets) {
     if (t === a || !compatible(state, a, t)) continue;
     const fancy = (attr(state, a, t) ?? 0) / 10;
@@ -84,7 +89,7 @@ function choose(state, rng, a, targets) {
     // readily; one nobody has seen, less often (2026-11-03: one game had three
     // crush kisses from nowhere, and every islander seemed to fancy everyone).
     const shownTo = (state.shownInterest || {})[`${a}>${t}`] != null;
-    opts.push([['crush', t], 3 * over * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.75 * shut) * (shownTo ? 1 : 0.45)]);
+    if (!turnedDown.has(t)) opts.push([['crush', t], 3 * over * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.75 * shut) * (shownTo ? 1 : 0.45)]);
     // On purpose, to shake somebody else's couple: a schemer, bold, and the
     // less they like the partner watching, the more it appeals. Never the one
     // they've been chasing: that kiss is a crush (season 41: Jordan, after a

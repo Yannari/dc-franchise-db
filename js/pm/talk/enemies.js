@@ -143,7 +143,7 @@ export const ENEMY_FREEZE = build('enemy-freeze', {
   plans: { featured: ['scene', 'notice', 'land?'], short: ['scene', 'notice'] },
   moves: {
     scene: [
-      { stage: "{b} sits down at the lunch table, and {a} picks up {a.posAdj} plate and goes and eats by the pool.", turns: [] },
+      { stage: "{b} sits down at the dinner table, and {a} picks up {a.posAdj} plate and goes and eats by the pool.", turns: [] },
       { stage: "{b} asks if anybody wants a tea. Everyone says yes except {a}, who gets up and makes {a.posAdj} own.", turns: [] },
       { stage: "Everyone's getting ready in the dressing room, and {a} is chatting away to all of them. When {b} walks in, {a} goes quiet.", turns: [] },
       { stage: "{b} says hello to {a}. {a} says hello to the person standing next to {b}.", turns: [] },

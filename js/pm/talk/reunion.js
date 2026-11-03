@@ -313,6 +313,51 @@ export const RU_COUPLE = kind('ru-couple', ['fate', 'why', 'place'], [
     ['a', "It was. Before it got any worse. I hurt {b}, and I know that."],
     ['b', "I would have forgiven a lot. I needed the truth, and I got it from a screen instead of from you."],
   ], beat: "The studio is silent." },
+  // (One entry a reason: two couples who split the same way heard the same answer, seed 1, 2026-11-03.)
+  { when: { fate: 'split', why: 'distance', place: 'final' }, stage: "{a} and {b} sit next to each other, friendly but not touching.", turns: [
+    ['dior', "{b}, {a}. You made it all the way to the final. What happened after?"],
+    ['b', "Real life happened. We're hours apart, and we both work all week."],
+    ['a', "We said we'd make it work. We did, for a bit. Then the calls got shorter and the visits got further apart."],
+    ['dior', "Is there any chance?"],
+    ['b', "If one of us moved, maybe. Neither of us is going to."],
+  ], beat: "They smile at each other, a little sadly, and the studio claps." },
+  { when: { fate: 'split', why: 'different', place: 'final' }, stage: "{a} and {b} sit at opposite ends of the same sofa.", turns: [
+    ['dior', "{a}, {b}. Together?"],
+    ['b', "No. It turns out we wanted different lives."],
+    ['a', "In there, it was just us. Out here, I want to travel, and {b} wants to settle down. Neither of us is wrong."],
+    ['b', "I just wish we'd found that out sooner."],
+  ], beat: "{a} nods, and doesn't argue." },
+  { when: { fate: 'split', why: 'trust', place: 'final' }, stage: "{a} and {b} are sitting as far apart as the stage allows.", turns: [
+    ['dior', "{a}, {b}. You were a final couple. What went wrong?"],
+    ['b', "I watched it back. I saw things I didn't know about."],
+    ['a', "I should have told {b} myself. I know that."],
+    ['b', "You should have. Then we might still be sitting together."],
+  ], beat: "The studio goes very quiet." },
+  { when: { fate: 'split', why: 'faded', place: 'left' }, stage: "{a} and {b} sit side by side, and the audience can tell it's over.", turns: [
+    ['dior', "{b}, {a}. You walked out of the villa together. Did it survive the outside?"],
+    ['b', "For a couple of weeks. Then we both stopped trying, and neither of us said it."],
+    ['a', "I said it, in the end. It was a relief for both of us, I think."],
+    ['b', "It was. We're good. We're just not together."],
+  ], beat: "They share a small smile, and the studio claps." },
+  { when: { fate: 'split', why: 'distance', place: 'left' }, stage: "{a} and {b} sit near each other, chatting before Dior gets to them.", turns: [
+    ['dior', "{a}, {b}. You left together. Still going?"],
+    ['a', "No. We tried. It's a long way to travel every weekend."],
+    ['b', "It was lovely when we saw each other. It was the bits in between that got us."],
+    ['dior', "No regrets?"],
+    ['a', "None. I'd do it all again."],
+  ], beat: "{b} squeezes {a}'s arm, and the audience goes \"aww\"." },
+  { when: { fate: 'split', why: 'different', place: 'left' }, stage: "{a} and {b} sit on separate sofas, both a little stiff.", turns: [
+    ['dior', "{b}, {a}. What happened after you left?"],
+    ['b', "We went home and found out we didn't really know each other."],
+    ['a', "In there, we had a week. Out here, I met {b}'s friends, {b} met mine, and none of it fitted."],
+    ['b', "It's nobody's fault. It just didn't work."],
+  ], beat: "The studio claps politely." },
+  { when: { fate: 'split', why: 'trust', place: 'left' }, stage: "{a} and {b} won't look at each other.", turns: [
+    ['dior', "{a}, {b}. You left together, and now you're not. Why?"],
+    ['b', "Because once we were home, I found out things {a} should have told me in there."],
+    ['a', "I should have. I was scared of losing you."],
+    ['b', "It was enough."],
+  ], beat: "{a} opens {a.posAdj} mouth, and then closes it again." },
   { when: { fate: 'split', why: 'faded', place: 'left' }, stage: "{a} and {b} sit apart on the same sofa.", turns: [
     ['dior', "{a}, {b}. You left the villa together. Are you still together?"],
     ['a', "No. It didn't last long outside."],

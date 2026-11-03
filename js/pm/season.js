@@ -140,7 +140,9 @@ function villaDayEvents(state, rng, entry, seed) {
   // with a plan keeps a scene of texture a part of the day; the light runner
   // (pm/runner.js) is its laughs.
   const planned = !casa && (state.stretch && !state.stretch.off) && (state._th?.plan || []).length >= 2;
-  const base = planned ? { morning: 1, day: 1, evening: 1 } : TEXTURE;
+  // (Two in the day and the evening: a story's beats are one stage a day, and a day whose
+  // stories had one beat each aired 103 lines, seed 2 ep 5.)
+  const base = planned ? { morning: 1, day: 2, evening: 2 } : TEXTURE;
   const T = { morning: (planned ? base.morning : cut(base.morning)) + quiet.morning + (casa ? 3 : 0), day: (planned ? base.day : cut(base.day)) + quiet.day + (casa ? 6 : 0), evening: (planned ? base.evening : cut(base.evening)) + quiet.evening + (entry.moment === 'villa' && !planned ? 2 : 0) + (casa ? 7 : 0) };
   const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
@@ -199,7 +201,8 @@ const CASA_KINDS = {
 function storyPhase(state, rng, trng, phase, texture, entry = null) {
   const kinds = { [phase]: (state.split ? CASA_KINDS : TEXTURE_KINDS)[phase] || TEXTURE_KINDS.day };
   const draw = n => {
-    const evs = n > 0 ? generateEpisodeEvents(state, rng, { [phase]: n }, { kinds }) : [];
+    const quietDay = !state.split && !(state._th?.plan || []).length;
+    const evs = n > 0 ? generateEpisodeEvents(state, rng, { [phase]: n }, { kinds, airLight: quietDay }) : [];
     for (const e of evs) queueReaction(state, e);
     return evs;
   };

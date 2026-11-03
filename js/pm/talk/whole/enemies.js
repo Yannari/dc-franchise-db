@@ -119,13 +119,13 @@ const SNIPE = [
     ['a', "Enjoy yourself. Just let other people talk as well."],
   ], beat: "The table goes quiet, and stays quiet." },
   { turns: [], beat: "{b} doesn't hear, or pretends not to, and {a} gives up." }),
-  ...snipe({ grudge: 'moody' }, "{b} sighs loudly at the lunch table.", [
+  ...snipe({ grudge: 'moody' }, "{b} sighs loudly at the dinner table.", [
     ['a', "What is it this time? Go on. We're all waiting."],
   ], { turns: [
     ['b', "Can I not just sigh?"],
     ['a', "Not like that. Not every day."],
   ], beat: "{b} takes {b.posAdj} plate and goes and eats somewhere else." },
-  { turns: [], beat: "{b} doesn't answer, and the table eats the rest of lunch in silence." }),
+  { turns: [], beat: "{b} doesn't answer, and the table eats the rest of dinner in silence." }),
   ...snipe({ grudge: 'cocky' }, "{b} is checking {b.ref} out in the mirror by the pool.", [
     say('a', "You know nobody thinks you're as good as you think you are.", { lad: "Nobody thinks you're that good, {~bro}. Just you." }),
   ], { turns: [
@@ -335,7 +335,7 @@ const CLASH = [
 
 // ── enemy-freeze: {a} freezes {b} out, and {c} sees it ──
 const FREEZE_STAGES = [
-  "{b} sits down at the lunch table, and {a} picks up {a.posAdj} plate and goes and eats by the pool.",
+  "{b} sits down at the dinner table, and {a} picks up {a.posAdj} plate and goes and eats by the pool.",
   "{b} asks if anybody wants a tea. Everyone says yes except {a}, who gets up and makes {a.posAdj} own.",
   "Everyone's getting ready in the dressing room, and {a} is chatting away to all of them. When {b} walks in, {a} goes quiet.",
   "{b} says hello to {a}. {a} says hello to the person standing next to {b}.",

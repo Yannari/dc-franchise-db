@@ -150,7 +150,9 @@ function scene(state, rng, a, b, h, noTruce, lastKind = null) {
     ['truce', truceW],
   ]);
   const extra = { grudge, ...(about ? { about } : {}) };
-  const ev = (k, players, more, major = []) => makeEvent(state, rng, { phase: k === 'enemy-clash' || k === 'enemy-truce' ? 'evening' : 'day',
+  // (All of them the evening's: they are written after it, villa-day.js runVillaDay, and a
+  // scene airs where it is written — a 'day' snipe written after dinner aired before the challenge.)
+  const ev = (k, players, more, major = []) => makeEvent(state, rng, { phase: 'evening',
     kind: k, players, aired: true, major, extra: { ...extra, ...more } });
   if (kind === 'snipe') {
     const bites = rng() < 0.3 + 0.6 * (1 - st(state, b, 'temperament'));

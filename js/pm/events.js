@@ -221,6 +221,11 @@ const MOVES = {
   'love-said': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
   reunite: e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
   'triangle-choice': e => [[e.players[0], e.players[1]]],
+  // …and a partner reassured, or told in so many words that it's them (season 41
+  // ep 13: Callum told Leah "I came in here looking for you" and went back to Chloe that night).
+  'vote-worry': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'where-head': e => (e.extra?.of === 'reassure' ? [[e.players[1], e.players[0]]] : []),
+  'bed-chat': e => (e.extra?.of === 'warm' ? [[e.players[0], e.players[1]], [e.players[1], e.players[0]]] : []),
 };
 /** n's heart already went to somebody other than `toward` today. */
 export function heartBusy(state, n, toward) {
@@ -1368,7 +1373,9 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
     if (fam) {
       const b = state._budget?.ep === state.ep ? state._budget : (state._budget = { ep: state.ep, of: {} });
       const lead = ev.players.slice(0, 2).filter(Boolean);
-      if (lead.some(n => !(b.of[n] || []).includes(fam) && (b.of[n] || []).length >= 2)) ev.aired = false;
+      // (A small villa, the last week's eight: each of them carries more of the episode.)
+      const cap = (state.villa || []).length <= 10 ? 3 : 2;
+      if (lead.some(n => !(b.of[n] || []).includes(fam) && (b.of[n] || []).length >= cap)) ev.aired = false;
       else for (const n of lead) { const f = (b.of[n] ||= []); if (!f.includes(fam)) f.push(fam); }
     }
   } else if (ev.aired && extra?.runner) {
@@ -1513,7 +1520,11 @@ export function airLater(state, ev) {
 // evening and Mia in eight comedy scenes — the cast was drawn fresh each time,
 // with nothing to say who had just been on screen doing the same thing.
 const PER_PHASE = 1, PER_EPISODE = 2;
-export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kinds: kindsOf = null } = {}) {
+// A day with no stories to follow (the couples-only week, a stretch with no plan):
+// its light scenes are the episode, so they air (2026-11-03: seed 2's day 22 aired
+// 118 lines, half its chats unaired notes). Never a pull or a bed: those keep their dice.
+const AIR_ON_QUIET = new Set(['chat', 'friendship', 'comedy', 'deep-chat', 'kiss', 'argument', 'ick']);
+export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kinds: kindsOf = null, airLight = false } = {}) {
   const out = [];
   if (state._castSeenEp !== state.ep) { state._castSeen = {}; state._castSeenPhase = {}; state._castSeenEp = state.ep; }
   const seenEp = state._castSeen;
@@ -1566,7 +1577,7 @@ export function generateEpisodeEvents(state, rng, budgets = PHASE_BUDGETS, { kin
       seenPhase[key] = (seenPhase[key] || 0) + 1;
       seenEp[key] = (seenEp[key] || 0) + 1;
       const extra = Array.isArray(got) ? {} : { secret: got.secret, ...(got.extra || {}) };
-      const ev = makeEvent(state, rng, { phase, kind: realKind, players, extra });
+      const ev = makeEvent(state, rng, { phase, kind: realKind, players, extra, aired: airLight && AIR_ON_QUIET.has(realKind) && !extra.secret ? true : null });
       out.push(ev);
       // A telling reaches the one it was about, the same day (haveItOut).
       // …and sometimes somebody goes after the one who told (callOutStirrer).

@@ -19,13 +19,13 @@ const place = {
   'don-opener.annoyed': [
     { id: 'svf.op1', when: P, turns: [
       { beat: 'Don stands at the edge of the great falls, shouting over the roar of the water.' },
-      don("Savanna Falls! Home of the biggest waterfall you've ever seen, wild animals, and spray that is ruining my hair!"),
+      don("Savanna Falls! Home of the biggest waterfall you've ever seen, and a lot of wild animals!"),
       don("Teams must drive themselves to the falls, go over them in a raft, and pose with a white rhino."),
       { beat: 'A wave of spray soaks him from head to toe.' },
-      don("Somebody get me a towel! And a hair dryer! And a new hairdresser!"),
+      don("Somebody get me a towel, please!"),
     ] },
     { id: 'svf.op2', when: P, turns: [
-      don("Welcome to Savanna Falls, home of lions, elephants, rhinos, and a waterfall so loud I can't hear myself talk. Which is a tragedy."),
+      don("Welcome to Savanna Falls, home of lions, elephants, rhinos, and a waterfall so loud I can barely hear myself!"),
       { beat: 'A giraffe wanders past behind him, very slowly, and looks at the camera.' },
       don("Don't look at the giraffe. Look at me. I'm the host."),
     ] },
@@ -53,13 +53,13 @@ const place = {
   'arrival-awe.dread': [
     { id: 'svf.ad1', when: P, turns: [
       { by: 'a', say: "We're driving ourselves? Across the savanna? With lions in it?" },
-      { by: 'b', ...V("Lions don't attack jeeps. I read that somewhere.", "Lions don't attack jeeps.", "Lions leave jeeps alone.", "Lions DON'T attack JEEPS! I READ that somewhere!", "Lions don't attack jeeps. I'm sure I read that.", "Lions respect vehicles. It's a known fact. Probably.") },
-      { by: 'a', say: "Where? Where did you read that?" },
+      { by: 'b', say: "We'll be fine. Just stay in the jeep." },
+      { by: 'a', say: "I hope you're right." },
     ] },
     { id: 'svf.ad2', when: P, turns: [
       { by: 'b', say: "I can hear the waterfall from here. We're miles away and I can hear it." },
       { by: 'a', say: "Please don't let the challenge be the waterfall." },
-      { by: 'b', say: "It's always the waterfall." },
+      { by: 'b', say: "It's going to be the waterfall." },
     ] },
   ],
 };
@@ -81,8 +81,8 @@ const roads = {
     ] },
     { id: 'svf.tm3', when: { taskId: 'village-run', mishap: 'rhino-chase' }, turns: [
       { beat: 'A rhino has decided to follow {a} and {b}. It is getting closer.' },
-      { by: 'a', say: "Why is it following us? What did we do?" },
-      { by: 'b', ...V("Don't stop to ask it! Run!", "Run!", "Don't ask! Run!", "DON'T stop to ASK it! RUN!", "Don't stop to ask it, just run!", "Philosophy later! Running now!") },
+      { by: 'a', say: "Why is it following us?" },
+      { by: 'b', say: "Don't stop! Keep going!" },
     ] },
   ],
 };
@@ -92,7 +92,7 @@ const falls = {
   'don-demo.gag': [
     { id: 'svf.fs-d1', when: FS, turns: [
       don("In this All-In, both partners raft over the edge of the falls, and take a team selfie on the way down with this waterproof camera."),
-      { beat: 'He holds up the camera and takes a selfie of his own face. He checks it. He takes another one.' },
+      { beat: 'He holds up the camera and takes a selfie.' },
       don("Both faces in the picture. A good, clear picture. Like this one. Of me. Look at that jaw."),
     ] },
   ],
@@ -100,7 +100,7 @@ const falls = {
     { id: 'svf.fs-d2', when: FS, turns: [
       don("Blurry photo, half a face, or a photo of a lot of water, and you carry your raft back up and go again."),
       don("A good selfie gets your next tip. I'm not going over. I don't need to. I already have good selfies."),
-      { beat: 'He pats his hair, checks it in the camera screen, and nods. Still perfect.' },
+      { beat: 'He pats his wet hair and checks it in the camera screen.' },
     ] },
   ],
   'task-start.any': [
@@ -112,8 +112,8 @@ const falls = {
     ] },
     { id: 'svf.fs-s2', when: FS, turns: [
       { by: 'b', say: "Smile. Remember to smile. It's a selfie. People smile in selfies." },
-      { by: 'a', say: "I'm going to be screaming. Screaming is a kind of smile." },
-      { by: 'b', say: "It's the exact opposite of a smile." },
+      { by: 'a', say: "I'm going to be screaming." },
+      { by: 'b', say: "Then scream with your teeth showing." },
     ] },
     { id: 'svf.fs-s3', when: FS, turns: [
       { beat: 'A crew member pushes the raft off. It slides towards the edge, faster and faster.' },
@@ -122,8 +122,8 @@ const falls = {
     ] },
     { id: 'svf.fs-s4', when: FS, turns: [
       { by: 'a', say: "Okay. On the way down, I hold it out, we both lean in, and click." },
-      { by: 'b', say: "That's a very calm plan for falling off a waterfall." },
-      { by: 'a', say: "It's the only plan I've got." },
+      { by: 'b', say: "Okay. That's a good plan." },
+      { by: 'a', say: "Here we go." },
     ] },
   ],
   'task-try.first-try': [
@@ -135,7 +135,7 @@ const falls = {
     { id: 'svf.fs-f2', when: FS, turns: [
       { by: 'a', say: "Did we get it? Tell me we got it!" },
       { by: 'b', say: "We got it! We got it on the first go!" },
-      { by: 'a', say: "I'm never doing that again, and I'm also so glad I did it." },
+      { by: 'a', say: "I'm never doing that again. But I'm so glad we did." },
     ] },
     { id: 'svf.fs-f3', when: FS, turns: [
       { beat: 'In the photo, {a} is screaming and {b} is laughing, and behind them the whole falls is a white wall of water.' },
@@ -145,8 +145,8 @@ const falls = {
     ] },
     { id: 'svf.fs-f4', when: FS, turns: [
       { by: 'b', say: "How did you even keep the camera steady?" },
-      { by: 'a', say: "I don't know. I think I blacked out, and my arm did it on its own." },
-      { by: 'b', say: "Your arm is a professional." },
+      { by: 'a', say: "I don't know. I just held on." },
+      { by: 'b', say: "It's perfect." },
     ] },
   ],
   'task-try.after-fails': [
@@ -159,12 +159,12 @@ const falls = {
     { id: 'svf.fs-a2', when: FS, turns: [
       { by: 'a', ...V("Hold my arm! Hold my arm steady while I click!", "Hold my arm steady!", "Hold my arm!", "HOLD my ARM! Hold my ARM steady while I CLICK!", "Hold my arm steady while I take it!", "Steady my arm! Be my tripod!") },
       { beat: '{b} grabs {a}\'s arm, they both lean in, and the camera clicks.' },
-      { by: 'b', say: "Teamwork! We're a team!" },
+      { by: 'b', say: "It worked! We got it!" },
     ] },
     { id: 'svf.fs-a3', when: FS, turns: [
       { beat: 'Third time over. This time, both of them are laughing instead of screaming.' },
       { by: 'a', say: "It's actually fun now that we know we survive it." },
-      { by: 'b', say: "Fun? Fun? Okay. A bit fun." },
+      { by: 'b', say: "Okay. A bit fun." },
     ] },
     { id: 'svf.fs-a4', when: FS, turns: [
       { by: 'b', say: "Wipe the lens. The lens is wet. That's why it's blurry." },
@@ -182,7 +182,7 @@ const falls = {
     { id: 'svf.fs-t2', when: FS, turns: [
       { by: 'b', ...V("Every photo's just spray. White spray. Like a cloud.", "Every photo's just spray.", "All spray.", "EVERY photo's just SPRAY! White SPRAY! Like a CLOUD!", "Every single photo is just white spray, like a cloud.", "We've taken four photos of a cloud.") },
       { by: 'a', say: "Then we hold the camera closer. Right in front of our faces." },
-      { by: 'b', say: "Right in front. Closer than a selfie has ever been." },
+      { by: 'b', say: "Right in front. Really close." },
     ] },
     { id: 'svf.fs-t3', when: FS, turns: [
       { beat: 'Other teams are showing off their perfect selfies on the way to the park.' },
@@ -203,7 +203,7 @@ const falls = {
     ] },
     { id: 'svf.fs-dn3', when: FS, turns: [
       { beat: '{a} and {b} squeeze the water out of their clothes and run for the jeep.' },
-      { by: 'a', say: "I'm going to be wet for the rest of my life." },
+      { by: 'a', say: "I'm soaked." },
       { by: 'b', say: "It's hot. You'll be dry in ten minutes." },
     ] },
   ],
@@ -211,7 +211,7 @@ const falls = {
     { id: 'svf.fs-x1', when: FS, turns: [
       { beat: 'The crew member checks the camera. The photo is of {a}\'s ear, very close up.' },
       { by: 'a', say: "That's my ear. That's just my ear." },
-      { by: 'b', say: "It's a lovely ear. Back up the hill." },
+      { by: 'b', say: "It doesn't count. Back up the hill." },
     ] },
     { id: 'svf.fs-x2', when: FS, turns: [
       { beat: 'Halfway down, the camera flies out of {a}\'s hand and lands in the river.' },
@@ -220,7 +220,7 @@ const falls = {
     ] },
     { id: 'svf.fs-x3', when: FS, turns: [
       { beat: 'The photo shows {b} perfectly. {a} is just a blur of screaming.' },
-      { by: 'b', say: "I look great. You look like a ghost." },
+      { by: 'b', say: "I look fine. You're just a blur." },
       { by: 'a', say: "I was screaming too hard. Again. We go again." },
     ] },
   ],
@@ -232,54 +232,54 @@ const rhino = {
     { id: 'svf.rh-d1', when: RH, turns: [
       don("In this Botch or Watch, whoever didn't do the last one poses next to a white rhino, while their partner takes the picture."),
       { beat: 'Behind him, the rhino lifts its head and stares at him.' },
-      don("Get too close, or annoy it, and it charges. Just don't... don't look at it like I'm looking at it. Why is it looking at me?"),
+      don("Get too close, or annoy it, and it charges, so be very, very careful!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'svf.rh-d2', when: RH, turns: [
       don("Walk up slowly. Stand still. Smile. Your partner takes the picture from behind the ranger's line."),
-      don("One clear photo, both of you, poser and rhino. And please, nobody insult the rhino. It's very sensitive."),
-      { beat: 'The rhino snorts, very loudly. Don takes a large step back.' },
+      don("One clear photo, poser and rhino, and please, don't upset the rhino!"),
+      { beat: 'The rhino snorts, and Don takes a big step back.' },
     ] },
   ],
   'whose-botch.obvious': [
     { id: 'svf.rh-w1', when: RH, turns: [
       { by: 'b', say: "You're posing. You're the photogenic one." },
-      { by: 'a', ...V("Am I photogenic enough for a rhino?", "Photogenic for a rhino?", "For a rhino?", "Am I PHOTOGENIC enough for a RHINO?", "Am I photogenic enough for a rhino, though?", "Is my face rhino-ready?") },
-      { by: 'b', say: "The rhino will love you. Everybody loves you." },
+      { by: 'a', say: "For a rhino?" },
+      { by: 'b', say: "You'll be fine." },
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'svf.rh-w2', when: RH, turns: [
       { by: 'a', say: "I'll pose. I've always wanted to meet a rhino." },
       { by: 'b', say: "Have you? Since when?" },
-      { by: 'a', say: "Since about two minutes ago, when I realised it was this or the camera." },
+      { by: 'a', say: "Not really. But I'll do it." },
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'svf.rh-w3', when: RH, turns: [
       { by: 'b', say: "You're posing. I'm taking the picture. From a long way away." },
       { by: 'a', say: "Why do I always get the dangerous one?" },
-      { by: 'b', say: "Because I'm better at photos." },
+      { by: 'b', say: "Because I take better photos." },
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'svf.rh-w4', when: RH, turns: [
       { by: 'a', say: "'Who wants a portrait?' A painting? Are we being painted?" },
       { by: 'b', say: "We're in a national park. It's going to be an animal." },
-      { by: 'a', say: "Then it's you. Animals like you." },
+      { by: 'a', say: "Then it's you. You love animals." },
     ] },
   ],
   'task-start.any': [
     { id: 'svf.rh-s1', when: RH, turns: [
       { beat: '{a} walks slowly towards the rhino. It keeps chewing. It is enormous.' },
-      { by: 'a', say: "Hello. Hi. Hello, big friend." },
+      { by: 'a', say: "Hi. Easy. Easy." },
       { by: 'b', ...V("Don't talk to it! Just stand next to it!", "Don't talk to it!", "Don't chat!", "DON'T talk to it! Just STAND next to it!", "Don't talk to it, just stand next to it!", "No small talk with the rhino!") },
     ] },
     { id: 'svf.rh-s2', when: RH, turns: [
       { by: 'b', say: "Closer. You need to be closer. You're not in the frame." },
       { by: 'a', say: "How close?" },
-      { by: 'b', say: "Closer than you want to be." },
+      { by: 'b', say: "Closer. A bit more." },
     ] },
     { id: 'svf.rh-s3', when: RH, turns: [
       { beat: '{b} kneels behind the ranger\'s line with the camera. {a} edges towards the rhino, step by step.' },
@@ -289,7 +289,7 @@ const rhino = {
     { id: 'svf.rh-s4', when: RH, turns: [
       { by: 'a', say: "What's the plan if it charges?" },
       { by: 'b', say: "Run." },
-      { by: 'a', say: "That's not a plan. That's just a word." },
+      { by: 'a', say: "Okay. Run. Got it." },
     ] },
   ],
   'task-try.first-try': [
@@ -304,54 +304,54 @@ const rhino = {
       { by: 'a', say: "I nearly touched a rhino." },
     ] },
     { id: 'svf.rh-f3', when: RH, turns: [
-      { beat: 'The rhino turns its head towards the camera at exactly the right moment, like it knows it\'s being photographed.' },
-      { by: 'b', say: "It posed! The rhino posed!" },
-      { by: 'a', say: "It's a professional. We should be paying it." },
+      { beat: 'The rhino turns its head towards the camera at exactly the right moment.' },
+      { by: 'b', say: "It looked right at me! Perfect!" },
+      { by: 'a', say: "Can I go now?" },
     ] },
     { id: 'svf.rh-f4', when: RH, turns: [
       { by: 'b', say: "That's the best photo of the whole race. You, a rhino, and the sunset." },
-      { by: 'a', say: "Is the rhino smiling?" },
-      { by: 'b', say: "The rhino is very calm. Calm is the rhino's smile." },
+      { by: 'a', say: "Is it a good one?" },
+      { by: 'b', say: "It's perfect. You both look so calm." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'svf.rh-a1', when: RH, turns: [
       { beat: 'Second time, {a} approaches the rhino from the side, very slowly, humming softly.' },
       { by: 'b', say: "Why are you humming?" },
-      { by: 'a', say: "It's a lullaby. I'm calming it down." },
-      { beat: 'Whether it\'s the lullaby or not, the rhino stays calm. Click.' },
+      { by: 'a', say: "It's calming me down." },
+      { beat: 'The rhino stays calm. Click.' },
     ] },
     { id: 'svf.rh-a2', when: RH, turns: [
       { by: 'b', say: "Stand still this time! You moved! You keep moving!" },
       { by: 'a', ...V("Because there's a rhino! Next to me! I'm allowed to move!", "There's a rhino! I'm allowed to move!", "There's a rhino!", "Because there's a RHINO! NEXT to me! I'm ALLOWED to MOVE!", "Because there's a rhino right next to me! I'm allowed to move!", "There's a rhino! Movement is a natural response!") },
-      { beat: '{a} freezes, rigid as a statue. Click. Perfect.' },
+      { beat: '{a} freezes completely. Click. Perfect.' },
     ] },
     { id: 'svf.rh-a3', when: RH, turns: [
       { beat: 'This time, {b} gets the camera ready before {a} even starts walking.' },
       { by: 'b', say: "I'll take it the second you're close. Don't wait for me." },
-      { by: 'a', say: "Fast. Fast is good. Fast is very good." },
+      { by: 'a', say: "Fast. Yes. Fast." },
     ] },
     { id: 'svf.rh-a4', when: RH, turns: [
-      { by: 'a', say: "Last time, I think I said something rude to it by accident." },
-      { by: 'b', say: "You said its horn was crooked." },
+      { by: 'a', say: "Last time, I think I talked too loud." },
+      { by: 'b', say: "You did. It didn't like it." },
       { by: 'a', say: "This time I'll say nothing. Nothing at all. I'll just smile." },
     ] },
   ],
   'task-try.struggling': [
     { id: 'svf.rh-t1', when: RH, turns: [
       { beat: '{a} has been chased away three times. The rhino seems to recognise {a.obj} now.' },
-      { by: 'b', say: "It knows you. It's seen you three times. It knows you." },
-      { by: 'a', say: "Then it should know I'm harmless!" },
+      { by: 'b', say: "It's seen you three times now." },
+      { by: 'a', say: "I'm not doing anything!" },
     ] },
     { id: 'svf.rh-t2', when: RH, turns: [
       { by: 'a', ...V("My legs are shaking too much. I can't stand still.", "My legs won't stop shaking.", "Can't stand still.", "My LEGS are SHAKING too much! I CAN'T stand STILL!", "My legs are shaking too much to stand still.", "My knees are performing a dance of fear.") },
       { by: 'b', say: "Then sit down. Sit down next to it. Sitting is still." },
-      { by: 'a', say: "Sitting next to a rhino. Okay. That's a sentence I never thought I'd say." },
+      { by: 'a', say: "Sitting next to a rhino. Okay." },
     ] },
     { id: 'svf.rh-t3', when: RH, turns: [
       { beat: 'Every other team has got their picture. The rhino has gone to lie down, and won\'t get up.' },
-      { by: 'b', say: "It's taking a nap." },
-      { by: 'a', say: "Then I'll pose with a napping rhino. It's still a rhino." },
+      { by: 'b', say: "It's lying down." },
+      { by: 'a', say: "Then I'll pose with it lying down. It's still a rhino." },
     ] },
   ],
   'task-done.any': [
@@ -362,20 +362,20 @@ const rhino = {
     ] },
     { id: 'svf.rh-dn2', when: RH, turns: [
       { by: 'a', say: "Chill Zone. In the village. We run." },
-      { by: 'b', say: "Run quietly. Don't wake any other rhinos." },
-      { by: 'a', say: "Tiptoe-run. We tiptoe-run." },
+      { by: 'b', say: "Run quietly." },
+      { by: 'a', say: "Okay. Quietly." },
     ] },
     { id: 'svf.rh-dn3', when: RH, turns: [
       { beat: '{b} looks at the photo again on the camera screen and laughs.' },
       { by: 'b', say: "Your face. You look like you're about to faint." },
-      { by: 'a', say: "I was about to faint. That's my honest face." },
+      { by: 'a', say: "I was about to faint." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'svf.rh-x1', when: RH, turns: [
       { beat: 'The rhino lifts its head, snorts, and charges. {a} runs faster than {a.sub} has ever run in {a.posAdj} life.' },
       { by: 'a', say: "Did you get it? Did you get the picture?" },
-      { by: 'b', say: "I got a picture of you running! It's a great picture! It doesn't count!" },
+      { by: 'b', say: "I got a picture of you running! It doesn't count!" },
     ] },
     { id: 'svf.rh-x2', when: RH, turns: [
       { beat: '{a} sneezes. The rhino turns. {a} runs.' },
@@ -385,14 +385,14 @@ const rhino = {
     { id: 'svf.rh-x3', when: RH, turns: [
       { beat: 'The picture comes out perfectly. Of {a}, alone. The rhino has wandered out of frame.' },
       { by: 'b', say: "The rhino left. It just walked off." },
-      { by: 'a', say: "Even the rhino doesn't want to be photographed with me." },
+      { by: 'a', say: "Wait for it to come back." },
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'svf.rh-v1', when: RH, turns: [
       { by: 'b', say: "You're doing it! You're so brave! Smile!" },
       { by: 'a', say: "Stop shouting! You'll scare it!" },
-      { by: 'b', say: "I'm whisper-shouting!" },
+      { by: 'b', say: "Sorry! Sorry!" },
     ] },
   ],
   'watching-botch.nerves': [
@@ -413,14 +413,14 @@ const rhino = {
     { id: 'svf.rh-v4', when: RH, turns: [
       { beat: '{b} doesn\'t make a sound, holding the camera, finger on the button, barely breathing.' },
       { by: 'a', say: "Say something! Is it working?" },
-      { by: 'b', say: "Shhh. I'm a nature photographer now." },
+      { by: 'b', say: "Shh. I'm waiting for the right moment." },
     ] },
   ],
   'helped-botch.any': [
     { id: 'svf.rh-h1', when: RH, turns: [
       { beat: 'When the ranger looks away, {b} throws a bunch of grass towards the rhino to keep it busy.' },
       { by: 'a', say: "Did you just feed it? We're not allowed to feed it!" },
-      { by: 'b', say: "It's not feeding. It's distracting. Smile!" },
+      { by: 'b', say: "Just smile!" },
     ] },
   ],
 };

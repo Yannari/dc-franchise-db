@@ -8,9 +8,9 @@ const RH = { taskId: 'rhino' };
 const falls = {
   'task-start.any': [
     { id: 'svf2.fs-s1', when: FS, turns: [
-      { beat: 'The raft wobbles in the fast water above the falls. Spray drifts up over the edge like smoke.' },
+      { beat: 'The raft wobbles in the fast water above the falls. Spray drifts up over the edge.' },
       { by: 'b', say: "You can't even see the bottom. It's just mist." },
-      { by: 'a', say: "Good. If I can't see it, it isn't there." },
+      { by: 'a', say: "Good. I don't want to see it." },
     ] },
     { id: 'svf2.fs-s2', when: FS, turns: [
       { by: 'a', say: "Practise the face now. Show me your selfie face." },
@@ -20,12 +20,12 @@ const falls = {
     { id: 'svf2.fs-s3', when: FS, turns: [
       { by: 'b', ...V("Strap the camera to your wrist. If you drop it, we're doing this twice.", "Strap it to your wrist.", "Wrist strap. Now.", "STRAP it to your WRIST! Drop it and we do this TWICE!", "Please strap the camera to your wrist, or we'll be doing this twice.", "The camera and your wrist are now married.") },
       { by: 'a', say: "Strapped. Double strapped." },
-      { by: 'b', say: "Triple it." },
+      { by: 'b', say: "Good. Don't let go." },
     ] },
     { id: 'svf2.fs-s4', when: FS, turns: [
       { beat: 'Right at the edge, the raft stops for one long second, hanging in the air.' },
       { by: 'a', say: "Why have we stopped?" },
-      { by: 'b', say: "We haven't stopped. We're about to very much not stop." },
+      { by: 'b', say: "We haven't. Hold on!" },
     ] },
   ],
   'task-try.first-try': [
@@ -38,13 +38,13 @@ const falls = {
     { id: 'svf2.fs-f2', when: FS, turns: [
       { by: 'b', say: "Lean in! Cheek to cheek!" },
       { beat: '{a} and {b} squash their faces together as the raft drops. Click.' },
-      { by: 'a', say: "That's the closest we've ever been." },
-      { by: 'b', say: "And we were falling off a waterfall." },
+      { by: 'a', say: "That was so scary." },
+      { by: 'b', say: "But we got it." },
     ] },
     { id: 'svf2.fs-f3', when: FS, turns: [
       { beat: 'The raft lands with a huge splash and bobs back up. {a} holds the camera up out of the water.' },
-      { by: 'a', say: "It's dry! The camera's dry! I'm not, but it is!" },
-      { by: 'b', say: "Priorities. Good." },
+      { by: 'a', say: "I've still got the camera!" },
+      { by: 'b', say: "Good." },
     ] },
   ],
   'task-try.after-fails': [
@@ -56,8 +56,8 @@ const falls = {
     { id: 'svf2.fs-a2', when: FS, turns: [
       { beat: 'The crew member shows them the last photo: a blur of white water and one ear.' },
       { by: 'a', say: "Whose ear is that?" },
-      { by: 'b', say: "Does it matter? It's not a face!" },
-      { by: 'a', say: "Next time, faces. Not ears." },
+      { by: 'b', say: "It doesn't count. It's not a face." },
+      { by: 'a', say: "Next time, both faces." },
     ] },
     { id: 'svf2.fs-a3', when: FS, turns: [
       { by: 'a', ...V("You take it this time. My hands are shaking too much.", "You take it this time.", "You. Camera.", "YOU take it this time! My hands are SHAKING!", "Would you take it this time? My hands are shaking too much.", "My hands have resigned. You are the photographer now.") },
@@ -67,36 +67,36 @@ const falls = {
     { id: 'svf2.fs-a4', when: FS, turns: [
       { beat: '{a} and {b} sit in the raft at the top for the third time, completely soaked.' },
       { by: 'b', say: "We know what happens. We fall, we scream, we click." },
-      { by: 'a', say: "Fall, scream, click." },
-      { beat: 'Fall, scream, click. Both faces, in focus.' },
+      { by: 'a', say: "Okay." },
+      { beat: 'They fall, they scream, they click. Both faces, in focus.' },
     ] },
   ],
   'task-done.any': [
     { id: 'svf2.fs-dn1', when: FS, turns: [
       { by: 'a', say: "Can we keep the photo? I want it on my wall." },
-      { by: 'b', say: "You look like you're being eaten by the water." },
-      { by: 'a', say: "Exactly. That's why I want it on my wall." },
+      { by: 'b', say: "You look terrified in it." },
+      { by: 'a', say: "That's why I want it." },
     ] },
     { id: 'svf2.fs-dn2', when: FS, turns: [
       { beat: '{a} and {b} drag the raft out of the pool at the bottom and collapse on the rocks.' },
-      { by: 'b', say: "I've got water in places I didn't know I had." },
+      { by: 'b', say: "I'm soaked through." },
       { by: 'a', say: "Get up. The tip. Get the tip." },
     ] },
     { id: 'svf2.fs-dn3', when: FS, turns: [
       { by: 'b', say: "My heart's still going a hundred miles an hour." },
-      { by: 'a', say: "Mine stopped somewhere near the top." },
-      { by: 'b', say: "Well, start it again. We've got to run." },
+      { by: 'a', say: "Mine too." },
+      { by: 'b', say: "Come on. We've got to run." },
     ] },
     { id: 'svf2.fs-dn4', when: FS, turns: [
       { beat: 'A rainbow hangs in the spray over the pool as {a} and {b} climb out.' },
       { by: 'a', say: "Look. A rainbow." },
-      { by: 'b', say: "We nearly died and we got a rainbow." },
-      { by: 'a', say: "That's a good deal." },
+      { by: 'b', say: "That's beautiful." },
+      { by: 'a', say: "Okay. Now let's go." },
     ] },
     { id: 'svf2.fs-dn5', when: FS, turns: [
       { by: 'a', say: "I'm going to tell everyone I wasn't scared." },
       { by: 'b', say: "There's a photo." },
-      { by: 'a', say: "I'll say it's someone else." },
+      { by: 'a', say: "I'll hide the photo." },
     ] },
   ],
 };
@@ -107,22 +107,22 @@ const rhino = {
       { beat: 'The ranger points at a line of white stones on the grass and says something firm.' },
       { by: 'b', say: "We can't go past the stones. Only the poser can." },
       { by: 'a', say: "So it's just me and the rhino." },
-      { by: 'b', say: "And me. With a camera. Far away." },
+      { by: 'b', say: "I'll be right here." },
     ] },
     { id: 'svf2.rh-s2', when: RH, turns: [
       { by: 'a', say: "How do I look? Do I look calm?" },
-      { by: 'b', ...V("You look like someone about to stand next to a rhino.", "You look nervous.", "Nervous.", "You look like someone about to stand next to a RHINO!", "You look exactly like someone about to stand next to a rhino.", "You look like a snack that's trying to be brave.") },
-      { by: 'a', say: "Then I look right." },
+      { by: 'b', say: "You look scared." },
+      { by: 'a', say: "I am scared." },
     ] },
     { id: 'svf2.rh-s3', when: RH, turns: [
       { beat: 'The rhino lifts its head, sniffs the air, and goes back to eating grass.' },
       { by: 'a', say: "Did it smell me? It smelled me." },
-      { by: 'b', say: "It smelled you and decided you weren't interesting. That's good!" },
+      { by: 'b', say: "It doesn't care. That's good!" },
     ] },
     { id: 'svf2.rh-s4', when: RH, turns: [
       { by: 'b', say: "Walk like you belong here." },
-      { by: 'a', say: "I don't belong here. Nobody belongs next to a rhino." },
-      { by: 'b', say: "The rhino does. Walk like the rhino." },
+      { by: 'a', say: "I don't belong here." },
+      { by: 'b', say: "Just walk slowly." },
     ] },
   ],
   'task-try.first-try': [
@@ -135,12 +135,12 @@ const rhino = {
       { by: 'b', say: "Smile! Big smile! Not that big!" },
       { beat: '{a} tones it down to a small, polite smile. The rhino keeps chewing. Click.' },
       { by: 'a', say: "Was that one okay?" },
-      { by: 'b', say: "You look like you're at a wedding. A rhino wedding. It's perfect." },
+      { by: 'b', say: "It's perfect." },
     ] },
     { id: 'svf2.rh-f3', when: RH, turns: [
-      { beat: 'A small bird hops onto the rhino\'s back just as {b} takes the picture.' },
-      { by: 'b', say: "There's a bird in it! It's even better with a bird!" },
-      { by: 'a', say: "Can I come back now? Please?" },
+      { beat: 'A small bird lands on the rhino\'s back just as {b} takes the picture.' },
+      { by: 'b', say: "Got it! There's even a bird in it!" },
+      { by: 'a', say: "Can I come back now?" },
     ] },
   ],
   'task-try.after-fails': [
@@ -152,14 +152,14 @@ const rhino = {
     ] },
     { id: 'svf2.rh-a2', when: RH, turns: [
       { beat: 'The rhino snorts and stamps once. {a} is back behind the stones before anyone can blink.' },
-      { by: 'a', say: "It stamped! It actually stamped!" },
+      { by: 'a', say: "It stamped at me!" },
       { by: 'b', say: "Wait for it to calm down. Then try again. Slower." },
       { beat: 'Slower works. The second picture is perfect.' },
     ] },
     { id: 'svf2.rh-a3', when: RH, turns: [
-      { by: 'a', ...V("I'm going to pretend it's a cow. A big grey cow.", "It's a cow. A big cow.", "Cow. Grey cow.", "It's a COW! A big GREY COW!", "I'll just pretend it's a very big grey cow.", "It's a cow with a very serious horn.") },
+      { by: 'a', say: "I'm going to pretend it's just a big cow." },
       { by: 'b', say: "Whatever works." },
-      { beat: 'Pretending it\'s a cow works. {a} stands right beside it and the camera clicks.' },
+      { beat: 'It works. {a} stands right beside it, and the camera clicks.' },
     ] },
     { id: 'svf2.rh-a4', when: RH, turns: [
       { by: 'b', say: "The light's behind you. I can only see your outline." },
@@ -171,8 +171,8 @@ const rhino = {
     { id: 'svf2.rh-dn1', when: RH, turns: [
       { by: 'a', say: "Please tell me it's not following me." },
       { by: 'b', say: "It's not following you." },
-      { by: 'a', say: "Are you just saying that?" },
-      { by: 'b', say: "Run, and don't look back." },
+      { by: 'a', say: "Are you sure?" },
+      { by: 'b', say: "I'm sure. Just walk." },
     ] },
     { id: 'svf2.rh-dn2', when: RH, turns: [
       { beat: '{a} gets back behind the stones and hugs {b} so hard the camera nearly falls.' },
@@ -182,17 +182,17 @@ const rhino = {
     { id: 'svf2.rh-dn3', when: RH, turns: [
       { by: 'b', say: "This is the best photo we'll ever have." },
       { by: 'a', say: "We've got the waterfall one." },
-      { by: 'b', say: "This one has a rhino. A rhino beats a waterfall." },
+      { by: 'b', say: "This one has a rhino." },
     ] },
     { id: 'svf2.rh-dn4', when: RH, turns: [
       { beat: 'The ranger hands over the tip and points down the dusty track towards the village.' },
       { by: 'a', say: "The Chill Zone's in the village. We're nearly there." },
-      { by: 'b', say: "Walk. Don't run. Running makes rhinos curious." },
+      { by: 'b', say: "Walk. Don't run near the rhino." },
     ] },
     { id: 'svf2.rh-dn5', when: RH, turns: [
       { by: 'a', say: "My legs are shaking. Look at them." },
       { by: 'b', say: "That's adrenaline." },
-      { by: 'a', say: "That's a rhino. That's what a rhino does to legs." },
+      { by: 'a', say: "That's what standing next to a rhino does." },
     ] },
   ],
 };

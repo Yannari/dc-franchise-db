@@ -11,17 +11,17 @@ export default {
   'task-stage.ok': [
     // ── the selfie ──
     { id: 'sf.st.ir1', when: at('falls-selfie', 'into-raft'), turns: [
-      beat('Upriver, a little yellow raft bobs at the bank. Somewhere ahead, out of sight, there is a very loud roaring sound.'),
+      beat('Upriver, a little yellow raft bobs at the bank. Somewhere ahead, out of sight, there\'s a very loud roaring sound.'),
       by('b', "What's that noise?"),
       by('a', "That's the waterfall. The one we're going over."),
     ] },
     { id: 'sf.st.ir2', when: at('falls-selfie', 'into-raft'), turns: [
       by('a', "You hold the camera. I'll hold you."),
       by('b', "Who's holding the paddle?"),
-      beat('Nobody is holding the paddle. They push off into the current anyway.'),
+      beat('Nobody grabs the paddle. They push off into the current anyway.'),
     ] },
     { id: 'sf.st.ed1', when: at('falls-selfie', 'the-edge'), turns: [
-      beat('The current grabs the raft and pulls it faster and faster towards the place where the river simply stops.'),
+      beat('The current grabs the raft and pulls it faster and faster towards the edge.'),
       by('b', "Get the camera ready!"),
       by('a', "Get both of us in!"),
     ] },
@@ -47,11 +47,11 @@ export default {
     ] },
     { id: 'sf.st.ch2', when: at('falls-selfie', 'the-check'), turns: [
       by('b', "Is it good? Please say it's good."),
-      beat('The crew member nods and shows them the photo. {b}\'s eyes are shut and {a} looks like a startled fish, but both faces are there.'),
+      beat('The crew member nods and shows them the photo. {b}\'s eyes are shut and {a}\'s mouth is wide open, but both faces are there.'),
       by('a', "It's perfect. I'm framing this."),
     ] },
     { id: 'sf.st.st1', when: at('falls-selfie', 'selfie-tip'), turns: [
-      by('b', "\"Take a photo with a white rhino.\" A rhino! A real one?"),
+      by('b', "It says take a photo with a white rhino. A real one?"),
       by('a', "I really hope it's a friendly one."),
       beat('They wring out their clothes and run for the national park.'),
     ] },
@@ -70,7 +70,7 @@ export default {
     { id: 'sf.st.rg2', when: at('rhino', 'the-ranger'), turns: [
       by('a', "What do I do if it charges?"),
       beat('The ranger thinks about it for a second, and then mimes running away, very fast.'),
-      by('a', "Great. Thanks. Really helpful."),
+      by('a', "Great. Okay."),
     ] },
     { id: 'sf.st.cu1', when: at('rhino', 'creep-up'), turns: [
       beat('{a} creeps through the long yellow grass, bent double, one slow step at a time.'),
@@ -78,9 +78,9 @@ export default {
       by('a', "I'm close enough!"),
     ] },
     { id: 'sf.st.cu2', when: at('rhino', 'creep-up'), turns: [
-      by('a', "Hi. Hi, big guy. Easy."),
+      by('a', "Easy. Easy."),
       beat('The rhino lifts its head, chews, looks at {a}, and goes back to eating. {a} takes another step.'),
-      by('b', "I think it likes you!"),
+      by('b', "It's okay! Keep going!"),
     ] },
     { id: 'sf.st.rp1', when: at('rhino', 'rhino-pose'), turns: [
       beat('{a} stands beside the rhino, as close as {a.sub} dares, and holds up two fingers in a peace sign.'),
@@ -90,7 +90,7 @@ export default {
     { id: 'sf.st.rp2', when: at('rhino', 'rhino-pose'), turns: [
       by('b', "Put your arm round it!"),
       by('a', "I'm not touching it! It's the size of a car!"),
-      beat('{a} pats the air very near the rhino instead, which counts as a hug from a distance.'),
+      beat('{a} holds an arm out near the rhino instead, without touching it.'),
     ] },
     { id: 'sf.st.ph1', when: at('rhino', 'the-photo'), turns: [
       beat('{b} lifts the camera, frames the shot, and clicks: {a} with a terrified smile, and the rhino behind with a mouthful of grass.'),
@@ -99,8 +99,8 @@ export default {
     ] },
     { id: 'sf.st.ph2', when: at('rhino', 'the-photo'), turns: [
       by('b', "Okay, smile! Three, two, one!"),
-      beat('The camera flashes. The rhino blinks. {a} grins. All three of them are in the picture.'),
-      by('a', "Did you get it? I think it smiled."),
+      beat('The camera clicks. {a} grins, and the rhino is right there behind {a.obj}.'),
+      by('a', "Did you get it?"),
     ] },
     { id: 'sf.st.rt1', when: at('rhino', 'rhino-tip'), turns: [
       beat('The ranger looks at the photo, laughs, and hands over the tip.'),
@@ -108,7 +108,7 @@ export default {
       by('b', "It's the best picture I've ever taken of you."),
     ] },
     { id: 'sf.st.rt2', when: at('rhino', 'rhino-tip'), turns: [
-      by('b', "\"Run to the Chill Zone in the village.\" Run! Let's go!"),
+      by('b', "It says run to the Chill Zone in the village. Let's go!"),
       by('a', "Quietly. I don't want it following us."),
       beat('They tiptoe away from the waterhole, and then they run.'),
     ] },
@@ -127,19 +127,19 @@ export default {
       by('b', "We're just going round in circles!"),
     ] },
     { id: 'sf.sf.of1', when: at('falls-selfie', 'over-falls'), turns: [
-      beat('Halfway down the falls, {b} presses the button, and the camera takes a perfect picture of the inside of {b}\'s thumb.'),
+      beat('Halfway down the falls, {b} presses the button with a thumb right over the lens.'),
       by('a', "Did you get it?"),
       by('b', "I got my thumb. We have to go again."),
     ] },
     { id: 'sf.sf.of2', when: at('falls-selfie', 'over-falls'), turns: [
       by('b', "Now! Now! Smile now!"),
-      beat('{b} takes the picture, but the spray is so thick that the photo is just white mist with one eyebrow in it.'),
+      beat('{b} takes the picture, but the spray is so thick that the photo is just white mist.'),
       by('a', "Back up the path. We're going again."),
     ] },
     { id: 'sf.sf.ch1', when: at('falls-selfie', 'the-check'), turns: [
       beat('The crew member looks at the photo and shakes their head. It shows {b}\'s face, perfectly, and a little bit of {a}\'s ear.'),
       by('a', "My ear's in it! That's me!"),
-      beat('An ear is not a face. They carry the raft all the way back up the path.'),
+      beat('An ear isn\'t a face. They carry the raft all the way back up the path.'),
     ] },
     { id: 'sf.sf.ch2', when: at('falls-selfie', 'the-check'), turns: [
       by('b', "Where's the camera?"),
@@ -149,9 +149,9 @@ export default {
 
     // ── the rhino ──
     { id: 'sf.sf.cu1', when: at('rhino', 'creep-up'), turns: [
-      beat('{a} steps on a dry stick. It cracks like a gunshot. The rhino\'s head comes up, and it snorts.'),
+      beat('{a} steps on a dry stick, and it cracks loudly. The rhino\'s head comes up, and it snorts.'),
       by('b', "Freeze! Don't move!"),
-      beat('{a} is a tree for a full minute before the rhino goes back to eating, then has to start creeping all over again.'),
+      beat('{a} doesn\'t move for a full minute before the rhino goes back to eating, then has to start creeping all over again.'),
     ] },
     { id: 'sf.sf.cu2', when: at('rhino', 'creep-up'), turns: [
       by('a', "Here, rhino. Come here."),
@@ -164,19 +164,19 @@ export default {
       by('a', "I'm running!"),
     ] },
     { id: 'sf.sf.rp2', when: at('rhino', 'rhino-pose'), turns: [
-      by('a', "Ugh. It really smells."),
-      beat('The rhino understands tone, if not words. It snorts, and comes at {a} at a thundering trot.'),
-      by('b', "Say sorry! Run!"),
+      by('a', "Ugh. It's so close."),
+      beat('The rhino snorts, and comes at {a} at a heavy trot.'),
+      by('b', "Run!"),
     ] },
     { id: 'sf.sf.ph1', when: at('rhino', 'the-photo'), turns: [
-      beat('{b} takes the picture. {a} is in it, smiling. The rhino has wandered off and is just a grey bottom at the edge of the frame.'),
-      by('b', "Does a bottom count?"),
-      by('a', "No. Wait for it to turn round."),
+      beat('{b} takes the picture. {a} is in it, smiling, but the rhino has wandered off out of the frame.'),
+      by('b', "Does that count?"),
+      by('a', "No. Wait for it to come back."),
     ] },
     { id: 'sf.sf.ph2', when: at('rhino', 'the-photo'), turns: [
       by('a', "Did you get us both?"),
-      beat('{b} looks at the screen. {b} has taken a lovely picture of a rhino, and of {a}\'s shoes.'),
-      by('b', "I got your feet. And its bum."),
+      beat('{b} looks at the screen. It\'s the rhino, and {a}\'s shoes.'),
+      by('b', "I only got your feet."),
     ] },
   ],
 };

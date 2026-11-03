@@ -19,7 +19,7 @@ export default {
     { id: 'snp.st.mt2', when: at('sausage', 'the-meat'), turns: [
       by('a', "You feed, I crank."),
       by('b', "Why do I have to touch the meat?"),
-      by('a', "Because I called cranking first."),
+      by('a', "Because I said cranking first."),
     ] },
     { id: 'snp.st.gr1', when: at('sausage', 'the-grinder'), turns: [
       beat('{a} turns the crank, {b} pushes the meat in, and a long pink sausage starts to coil out onto the snow.'),
@@ -60,7 +60,7 @@ export default {
     { id: 'snp.st.bl2', when: at('sausage', 'bottom-line'), turns: [
       by('a', "Read the tip."),
       by('b', "A slap dance. On dance pads that shock you."),
-      by('a', "Of course it is."),
+      by('a', "Okay. Let's go."),
     ] },
 
     // ── the slap dance ──
@@ -71,7 +71,7 @@ export default {
     ] },
     { id: 'snp.st.lh2', when: at('slap-dance', 'lederhosen'), turns: [
       by('a', "How do I look?"),
-      by('b', "Like you were born on this mountain. Get on the pad."),
+      by('b', "You look great. Get on the pad."),
       beat('{a} steps onto the dance pad, and the arrows light up.'),
     ] },
     { id: 'snp.st.fv1', when: at('slap-dance', 'first-verse'), turns: [
@@ -95,14 +95,14 @@ export default {
       by('b', "Yes! That's it! You're through it!"),
     ] },
     { id: 'snp.st.lb1', when: at('slap-dance', 'last-beat'), turns: [
-      beat('The song ends with a big stamp and a yodel from the speakers. The screen flashes green.'),
-      by('b', "You did it! You slap-danced!"),
+      beat('The song ends with a big stamp, and the screen flashes green.'),
+      by('b', "You did it!"),
       by('a', "My thighs are so red. I slapped them so hard."),
     ] },
     { id: 'snp.st.lb2', when: at('slap-dance', 'last-beat'), turns: [
       by('a', "Can I take the shorts off now?"),
       by('b', "After the Chill Zone. Run!"),
-      beat('{a} runs for the slope in lederhosen.'),
+      beat('{a} runs for the slope, still in the leather shorts.'),
     ] },
   ],
 
@@ -119,19 +119,19 @@ export default {
       beat('The sausage is about as long as an arm. They need a lot more meat.'),
     ] },
     { id: 'snp.sf.to1', when: at('sausage', 'tie-off'), turns: [
-      beat('{b} pulls the knot tight, and the other end of the sausage bursts open with a sad little pop.'),
+      beat('{b} pulls the knot tight, and the other end of the sausage bursts open.'),
       by('a', "Not that tight!"),
       by('b', "You said triple knot!"),
     ] },
     { id: 'snp.sf.to2', when: at('sausage', 'tie-off'), turns: [
       by('a', "Did you tie it?"),
       by('b', "I thought you tied it."),
-      beat('Nobody tied it. Half the sausage has already slid back out of the skin.'),
+      beat('Nobody tied it, and half the sausage has already slid back out of the skin.'),
     ] },
     { id: 'snp.sf.sr1', when: at('sausage', 'sausage-ride'), turns: [
       beat('Halfway down the slope, a goat steps out, the sausage hits it, and they both go flying into the snow.'),
       by('a', "Are you okay?"),
-      by('b', "I'm fine. The goat's fine. The sausage is not fine."),
+      by('b', "I'm fine. The goat's fine. The sausage isn't."),
     ] },
     { id: 'snp.sf.sr2', when: at('sausage', 'sausage-ride'), turns: [
       by('b', "Lean! Lean!"),
@@ -152,7 +152,7 @@ export default {
     ] },
     { id: 'snp.sf.fv1', when: at('slap-dance', 'first-verse'), turns: [
       beat('{a} stamps on the wrong arrow, and the pad gives a sharp little buzz.'),
-      by('a', "Ow! It actually shocked me!"),
+      by('a', "Ow! It actually buzzed me!"),
       by('b', "That's one! Two more and you start again!"),
     ] },
     { id: 'snp.sf.fv2', when: at('slap-dance', 'first-verse'), turns: [
@@ -166,7 +166,7 @@ export default {
       by('b', "That's three. From the top."),
     ] },
     { id: 'snp.sf.fp2', when: at('slap-dance', 'fast-part'), turns: [
-      by('a', "It's too fast! Nobody can slap that fast!"),
+      by('a', "It's too fast!"),
       beat('{a} slaps a thigh, misses a stamp, and gets buzzed right off the pad.'),
       by('b', "Back on. The song's starting again."),
     ] },

@@ -112,7 +112,7 @@ function scriptHtml(uid, screen) {
   const out = [];
   screen.steps.forEach((st, i) => {
     if (st.sceneStart) {
-      const faces = [...new Set(st.cast.map(c => c[0]))];
+      const faces = [...new Set(st.cast.filter(c => c[2] !== 'extra').map(c => c[0]))];
       out.push(`<div class="${P('sh')}${st.raw ? ' ' + P('unaired') : ''}${st.big ? ' ' + P('big') : ''}" data-s="${i}">
         <span class="${P('fx')}">${faces.map(mini).join('')}</span><b>${esc(st.headline || screen.label)}</b>${st.raw ? `<em>Didn't air</em>` : ''}</div>`);
       if (st.caption) out.push(`<div class="${P('sl')} ${P('sl-stage')}" data-s="${i}"><span>${esc(st.caption)}</span></div>`);

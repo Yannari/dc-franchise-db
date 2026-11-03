@@ -773,6 +773,12 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pmv-bar b{position:absolute;top:50%;left:var(--at,0%);width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--pink),0 2px 8px #0004;transition:left .25s}
 .pmv-player .pmv-count{font:600 13px Outfit;color:var(--muted);min-width:56px;text-align:right}
 .pmv-theatre .pmv-rail{margin-top:10px}
+/* the villa behind the scene (steps.js placeScene): smaller, dimmer, standing still */
+.pmv-bust.pmv-extra{z-index:2;filter:brightness(.74) saturate(.8) blur(.6px);transform:translate(-50%,0);transition:none}
+.pmv-bust.pmv-extra .pmv-frame{border-radius:16px;box-shadow:0 6px 14px #0004}
+.pmv-sc-night ~ .pmv-busts .pmv-extra,.pmv-sc-pool-night ~ .pmv-busts .pmv-extra,.pmv-sc-lawn-night ~ .pmv-busts .pmv-extra{filter:brightness(.6) saturate(.75) blur(.6px)}
+/* a soft shadow where each of them stands */
+.pmv-bust::before{content:'';position:absolute;left:12%;right:12%;bottom:-5%;height:9%;border-radius:50%;background:radial-gradient(closest-side,#0005,#0000);z-index:-1}
 .pmv-hud .pmv-place{background:linear-gradient(135deg,#14c8bb,#0f9c93);color:#fff;letter-spacing:.14em}
 /* the script */
 .pmv-script{max-height:min(46vh,420px);overflow:auto;scrollbar-width:thin;padding:12px 16px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);scroll-behavior:smooth}

@@ -227,20 +227,23 @@ export function paintStage(el, screen, idx, { fresh = false, hud = '' } = {}) {
 
   // the busts
   const busts = q('busts');
-  busts.innerHTML = st.cast.map(([n, x, mode]) => {
+  busts.innerHTML = st.cast.map(([n, x, mode, y, s]) => {
     const [c1, c2] = colourOf(n);
     const cls = [P('bust'), mode === 'speak' ? P('speak') : '', mode === 'back' ? P('back') : '', mode === 'hurt' ? `${P('hurt')} ${P('back')}` : '',
-      st.seated ? P('seated') : ''].join(' ');
+      mode === 'extra' ? P('extra') : '', st.seated ? P('seated') : ''].join(' ');
     // A new face slides in from its side on a fresh step; a jump lands it in place.
-    const enters = fresh && st.sceneStart;
-    return `<div class="${cls}" data-n="${esc(n)}" style="left:${enters ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
+    // (The villa in the background is already there.)
+    const enters = fresh && st.sceneStart && mode !== 'extra';
+    // Where the room puts them (steps.js placeScene): the floor line and the size.
+    const at = y != null ? `bottom:${y}%;width:${(19 * (s || 1)).toFixed(2)}%;` : '';
+    return `<div class="${cls}" data-n="${esc(n)}" style="${at}left:${enters ? (x < 50 ? -15 : x > 50 ? 115 : x) : x}%;--c1:${c1};--c2:${c2}">
       <div class="${P('frame')}">${img(n) || `<div class="${P('ini')}">${esc(initials(n))}</div>`}</div><div class="${P('rim')}"></div></div>`;
   }).join('');
   // The bombshell: a silhouette at the top of the steps under a spotlight,
   // then the lights come up on the face (fresh only; a jump lands lit).
   el.classList.toggle(P('revealing'), !!(fresh && st.fx?.reveal && st.sceneStart));
   if (fresh && st.sceneStart) requestAnimationFrame(() => requestAnimationFrame(() => {
-    for (const [n, x] of st.cast) { const b = busts.querySelector(`[data-n="${CSS.escape(n)}"]`); if (b) b.style.left = x + '%'; }
+    for (const [n, x, mode] of st.cast) { if (mode === 'extra') continue; const b = busts.querySelector(`[data-n="${CSS.escape(n)}"]`); if (b) b.style.left = x + '%'; }
   }));
 
   // THE KISS: the two slide together and lean in, then the heart. For a kiss

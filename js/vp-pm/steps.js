@@ -169,6 +169,78 @@ export function storyOf(row, e) {
 // Where the busts stand, by how many are in the scene.
 const SPOTS = { 1: [50], 2: [30, 70], 3: [20, 50, 80], 4: [14, 38, 62, 86], 5: [10, 30, 50, 70, 90] };
 
+// ── the room: who stands where in it ─────────────────────────────────
+// (2026-11-03, the user: "fix the room placement". The cast were three big
+// cards in a row at the same height in every room, with the room empty
+// behind them; the other stepped viewers stand people IN the room, and the
+// rest of the house in the gaps, smaller and dimmer.) Per rendered set:
+//   y, s   where the scene's people stand (the bottom of the card, % of the
+//          stage's height; their size against the old card), high enough
+//          that a face clears the dialogue box
+//   back   [x, y, s]: the rest of the villa, on the furniture: the daybeds,
+//          the far side of the pool, the swing seats, the fire pit's bench
+// Read off the plates with a 10% grid (assets/sets/pm/*.webp, 16:9.2).
+const POOL = { y: 24, s: 0.8, back: [[7, 27, 0.6], [93, 27, 0.6], [30, 45, 0.46], [70, 45, 0.46]] };
+const ROOM = {
+  bedroom: { y: 26, s: 0.8, back: [[9, 44, 0.55], [91, 44, 0.55], [37, 45, 0.5], [63, 45, 0.5]] },
+  daybeds: POOL, 'pool-night': POOL, casa: POOL, 'casa-day': POOL,
+  kitchen: { y: 23, s: 0.82, back: [[88, 33, 0.62], [8, 34, 0.55]] },
+  lawn: { y: 22, s: 0.8, back: [[24, 29, 0.6], [89, 29, 0.6], [45, 44, 0.45], [64, 44, 0.45]] },
+  roof: { y: 22, s: 0.8, back: [[8, 25, 0.62], [92, 25, 0.62], [50, 37, 0.5]] },
+  night: { y: 21, s: 0.78, back: [[20, 36, 0.55], [80, 36, 0.55], [33, 40, 0.5], [67, 40, 0.5], [43, 42, 0.46], [57, 42, 0.46]] },
+  dressing: { y: 22, s: 0.8, back: [[12, 42, 0.55], [88, 42, 0.55]] },
+  hideaway: { y: 22, s: 0.85, back: [] },
+};
+ROOM['bedroom-night'] = ROOM.bedroom; ROOM['kitchen-night'] = ROOM.kitchen; ROOM['lawn-night'] = ROOM.lawn;
+ROOM['roof-night'] = ROOM.roof; ROOM['firepit-dusk'] = ROOM.night;
+const ROOM_SPOTS = { 1: [50], 2: [38, 62], 3: [31, 50, 69], 4: [25, 42, 58, 75], 5: [20, 35, 50, 65, 80] };
+const DARKISH = new Set(['pool-night', 'kitchen-night', 'lawn-night', 'roof-night', 'bedroom-night', 'casa']);
+// Scenes with nobody else around: a pull, a confession, a kiss, a talk somebody
+// took somebody away for. Everything else has the villa going on behind it.
+const PRIVATE = new Set(['pull', 'vent', 'graft-eyes', 'deep-chat', 'secret-burden', 'where-head', 'confession', 'kiss', 'bed-share',
+  'loyalty', 'gossip', 'feels-off', 'doubt-end', 'graft-shut', 'graft-turn', 'told-confront', 'stirrer-confront', 'close-off', 'keeping-open',
+  'exclusive-ask', 'official-ask', 'ask-declined', 'love-said', 'love-hanging', 'open-back-up', 'apology', 'apology-rejected', 'reunite',
+  'breakdown', 'comfort', 'overthinking', 'jealous-sulk', 'head-turned', 'advice', 'hideaway', 'bed-chat', 'triangle-case', 'crush-move',
+  'crush-plea', 'just-friends', 'ex-sting', 'ex-cold', 'game-plan', 'game-two-faced', 'enemy-bitch', 'pick-plan', 'secret-kept', 'stretch-answer', 'hook']);
+const hashOf = s => [...String(s)].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+/** Who is in the villa for a scene: everyone the episode shows, on the same side while Casa splits it. */
+function presentFor(row, e, evIndex) {
+  const exits = new Set((row.exits || []).map(x => x.name));
+  const after = evIndex >= (row.pm.momentFrom ?? Infinity);
+  const casa = new Set(row.pm.casaRoom || []);
+  const side = e.where || null;
+  const seen = new Set();
+  for (const x of row.pm.events || []) for (const n of x.players || []) if (n) seen.add(n);
+  return [...seen].filter(n => (row.pm.villa || []).includes(n) || exits.has(n))
+    .filter(n => !(after && exits.has(n)))
+    .filter(n => !side || (side === 'casa' ? casa.has(n) : !casa.has(n)));
+}
+/** The scene's people on the room's front line, and the villa behind them: once a scene, never a click. */
+function placeScene(row, e, evIndex, bg, steps) {
+  const room = ROOM[bg];
+  if (!room) return;
+  const inScene = new Set(steps.flatMap(st => (st.cast || []).map(c => c[0])));
+  const shrink = inScene.size >= 4 ? 0.82 : 1;
+  // In a room the scene stands together in the middle, and the villa has the edges.
+  const order = [...inScene];
+  const at = ROOM_SPOTS[order.length] || null;
+  let extras = [];
+  if (!PRIVATE.has(e.kind) && room.back.length) {
+    const host = words().host;
+    // A spot right behind somebody at the front is no spot: a head over a card (2026-11-03 shots).
+    const front = at || [];
+    const free = room.back.filter(([x, y]) => y < room.y + 8 || front.every(f => Math.abs(f - x) > 9));
+    const want = bg === 'night' || bg === 'firepit-dusk' ? free.length : DARKISH.has(bg) ? 2 : 3;
+    const cands = presentFor(row, e, evIndex).filter(x => !inScene.has(x) && x !== host)
+      .sort((x, y) => hashOf(`${e.id}|${x}`) - hashOf(`${e.id}|${y}`)).slice(0, Math.min(want, free.length));
+    extras = cands.map((x, i) => [x, free[i][0], 'extra', free[i][1], free[i][2]]);
+  }
+  for (const st of steps) {
+    if (st.bg !== bg || st.part === 'hut') continue;
+    st.cast = [...(st.cast || []).map(([nm, x, mode]) => [nm, at ? at[order.indexOf(nm)] ?? x : x, mode, room.y, room.s * shrink]), ...extras];
+  }
+}
+
 // ── what a scene does, said as the pops over the busts ────────────────
 // [cast slot, words, style, icon]. Styles: '' warm · down · red · gold · teal.
 const POPS = {
@@ -527,6 +599,8 @@ export function sceneSteps(row, e, evIndex, bg) {
       : /\bpeck\b|quick kiss|kiss is quick/i.test(said2) ? 'peck' : kiss;
     if (at) at.kiss = { a: e.players[0], b: e.players[1], size: style };
   }
+  // Where they stand in the room, and who else is in it (placeScene).
+  placeScene(row, e, evIndex, bg, out);
   // One-shot business rides on the scene's first step; the Heart Map moves on its last.
   const first = out[0];
   first.fx = fxFor(row, e, evIndex === firstOfKind(row, e));

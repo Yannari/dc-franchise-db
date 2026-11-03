@@ -228,7 +228,7 @@ export default {
     ] },
     { id: 'ts.sf.sc2', when: at('pyramid', 'scarab-room'), turns: [
       by('a', "Why are you climbing on me?"),
-      by('b', "Because they're on the floor and you're not!"),
+      by('b', "Because the beetles are on the floor and you're not!"),
       beat('{b} has to climb back down before they can go anywhere.'),
     ] },
 

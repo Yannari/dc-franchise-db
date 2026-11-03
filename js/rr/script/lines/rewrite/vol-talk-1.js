@@ -13,7 +13,7 @@ export default {
         { by: 'c', say: "We're right behind you. Literally right behind you." },
         { by: 'b', say: "Not for long! See you guys later!" },
         { by: 'd', say: "Are you done?" },
-        { by: 'a', say: "Almost. Have fun back here!" },
+        { by: 'a', say: "Almost. Have fun back there!" },
         { beat: '{c} and {d} watch them go, and say something that would have to be bleeped.' },
       ] },
       { id: 'vk.g2', when: { at: 'task' }, turns: [

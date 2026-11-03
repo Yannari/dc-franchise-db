@@ -44,7 +44,7 @@ export default {
     don("The first flight touches down. Doors open, teams out, and it's a stampede."),
     don("Flight number one has landed! The teams on board have the lead. Now they have to keep it."),
     don("Wheels down for flight number one, and the race is back on."),
-    don("The first flight lands, and the teams on it hit the ground running. One of them literally hit the ground."),
+    don("The first flight lands, and the teams on it hit the ground running."),
     don("Flight one has touched down. The race for first place starts now."),
     don("And flight number one is on the ground! Those teams are in front, and they know it."),
     don("The first flight has landed, and the teams on board are racing for the exit."),

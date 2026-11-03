@@ -112,19 +112,19 @@ export default {
         don("Then you're very good at it. Go sit."),
       ] },
       { id: 'ci.mat-scale', when: { custom: true }, turns: [
-        don("{team}, you're {placing}. Is that good for {identity}? Is there a scale?"),
-        { by: 'b', say: "There's a scale." },
-        don("I don't want to hear about the scale."),
+        don("{team}, you're {placing}. Is that a good day for {identity}?"),
+        { by: 'b', say: "It's a great day." },
+        don("Then I'm happy for you, so go and rest!"),
       ] },
       { id: 'ci.mat-proud', when: { custom: true }, turns: [
-        don("{placing}, {team}. Your families must be so proud. Or confused. Probably confused."),
-        { by: 'a', say: "Mostly confused." },
-        don("Same as me. Off you go."),
+        don("{placing}, {team}. Your families must be so proud!"),
+        { by: 'a', say: "I hope so." },
+        don("I'm sure they are! Off you go!"),
       ] },
       { id: 'ci.mat-dance', when: { custom: true }, turns: [
-        don("{team}. {placing}. Do {identity} celebrate? Please say no."),
+        don("{team}. {placing}. How do {identity} celebrate?"),
         { by: 'b', say: "We have a small dance." },
-        don("Keep it small. Keep it over there."),
+        don("Then let's see it!"),
       ] },
     ],
 

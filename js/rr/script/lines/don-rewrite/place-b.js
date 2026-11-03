@@ -1,9 +1,9 @@
 // Don at the mat, in whole sentences, second half (2026-10-20). entry id : turn -> what Don says.
 export default {
   'ci.mat-afraid:0': "{team}, you're the {placing} team to arrive, and I still don't know what {identity} do, and at this point I'm afraid to ask.",
-  'ci.mat-proud:2': "That makes three of us, so off you go.",
-  'ci.mat-dance:0': "{team}, you're the {placing} team to arrive, so tell me, do {identity} celebrate, and please say no.",
-  'ci.mat-dance:2': "Then keep it small, and keep it over there.",
+  'ci.mat-proud:2': "I'm sure they are, so off you go!",
+  'ci.mat-dance:0': "{team}, you're the {placing} team to arrive, so tell me, how do {identity} celebrate?",
+  'ci.mat-dance:2': "Then let's see it!",
   'dp2.z1:1': "Oh, it's {team}, and you're the {placing} team to arrive.",
   'dp2.z2:0': "Oh, it's you, so {team}, you're the {placing} team to arrive.",
   'dp2.z2:2': "I could, but I'm not going to.",
@@ -49,6 +49,6 @@ export default {
   'dpv.id-mechanics:0': "{team}, you're the {placing} team to arrive, and no, you can't take a look at the camera crane, because it's fine, probably.",
   'dpv.id-vegans:0': "{team}, you're the {placing} team to arrive, and no, the snacks aren't vegan, and I'm sorry, but not very sorry.",
   'dpv.id-church-choir:0': "{team}, you're the {placing} team to arrive, and please don't sing, or fine, one verse, but only one.",
-  'ci.mat-scale:0': "{team}, you're the {placing} team to arrive, so is that good for {identity}, and is there some kind of scale?",
-  'ci.mat-proud:0': "In {placing} place, {team}, and your families must be so proud, or confused, probably confused.",
+  'ci.mat-scale:0': "{team}, you're the {placing} team to arrive, so is that a good day for {identity}?",
+  'ci.mat-proud:0': "In {placing} place, {team}, and your families must be so proud!",
 };

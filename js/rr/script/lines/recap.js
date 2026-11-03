@@ -29,7 +29,7 @@ export default {
     "And we lost {out}, not lost as in missing, just eliminated, which on this show is the same thing.",
     "And last time, the race ended for {out}, who left with their heads held high.",
     "And {out} came in last, so they went home, because that's how it works, and I didn't make the rules, okay, I did.",
-    "And we waved goodbye to {out}, and they waved back with one finger, and I'm kidding, mostly."],
+    "And we waved goodbye to {out}, and we'll miss them."],
   'exit.on-location': ["And {out} were so far behind that I had to go out and find them, just to send them home. Worth it.",
     "And {out} never even made it to the Chill Zone, so I went out to them, and now they're gone.",
     "And {out} were so far back that I flew out to tell them in person. Helicopters are fun.",

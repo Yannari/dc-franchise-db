@@ -176,6 +176,9 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
         { team: id, place: i + 1, matPlace: band, t: times[id], minutes: penalties[id], stretch: 'mat', effects: [['placed', id, i + 1]] });
       return;
     }
+    // the last team on a non-elimination leg is told by the fake-out ("you're still in"); a second, plain check-in
+    // after it read "you're the sixteenth team to arrive, and you're still in the race!" twice over, 2026-11-03
+    if (result.nonElim?.id === id) return;
     emit(state, 'don-place', people(state, id), ending,
       { team: id, place: i + 1, matPlace: band, t: finish[id] ?? null, stretch: 'mat', effects: [['placed', id, i + 1]] });
   });

@@ -2340,7 +2340,7 @@ export default {
 
   'task-done.any': [
     { id: 'm1.97', turns: [
-      { beat: 'The judge nods, finally, and holds out the tip.' },
+      { beat: 'The crew member finally nods, and holds out the tip.' },
       { by: 'b', say: "Is that a yes? That's a yes. Take it!",
         v: { sharp: "That's a yes. Take it before anybody changes their mind.",
              dry: "That's a yes. Take it.",

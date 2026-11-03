@@ -76,7 +76,7 @@ export default {
   'dp2.a1:0': "{team}, you're the {placing} team to arrive.",
   'dp2.a4:0': "{team}, you're the {placing} team to arrive, and you're still in the race!",
   'dp2.a4:2': "So go and get some rest, because tomorrow is another leg!",
-  'dp2.a6:2': "It's a number, and what you do with it is entirely up to you, so go and sit down.",
+  'dp2.a6:2': "You're still in the race, and that's what counts, so go and sit down!",
   'dp2.id-surfers:0': "{team}, you're the {placing} team to arrive, so did you catch a wave on the way here, or just a nap?",
   'dp2.id-ice-dancers:0': "{team}, you're the {placing} team to arrive, and I see you're still smiling, so do you two ever stop?",
   'dp2.id-tennis-rivals:0': "{team}, you're the {placing} team to arrive, so which one of you is going to blame the other first?",

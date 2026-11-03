@@ -128,7 +128,7 @@ export default {
       { id: 'dp2.a6', turns: [
         don("And here come {team}, in {placing} place."),
         { by: 'a', say: "Is that good?" },
-        don("It's a number. What you do with it is up to you. Go sit."),
+        don("You're still in the race, and that's what counts!"),
       ] },
       // identity jabs: Don has a line for what they are
       jab('surfers', "{team}. {placing}. Did you catch a wave on the way, or just a nap?", { by: 'a', say: "Little bit of both, dude." }, 'Of course it was.'),
@@ -214,7 +214,7 @@ export default {
       { id: 'dp2.ps2', turns: [
         don("{penalty}, served in full, and I watched every minute of it, so come on up, {team}."),
         { by: 'b', say: "We watched team after team walk past us onto that mat." },
-        don("I know, and it was honestly the best part of my day. You're the {placing} team to arrive."),
+        don("I know, but it's served now, so you're the {placing} team to arrive."),
       ] },
       { id: 'dp2.ps3', turns: [
         don("{team}, your penalty's over, and you can finally step on the mat."),

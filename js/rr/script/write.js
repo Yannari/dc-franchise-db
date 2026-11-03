@@ -514,7 +514,9 @@ const AUTO_HOOK = {
   // a try that just failed: the identity at the thing it's bad at
   'attempt-fail': f => (f.idBad ? 'bad' : null),
   'task-done': f => (f.ahead ? 'win' : null),
-  'celebrate': f => (f.ending === 'gloat-at-others' ? null : 'win'),
+  // (a 'win' line says "we're winning": only from a team that thinks it's ahead, never "let them all see us winning"
+  // from the team about to check in last, read 2026-11-03)
+  'celebrate': f => (f.ending === 'gloat-at-others' || !f.ahead ? null : 'win'),
   'arrival-awe': () => 'arrive',
   'don-place': f => (f.matPlace === 'first' ? 'mat-first' : f.matPlace === 'last' ? 'mat-last' : null),
   'int-exit': () => 'elim',

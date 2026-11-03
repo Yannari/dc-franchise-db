@@ -54,7 +54,7 @@ export default {
       q('dpv.t11', 'top', don("{team}, you're the {placing} team to arrive!"), { by: 'a', say: "Tell us that's good. Please tell us that's good." },
         don("That's good! Very good! Now go and sit down before it stops being good.")),
       q('dpv.t12', 'top', don("{placing} place goes to {team}!"),
-        { by: 'b', say: "Was anybody close behind us?" }, don("Close enough to hear you breathing. Hard.")),
+        { by: 'b', say: "Was anybody close behind us?" }, don("Close enough, so it's a good thing you ran!")),
       // the middle: fast, the way the show runs through it
       q('dpv.m1', 'mid', don("{team}, you're team number {number}."), { by: 'a', say: "Middle of the pack." },
         don("Middle of the pack, and safe for another leg. Next!")),
@@ -136,12 +136,12 @@ export default {
       q('dpv.b10', 'bottom', don("{team}, you're {placing}, and you're still racing! I'm as surprised as you are."),
         { by: 'a', say: "Thanks, Don." }, don("You're welcome! I mean it as a compliment. Mostly.")),
       q('dpv.b11', 'bottom', don("{team}, you're {placing}."), { by: 'b', say: "We thought we were last. We were sure we were last." },
-        don("Not tonight! Somebody else has that honour.")),
+        don("Not this time! Somebody else is still out there.")),
       q('dpv.b12', 'bottom', don("{team}! {placing}. That was close, so very well done!"),
         { by: 'a', say: "Sorry?" }, don("Close, but you made it, so go and sit down!")),
       // anywhere
       q('dpv.a1', null, don("{team}, you're team number {number}!"), { by: 'a', say: "Thank you!" },
-        don("You're welcome! Next!")),
+        don("Great job, both of you!")),
       q('dpv.a2', null, { beat: '{a} and {b} stagger onto the mat, holding each other up.' },
         don("{team}! {placing}!"), { by: 'b', say: "Can we sit on the mat? Is that allowed?" }, don("Just this once. Don't tell the other teams.")),
       q('dpv.a3', null, don("{team}, you're {placing}."), { by: 'a', ...V("What does that mean for us?", "What does that mean?", "Meaning?", "What does that MEAN for us?", "What does that actually mean for us?", "Explain the meaning of {placing}, Don.") },

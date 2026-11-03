@@ -13,7 +13,7 @@ export default {
       beat('At the chilli cart, there are three baskets of peppers: green for mild, orange for hot, red for fiery.'),
       by('a', "Mild means you jump from the top. Fiery means you jump from the bottom."),
       by('b', "So it's your mouth or my legs."),
-      by('a', "Pretty much."),
+      by('a', "Yep."),
     ] },
     { id: 'pc.st.pp2', when: at(T, 'pick-pepper'), turns: [
       by('b', "Which one are you picking?"),
@@ -75,13 +75,13 @@ export default {
   'task-stage.fail': [
     { id: 'pc.sf.ep1', when: at(T, 'eat-pepper'), turns: [
       beat('{a} takes one bite of the pepper, spits it straight out, and fans {a.posAdj} mouth with both hands.'),
-      by('a', "No! No! I can't! That's not food!"),
+      by('a', "No! No! I can't! It's too hot!"),
       by('b', "Okay. Okay. Pick a different one."),
     ] },
     { id: 'pc.sf.ep2', when: at(T, 'eat-pepper'), turns: [
       by('b', "You have to eat the whole thing. Even the stalk end."),
       beat('{a} eats most of it, then puts the last bit down on the cart and refuses to pick it back up.'),
-      by('a', "That's enough. That's plenty."),
+      by('a', "That's enough. I can't."),
     ] },
     { id: 'pc.sf.ld1', when: at(T, 'the-ledge'), turns: [
       beat('{b} walks to the edge, looks down at the waves, and walks straight back again.'),

@@ -20,20 +20,20 @@ const place = {
     { id: 'pyc.op1', when: P, turns: [
       beat("Don stands on a cliff above a bright blue sea, in a huge straw hat, a step pyramid in the hazy distance behind him."),
       don("Welcome to Pyramid Coast! Ancient pyramids, beautiful beaches, and food so spicy it can strip paint. I know. I tried it. My lips are still numb."),
-      don("Today, one of you eats a pepper, and one of you jumps off a cliff. Which one is worse depends on the pepper."),
-      beat('A street vendor offers him a chilli on a stick. Don shakes his head very fast.'),
+      don("Today, one of you eats a pepper, and one of you jumps off a cliff!"),
+      beat('A street vendor offers him a chilli on a stick, and Don shakes his head.'),
     ] },
     { id: 'pyc.op2', when: P, turns: [
       don("Pyramid Coast. The sea is warm, the sun is hot, and the peppers are hotter. Everything here wants to make you sweat."),
       don("Racers, there's a taxi at the end of the road. Hold on to it. The road has goats on it."),
-      beat('A goat wanders past behind him and eats the corner of his script. He lets it.'),
+      beat('A goat wanders past behind him.'),
     ] },
   ],
   'don-opener.bored': [
     { id: 'pyc.op3', when: P, turns: [
       beat("Don is lying in a hammock under a palm-leaf roof, a glass of milk balanced on his chest."),
       don("Pyramid Coast. This is milk. You're going to want it later. Taxi's on the road."),
-      don("I'm not sharing."),
+      don("Your taxis are waiting, so off you go!"),
     ] },
   ],
   'arrival-awe.wonder': [
@@ -46,7 +46,7 @@ const place = {
     { id: 'pyc.ar2', when: P, turns: [
       by('b', "Smell that. Something's cooking. Something good."),
       by('a', "Something spicy."),
-      by('b', "Something amazing and spicy."),
+      by('b', "Something really spicy."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -69,13 +69,13 @@ const roads = {
     { id: 'pyc.tm1', when: { taskId: 'cliff-taxi', mishap: 'goats-on-the-road' }, turns: [
       beat("The taxi stops dead. A herd of goats is standing in the road, chewing, and not in a hurry."),
       by('a', "Beep at them!"),
-      by('b', "He did. They looked at him. They kept chewing."),
+      by('b', "He did. They're not moving."),
       beat('Twenty minutes later, the last goat wanders off into the bushes.'),
     ] },
     { id: 'pyc.tm2', when: { taskId: 'burro-ride', mishap: 'burro-sits-down' }, turns: [
       beat("Halfway along the coast trail, {a}'s burro stops, folds its legs, and sits down in the dust."),
       by('a', "It sat down! With me on it!"),
-      by('b', "Ask it nicely to stand up!"),
+      by('b', "Pull the reins! Gently!"),
       beat('It takes twenty minutes and most of a bag of carrots before the burro stands up again.'),
     ] },
   ],
@@ -111,7 +111,7 @@ const pepper = {
     { id: 'pyc.pc-s3', when: PC, turns: [
       beat("{a} picks up the red pepper, looks at it, and puts it down again. Then picks it up again."),
       by('a', "It's small. How bad can something this small be?"),
-      by('b', "Ask the man. He's laughing."),
+      by('b', "Look at the man. He's laughing."),
     ] },
     { id: 'pyc.pc-s4', when: PC, turns: [
       by('a', "If I eat the hot one, you only have to jump off the middle bit."),
@@ -133,12 +133,12 @@ const pepper = {
     { id: 'pyc.pc-f3', when: PC, turns: [
       beat("{a} eats the hot pepper, chews twice, swallows, and calmly waves the orange flag."),
       by('b', "Are you okay? You look okay."),
-      by('a', "I'm not okay. Jump. Jump now. Bring milk."),
+      by('a', "I'm not okay. Jump. Jump now."),
     ] },
     { id: 'pyc.pc-f4', when: PC, turns: [
       by('a', "That was so much better than I expected!"),
       by('b', "The pepper or the jump?"),
-      by('a', "The milk. The milk was so much better than I expected."),
+      by('a', "The milk. The milk was the best part."),
     ] },
   ],
   'task-try.after-fails': [
@@ -149,12 +149,12 @@ const pepper = {
     ] },
     { id: 'pyc.pc-a2', when: PC, turns: [
       beat("Second pepper. {a} doesn't chew this time, just swallows it whole, and waves the flag."),
-      by('a', "Don't chew! Never chew! Jump!"),
+      by('a', "Don't chew! Just jump!"),
       beat("{b} jumps. The milk comes back up the cliff. The tip is theirs."),
     ] },
     { id: 'pyc.pc-a3', when: PC, turns: [
       by('a', "Fine. The red one. The fiery one. So you can jump off the lowest ledge."),
-      beat('{a} eats it, turns purple, and waves the red flag. {b} is in the water before the flag stops moving.'),
+      beat('{a} eats it, goes bright red, and waves the red flag. {b} is in the water before the flag stops moving.'),
       by('b', "Milk's coming! Hold on!"),
     ] },
     { id: 'pyc.pc-a4', when: PC, turns: [
@@ -166,8 +166,8 @@ const pepper = {
   'task-try.struggling': [
     { id: 'pyc.pc-t1', when: PC, turns: [
       beat("{a} has eaten half the pepper and is fanning {a.posAdj} mouth with both hands, eyes streaming."),
-      by('a', "I can't finish it. I can't. It's on fire. I'm on fire."),
-      by('b', "Half a pepper isn't a pepper! Finish it!"),
+      by('a', "I can't finish it. I can't. It's so hot."),
+      by('b', "You have to finish it! All of it!"),
     ] },
     { id: 'pyc.pc-t2', when: PC, turns: [
       by('b', "I can't jump. I've been standing here five minutes, and I can't."),
@@ -189,12 +189,12 @@ const pepper = {
     { id: 'pyc.pc-dn2', when: PC, turns: [
       beat("{a} and {b} walk away from the cliff, {b} dripping, {a} still drinking milk out of a second canteen."),
       by('b', "Where did you get another one?"),
-      by('a', "The pepper man felt sorry for me."),
+      by('a', "The man felt sorry for me."),
     ] },
     { id: 'pyc.pc-dn3', when: PC, turns: [
       by('b', "Burros next. We ride donkeys to a pyramid."),
-      by('a', "That's the best thing anybody has said to me today."),
-      by('b', "It's been a weird day."),
+      by('a', "That's the best thing I've heard all day."),
+      by('b', "It's been a long day."),
     ] },
   ],
   'attempt-fail.any': [

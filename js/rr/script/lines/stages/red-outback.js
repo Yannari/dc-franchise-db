@@ -24,7 +24,7 @@ export default {
     { id: 'ro.st.ch1', when: at('emu-catch', 'emu-chase'), turns: [
       beat('{a} chases an emu round the corral, arms out, and slowly steers it into a corner.'),
       by('b', "You've got it trapped! Easy now!"),
-      by('a', "Easy. Easy, big bird."),
+      by('a', "Easy. Easy."),
     ] },
     { id: 'ro.st.ch2', when: at('emu-catch', 'emu-chase'), turns: [
       by('b', "Go slow. Don't run at it."),
@@ -43,12 +43,12 @@ export default {
     ] },
     { id: 'ro.st.mt1', when: at('emu-catch', 'mounted'), turns: [
       beat('They climb onto their emus\' backs. The birds wobble, settle, and stand up tall.'),
-      by('b', "I'm riding a bird. I'm actually riding a bird."),
+      by('b', "I'm riding an emu. I'm actually riding an emu."),
       by('a', "Tip says the hanging rock. Point them that way."),
     ] },
     { id: 'ro.st.mt2', when: at('emu-catch', 'mounted'), turns: [
       by('a', "Which way is forward on an emu?"),
-      by('b', "The pointy end. Hold on."),
+      by('b', "The way its head's pointing. Hold on."),
       beat('The emus take off across the plain at a wobbly run.'),
     ] },
 
@@ -56,11 +56,11 @@ export default {
     { id: 'ro.st.pf1', when: at('sheep-bungee', 'the-platform'), turns: [
       beat('On the edge of the hanging rock, a bungee rope is tied round a stone pillar. Far below is a pen full of sheep.'),
       by('b', "You jump. Grab a sheep. Come back up."),
-      by('a', "You make it sound so easy."),
+      by('a', "That's a long way down."),
     ] },
     { id: 'ro.st.pf2', when: at('sheep-bungee', 'the-platform'), turns: [
       by('a', "Is the rope tied on properly?"),
-      by('b', "It's tied round a rock. Rocks don't move."),
+      by('b', "It's tied round a rock. It's not going anywhere."),
       beat('{a} steps up to the edge.'),
     ] },
     { id: 'ro.st.dr1', when: at('sheep-bungee', 'the-drop'), turns: [
@@ -76,7 +76,7 @@ export default {
     { id: 'ro.st.sg1', when: at('sheep-bungee', 'sheep-grab'), turns: [
       beat('At the bottom of the drop, {a} swoops down over the pen and grabs a sheep around the middle.'),
       by('a', "Got one! Got a sheep!"),
-      beat('The sheep says nothing. It just looks very surprised.'),
+      beat('The sheep doesn\'t make a sound.'),
     ] },
     { id: 'ro.st.sg2', when: at('sheep-bungee', 'sheep-grab'), turns: [
       by('b', "Grab! Grab now!"),
@@ -86,12 +86,12 @@ export default {
     { id: 'ro.st.pu1', when: at('sheep-bungee', 'pulled-up'), turns: [
       beat('The rope pulls {a} back up the rock face, still hugging the sheep.'),
       by('b', "Hold on to it! Don't let go!"),
-      by('a', "It's so fluffy! It's like holding a cloud!"),
+      by('a', "It's so heavy!"),
     ] },
     { id: 'ro.st.pu2', when: at('sheep-bungee', 'pulled-up'), turns: [
       by('a', "Take it. Take the sheep."),
-      beat('{a} is winched up onto the platform and hands the sheep to {b}, who holds it like a baby.'),
-      by('b', "Hello, sheep. You're coming with us."),
+      beat('{a} is winched up onto the platform and hands the sheep to {b}.'),
+      by('b', "Got it. Come on."),
     ] },
 
     // ── the shearing ──
@@ -102,7 +102,7 @@ export default {
     ] },
     { id: 'ro.st.hs2', when: at('shearing', 'hold-still'), turns: [
       by('a', "Talk to it. Keep it happy."),
-      by('b', "Hello, sheep. You're a lovely sheep. This won't hurt."),
+      by('b', "It's okay. It's okay. This won't hurt."),
       beat('The sheep blinks, and stays still.'),
     ] },
     { id: 'ro.st.cl1', when: at('shearing', 'the-clippers'), turns: [
@@ -127,12 +127,12 @@ export default {
     ] },
     { id: 'ro.st.br1', when: at('shearing', 'the-brand'), turns: [
       beat('The shearer checks the brand, nods, and hands over the tip.'),
-      by('b', "Bye, sheep. Sorry about your coat."),
-      by('a', "It'll grow back. Chill Zone, top of the rock."),
+      by('b', "Sorry. It'll grow back."),
+      by('a', "It'll be cooler now. Chill Zone, top of the rock."),
     ] },
     { id: 'ro.st.br2', when: at('shearing', 'the-brand'), turns: [
       by('a', "We have so much wool on us."),
-      by('b', "We look like sheep now. Let's go."),
+      by('b', "Let's go. Shake it off on the way."),
       beat('They run out of the shed, shaking wool off their clothes.'),
     ] },
   ],
@@ -142,7 +142,7 @@ export default {
     { id: 'ro.sf.ch1', when: at('emu-catch', 'emu-chase'), turns: [
       beat('{a} dives at an emu, misses, and lands face first in the red dirt.'),
       by('b', "Are you okay?"),
-      by('a', "I've got dirt in my teeth. The emu's fine, though."),
+      by('a', "I've got dirt in my teeth."),
     ] },
     { id: 'ro.sf.ch2', when: at('emu-catch', 'emu-chase'), turns: [
       by('b', "It's coming back! It's chasing me now!"),
@@ -155,7 +155,7 @@ export default {
       by('b', "Now we have to catch it again."),
     ] },
     { id: 'ro.sf.ht2', when: at('emu-catch', 'the-halter'), turns: [
-      by('b', "Why is it on its foot?"),
+      by('b', "That's on its leg!"),
       by('a', "It moved its head! It moved it at the last second!"),
       beat('The emu kicks the halter off and runs away.'),
     ] },
@@ -164,7 +164,7 @@ export default {
     { id: 'ro.sf.pf1', when: at('sheep-bungee', 'the-platform'), turns: [
       beat('{a} stands on the edge of the rock, looks down, and steps back.'),
       by('a', "That's a long way down."),
-      by('b', "It's a long way down to the sheep! That's where they are!"),
+      by('b', "That's where the sheep are! You have to go!"),
     ] },
     { id: 'ro.sf.pf2', when: at('sheep-bungee', 'the-platform'), turns: [
       by('b', "Just lean forward."),
@@ -183,8 +183,8 @@ export default {
     ] },
     { id: 'ro.sf.pu1', when: at('sheep-bungee', 'pulled-up'), turns: [
       beat('Halfway up the cliff, the sheep wriggles free and drops gently back into the pen.'),
-      by('a', "It escaped! It jumped!"),
-      by('b', "Sheep can't jump that far!"),
+      by('a', "It got away!"),
+      by('b', "It wriggled out! Back down!"),
     ] },
     { id: 'ro.sf.pu2', when: at('sheep-bungee', 'pulled-up'), turns: [
       by('a', "It's kicking me! It's kicking!"),
@@ -200,7 +200,7 @@ export default {
     ] },
     { id: 'ro.sf.hs2', when: at('shearing', 'hold-still'), turns: [
       by('a', "Why is it on top of you?"),
-      by('b', "It sat on me! It sat on me on purpose!"),
+      by('b', "It knocked me over!"),
       beat('The sheep gets up, shakes, and wanders off. They have to catch it again.'),
     ] },
     { id: 'ro.sf.cl1', when: at('shearing', 'the-clippers'), turns: [
@@ -211,17 +211,17 @@ export default {
     { id: 'ro.sf.cl2', when: at('shearing', 'the-clippers'), turns: [
       by('b', "You've only done one side."),
       by('a', "It keeps turning round!"),
-      beat('The sheep is half bald and very unimpressed.'),
+      beat('The sheep is half bald and struggling.'),
     ] },
     { id: 'ro.sf.bs1', when: at('shearing', 'bald-sheep'), turns: [
-      beat('The last of the wool comes off, and the sheep is completely bald, completely pink, and completely blank.'),
+      beat('The last of the wool comes off, and there\'s no brand anywhere.'),
       by('a', "No brand. No brand anywhere."),
       by('b', "Back to the pen. Another sheep."),
     ] },
     { id: 'ro.sf.bs2', when: at('shearing', 'bald-sheep'), turns: [
       by('b', "Check the legs. Check under the chin."),
-      beat('They check everywhere. Nothing. Just a very cold, very bald sheep.'),
-      by('a', "Sorry, sheep. Next one."),
+      beat('They check everywhere. Nothing.'),
+      by('a', "Okay. Next one."),
     ] },
   ],
 };

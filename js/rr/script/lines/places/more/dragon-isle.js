@@ -12,31 +12,31 @@ const venom = {
   'task-start.any': [
     { id: 'drg2.ve-s1', when: VE, turns: [
       { beat: 'A monitor lizard flicks its long forked tongue out, tastes the air in {a}\'s direction, and pulls it back in.' },
-      { by: 'a', say: "It just tasted me. From over there." },
-      { by: 'b', say: "What did you taste like?" },
-      { by: 'a', say: "Scared. I tasted scared." },
+      { by: 'a', say: "It's tasting the air. It knows we're here." },
+      { by: 'b', say: "Okay. Stay calm." },
+      { by: 'a', say: "I'm trying." },
     ] },
     { id: 'drg2.ve-s2', when: VE, turns: [
-      { by: 'b', say: "I'll wiggle the stick like a snake. They love snakes." },
-      { by: 'a', say: "To eat?" },
-      { by: 'b', say: "Everything's to eat with these. That's why the stick's long." },
+      { by: 'b', say: "I'll wiggle the stick. Keep it watching." },
+      { by: 'a', say: "Okay. And I go in from the side." },
+      { by: 'b', say: "From the side. Slowly." },
     ] },
     { id: 'drg2.ve-s3', when: VE, turns: [
-      { beat: '{a} creeps forward under the hut in a low crouch, sponge on its pole held out in front like a fishing rod.' },
+      { beat: '{a} creeps forward under the hut in a low crouch, sponge on its pole held out in front.' },
       { by: 'a', say: "How close do I have to get?" },
       { by: 'b', say: "Pole's length. Not one step closer. Not one." },
     ] },
     { id: 'drg2.ve-s4', when: VE, turns: [
       { by: 'a', say: "Which one's the sleepiest?" },
-      { by: 'b', ...V("The big one. Big ones are lazy. Like cats.", "The big one. Big ones are lazy.", "The big one.", "The BIG one! Big ones are LAZY!", "Try the big one, big ones tend to be lazy.", "The big one. It has nothing left to prove.") },
-      { by: 'a', say: "The big one is also the big one." },
+      { by: 'b', say: "The big one. It hasn't moved." },
+      { by: 'a', say: "It's also the biggest." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'drg2.ve-f1', when: VE, turns: [
       { beat: 'The lizard follows {b}\'s stick round in a slow circle. {a} dabs the sponge on its lip from behind, and it never even turns its head.' },
       { by: 'b', say: "It didn't notice! It didn't notice at all!" },
-      { by: 'a', say: "I'm a ninja. A drool ninja." },
+      { by: 'a', say: "I can't believe that worked." },
     ] },
     { id: 'drg2.ve-f2', when: VE, turns: [
       { by: 'a', say: "Squeezing. Squeezing. It's going in. It's all going in." },
@@ -48,7 +48,7 @@ const venom = {
     { id: 'drg2.ve-a1', when: VE, turns: [
       { by: 'b', say: "It keeps seeing you because you're in the sun. Come in from the shady side." },
       { beat: '{a} goes round the back of the post, through the shade, and the lizard doesn\'t see a thing. The sponge comes back dripping.' },
-      { by: 'a', say: "Shady side! I'm a shadow now!" },
+      { by: 'a', say: "The shade worked!" },
     ] },
     { id: 'drg2.ve-a2', when: VE, turns: [
       { beat: 'On the third try, {b} holds the vial right under the sponge, so the drool goes straight in without a single step between.' },
@@ -58,24 +58,24 @@ const venom = {
   ],
   'task-try.struggling': [
     { id: 'drg2.ve-t1', when: VE, turns: [
-      { by: 'a', say: "It's licking the sponge. It thinks the sponge is food." },
-      { by: 'b', say: "Is that good?" },
-      { by: 'a', say: "It's eating my sponge! It's eating all the drool back!" },
+      { by: 'a', say: "It's licking the sponge." },
+      { by: 'b', say: "Is that bad?" },
+      { by: 'a', say: "It's licking it all off! Pull it back!" },
     ] },
     { id: 'drg2.ve-t2', when: VE, turns: [
       { beat: '{b} has been waving the forked stick for ten minutes. Both arms are trembling.' },
       { by: 'b', say: "My arms are dying. Get the drool. Get any drool." },
-      { by: 'a', say: "It won't open its mouth! It's got nothing to say!" },
+      { by: 'a', say: "It won't open its mouth!" },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'drg2.ve-x1', when: VE, turns: [
       { beat: 'The lizard hisses. {a} jumps backwards, trips over the pole, and the sponge flips drool all over {b}\'s trousers.' },
       { by: 'b', say: "That was going in the vial!" },
-      { by: 'a', say: "It's on your knee now! I'm not taking it off your knee! Again!" },
+      { by: 'a', say: "Sorry! Sorry! Again!" },
     ] },
     { id: 'drg2.ve-x2', when: VE, turns: [
-      { beat: 'The ranger holds up their vial. Half of it is drool. The other half is sand.' },
+      { beat: 'The ranger holds up their vial. It\'s full of sand.' },
       { by: 'a', say: "How did sand get in there?" },
       { by: 'b', say: "You dropped it and scooped it back up. New vial." },
     ] },
@@ -83,17 +83,17 @@ const venom = {
   'task-done.any': [
     { id: 'drg2.ve-dn1', when: VE, turns: [
       { by: 'a', say: "What do they even do with the drool?" },
-      { by: 'b', say: "I asked the ranger. He said 'science'." },
-      { by: 'a', say: "Science is lucky to have us." },
+      { by: 'b', say: "Science. They study it." },
+      { by: 'a', say: "Good. At least it's useful." },
     ] },
     { id: 'drg2.ve-dn2', when: VE, turns: [
       { beat: '{a} and {b} walk backwards out from under the huts, never taking their eyes off the lizards.' },
       { by: 'b', say: "Keep walking backwards. All the way to the jungle." },
-      { by: 'a', say: "The jungle's a mile away." },
+      { by: 'a', say: "Okay. Slowly." },
     ] },
     { id: 'drg2.ve-dn3', when: VE, turns: [
       { by: 'b', say: "Next tip says rugs. Just rugs." },
-      { by: 'a', say: "Rugs don't bite. Rugs don't drool. I love rugs." },
+      { by: 'a', say: "Rugs don't bite. I'll take rugs." },
       { by: 'b', say: "Say that after you've seen how many there are." },
     ] },
   ],
@@ -104,17 +104,17 @@ const rugs = {
     { id: 'drg2.ru-s1', when: RU, turns: [
       { beat: '{a} pulls one rug out of the bottom of the pile. The whole mountain shifts, and six rugs slide down on top of {a.obj}.' },
       { by: 'a', say: "Don't pull from the bottom. Learnt that." },
-      { by: 'b', say: "Top down. Like a sensible person." },
+      { by: 'b', say: "Okay. From the top." },
     ] },
     { id: 'drg2.ru-s2', when: RU, turns: [
       { by: 'b', say: "You unroll. I look. Then we swap when your arms get tired." },
       { by: 'a', say: "Why don't your arms get tired?" },
-      { by: 'b', say: "Because I'm looking. Looking is very restful." },
+      { by: 'b', say: "They will. Then we swap." },
     ] },
     { id: 'drg2.ru-s3', when: RU, turns: [
-      { beat: 'The weaver sits at her loom beside the pile, weaving another rug, very slowly, and adding it to the mountain.' },
-      { by: 'a', say: "She's making more. She's making it worse." },
-      { by: 'b', say: "Then we'd better be faster than her." },
+      { beat: 'The weaver sits at her loom beside the pile, weaving another rug.' },
+      { by: 'a', say: "She's making more." },
+      { by: 'b', say: "Then let's be quick." },
     ] },
     { id: 'drg2.ru-s4', when: RU, turns: [
       { by: 'a', say: "Flag inside a circle. Say it with me. Flag inside a circle." },
@@ -129,16 +129,16 @@ const rugs = {
       { beat: 'They pull it out and unroll it at the weaver\'s feet. The mark is right in the middle. She hands over the tip.' },
     ] },
     { id: 'drg2.ru-f2', when: RU, turns: [
-      { by: 'a', say: "I'm going to guess. This one. Because it's ugly." },
-      { beat: '{a} unrolls the ugliest rug in the pile. The race\'s mark is woven right in the centre.' },
-      { by: 'b', say: "You picked the ugly one and it was the one!" },
+      { by: 'a', say: "I'm going to guess. This one." },
+      { beat: '{a} unrolls it. The race\'s mark is woven right in the centre.' },
+      { by: 'b', say: "You just guessed it!" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'drg2.ru-a1', when: RU, turns: [
       { by: 'b', say: "We keep checking the same rugs. Done ones go behind us. Behind us, and they stay there." },
       { beat: 'Behind them, the done pile grows. In front of them, the mountain shrinks. Near the bottom, {b} finds the mark.' },
-      { by: 'a', say: "A system! We had a system!" },
+      { by: 'a', say: "The pile worked!" },
     ] },
     { id: 'drg2.ru-a2', when: RU, turns: [
       { beat: 'After two wrong rugs, {a} stops unrolling and just looks at the edges, where the patterns show.' },
@@ -150,41 +150,41 @@ const rugs = {
     { id: 'drg2.ru-t1', when: RU, turns: [
       { by: 'a', say: "Is this a flag inside a circle, or a bird inside an egg?" },
       { by: 'b', say: "It's a bird inside an egg." },
-      { by: 'a', say: "They all look like birds inside eggs now." },
+      { by: 'a', say: "They all look the same now." },
     ] },
     { id: 'drg2.ru-t2', when: RU, turns: [
       { beat: '{a} and {b} sit on top of the mountain of rugs, sweating, surrounded by unrolled cloth in every direction.' },
-      { by: 'b', say: "We've made it bigger. The pile was smaller when we got here." },
-      { by: 'a', say: "Yeah. Turns out rugs get bigger when you unroll them." },
+      { by: 'b', say: "It looks bigger now than when we started." },
+      { by: 'a', say: "Because they're all unrolled. Keep going." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'drg2.ru-x1', when: RU, turns: [
-      { beat: '{a} unrolls a rug at the weaver\'s feet with a flourish. She turns it the right way up. The flag is a fish.' },
-      { by: 'a', say: "It was upside down! Upside down, it's a flag!" },
-      { by: 'b', say: "She doesn't do upside down. Back to the pile." },
+      { beat: '{a} unrolls a rug at the weaver\'s feet. She turns it the right way up, and the flag is a fish.' },
+      { by: 'a', say: "It looked like a flag!" },
+      { by: 'b', say: "It's a fish. Back to the pile." },
     ] },
     { id: 'drg2.ru-x2', when: RU, turns: [
       { beat: '{b} runs a rug over to the weaver. She holds up the tip card next to it. The circle on the tip is red. The circle on the rug is blue.' },
-      { by: 'b', say: "There's a blue one too? Who made a blue one?" },
-      { by: 'a', say: "She did! She did, to trick us! Back!" },
+      { by: 'b', say: "There's a blue one too?" },
+      { by: 'a', say: "Then the red one's still in there! Back!" },
     ] },
   ],
   'task-done.any': [
     { id: 'drg2.ru-dn1', when: RU, turns: [
       { by: 'b', say: "Should we roll it back up for her?" },
-      { by: 'a', say: "Should we roll all of them back up for her?" },
-      { by: 'b', say: "That's a no. Let's just say thank you and run." },
+      { by: 'a', say: "All of them?" },
+      { by: 'b', say: "Let's just say thank you and go." },
     ] },
     { id: 'drg2.ru-dn2', when: RU, turns: [
       { beat: '{a} and {b} jog up the jungle trail towards the hill, the sun going orange through the trees.' },
-      { by: 'a', say: "Drool and rugs. Strangest shopping trip of my life." },
-      { by: 'b', say: "And we didn't even get to keep anything." },
+      { by: 'a', say: "Drool and rugs. What a day." },
+      { by: 'b', say: "And we're still in it." },
     ] },
     { id: 'drg2.ru-dn3', when: RU, turns: [
       { by: 'a', say: "I've got fluff in my nose. In my ears. In my eyebrows." },
-      { by: 'b', say: "You look like a very old man." },
-      { by: 'a', say: "I feel like a very old man." },
+      { by: 'b', say: "You've got fluff everywhere." },
+      { by: 'a', say: "I don't care. Run." },
     ] },
   ],
 };

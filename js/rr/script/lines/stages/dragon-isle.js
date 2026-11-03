@@ -18,7 +18,7 @@ export default {
     { id: 'di.st.rg2', when: at('venom', 'the-ranger'), turns: [
       by('a', "You do the stick, I'll do the sponge."),
       by('b', "Why do I get the stick?"),
-      by('a', "Because the stick's further away from the mouth."),
+      by('a', "Because you're faster. If it moves, you run."),
       by('b', "Okay. I'll take the stick."),
     ] },
     { id: 'di.st.ds1', when: at('venom', 'distraction'), turns: [
@@ -27,7 +27,7 @@ export default {
       by('a', "Keep it there. Don't stop moving it."),
     ] },
     { id: 'di.st.ds2', when: at('venom', 'distraction'), turns: [
-      by('b', "Hey. Hey, big guy. Look at the stick."),
+      by('b', "Hey. Look at the stick. Look over here."),
       beat('The lizard turns its head towards the stick, and its long forked tongue flicks out.'),
       by('a', "Good. Keep it busy."),
     ] },
@@ -39,7 +39,7 @@ export default {
     { id: 'di.st.sp2', when: at('venom', 'the-sponge'), turns: [
       by('b', "Slowly. Slowly."),
       beat('The sponge touches the lizard\'s mouth. A long string of drool stretches off it as {a} pulls it back.'),
-      by('a', "That's disgusting. That's perfect."),
+      by('a', "That's so gross. But we got it."),
     ] },
     { id: 'di.st.fv1', when: at('venom', 'fill-vial'), turns: [
       beat('{a} squeezes the sponge over the vial, and the drool drips in, slow and thick.'),
@@ -57,8 +57,8 @@ export default {
       by('a', "Read the tip first. Then wash."),
     ] },
     { id: 'di.st.vt2', when: at('venom', 'vial-tip'), turns: [
-      by('a', "We milked a dragon."),
-      by('b', "We did not milk it. Please don't call it that."),
+      by('a', "We actually got dragon drool."),
+      by('b', "Please don't say it like that."),
       beat('They run off into the jungle, away from the lizards as fast as they can.'),
     ] },
 
@@ -80,8 +80,8 @@ export default {
     ] },
     { id: 'di.st.dg2', when: at('rugs', 'dig-in'), turns: [
       by('a', "Grab the edge and pull."),
-      beat('{a} and {b} pull a huge rug out from the middle of the pile, and the rugs above it slide down in a slow, soft avalanche.'),
-      by('b', "Well, now they're easier to reach."),
+      beat('{a} and {b} pull a huge rug out from the middle of the pile, and the rugs above it slide down.'),
+      by('b', "Okay. At least they're easier to reach now."),
     ] },
     { id: 'di.st.ur1', when: at('rugs', 'unroll'), turns: [
       beat('{a} unrolls a rug across the dirt. Red, gold, a pattern of birds. No mark.'),
@@ -106,7 +106,7 @@ export default {
     { id: 'di.st.rt1', when: at('rugs', 'rug-tip'), turns: [
       beat('The weaver hands over the tip, and points them up the hill.'),
       by('a', "Chill Zone. Up the hill. Let's go."),
-      by('b', "I'm going to dream about rugs tonight."),
+      by('b', "I never want to see another rug."),
     ] },
     { id: 'di.st.rt2', when: at('rugs', 'rug-tip'), turns: [
       by('b', "How many did we unroll? Fifty?"),
@@ -125,7 +125,7 @@ export default {
     { id: 'di.sf.ds2', when: at('venom', 'distraction'), turns: [
       by('b', "It's not looking at the stick. It's looking at me."),
       by('a', "Then look somewhere else!"),
-      beat('{b} looks somewhere else. The lizard keeps looking at {b.obj}. They back away and start over.'),
+      beat('{b} looks away, but the lizard keeps looking at {b.obj}. They back away and start over.'),
     ] },
     { id: 'di.sf.sp1', when: at('venom', 'the-sponge'), turns: [
       beat('The sponge touches the lizard\'s lip, and its eyes snap open. It lunges forward.'),
@@ -134,7 +134,7 @@ export default {
     ] },
     { id: 'di.sf.sp2', when: at('venom', 'the-sponge'), turns: [
       by('a', "It's awake. It's definitely awake."),
-      beat('The lizard turns round and starts waddling straight at {a}, faster than anything that size should move.'),
+      beat('The lizard turns round and starts coming straight at {a}, faster than it looks like it could.'),
       by('b', "Leave the sponge! Just run!"),
     ] },
     { id: 'di.sf.fv1', when: at('venom', 'fill-vial'), turns: [
@@ -157,7 +157,7 @@ export default {
     { id: 'di.sf.dg2', when: at('rugs', 'dig-in'), turns: [
       by('a', "Have we done this one already?"),
       by('b', "I don't know. They all look the same."),
-      beat('They have done it already. Twice. They start again from the other side.'),
+      beat('They\'ve done it already. Twice. They start again from the other side.'),
     ] },
     { id: 'di.sf.ur1', when: at('rugs', 'unroll'), turns: [
       beat('{a} unrolls rug after rug. Flowers, birds, stripes, squares. No mark on any of them.'),
@@ -167,7 +167,7 @@ export default {
     { id: 'di.sf.ur2', when: at('rugs', 'unroll'), turns: [
       by('b', "This one! It's got a mark!"),
       by('a', "That's a stain."),
-      by('b', "Oh. Yeah. That's a stain."),
+      by('b', "Oh. Yeah. It is."),
     ] },
     { id: 'di.sf.wv1', when: at('rugs', 'the-weaver'), turns: [
       beat('They unroll the rug at the weaver\'s feet. The weaver looks at it, then shakes their head.'),

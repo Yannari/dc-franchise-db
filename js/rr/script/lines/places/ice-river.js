@@ -19,14 +19,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'icr.op1', when: P, turns: [
       beat("Don stands on a snowbank beside a wide river full of floating ice, in three coats, a hat with ear flaps, and mittens on a string."),
-      don("Welcome to Ice River! The coldest leg of the race. I've lost feeling in parts of myself I didn't know had feeling."),
+      don("Welcome to Ice River! The coldest leg of the race so far!"),
       don("Today, teams cross this river without a boat, and then one of you pulls the other across the snow. Like a husky. A very slow husky."),
       beat('A chunk of ice the size of a car drifts past behind him, turns slowly, and cracks in two.'),
     ] },
     { id: 'icr.op2', when: P, turns: [
       don("Ice River. The river freezes in winter, melts in spring, and today it's doing both at once. That's the problem."),
       don("Racers, a bush plane will drop you at the river. Wear everything you own. Then put on something else."),
-      beat('A small plane on skis taxis across the snow behind him, spraying him with powder. He does not react. He is too cold to react.'),
+      beat('A small plane on skis taxis across the snow behind him, spraying him with powder.'),
     ] },
   ],
   'don-opener.bored': [
@@ -39,26 +39,26 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'icr.ar1', when: P, turns: [
       beat("The bush plane banks over a white wilderness, and below them the river winds through the snow, glittering with floating ice."),
-      by('a', "It's like a river made of broken glass."),
+      by('a', "It looks like broken glass."),
       by('b', "It's beautiful. I've never seen anything this white."),
       by('a', "Or this cold. Look at the trees, they're frozen solid."),
     ] },
     { id: 'icr.ar2', when: P, turns: [
       beat("Far off across the snow, a huge white shape lifts its head, sniffs the air, and lies back down."),
       by('b', "Is that a polar bear? Was that a real polar bear?"),
-      by('a', "It looked at us. It definitely looked at us."),
+      by('a', "I think it was. Wow."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'icr.ad1', when: P, turns: [
       by('a', "The tip says 'cross the river'. There's no bridge."),
       by('b', "There's ice. Floating ice."),
-      by('a', "That's not a bridge. That's a suggestion."),
+      by('a', "That's not a bridge."),
     ] },
     { id: 'icr.ad2', when: P, turns: [
       by('b', "My eyelashes have frozen. Every single one."),
       by('a', "My nose has frozen."),
-      by('b', "Your whole face has frozen. You just haven't noticed."),
+      by('b', "Pull your scarf up. Come on."),
     ] },
   ],
 };
@@ -69,7 +69,7 @@ const roads = {
     { id: 'icr.tm1', when: { taskId: 'river-hop', mishap: 'skis-stuck-in-snow' }, turns: [
       beat("The bush plane lands, slides, and stops with a lurch. Its skis have sunk deep into a snowdrift."),
       by('a', "Are we stuck? Is the plane stuck?"),
-      by('b', "The pilot's getting out a shovel. So, yes."),
+      by('b', "The pilot's getting a shovel. So, yes."),
       beat('Twenty minutes of digging later, they climb out and head for the river.'),
     ] },
   ],
@@ -87,7 +87,7 @@ const floes = {
   'don-demo.dry': [
     { id: 'icr.if-d2', when: IF, turns: [
       don("If a floe tips, cracks, or sinks under you, you're in the river, and you swim back to the start and dry off before you try again."),
-      don("Both of you standing on the far bank gets you the next tip. The water is just above freezing. Just."),
+      don("Both of you standing on the far bank gets you the next tip, and the water is just above freezing!"),
       beat('A floe in the middle of the river cracks in half with a loud snap.'),
     ] },
   ],
@@ -111,14 +111,14 @@ const floes = {
     { id: 'icr.if-s4', when: IF, turns: [
       by('a', "Look for the white ones. The white ones are thicker."),
       by('b', "They're all white."),
-      by('a', "Look for the whitest white ones."),
+      by('a', "Then look for the biggest ones."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'icr.if-f1', when: IF, turns: [
       beat("{a} and {b} hop from floe to floe, perfectly in rhythm, and land on the far bank without even getting their boots wet."),
       by('b', "Dry! We're both dry!"),
-      by('a', "First try! Across a river of ice! Dry!"),
+      by('a', "First try! And we're dry!"),
     ] },
     { id: 'icr.if-f2', when: IF, turns: [
       by('a', "That one! Now! Jump!"),
@@ -127,20 +127,20 @@ const floes = {
     ] },
     { id: 'icr.if-f3', when: IF, turns: [
       beat("A huge floe drifts right across the river like a bridge. {a} and {b} run across it before it moves."),
-      by('a', "A bridge! The river made us a bridge!"),
+      by('a', "Run! Run across it!"),
       by('b', "Don't stop running till we're on the bank!"),
     ] },
     { id: 'icr.if-f4', when: IF, turns: [
       by('b', "First go. Not even a splash."),
-      by('a', "I've never been so proud of my feet."),
-      by('b', "Your feet were amazing."),
+      by('a', "I can't believe we didn't fall in."),
+      by('b', "Me neither. Come on."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'icr.if-a1', when: IF, turns: [
       by('b', "We keep picking floes that are too small. This time, only the biggest ones. Even if we have to wait."),
       beat("They wait for the biggest floes, and cross without tipping once."),
-      by('a', "Waiting works! Waiting always works!"),
+      by('a', "Waiting worked!"),
     ] },
     { id: 'icr.if-a2', when: IF, turns: [
       beat("Wrapped in a blanket and still shivering from the last swim, {a} jumps again, and this time every floe holds."),
@@ -150,7 +150,7 @@ const floes = {
     { id: 'icr.if-a3', when: IF, turns: [
       by('a', "Land in the middle of each floe. Not on the edge. The edge tips."),
       beat("{a} lands dead in the middle of every floe, and {b} follows exactly. They reach the far bank."),
-      by('b', "The middle! Always the middle!"),
+      by('b', "Landing in the middle worked!"),
     ] },
     { id: 'icr.if-a4', when: IF, turns: [
       beat("Third try, both of them soaked, but {a} and {b} finally reach the far bank on top of the ice."),
@@ -167,7 +167,7 @@ const floes = {
     { id: 'icr.if-t2', when: IF, turns: [
       by('b', "I can't jump. I'm too scared. That gap's too big."),
       by('a', "It's not too big! I'll catch you!"),
-      by('b', "You can't even catch a ball!"),
+      by('b', "What if you don't?"),
     ] },
     { id: 'icr.if-t3', when: IF, turns: [
       beat("{a} and {b} are standing on the same floe, which is slowly tipping to one side."),
@@ -177,9 +177,9 @@ const floes = {
   ],
   'task-done.any': [
     { id: 'icr.if-dn1', when: IF, turns: [
-      by('a', "I'm never complaining about a puddle again."),
-      by('b', "You were complaining about the cold the whole way."),
-      by('a', "I'm still complaining about the cold. Not puddles."),
+      by('a', "I'm never complaining about the cold at home again."),
+      by('b', "You complained the whole way."),
+      by('a', "I'm still complaining. I'm freezing."),
     ] },
     { id: 'icr.if-dn2', when: IF, turns: [
       beat("{a} and {b} run up the far bank towards the sled, stamping their feet to get warm."),
@@ -189,7 +189,7 @@ const floes = {
     { id: 'icr.if-dn3', when: IF, turns: [
       by('b', "We crossed a river. Without a boat."),
       by('a', "Without a bridge."),
-      by('b', "With nothing but ice and courage."),
+      by('b', "I can't believe it."),
     ] },
   ],
   'attempt-fail.any': [
@@ -216,8 +216,8 @@ const sled = {
   'don-demo.gag': [
     { id: 'icr.sl-d1', when: SL, turns: [
       don("In this All-In, one of you rides the sled, the other pulls it across the snow to the ice cliff. Swap when the puller gives out."),
-      beat('He sits on a sled, points forward, and waits for somebody to pull him. Nobody does. He waits a little longer.'),
-      don("This is how it works when you have a team. I don't have a team. I have an intern, and he's on a break."),
+      beat('He sits on a sled, points forward, and waits for somebody to pull him.'),
+      don("That's how it works when you have a partner, and you'll all need one today!"),
     ] },
   ],
   'don-demo.dry': [
@@ -236,46 +236,46 @@ const sled = {
     { id: 'icr.sl-s2', when: SL, turns: [
       by('b', "Short steps. Lean forward. Like pulling a car."),
       by('a', "Have you ever pulled a car?"),
-      by('b', "No, but I've seen it on television."),
+      by('b', "No. But it's the same idea."),
     ] },
     { id: 'icr.sl-s3', when: SL, turns: [
       beat("{a} gets the sled moving, and once it's moving, it slides along the snow almost by itself."),
       by('a', "It's easier once it's going! Keep it going!"),
-      by('b', "I'll keep sitting! You keep pulling!"),
+      by('b', "You're doing great! Keep going!"),
     ] },
     { id: 'icr.sl-s4', when: SL, turns: [
       by('a', "Where's the next flag?"),
       by('b', "Over there. Near the bear."),
-      by('a', "Of course it's near the bear."),
+      by('a', "Great. Okay. Quietly."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'icr.sl-f1', when: SL, turns: [
       beat("{a} pulls the sled flag to flag across the white plain in one steady march, and drags it up to the foot of the ice cliff."),
       by('b', "We're here! We made it! You pulled me the whole way!"),
-      by('a', "Don't talk to me. I need to lie down in the snow."),
+      by('a', "Don't talk to me. I need to lie down."),
     ] },
     { id: 'icr.sl-f2', when: SL, turns: [
       by('b', "Swap! My turn to pull!"),
       beat("They swap at every flag, pulling in turns, and the sled flies across the snow to the ice cliff."),
-      by('a', "Taking turns! The best idea we've ever had!"),
+      by('a', "Taking turns worked!"),
     ] },
     { id: 'icr.sl-f3', when: SL, turns: [
       beat("The sled reaches a downhill slope. {a} jumps on behind {b}, and they slide all the way down to the cliff."),
-      by('b', "Wheeee! Downhill! Thank you, downhill!"),
-      by('a', "Best part of the whole race!"),
+      by('b', "Downhill! Finally!"),
+      by('a', "That was so much fun!"),
     ] },
     { id: 'icr.sl-f4', when: SL, turns: [
       by('a', "First try. Every flag. No bear."),
       by('b', "The bear didn't even look at us."),
-      by('a', "The bear has taste."),
+      by('a', "Good. Let's keep it that way."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'icr.sl-a1', when: SL, turns: [
       by('b', "We keep tipping on the bumps. So I lean the other way every time we hit one."),
       beat("{b} leans against every bump, and the sled stays upright all the way to the ice cliff."),
-      by('a', "Leaning! You're a natural leaner!"),
+      by('a', "The leaning worked!"),
     ] },
     { id: 'icr.sl-a2', when: SL, turns: [
       beat("Back at the last flag for the second time, {a} pulls with everything left, and the sled reaches the ice cliff."),
@@ -285,12 +285,12 @@ const sled = {
     { id: 'icr.sl-a3', when: SL, turns: [
       by('a', "We lost the flags last time. So you watch for flags. Only for flags."),
       beat("{b} watches for flags and nothing else, calling every turn. They reach the ice cliff."),
-      by('b', "Flag spotter! I'm the official flag spotter!"),
+      by('b', "That was so much better!"),
     ] },
     { id: 'icr.sl-a4', when: SL, turns: [
       beat("After running from the bear once and tipping twice, {a} and {b} finally drag the sled to the foot of the ice cliff."),
       by('a', "We're here. We're actually here."),
-      by('b', "Is the bear behind us?"),
+      by('b', "Is the bear still back there?"),
     ] },
   ],
   'task-try.struggling': [
@@ -302,19 +302,19 @@ const sled = {
     { id: 'icr.sl-t2', when: SL, turns: [
       by('b', "Which way is the flag? I can't see any flags."),
       by('a', "Everything's white. The snow, the sky, everything."),
-      by('b', "We're lost in white."),
+      by('b', "We're lost."),
     ] },
     { id: 'icr.sl-t3', when: SL, turns: [
       beat("The polar bear stands up in the distance, looks right at them, and starts walking their way."),
       by('a', "Is it coming? Is it coming at us?"),
-      by('b', "Pull! Pull faster! Pull like a bear is coming!"),
+      by('b', "Pull! Pull faster!"),
     ] },
   ],
   'task-done.any': [
     { id: 'icr.sl-dn1', when: SL, turns: [
       by('a', "I'll never take a car for granted again."),
       by('b', "Or a sled dog."),
-      by('a', "Especially not a sled dog. They're heroes."),
+      by('a', "They do this every day. How?"),
     ] },
     { id: 'icr.sl-dn2', when: SL, turns: [
       beat("{a} and {b} climb the last bit to the ice cliff, holding each other up, the sled left at the bottom."),
@@ -341,7 +341,7 @@ const sled = {
     { id: 'icr.sl-x3', when: SL, turns: [
       beat("The polar bear wanders onto the trail ahead. {a} and {b} drag the sled the other way as fast as they can."),
       by('a', "Wrong way! We're going the wrong way!"),
-      by('b', "Wrong way is the right way when there's a bear!"),
+      by('b', "I don't care! Away from the bear!"),
     ] },
   ],
 };

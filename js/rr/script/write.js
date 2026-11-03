@@ -28,6 +28,9 @@ import { SCENES, relFamOf } from '../scenes.js';
 import { factsFor } from './facts.js';
 import { identityLine } from './identity.js';
 import { REL_TAGS } from './lines/premiere-rel-tags.js';
+import { VET_TAGS } from './lines/premiere-vet-tags.js';
+import { metOn, sharedSeason } from '../past.js';
+import { showName } from '../../shows.js';
 import { handoverLine } from './lines/local-handover.js';
 import { placeLocal, LOCALS } from '../../vp-rr-ep/locals.js';
 
@@ -291,6 +294,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     lines.push(line);
   });
   // an identity's introduction can't know what the two of them are: one of them says it (lines/premiere-rel-tags.js)
+  let relTagged = false;
   if (scene.kind === 'team-intro' && /^(pi|ci)\./.test(entry.id) && entry.id !== 'ci.own' && lines.some(l => l.kind === 'conf')) {
     const t = state.teams[scene.data?.team];
     // an engaged couple (set in the Pairs view, or from their history) say that, not just that they're together
@@ -308,7 +312,30 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
         : tags.map((_, k) => tags[(from + k) % tags.length]).find(x => !used.includes(x)) || tags[from];
       by[scene.id] = text;
       lines.push({ kind: 'conf', by: who, text: fill(text, r.roles, { ...r.slots, partner: partnerOf(state, who) }), voice: null });
+      relTagged = true;
     }
+  }
+  // a veteran says where they've been (lines/premiere-vet-tags.js, rr/past.js), whatever the team is: one line, after
+  // the introduction, unless it already had a relationship line, or is the vets' own (it says they've done this) or the
+  // user's own (their words, as they wrote them)
+  const vt = scene.kind === 'team-intro' ? state.teams[scene.data?.team] : null;
+  if (vt?.past && !relTagged && vt.rel !== 'reality-vets' && entry.id !== 'ci.own' && !facts.ownIntro && lines.some(l => l.kind === 'conf')) {
+    const vets = [vt.a, vt.b].filter(n => vt.past[n]);
+    const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
+    const who = vets.find(n => n !== lastBy) || vets[0];
+    const other = who === vt.a ? vt.b : vt.a;
+    const me = vt.past[who], them = vt.past[other];
+    const met = me && them ? metOn(me, them, other) : null;
+    const key = met ? `met-${met}` : me.best || (them ? 'vet' : 'newbie');
+    const tags = VET_TAGS[key] || VET_TAGS.vet;
+    const by = (state.vetTagsBy ||= {});
+    const used = Object.entries(by).filter(([k]) => k !== String(scene.id)).map(([, v]) => v);
+    const from = Math.floor(stableRng(state.seed, 'rr-vettag', scene.id)() * tags.length) % tags.length;
+    const text = by[scene.id] && tags.includes(by[scene.id]) ? by[scene.id]
+      : tags.map((_, k) => tags[(from + k) % tags.length]).find(x => !used.includes(x)) || tags[from];
+    by[scene.id] = text;
+    const show = met ? showName(sharedSeason(me, them).format) : me.show;
+    lines.push({ kind: 'conf', by: who, text: fill(text, r.roles, { ...r.slots, show, partner: other }), voice: null });
   }
   // the team's identity, heard at a natural moment (when the entry didn't already call one)
   if (!lines.some(l => String(l.voice || '').startsWith('id:'))) {

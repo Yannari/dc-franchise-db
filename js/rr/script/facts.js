@@ -12,6 +12,7 @@ import { players } from '../../core.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
 import { liftFacts } from '../lift.js';
 import { PLACES } from '../places.js';
+import { metOn, pastEdge } from '../past.js';
 
 export const RR_FACT_KEYS = [
   'ending',
@@ -81,6 +82,10 @@ export const RR_FACT_KEYS = [
   'aElder',
   // how the two of them feel about what they are: 'warm', 'strained' (bitter both ways), 'one-sided'
   'feel',
+  // the shows before this one (rr/past.js, team.past): a has been on one, b has; a ever won one ('won') or made a final
+  // ('final'); what a and b were to each other on a show they were both on ('showmance', 'rivals', 'allies', 'cast'); a and
+  // c (another team) were on one together, and a did better there ('ahead'), worse ('behind'), or neither ('even')
+  'aVet', 'bVet', 'aBest', 'metOn', 'pastX',
   // a one-sided team: a is the one who resents the other (true) or the one who has no idea (false), and whether the
   // fooled one has found out yet; null on a team that was never one-sided
   'resents', 'found',
@@ -165,6 +170,13 @@ export function factsFor(scene, roles, state) {
     cause: cause ? cause.kind : null, causeEnding: cause ? cause.data?.ending ?? null : null,
     threadStep: thread ? thread.split(' ')[0] : null,
     register: registerOf(roles?.roles?.a), registerB: registerOf(roles?.roles?.b),
+    // (the team's past never changes in the race: read from the team, like its identity)
+    ...(() => {
+      const ra = roles?.roles?.a, rb = roles?.roles?.b, rc = roles?.roles?.c;
+      const pastOfName = n => (n ? Object.values(state.teams).find(t => t.a === n || t.b === n)?.past?.[n] || null : null);
+      const pa = pastOfName(ra), pb = pastOfName(rb), pc = pastOfName(rc);
+      return { aVet: !!pa, bVet: !!pb, aBest: pa?.best ?? null, metOn: pa && pb ? metOn(pa, pb, rb) : null, pastX: pa && pc ? pastEdge(pa, pc) : null };
+    })(),
     liftWith: null, liftWaited: null, liftMissed: null, liftQueue: false,
     ...(d.team && d.stretch ? liftFacts(state, scene.leg ?? s.leg, d.stretch, d.team, d.t) : {}),
   };

@@ -70,7 +70,12 @@ function relTag(t) {
 const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
   'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets', frenemies: 'best friends, supposedly' };
 export function relLabel(t) {
-  const base = relLabelOf(t);
+  // two who were last on the same show (rr/past.js): what they are, from it ("a married couple from Total Drama, who are
+  // still married, for now": a "back from" read as a second clause in Don's own); two vets and nothing else, its veterans
+  const shows = [t?.a, t?.b].map(n => t?.past?.[n]?.show || null);
+  const same = shows[0] && shows[0] === shows[1] ? shows[0] : null;
+  if (same && t.rel === 'reality-vets') return `${same} veterans`;
+  const base = same ? `${relLabelOf(t)} from ${same}` : relLabelOf(t);
   // Don introduces a team that's bitter on both sides as what they are, and says so (a one-sided team looks warm: he
   // doesn't know). The feeling they walked in with (season.js feel0), whatever the race made of it since.
   return (t?.feel0 || t?.feel) === 'strained' ? `${base}, and it's complicated` : base;

@@ -4036,6 +4036,7 @@ async function generateCampKit(body, env) {
  * interview". Written from the two profiles and what the team is (relationship, identity), nothing else: like the
  * camp kit, it must never see a season, and it may not add a fact the profiles don't have.
  */
+const raceOrdinal = n => { const w = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth']; return w[n - 1] || `${n}th`; };
 async function generateRaceLines(body, env) {
   const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
@@ -4059,6 +4060,8 @@ async function generateRaceLines(body, env) {
     p.voice && `How they talk: ${p.voice}`,
     p.backstory && `Backstory: ${p.backstory}`,
     p.personality && `Personality: ${p.personality}`,
+    // the reality shows they've been on (their records): theirs to mention, by name, as it went
+    Array.isArray(p.past) && p.past.length ? `Has been on: ${p.past.map(s => `${s.show} (${s.won ? "won it" : s.final ? "made the final" : s.place ? `came ${raceOrdinal(s.place)}` : "competed"})`).join("; ")}` : "",
   ].filter(Boolean).join("\n");
   // what they are (a father and daughter, best friends) and, separately, how they feel about it (js/rr/state.js FEEL)
   let rel = String(team.rel || "").trim();
@@ -4095,6 +4098,7 @@ async function generateRaceLines(body, env) {
     team.identity ? `They race as: ${team.identity}.` : "",
     team.teamName ? `Team name: ${team.teamName}.` : "",
     "",
+    "If a profile says they've been on a show, they can mention it by name, the way a person would say it (\"I came seventh on Total Drama\", \"I made the final\"), never a season number. Nobody who hasn't been on one says they have.",
     "THE RULE ABOVE ALL: stay true to the characters. Never invent a family member, a name, a past event, a job, a place, a",
     "pet, an injury or a number the profiles don't contain. No other team, no real country, city or landmark, no brand.",
     "",

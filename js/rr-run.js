@@ -41,7 +41,8 @@ import { PLACES } from './rr/places.js';
 import { rrLedgerRecord } from './rr/ledger-record.js';
 import { legRecord } from './rr/leg-record.js';
 import { carriedFor } from './franchise-carry.js';
-import { recordBuiltSeason, hasFranchiseHistory } from './franchise-meta.js';
+import { recordBuiltSeason, hasFranchiseHistory, careerFor } from './franchise-meta.js';
+import { pastOfTeam } from './rr/past.js';
 import { tieBetween } from './ties.js';
 
 export const isRaceSeason = () => seasonFormat(seasonConfig) === RACE_FORMAT;
@@ -193,6 +194,10 @@ function _team(i, a, b, { rel = null, feel = null, resents = null, crusher = nul
   const r = set || h.rel;
   // a feeling set on the Pairs view wins; else what their history says (an estranged tie: strained)
   const mood = { ...feelingOf(feel || h?.feel || null, resents, a, b, crusher), ...elderFrom(r, tie, a, b) };
+  // the shows they've been on before, whatever the team is now (rr/past.js): their lines can name them
+  let past = null;
+  try { past = pastOfTeam(a, b, careerFor); } catch { past = null; }
+  if (past) mood.past = past;
   const history = rel === 'engaged' ? { from: 'set', kin: 'engaged', engaged: true }
     : h?.from ? { from: h.from, kin: h.kin, engaged: !!h.engaged } : null;
   const typed = String(name || '').trim();

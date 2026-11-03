@@ -19,6 +19,8 @@
 import { SCENES } from '../scenes.js';
 import { PLACES } from '../places.js';
 import { IDENTITIES } from '../identities.js';
+import { sharedSeason } from '../past.js';
+import { showName } from '../../shows.js';
 
 export const DON = 'Don';
 
@@ -137,6 +139,10 @@ export function rolesOf(scene, state) {
     ...(scene.kind === 'team-intro' ? d.slots || {} : {}),
     // the team a's team is already allied with (a pitch to join it)
     allyTeam: d.snap?.blocWith?.[0] ? teamRef(state, d.snap.blocWith[0]) : null,
+    // the shows before this one (rr/past.js): a's last, b's last, and the one a and c were both on
+    show: pastOfName(state, roles.a)?.show || null,
+    showB: pastOfName(state, roles.b)?.show || null,
+    showX: (() => { const s = sharedSeason(pastOfName(state, roles.a), pastOfName(state, roles.c)); return s ? showName(s.format) : null; })(),
     // a team's own introduction (the Casting Room's Pairs view): each of them, and Don's label for the two of them
     ...(scene.kind === 'team-intro' && state.teams[tid]?.lines?.introA ? {
       ownA: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introA' : 'introB'] || null,
@@ -148,6 +154,10 @@ export function rolesOf(scene, state) {
 }
 
 // "A", "A and B", "A, B and C"; "the Goths, Alec and Spud, and the Nurses" when a name has its own "and"
+function pastOfName(state, n) {
+  return n ? Object.values(state.teams).find(t => t.a === n || t.b === n)?.past?.[n] || null : null;
+}
+
 function listNames(names) {
   if (names.length <= 1) return names[0] || null;
   const serial = names.length > 2 && names.some(n => n.includes(' and ')) ? ',' : '';

@@ -18,6 +18,7 @@ export function airSeason(result) {
   st.lineLedger = null;            // a fresh season of words
   st.kitLedger = null;
   st.relTagsBy = null;             // the premiere's relationship lines (write.js), one per team
+  st.vetTagsBy = null;             // ...and its veterans' lines
   st.quickCount = {};
   st.storyAired = {};
   st.followCount = {};             // who a challenge in stages has followed this season (director.js)

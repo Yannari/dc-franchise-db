@@ -17,9 +17,9 @@ import { CIRCLE_CATEGORIES } from './ci/categories.js';
 import { STATS, ARCHETYPE_NAMES, ARCHETYPES, players, relationships, seasonConfig } from './core.js';
 import { threat, threatTier, overall, tribeColor, playerAvatarUrl } from './players.js';
 import { seasonFormat } from './core.js';
-import { engineOf } from './shows.js';
+import { engineOf, showName } from './shows.js';
 import { saveCast, renderCast, editPlayer, cancelEdit, TRIBE_PALETTE } from './cast-ui.js';
-import { franchiseHistorySummary } from './franchise-meta.js';
+import { franchiseHistorySummary, careerFor } from './franchise-meta.js';
 import { writerEndpoint } from './social/writer.js';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -533,7 +533,10 @@ export async function crRaceFillLines(btn) {
   const roster = Array.isArray(window.FRANCHISE_ROSTER) ? window.FRANCHISE_ROSTER : [];
   const profile = p => {
     const r = roster.find(x => (p.baseSlug && x.slug === p.baseSlug) || x.slug === p.slug || x.name === p.name) || {};
-    return { name: p.name, ...Object.fromEntries(PROFILE_KEYS.map(k => [k, p[k] ?? r[k] ?? null])) };
+    // (the shows they've been on, from their records: the lines can name them, rr/past.js)
+    let past = [];
+    try { past = (careerFor(p.name)?.seasons || []).map(s => ({ show: showName(s.format) || s.format, num: s.seasonNum, place: s.placement || 0, won: !!s.winner, final: !!s.finalist })); } catch { past = []; }
+    return { name: p.name, ...Object.fromEntries(PROFILE_KEYS.map(k => [k, p[k] ?? r[k] ?? null])), past };
   };
   const o = window.raceTeamOptions?.() || {};
   const rel = v('rrRel') || window.raceDefaultRel?.(a.name, b.name)?.rel || '';

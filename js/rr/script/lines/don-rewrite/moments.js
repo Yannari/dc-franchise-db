@@ -124,7 +124,7 @@ export default {
   'gb.ao1:1': "{team}, you never made it to the Chill Zone, so the Chill Zone came to you, because I'm the Chill Zone.",
   'gb.ao1:3': "You're out, and I walked all the way here, so think about that.",
   'gb.ao2:1': "Hi there, {team}, and I'm sorry, but the race is over for you.",
-  'gb.ao2:3': "I've been there for an hour, which was long enough to buy this, and it's very good fruit, so goodbye.",
+  'gb.ao2:3': "I've been there for an hour, which was long enough to get this, and it's very good fruit, so goodbye.",
   'gb.as1:0': "{team}, you didn't make it to the stage, so I've brought the bad news to you.",
   'gb.as1:2': "You could hear them, but they were cheering for somebody else, and I'm sorry.",
   'gb.as2:1': "{team}, I'm sorry, but the race is over for you.",

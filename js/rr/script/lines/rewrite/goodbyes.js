@@ -24,8 +24,8 @@ export default {
         ['b', "And whoever had today just won about forty dollars. Good for them."]),
       iv('gb.eg3', { relFam: 'family' },
         ['a', "Before this, we hadn't spent a whole day together since we were kids."],
-        ['b', "And now we've spent days and days together, in cabs and planes and on camels."],
-        ['a', "I'd do it all again. Maybe skip the camels."]),
+        ['b', "And now we've spent every single day together, in cabs and on planes and everywhere."],
+        ['a', "I'd do it all again. Every single part of it."]),
       iv('gb.eg4', { relFam: 'romantic' },
         ['b', "People kept saying the race would break us up."],
         ['a', "It nearly did. Twice."],
@@ -99,9 +99,9 @@ export default {
       { id: 'gb.da2', turns: [
         don("{team}, I'm afraid you're the last team to arrive, and you've been eliminated."),
         { by: 'b', say: "That's okay. That's okay." },
-        { by: 'a', ...V("Can we keep the bandanas?", "Can we keep the bandanas?", "Do we keep the bandanas?", "Can we KEEP the BANDANAS?", "Can we at least keep the bandanas?", "May we keep the bandanas? As a memento? Of defeat?") },
-        don("You can keep the bandanas."),
-        { by: 'b', say: "Then it was all worth it." },
+        { by: 'a', say: "Can we just have a minute?" },
+        don("Take all the time you need."),
+        { by: 'b', say: "Thank you. Really. Thank you for everything." },
       ] },
     ],
     'don-elim.argues': [
@@ -125,7 +125,7 @@ export default {
       { id: 'gb.dt1', turns: [
         don("{team}, you're the last team to arrive. You've been eliminated."),
         { by: 'a', ...V("No. No, no, no. This isn't fair. This isn't fair at all.", "No. This isn't fair.", "No. Not fair. Not at all.", "NO! NO, no, NO! This ISN'T fair!", "No. No, this isn't fair. This isn't fair at all.", "No. I reject this. I'm sending it back.") },
-        { beat: '{a} kicks the mat. The mat does not move. {a} hops in a small circle, holding a foot.' },
+        { beat: '{a} kicks the edge of the mat, hard.' },
         don("That's my mat."),
         { by: 'b', say: "We should go." },
         { by: 'a', say: "I'm going to go. I'm going to go loudly." },
@@ -135,7 +135,7 @@ export default {
         { by: 'b', say: "This is because of the cab driver. You know it's because of the cab driver." },
         don("It's because you came in last."),
         { by: 'a', ...V("Because of the cab driver!", "Because of the cab driver.", "The cab driver did this.", "BECAUSE of the CAB DRIVER!", "Because of the cab driver, though!", "Because of the cab driver! Who sang! The whole way!") },
-        { beat: 'They storm off. A few seconds later, they come back for a forgotten backpack, and storm off again.' },
+        { beat: 'They storm off without another word.' },
       ] },
     ],
     'don-fakeout.relief': [
@@ -208,9 +208,9 @@ export default {
         don("You're out. And I walked here. Think about that."),
       ] },
       { id: 'gb.ao2', turns: [
-        { beat: 'Don steps out from behind a market stall, eating a piece of fruit.' },
+        { beat: 'Don steps out from behind a parked van, eating a piece of fruit.' },
         don("{team}. Hi. You're done. The race is over for you."),
-        { by: 'a', say: "Were you waiting behind that stall?" },
+        { by: 'a', say: "Were you waiting behind that van?" },
         don("For an hour. Long enough to buy this. It's very good fruit. Bye."),
       ] },
     ],

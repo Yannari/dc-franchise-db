@@ -371,7 +371,7 @@ export default {
       { by: 'b', say: "Scream after. Do it now.",
         v: { sharp: "Scream after. Do it now.", dry: "Scream later. Do it now.", loud: "Scream after! Do it now!",
              soft: "You can scream after, okay? Just do it now.", odd: "Scream after. I'll scream with you. Do it now." } },
-      { beat: 'It counts. {a} screams anyway.' },
+      { beat: 'It counts, and {a} lets out a scream of relief.' },
     ] },
     { id: 'tk.27', when: { rel: 'siblings' }, turns: [
       { by: 'b', say: "You're doing it the way Dad does it. Stop doing it the way Dad does it.",
@@ -508,11 +508,8 @@ export default {
              soft: "I'm not allowed to help, so I'm just going to stand here and say nice things to you, okay?",
              odd: "I'm not allowed to help, so I'm going to stand here and say nice things. You have good hair." },
         keep: ['nice things'] },
-      { by: 'a', say: "Can you say the nice things quieter?",
-        v: { sharp: "Can you say the nice things a lot quieter?", dry: "Can you say the nice things quieter.", loud: "Can you say the nice things QUIETER?",
-             soft: "Could you maybe say the nice things a bit quieter?", odd: "Can you say the nice things quieter? Like a whisper. A nice whisper." } },
-      { by: 'b', say: "...Nice things. Quietly.",
-        v: { sharp: "...Quiet nice things. Fine.", dry: "...Nice things. Quietly.", loud: "...Okay. Nice things. Quietly.", soft: "...Okay. Quiet nice things.", odd: "...Nice things. Quietly. You're doing great, quietly." } },
+      { by: 'a', say: "Can you say them a little quieter? I can't think."},
+      { by: 'b', say: "Okay. Sorry. You've got this." },
       { beat: 'It takes a long time, but it counts.' },
     ] },
     { id: 'tk.38', when: { behind: true }, turns: [
@@ -571,7 +568,7 @@ export default {
       { by: 'b', say: "I listened! You just kept yelling!",
         v: { sharp: "I listened fine. You just kept yelling.", dry: "I listened. You yelled.", loud: "I listened! You just kept YELLING!",
              soft: "I did listen... you just kept yelling.", odd: "I listened! You yelled, and the bush was not my fault!" } },
-      { beat: 'They keep yelling. Eventually, it counts.' },
+      { beat: 'They argue the whole time, but eventually, it counts.' },
     ] },
     { id: 'tk.42', when: { late: true }, turns: [
       { by: 'a', say: "We got this far in the race, and this is what's going to beat us?",
@@ -583,7 +580,7 @@ export default {
         v: { sharp: "It's not going to beat us. It's just going to take forever.", dry: "It won't beat us. It'll just take a long time.",
              loud: "It's not going to beat us! It's just going to take a really long time!", soft: "It's not going to beat us. It's just going to take a really long time, that's all.",
              odd: "It's not going to beat us. It's just going to take a really long time. Like a slow hug." } },
-      { beat: 'It takes a really long time.' },
+      { beat: 'It takes them a very long time, but they get there.' },
     ] },
   ],
 

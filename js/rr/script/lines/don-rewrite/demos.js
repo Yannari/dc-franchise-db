@@ -1,6 +1,6 @@
 // Don showing each challenge, in whole sentences, the joke built before it lands (2026-10-20).
 export default {
-  'rsd.sp-d1:3': "And that one's paprika, you're welcome, and could somebody please find my glasses?",
+  'rsd.sp-d1:3': "And that one's paprika, you're welcome!",
   'itc.ca-d1:3': "That isn't a caricature, that's slander, because my chin is perfect.",
   'itc.ct-d1:3': "It's very, very strong cheese, so strong that I can no longer feel my face.",
   'hc.tw-d1:3': "I did the Sky-deck myself this morning, and I've almost stopped shaking.",
@@ -27,7 +27,7 @@ export default {
   'cpl.sh-d1:2': "You grab this bit, not the mouth bit, and please, please remember that!",
   'gyi.tp-d1:2': "Then you run through the geyser field and say it word for word to the man on the other side, which is easy, because it only took me a day.",
   'gyi.ff-d1:2': "Or Fossil, where you go into the ice cave and dig a fossil out of the wall without cracking it, so choose wisely, or just choose the cave.",
-  'hcs.cf-d1:2': "Could somebody open this? Hello? It isn't funny, well, it's a little bit funny, but please open it.",
+  'hcs.cf-d1:2': "Could somebody open this? Hello? Please open it!",
   'lei.rd-d1:2': "I've never been married, which has nothing to do with anything, so go and find a ring.",
   'lei.fw-d1:2': "I'm wearing the grass skirt, which is my contribution, and the rest of it is up to you.",
   'swp.cl-d1:2': "That was just a demonstration, so you can open it now. Officer? Hello? Officer!",
@@ -117,9 +117,9 @@ export default {
   'gyi.tp-d2:1': "The geysers go off every few minutes, and nobody knows exactly when, not even me, which makes it very exciting for me.",
   'gyi.ff-d2:1': "Bring me an empty platter or a fossil at the Chill Zone, and never, ever the sheep's head.",
   'cvr.co-d2:1': "She wants it big and bright, and she wants to see you dance!",
-  'hcs.cf-d2:1': "The grave digger at the graveyard has your next tip, and he doesn't talk much, because he doesn't need to.",
+  'hcs.cf-d2:1': "The grave digger at the graveyard has your next tip, and he doesn't talk much!",
   'hcs.gy-d2:0': "The coach has to approve, so a wobble, a fall or a lazy split means starting the routine again, and the other partner may only cheer.",
-  'hcs.gy-d2:1': "The coach has trained champions and has never once smiled, so don't take it personally.",
+  'hcs.gy-d2:1': "The coach has trained champions, and she's very hard to impress!",
   'lei.rd-d2:1': "A real wedding ring, handed up onto the pier, gets you the next tip, and please don't keep it, because I know what some of you are like.",
   'prr.be-d2:1': "A clean pot gets the tip in your hand, and that's the whole challenge.",
   'ifl.nw-d2:1': "A ring on the tusk gets you the next tip, and the narwhal gets nothing, because the narwhal is very patient.",

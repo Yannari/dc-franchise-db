@@ -17,13 +17,13 @@ export default {
     ] },
     { id: 'hcs.st.fc2', when: at('coffin', 'find-coffin'), turns: [
       beat('{b} wipes the dust off a brass plate on a coffin lid and reads it out loud.'),
-      by('b', "It's us. It's got both our names on it. That's horrible."),
+      by('b', "It's us. It's got both our names on it. That's so creepy."),
       by('a', "That's ours. That's so weird."),
     ] },
     { id: 'hcs.st.fc3', when: at('coffin', 'find-coffin'), turns: [
       by('a', "Split up. You take the left side, I'll take the right."),
       by('b', "Split up? In a haunted castle? No way."),
-      beat('They search the coffins together, side by side, holding hands, which is much better.'),
+      beat('They search the coffins together, side by side.'),
     ] },
     { id: 'hcs.st.ci1', when: at('coffin', 'climb-in'), turns: [
       by('a', "I've got the tip, so I push. You get in."),
@@ -32,8 +32,8 @@ export default {
       by('b', "How do I look?"),
     ] },
     { id: 'hcs.st.ci2', when: at('coffin', 'climb-in'), turns: [
-      beat('{b} lies down in the coffin, which is lined with old red velvet and smells of a very old attic.'),
-      by('b', "It's actually kind of comfy. That's bad, right?"),
+      beat('{b} lies down in the coffin, which is lined with old red velvet.'),
+      by('b', "It's actually kind of comfy. That's so weird."),
       by('a', "Close the lid? Or leave it open?"),
       by('b', "Open. Definitely open."),
     ] },
@@ -68,9 +68,9 @@ export default {
       by('a', "You can get out now."),
     ] },
     { id: 'hcs.st.gd2', when: at('coffin', 'grave-digger'), turns: [
-      by('a', "\"Ride a horse to the gym.\" A horse!"),
+      by('a', "It says ride a horse to the gym. A horse!"),
       by('b', "Anything's better than a coffin."),
-      beat('{b} climbs out of the coffin and stretches, and every bone in {b.posAdj} back cracks at once.'),
+      beat('{b} climbs out of the coffin and stretches.'),
     ] },
 
     // ── the gym ──
@@ -87,10 +87,10 @@ export default {
     { id: 'hcs.st.sp1', when: at('gym', 'the-split'), turns: [
       beat('{a} climbs up onto the beam, wobbles, steadies, and slides slowly, slowly down into a full split.'),
       by('b', "You're doing it! You're actually doing it!"),
-      by('a', "I'm doing it! Somebody's going to have to help me up, though."),
+      by('a', "I'm doing it! I'm actually doing it!"),
     ] },
     { id: 'hcs.st.sp2', when: at('gym', 'the-split'), turns: [
-      by('b', "Arms out! Like a swan!"),
+      by('b', "Arms out! Hold it!"),
       beat('{a} throws both arms out wide and holds the split on the beam, perfectly still, while the coach watches without blinking.'),
       by('a', "This really hurts."),
     ] },
@@ -105,14 +105,14 @@ export default {
       by('a', "Did that count? Tell me that counted."),
     ] },
     { id: 'hcs.st.cn1', when: at('gym', 'coach-nods'), turns: [
-      beat('The coach stares at {a} for a long, terrible moment, then gives one short nod and holds out the tip.'),
+      beat('The coach stares at {a} for a long moment, then gives one short nod and holds out the tip.'),
       by('a', "A nod! That's a nod! I got a nod!"),
       by('b', "I don't think that coach nods at anyone."),
     ] },
     { id: 'hcs.st.cn2', when: at('gym', 'coach-nods'), turns: [
-      by('b', "\"Make your way on foot to the Chill Zone.\" Can you walk?"),
+      by('b', "It says go on foot to the Chill Zone. Can you walk?"),
       by('a', "Sort of. My legs don't feel right."),
-      beat('{b} doesn\'t carry {a.obj}, but {a} limps along beside {b} as fast as possible.'),
+      beat('{a} limps along beside {b} as fast as {a.sub} can.'),
     ] },
   ],
 
@@ -121,7 +121,7 @@ export default {
     { id: 'hcs.sf.fc1', when: at('coffin', 'find-coffin'), turns: [
       beat('{a} heaves open a heavy coffin lid, and a skeleton inside sits up and stares at {a.obj}.'),
       by('a', "Aaaaah! Not ours! Not ours!"),
-      beat('{a} slams the lid shut again. It is a prop. It is still not their coffin.'),
+      beat('{a} slams the lid shut again. It\'s a prop, and it isn\'t their coffin.'),
     ] },
     { id: 'hcs.sf.fc2', when: at('coffin', 'find-coffin'), turns: [
       by('b', "This is it! This has our names on it!"),
@@ -136,7 +136,7 @@ export default {
     { id: 'hcs.sf.ci2', when: at('coffin', 'climb-in'), turns: [
       by('a', "Why aren't you lying down?"),
       by('b', "Because something in here just moved."),
-      beat('It was a moth. It takes them a while to find it and get it out.'),
+      beat('It\'s a moth. It takes them a while to get it out.'),
     ] },
     { id: 'hcs.sf.pu1', when: at('coffin', 'the-push'), turns: [
       beat('The coffin hits a rock, tips over sideways, and {b} rolls out onto the road in a heap.'),
@@ -150,13 +150,13 @@ export default {
     ] },
     { id: 'hcs.sf.pu3', when: at('coffin', 'the-push'), turns: [
       beat('One of the coffin\'s little wheels pops off and goes rolling away down the hill without them.'),
-      by('a', "That's a problem."),
+      by('a', "Oh no."),
       by('b', "Now we're scraping along the ground. Great."),
     ] },
     { id: 'hcs.sf.gg1', when: at('coffin', 'graveyard-gate'), turns: [
       by('a', "Left or right?"),
       by('b', "I can only see the sky! Left?"),
-      beat('Left leads to a wall. They have to turn the coffin round, which takes a very long time.'),
+      beat('Left leads to a wall. They have to turn the coffin round, which takes a long time.'),
     ] },
     { id: 'hcs.sf.gg2', when: at('coffin', 'graveyard-gate'), turns: [
       beat('{a} pushes the coffin right through the graveyard and out the back gate on the other side, missing the grave digger completely.'),
@@ -173,11 +173,11 @@ export default {
     { id: 'hcs.sf.sp2', when: at('gym', 'the-split'), turns: [
       by('b', "Go lower! All the way!"),
       by('a', "This is all the way! This is it!"),
-      beat('The coach looks at the gap between {a} and the beam, which is quite big, and shakes their head.'),
+      beat('The coach looks at the gap between {a} and the beam and shakes her head.'),
     ] },
     { id: 'hcs.sf.sp3', when: at('gym', 'the-split'), turns: [
       beat('{a} gets halfway down into the split, and something in {a.posAdj} trousers rips very loudly.'),
-      by('a', "That was just my trousers. I'm fine."),
+      by('a', "That was my trousers. I'm fine."),
       by('b', "Keep going! Forget the trousers!"),
     ] },
     { id: 'hcs.sf.va1', when: at('gym', 'the-vault'), turns: [

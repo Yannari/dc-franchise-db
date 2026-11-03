@@ -37,7 +37,7 @@ export default {
     ] },
     { id: 'shi.st.sa2', when: at('eggs', 'in-the-sand'), turns: [
       by('a', "Dig slowly. If you hit it, it breaks."),
-      beat('They brush the sand away with their fingers like archaeologists until an egg appears.'),
+      beat('They brush the sand away with their fingers until an egg appears.'),
       by('b', "There. Lift it out. Slowly."),
     ] },
     { id: 'shi.st.te1', when: at('eggs', 'three-eggs'), turns: [
@@ -55,7 +55,7 @@ export default {
     { id: 'shi.st.sf1', when: at('condor-nest', 'spire-foot'), turns: [
       beat('The spire of rock goes straight up into the sky. Right at the top, a giant nest sticks out over the edge.'),
       by('b', "That nest's the size of a car."),
-      by('a', "Then the bird must be the size of a car too."),
+      by('a', "Then the bird must be huge."),
     ] },
     { id: 'shi.st.sf2', when: at('condor-nest', 'spire-foot'), turns: [
       by('b', "Eggs in the pouch. Zip it up."),
@@ -78,18 +78,18 @@ export default {
       beat('{a} presses flat against the rock until the condor flies off, then climbs on.'),
     ] },
     { id: 'shi.st.co2', when: at('condor-nest', 'the-condor'), turns: [
-      by('a', "We're bringing your eggs back! We're the good guys!"),
-      beat('The condor tilts its head, as if it\'s thinking about it, and glides away.'),
-      by('b', "I think it understood you!"),
+      by('a', "We're bringing your eggs back! It's okay!"),
+      beat('The condor tilts its head and glides away.'),
+      by('b', "It's going! Keep climbing!"),
     ] },
     { id: 'shi.st.ei1', when: at('condor-nest', 'eggs-in'), turns: [
       beat('{a} reaches over the edge of the giant nest and sets the three eggs down in the middle, one by one.'),
-      by('a', "One. Two. Three. Home."),
+      by('a', "One. Two. Three. Done."),
       by('b', "Now come down before the bird comes back!"),
     ] },
     { id: 'shi.st.ei2', when: at('condor-nest', 'eggs-in'), turns: [
       by('b', "Are they in? Are they all in?"),
-      by('a', "All in. Snug as anything."),
+      by('a', "All in."),
       beat('Far away, the condor gives a loud cry.'),
     ] },
     { id: 'shi.st.cd1', when: at('condor-nest', 'climb-down'), turns: [
@@ -100,7 +100,7 @@ export default {
     { id: 'shi.st.cd2', when: at('condor-nest', 'climb-down'), turns: [
       by('b', "Nearly there. Three more steps."),
       beat('{a} hops off the rock, and {b} grabs {a.obj} in a big hug.'),
-      by('a', "Never again. No more birds."),
+      by('a', "Never again."),
     ] },
   ],
 
@@ -113,7 +113,7 @@ export default {
     ] },
     { id: 'shi.sf.cc2', when: at('eggs', 'cracks-and-chins'), turns: [
       by('b', "Is that ours? It looks like ours."),
-      by('a', "In this light, everything looks like ours."),
+      by('a', "In this light, they all look the same."),
       beat('It isn\'t. They put it back and keep looking.'),
     ] },
     { id: 'shi.sf.sa1', when: at('eggs', 'in-the-sand'), turns: [
@@ -146,7 +146,7 @@ export default {
     { id: 'shi.sf.co2', when: at('condor-nest', 'the-condor'), turns: [
       by('b', "Behind you! It's behind you!"),
       beat('The condor flaps so close that {a} lets go with one hand, and has to climb back down.'),
-      by('a', "It looked me in the eye. Right in the eye."),
+      by('a', "It came so close."),
     ] },
     { id: 'shi.sf.ei1', when: at('condor-nest', 'eggs-in'), turns: [
       beat('{a} sets the second egg down a little too hard. There\'s a tiny crack.'),

@@ -21,21 +21,21 @@ const place = {
   'don-opener.annoyed': [
     { id: 'str.op1', when: P, turns: [
       beat("Don stands in a long wooden boat on a wide brown river, holding an umbrella against the sun, a village on stilts behind him."),
-      don("Welcome to Stilt River! A village on legs, a river the colour of chocolate milk, and catfish the size of a small dog."),
+      don("Welcome to Stilt River! A village on stilts, a wide brown river, and catfish the size of a small dog!"),
       don("Today, teams work together. In big groups. Whether they like each other or not. Mostly not."),
-      beat('A catfish breaks the surface beside the boat with a loud slap. Don nearly drops the umbrella.'),
+      beat('A catfish breaks the surface beside the boat with a loud slap, and Don jumps.'),
     ] },
     { id: 'str.op2', when: P, turns: [
       don("Stilt River. Everything here is built on stilts, because in the rainy season the river comes to visit. It stays for months."),
       don("Racers, your long-tail boats are at the jetty. Keep your hands in the boat. The catfish are friendly. Mostly."),
-      beat('A child in a canoe paddles past Don, much faster than his boat, and waves.'),
+      beat('A child in a canoe paddles past Don and waves.'),
     ] },
   ],
   'don-opener.bored': [
     { id: 'str.op3', when: P, turns: [
       beat("Don is lying in a hammock strung under a stilt hut, swinging gently, eating fruit from a bowl."),
       don("Stilt River. Very relaxing. Unless you're a racer. Boats are at the jetty."),
-      don("Go and make some friends. You'll need them."),
+      don("Go and make some friends, because you're going to need them!"),
     ] },
   ],
   'arrival-awe.wonder': [
@@ -43,12 +43,12 @@ const place = {
       beat("The boat comes round a bend, and there's the village: wooden huts on tall legs, standing in the river, washing on every line."),
       by('a', "The whole village is standing in the water."),
       by('b', "On stilts. Look, the kids are fishing off the front step."),
-      by('a', "I want a front step you can fish off."),
+      by('a', "That's amazing."),
     ] },
     { id: 'str.ar2', when: P, turns: [
       by('b', "It's so green. Everything that isn't river is green."),
-      by('a', "And everything that is river is brown."),
-      by('b', "It's beautiful. Brown and green."),
+      by('a', "And the river's so brown."),
+      by('b', "It's beautiful."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -60,7 +60,7 @@ const place = {
     { id: 'str.ad2', when: P, turns: [
       by('b', "And then 'tunnels'. Dark tunnels. With traps."),
       by('a', "Harmless traps. It says harmless."),
-      by('b', "Everything is harmless until it happens to you."),
+      by('b', "I don't trust that."),
     ] },
   ],
 };
@@ -71,7 +71,7 @@ const roads = {
     { id: 'str.tm1', when: { taskId: 'longtail-boat', mishap: 'tangled-propeller' }, turns: [
       beat("The long-tail boat's engine whines, then chokes, and the boatman lifts the propeller out of the water. It's wrapped in river weed."),
       by('a', "Can we help? Do you need help?"),
-      by('b', "He's got a knife. He doesn't need help."),
+      by('b', "He's got it. He's done this before."),
       beat('Twenty minutes of cutting and untangling later, the boat roars off again.'),
     ] },
   ],
@@ -90,7 +90,7 @@ const catfish = {
     { id: 'str.cf-d2', when: CF, turns: [
       don("Every fish goes in the fisherman's basket. If one wriggles out, it swims away, and you catch it again."),
       don("When the fisherman counts six, everybody in the Superteam gets the next tip. Everybody. Even the ones who did nothing. You know who you are."),
-      beat('The old fisherman sits on the bank beside his basket, smoking a pipe, unimpressed already.'),
+      beat('The old fisherman sits on the bank beside his basket, smoking a pipe.'),
     ] },
   ],
   'task-start.any': [
@@ -102,17 +102,17 @@ const catfish = {
     { id: 'str.cf-s2', when: CF, turns: [
       by('b', "Line up with the others. We walk forward together and push them into the corner."),
       by('a', "Like a wall."),
-      by('b', "Like a wall made of people who are scared of fish."),
+      by('b', "Okay. Slowly."),
     ] },
     { id: 'str.cf-s3', when: CF, turns: [
       beat("{a} feels along the muddy bottom with both hands, face screwed up, as the others spread out."),
-      by('a', "It's all mud. It's all mud, and some of the mud is moving."),
-      by('b', "The moving mud is the fish!"),
+      by('a', "It's all mud. Wait. Something's moving."),
+      by('b', "That's the fish! Grab it!"),
     ] },
     { id: 'str.cf-s4', when: CF, turns: [
       by('a', "How do you even hold a catfish?"),
       by('b', "The fisherman says under the belly, behind the whiskers."),
-      by('a', "It has whiskers? Nobody said whiskers."),
+      by('a', "Okay. Okay. Under the belly."),
     ] },
   ],
   'task-try.first-try': [
@@ -122,26 +122,26 @@ const catfish = {
       by('b', "The fisherman's counting! He's nodding! We did it together!"),
     ] },
     { id: 'str.cf-f2', when: CF, turns: [
-      by('b', "Got one! A big one! It's looking at me!"),
+      by('b', "Got one! A big one!"),
       beat("{b} holds up a catfish nearly as long as {b.posAdj} arm, and drops it into the basket. Number six."),
       by('a', "That's the last one! That's all six!"),
     ] },
     { id: 'str.cf-f3', when: CF, turns: [
       beat("{a} dives, comes up covered in mud from head to foot, and holding a catfish in each hand."),
       by('a', "Two! Two at once!"),
-      by('b', "You're a legend! You're a muddy legend!"),
+      by('b', "That's amazing!"),
     ] },
     { id: 'str.cf-f4', when: CF, turns: [
       by('a', "That was fast. Was that fast?"),
-      by('b', "The fisherman put his pipe down. I think that means it was fast."),
-      by('a', "He's actually smiling. Look at him."),
+      by('b', "I think so. Look, the fisherman's smiling."),
+      by('a', "He's actually smiling."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'str.cf-a1', when: CF, turns: [
       by('b', "They keep jumping out of the basket. So somebody sits on the lid. Me."),
       beat("{b} sits on the basket lid. Nothing gets out. The others bring the rest, and the count reaches six."),
-      by('a', "Sitting on it! That was the answer!"),
+      by('a', "Sitting on it worked!"),
     ] },
     { id: 'str.cf-a2', when: CF, turns: [
       beat("After the third one slips away, {a} stops grabbing and starts scooping, both arms under the fish at once."),
@@ -151,36 +151,36 @@ const catfish = {
     { id: 'str.cf-a3', when: CF, turns: [
       by('a', "We keep scaring them off. Everybody stand still, and let them come to us."),
       beat('Everybody stands still in the brown water. One by one, the catfish swim right into their hands.'),
-      by('b', "Patience! Who knew?"),
+      by('b', "Waiting worked!"),
     ] },
     { id: 'str.cf-a4', when: CF, turns: [
       beat("It's taken an hour and everybody is soaked, but the sixth catfish finally lands in the basket."),
       by('b', "Six! Finally! Six!"),
-      by('a', "I'm never eating catfish again. I've met too many of them."),
+      by('a', "I'm never eating catfish again."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'str.cf-t1', when: CF, turns: [
       beat("{a} is sitting in the shallows, soaked, holding an empty pair of hands up to the sky."),
-      by('a', "I had it. I had it right here, and it just left."),
+      by('a', "I had it. I had it right here, and it got away."),
       by('b', "They're slippery! Get up! Try again!"),
     ] },
     { id: 'str.cf-t2', when: CF, turns: [
       by('b', "The others have caught three. We've caught none."),
-      by('a', "We've caught lots. We just haven't kept any."),
-      by('b', "That's the same thing!"),
+      by('a', "We've caught some. They keep getting away."),
+      by('b', "Then hold on tighter!"),
     ] },
     { id: 'str.cf-t3', when: CF, turns: [
-      beat("A catfish slaps {a} right across the face with its tail and swims off."),
+      beat("A catfish slaps {a} across the face with its tail and swims off."),
       by('a', "It hit me! A fish hit me!"),
-      by('b', "It's winning! Don't let it win!"),
+      by('b', "Get it! Quick!"),
     ] },
   ],
   'task-done.any': [
     { id: 'str.cf-dn1', when: CF, turns: [
       by('a', "I smell like a river. A whole river."),
-      by('b', "We all do. It's fine. We all smell like a river together."),
-      by('a', "That's the nicest thing anybody's ever said to me."),
+      by('b', "We all do."),
+      by('a', "I need a shower."),
     ] },
     { id: 'str.cf-dn2', when: CF, turns: [
       beat("{a} and {b} wade out of the river, covered in mud, and grab the tip from the fisherman."),
@@ -196,16 +196,16 @@ const catfish = {
   'attempt-fail.any': [
     { id: 'str.cf-x1', when: CF, turns: [
       beat("{a} drops a catfish into the basket. It immediately flips over the side and swims away."),
-      by('a', "No! Come back! You were number five!"),
+      by('a', "No! Come back!"),
       by('b', "Back down to four! Again!"),
     ] },
     { id: 'str.cf-x2', when: CF, turns: [
       beat("{b} grabs a catfish by the tail, and it wriggles free in a spray of brown water."),
       by('b', "Tail's no good! You have to get the belly!"),
-      by('a', "Then why did you grab the tail?"),
+      by('a', "I know! It was all I could get!"),
     ] },
     { id: 'str.cf-x3', when: CF, turns: [
-      beat("{a} holds up a fish to the fisherman. He shakes his head. It's not a catfish, it's a small, very confused eel."),
+      beat("{a} holds up a fish to the fisherman. He shakes his head. It's not a catfish, it's a small eel."),
       by('a', "What is it, then?"),
       by('b', "Put it back! Put it back gently!"),
     ] },
@@ -224,8 +224,8 @@ const tunnels = {
   'don-demo.dry': [
     { id: 'str.tn-d2', when: TN, turns: [
       don("Take a wrong turn, or set off a trap, and you go back to the last junction. Lose your torch, and you feel your way in the dark."),
-      don("Out of the tunnels with the map gets you the next tip. If you're claustrophobic, today is going to be a very long day."),
-      beat('A distant thud echoes out of the tunnel, followed by somebody shouting. Don smiles.'),
+      don("Out of the tunnels with the map gets you the next tip, so good luck in there!"),
+      beat('A distant thud echoes out of the tunnel, followed by somebody shouting.'),
     ] },
   ],
   'task-start.any': [
@@ -242,11 +242,11 @@ const tunnels = {
     { id: 'str.tn-s3', when: TN, turns: [
       beat("The tunnel splits three ways. {a} shines the torch down each one in turn."),
       by('a', "Left, middle, or right?"),
-      by('b', "Which one has the fewest bats?"),
+      by('b', "I don't know. Middle?"),
     ] },
     { id: 'str.tn-s4', when: TN, turns: [
       by('a', "Feel along the floor before you put your hand down. In case of trapdoors."),
-      by('b', "Are you saying that because you know, or because you're scared?"),
+      by('b', "Do you know that, or are you scared?"),
       by('a', "Both."),
     ] },
   ],
@@ -264,19 +264,19 @@ const tunnels = {
     { id: 'str.tn-f3', when: TN, turns: [
       beat("{a} and {b} crawl out of the tunnel into daylight, blinking, with the map in hand."),
       by('a', "First try. No traps. No wrong turns."),
-      by('b', "One bat. There was one bat. But no traps."),
+      by('b', "And no traps."),
     ] },
     { id: 'str.tn-f4', when: TN, turns: [
       by('a', "Follow the fresh air. The way out has fresh air."),
       beat('Following the fresh air takes them straight past the Don Box, and out to the light.'),
-      by('b', "Fresh air! How did you know that?"),
+      by('b', "How did you know?"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'str.tn-a1', when: TN, turns: [
       by('b', "We keep going left. Every time we go left, it's a trap. So we go right."),
       beat("They go right, then right again, and find the Don Box at the end of the second turn."),
-      by('a', "Right! Right was right!"),
+      by('a', "Right worked!"),
     ] },
     { id: 'str.tn-a2', when: TN, turns: [
       beat("After two trapdoors and a faceful of sand, {a} crawls slower, feeling every bit of the floor."),
@@ -286,7 +286,7 @@ const tunnels = {
     { id: 'str.tn-a3', when: TN, turns: [
       by('a', "We mark every turn we take. With a scratch on the wall. So we don't do it twice."),
       beat("Scratch, scratch, scratch, and the next unscratched tunnel leads them to the Don Box."),
-      by('b', "We made a map to find the map!"),
+      by('b', "Marking the walls worked!"),
     ] },
     { id: 'str.tn-a4', when: TN, turns: [
       beat("Crawling in the dark, the torch long gone, {b} puts a hand down, and touches the edge of a box."),
@@ -303,19 +303,19 @@ const tunnels = {
     { id: 'str.tn-t2', when: TN, turns: [
       by('b', "We've been past that rock before. That's the same rock."),
       by('a', "All the rocks look the same in the dark."),
-      by('b', "That one has my handprint on it."),
+      by('b', "I know. I recognise it."),
     ] },
     { id: 'str.tn-t3', when: TN, turns: [
       beat("The torch flickers, dims, and goes out. Total dark."),
-      by('a', "Did you drop it? Please tell me you dropped it."),
+      by('a', "Did you drop it?"),
       by('b', "No. The battery died."),
     ] },
   ],
   'task-done.any': [
     { id: 'str.tn-dn1', when: TN, turns: [
-      by('a', "Sky. I can see the sky. I love the sky."),
+      by('a', "Sky. I can see the sky."),
       by('b', "You were only in there an hour."),
-      by('a', "An hour too long."),
+      by('a', "It felt so much longer."),
     ] },
     { id: 'str.tn-dn2', when: TN, turns: [
       beat("{a} and {b} crawl out into the light, covered in red dust, and run for the temple path."),
@@ -325,18 +325,18 @@ const tunnels = {
     { id: 'str.tn-dn3', when: TN, turns: [
       by('b', "You were so brave in there."),
       by('a', "I screamed four times."),
-      by('b', "Brave people scream too."),
+      by('b', "You still did it."),
     ] },
   ],
   'attempt-fail.any': [
     { id: 'str.tn-x1', when: TN, turns: [
       beat("{a} puts a hand on the floor, and the floor opens. A trapdoor. {a} slides down into a pit of mud."),
-      by('a', "Mud! I'm in mud! Up to my neck in mud!"),
+      by('a', "Mud! I'm in mud!"),
       by('b', "Back to the last junction! Climb out!"),
     ] },
     { id: 'str.tn-x2', when: TN, turns: [
       beat("{b} catches a tripwire with one foot, and a bucket of sand pours down on both of them."),
-      by('a', "Sand! Everywhere! In my mouth!"),
+      by('a', "Sand! It's everywhere!"),
       by('b', "Back to the junction! Again!"),
     ] },
     { id: 'str.tn-x3', when: TN, turns: [

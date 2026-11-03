@@ -43,7 +43,7 @@ export default {
     { id: 'sr.st.bk2', when: at('catfish', 'the-basket'), turns: [
       by('a', "Hold the lid. Hold it down."),
       beat('The basket bumps and thumps with angry fish, and {b} sits on the lid to keep it shut.'),
-      by('b', "They really don't want to be in here."),
+      by('b', "They really want to get out."),
     ] },
     { id: 'sr.st.sx1', when: at('catfish', 'six-fish'), turns: [
       beat('The fisherman lifts the lid, counts the fish with one finger, and nods: six.'),
@@ -100,7 +100,7 @@ export default {
     ] },
     { id: 'sr.st.dl1', when: at('tunnels', 'daylight'), turns: [
       beat('The tunnel slopes up, and suddenly there\'s green light ahead, and then they\'re out in the jungle, blinking.'),
-      by('b', "Daylight! Oh, I missed you, daylight!"),
+      by('b', "Daylight! Finally!"),
       by('a', "Come on. Temple path. We're nearly done."),
     ] },
     { id: 'sr.st.dl2', when: at('tunnels', 'daylight'), turns: [
@@ -120,26 +120,26 @@ export default {
     { id: 'sr.sf.wi2', when: at('catfish', 'wade-in'), turns: [
       by('b', "My shoe! The mud took my shoe!"),
       beat('{b} spends a whole minute digging in the mud for a shoe while everyone else looks for fish.'),
-      by('a', "Leave the shoe! We'll buy you a new shoe!"),
+      by('a', "Leave the shoe! Come on!"),
     ] },
     { id: 'sr.sf.fa1', when: at('catfish', 'feel-around'), turns: [
       beat('{a} grabs a catfish, holds it up, and it slips straight out of {a.posAdj} hands and back into the water.'),
-      by('a', "It's too slippery! It's like holding soap!"),
+      by('a', "It's too slippery!"),
       by('b', "Hold it by the gills! Not the tail!"),
     ] },
     { id: 'sr.sf.fa2', when: at('catfish', 'feel-around'), turns: [
       by('b', "Did you get one?"),
-      by('a', "I got a stick. And some weed. And a boot."),
-      beat('{a} throws the boot back. It is not a fish.'),
+      by('a', "I got a stick. And some weed. And an old boot."),
+      beat('{a} throws the boot back.'),
     ] },
     { id: 'sr.sf.bk1', when: at('catfish', 'the-basket'), turns: [
       beat('{b} lifts the lid to put a fish in, and the one already inside flops straight out, over the edge, and back into the river.'),
       by('b', "No! Come back!"),
-      by('a', "That one counts again. We need another one."),
+      by('a', "That's one less. We need another one."),
     ] },
     { id: 'sr.sf.bk2', when: at('catfish', 'the-basket'), turns: [
       by('a', "Who left the lid open?"),
-      beat('Nobody admits it. Two catfish are already halfway back to the middle of the river.'),
+      beat('Nobody says anything. Two catfish are already halfway back to the middle of the river.'),
       by('b', "Okay. Back in the water."),
     ] },
 
@@ -147,11 +147,11 @@ export default {
     { id: 'sr.sf.dk1', when: at('tunnels', 'in-the-dark'), turns: [
       beat('{a} gets two steps into the tunnel, hears something skitter in the dark, and walks straight back out.'),
       by('a', "Something's in there."),
-      by('b', "Everything's in there. It's a tunnel. Come on."),
+      by('b', "It's probably a bat. Come on."),
     ] },
     { id: 'sr.sf.dk2', when: at('tunnels', 'in-the-dark'), turns: [
       by('b', "The torch won't turn on."),
-      beat('{b} shakes it, bangs it, and finally finds the switch, which was already on. The bulb was just loose.'),
+      beat('{b} shakes it and bangs it, and finally it flickers on. The bulb was loose.'),
       by('a', "Okay. Now we can go."),
     ] },
     { id: 'sr.sf.tr1', when: at('tunnels', 'the-traps'), turns: [
@@ -162,7 +162,7 @@ export default {
     { id: 'sr.sf.tr2', when: at('tunnels', 'the-traps'), turns: [
       by('b', "Careful, there's a...!"),
       beat('{a} walks straight through the tripwire. The floor drops away, and {a} lands in a pit of mud up to {a.posAdj} waist.'),
-      by('a', "Thanks for the warning."),
+      by('a', "You could have said that sooner!"),
     ] },
     { id: 'sr.sf.te1', when: at('tunnels', 'tunnel-ends'), turns: [
       beat('The tunnel ends in a wall of rock. A dead end.'),
@@ -172,7 +172,7 @@ export default {
     { id: 'sr.sf.te2', when: at('tunnels', 'tunnel-ends'), turns: [
       by('a', "The torch is dying. It's going orange."),
       beat('The torch flickers out, and for a long minute they feel their way along the wall in total darkness.'),
-      by('b', "That's my face. You're touching my face."),
+      by('b', "That's me! That's my face!"),
     ] },
   ],
 };

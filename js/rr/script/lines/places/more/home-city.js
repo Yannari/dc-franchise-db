@@ -17,8 +17,8 @@ const tower = {
     ] },
     { id: 'hc2.st-s2', when: STAIRS, turns: [
       { by: 'a', ...V("Elevators are for people who want to lose. We're climbing.", "Elevators are for losers.", "We climb.", "ELEVATORS are for LOSERS! We're CLIMBING!", "I think elevators are for people who want to lose, so we're climbing.", "The stairs are honest. The elevator lies.") },
-      { by: 'b', say: "You said that before you saw the stairs." },
-      { by: 'a', say: "I'm still saying it. Quieter." },
+      { by: 'b', say: "Say that again on floor ninety." },
+      { by: 'a', say: "I will. Quieter, probably." },
     ] },
     { id: 'hc2.sd-s1', when: DECK, turns: [
       { beat: 'The glass elevator rises up the side of the tower. The city drops away under their feet.' },
@@ -182,8 +182,8 @@ const zipline = {
     ] },
     { id: 'hc2.zl-dn2', when: ZL, turns: [
       { beat: '{a} and {b} unclip from the harnesses and sprint along the jetty towards the island airport.' },
-      { by: 'a', say: "Run! Before the plane fills up!" },
-      { by: 'b', say: "Don's waiting first! The mat first!" },
+      { by: 'a', say: "Run! The mat's at the airport!" },
+      { by: 'b', say: "I am running! Where's Don?" },
     ] },
     { id: 'hc2.zl-dn3', when: ZL, turns: [
       { by: 'a', say: "Do you think everyone at home is watching?" },

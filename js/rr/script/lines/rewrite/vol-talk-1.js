@@ -50,20 +50,20 @@ export default {
         { by: 'c', say: "Right. You two are going home. I've decided." },
       ] },
       { id: 'vk.g6', turns: [
-        { beat: '{a} and {b} are relaxing in the shade, eating fruit, as {c} and {d} stagger past.' },
+        { beat: '{a} and {b} are sitting down, eating fruit, as {c} and {d} stagger past.' },
         { by: 'b', say: "Want a grape? We've got loads. We've had time to buy grapes." },
         { by: 'd', say: "How are you so far ahead?" },
         { by: 'a', ...V("Skill. Mostly skill. A little bit of luck. But mostly skill.", "Mostly skill. A little luck.", "Skill. Some luck.", "SKILL! MOSTLY skill! A LITTLE bit of luck! But MOSTLY skill!", "Mostly skill, honestly. A little bit of luck. But mostly skill.", "Talent, timing, and a cab driver who drives like a criminal.") },
         { by: 'c', say: "Mostly luck." },
         { by: 'b', say: "Grape?" },
       ] },
-      { id: 'vk.g7', turns: [
-        { by: 'a', say: "Hey! Nice job back there! Third time's the charm, right?" },
+      { id: 'vk.g7', when: { failsB: 'many' }, turns: [
+        { by: 'a', say: "Hey! Nice job! Third time's the charm, right?" },
         { by: 'c', say: "It was the fifth time." },
         { by: 'a', say: "Fifth time's the charm, then." },
         { by: 'd', say: "You're counting our attempts?" },
-        { by: 'b', ...V("We had to. We were waiting for our cab. It was very entertaining.", "We were waiting. It was entertaining.", "It was something to watch.", "We HAD to! We were WAITING for our cab! It was VERY entertaining!", "We had to, we were waiting for our cab. It was really entertaining.", "We had nothing else to watch. You were the show.") },
-        { by: 'c', say: "Get in your cab." },
+        { by: 'b', say: "We had to. We were waiting our turn, and it was very entertaining." },
+        { by: 'c', say: "Then go and take your turn." },
       ] },
       { id: 'vk.g8', when: A, turns: [
         { by: 'b', say: "Hey, which flight are you on?" },

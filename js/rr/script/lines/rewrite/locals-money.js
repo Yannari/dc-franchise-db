@@ -123,17 +123,18 @@ export default {
     ],
     'ask-directions.wrong': [
       { id: 'lm.aw1', turns: [
-        { by: 'a', say: "Excuse me, which way to the market?" },
-        L("Oh, yes. Up the hill, all the way to the top. You can't miss it."),
-        { by: 'b', ...V("All the way up? There's nothing up there.", "Up there? There's nothing up there.", "All the way up? Nothing's up there.", "All the WAY up? There's NOTHING up there!", "All the way up there? There's nothing up there, though.", "Up there? That's where clouds go to retire.") },
+        { beat: '{a} holds the tip out to a passer-by.' },
+        { by: 'a', say: "Excuse me, do you know where this is?" },
+        L("Oh, yes. All the way up that street, right to the end. You can't miss it."),
+        { by: 'b', say: "All the way up there? There's nothing up there." },
         L("It's up there. Trust me."),
-        { beat: 'At the top of the hill there is nothing but a bench, and an excellent view of the market at the bottom.' },
-        { by: 'a', say: "We ran up a hill for a bench." },
+        { beat: 'At the end of the street there is nothing but a bench, and a perfect view of where they should have gone.' },
+        { by: 'a', say: "We ran all the way up here for a bench." },
       ] },
       { id: 'lm.aw2', turns: [
-        { by: 'b', say: "Which way is the harbour?" },
+        { by: 'b', say: "Sorry, which way is it from here?" },
         L("Left, left, then right, then left. Very easy."),
-        { by: 'a', ...V("Left, left, right, left. Okay. Easy.", "Left, left, right, left.", "Left left right left. Okay.", "LEFT, LEFT, RIGHT, LEFT! OKAY! Easy!", "Left, left, right, left. Okay, that's easy.", "Left, left, right, left. Like a dance.") },
+        { by: 'a', say: "Left, left, right, left. Okay, that's easy." },
         { beat: 'Left, left, right, left brings them back to exactly where they started.' },
         { by: 'b', say: "We're back where we started." },
         { by: 'a', say: "I think we just did a lap." },
@@ -285,8 +286,9 @@ export default {
     ],
     'local-rule.broken': [
       { id: 'lm.lb1', turns: [
+        { beat: '{a} picks up a small stone from beside the path and puts it in {a.posAdj} pocket.' },
         L("People who take from this place have bad luck. Everybody here knows that."),
-        { by: 'a', ...V("We already have bad luck. What's it going to do, get worse?", "We've got bad luck already.", "Our luck's already bad.", "We ALREADY have bad luck! What's it going to do, get WORSE?", "We already have bad luck, though. What's it going to do, get worse?", "We already have bad luck. Our luck has bad luck.") },
+        { by: 'a', say: "We already have bad luck. What's it going to do, make it worse?" },
         { by: 'b', say: "Worse luck. Put it back." },
         { by: 'a', say: "No. It's a souvenir. I want one thing from this place." },
         { beat: 'The local watches {a} walk off with it and says nothing more.' },

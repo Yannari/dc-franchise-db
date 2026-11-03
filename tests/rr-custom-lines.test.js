@@ -36,7 +36,7 @@ describe('rr custom identity lines', () => {
   it("a team's own introduction is the one that airs: Don's label, then each of them, to camera", () => {
     const s = intro(ot);
     const t = res.state.teams[ot];
-    expect(s.lineId).toBe('ci.own');
+    expect(s.lineId).toMatch(/^ci.own/);
     const confs = s.lines.filter(l => l.kind === 'conf');
     expect(confs.find(l => l.by === t.a)?.text).toBe(OWN.introA);
     expect(confs.find(l => l.by === t.b)?.text).toBe(OWN.introB);

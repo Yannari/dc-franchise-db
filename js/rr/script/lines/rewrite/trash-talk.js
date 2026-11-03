@@ -25,11 +25,10 @@ export default {
       ] },
       { id: 'tt.x-task1', when: { at: 'task' }, turns: [
         { beat: 'Two teams, side by side at the task, both failing.' },
-        { by: 'a', ...V("Wow. You're even worse at this than we are.", "You're worse at this than we are.", "Worse than us. Impressive.", "WOW! You're even WORSE at this than WE are!", "Wow, you're even worse at this than we are.", "You're worse at this than us, and we're historically bad.") },
-        { by: 'd', ...V("We're the same amount of done as you.", "We're as done as you.", "Same amount of done.", "We're the SAME amount of DONE as you!", "We're exactly as done as you are, though.", "We are precisely as done as you. To the inch.") },
-        { by: 'b', ...V("We're done in spirit.", "Done in spirit.", "We're done spiritually.", "We're done in SPIRIT!", "We're more done in spirit, though.", "Our souls are finished. Our hands are catching up.") },
-        { by: 'c', ...V("Your spirit isn't going to hand you a tip.", "Your spirit won't get you a tip.", "Spirit doesn't get you a tip.", "Your SPIRIT isn't going to hand you a TIP!",
-          "Your spirit isn't going to hand you the tip, though.", "The judge does not accept spirit. We checked.") },
+        { by: 'a', say: "Wow. You're even worse at this than we are." },
+        { by: 'd', say: "We're doing exactly as badly as you are." },
+        { by: 'b', say: "We're failing with more style, though." },
+        { by: 'c', say: "Style isn't going to get you the tip." },
         { beat: 'Both teams fail again at exactly the same moment, and both pretend it didn\'t happen.' },
       ] },
       { id: 'tt.x-road1', when: { at: 'road' }, turns: [

@@ -51,6 +51,7 @@ export function walkIn(state) {
     }
     // how they walked in, for what is written about the start once the race has changed it
     t.feel0 = feelOf(t);
+    t.rel0 = t.rel;
   }
 }
 

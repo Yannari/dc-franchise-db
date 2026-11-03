@@ -16,7 +16,10 @@ describe('rr identity voice', () => {
 
   it('teams with an identity are heard in it, regularly', () => {
     const lines = eps.flatMap(ep => ep.segments.flatMap(s => s.lines || [])).filter(l => String(l.voice || '').startsWith('id:'));
-    expect(lines.length).toBeGreaterThanOrEqual(30);
+    // (2026-11-03: no longer tacked onto a trash talk, a gloat or small talk between two teams, where it answered nothing
+    // anybody said, "The Streamers keep trying to make me smile" after a row about a map: write.js AUTO_HOOK. Nine of
+    // seed 9's thirty-nine were those; the rest are heard as before)
+    expect(lines.length).toBeGreaterThanOrEqual(18);
   });
 
   it('a team never says the same kit line twice in a season', () => {

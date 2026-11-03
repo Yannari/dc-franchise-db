@@ -197,9 +197,11 @@ export default {
         { by: 'b', say: "Oh. Then that's you." },
       ] },
       { id: 'vq.tm5', turns: [
-        { beat: '{a} has been holding the tip upside down for a full minute.' },
-        { by: 'b', say: "Why are we looking for a dog?" },
-        { by: 'a', say: "...It says god. Upside down, it says dog." },
+        { beat: '{a} has been reading the tip for a full minute without saying anything.' },
+        { by: 'b', say: "Well? Where are we going?" },
+        { by: 'a', say: "Hang on. I read it wrong. I've been reading the bit at the bottom." },
+        { by: 'b', say: "The bit at the bottom is the rules." },
+        { by: 'a', say: "I know that now." },
       ] },
       { id: 'vq.tm6', when: { at: 'road' }, turns: [
         { by: 'a', say: "It says the bridge. The big one." },

@@ -57,14 +57,15 @@ export default {
         { by: 'a', ...V("Okay, you win. I just did filing.", "You win. I did filing.", "You win. Mine was filing.", "Okay, you WIN! I just did FILING!", "Okay, you win. Mine was just filing.", "You win. My worst job was alphabetising. Your worst job was a sausage.") },
         { by: 'c', say: "Filing sounds nice. Filing sounds dry." },
       ] },
-      { id: 'tk.c-any2', turns: [
+      // (the ones asked grew up together: "since we were six" from two sorority sisters, read 2026-11-03)
+      { id: 'tk.c-any2', when: { relFamB: 'family' }, turns: [
         { by: 'b', ...V("How do you two know each other? You look like you've known each other forever.", "How do you know each other? Seems like forever.", "How do you two know each other?", "How do you two KNOW each other? You look like you've known each other FOREVER!",
           "How do you two know each other? You look like you've known each other forever.", "How do you know each other? You finish each other's sighs.") },
         { by: 'c', say: "We've been arguing since we were six." },
         { by: 'd', ...V("Seven. It was seven. You always say six.", "Seven. You always say six.", "It was seven. Not six.", "SEVEN! It was SEVEN! You ALWAYS say six!", "It was seven, actually. You always say six.", "Seven. Six is the lie you tell at parties.") },
         { by: 'c', say: "See? Still arguing." },
         { by: 'a', ...V("That's beautiful. That's honestly beautiful.", "That's beautiful. Honestly.", "Honestly? That's beautiful.", "That's BEAUTIFUL! That's honestly BEAUTIFUL!", "That's really beautiful, honestly.", "That's beautiful. A love story, but with arguing.") },
-        { by: 'b', say: "We've only been arguing since breakfast." },
+        { by: 'b', say: "We've only been arguing since we got here." },
       ] },
       { id: 'tk.c-any3', when: { relFamB: 'family' }, turns: [
         { by: 'a', ...V("Is it weird, racing with family? I'd kill my brother in a day.", "Is racing with family weird?", "Is it weird? Racing with family?", "Is it WEIRD, racing with FAMILY? I'd lose it with my brother in a DAY!",

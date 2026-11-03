@@ -19,7 +19,7 @@ const pepper = {
       { by: 'a', say: "I've looked. I'm eating the red one. I'm saving your life." },
     ] },
     { id: 'pyc2.pc-s3', when: PC, turns: [
-      { beat: '{b} stands on the high ledge in a wet T-shirt, holding the green flag, looking at the sea a long way down.' },
+      { beat: '{b} stands on the high ledge, holding the green flag, looking at the sea a long way down.' },
       { by: 'b', say: "The water's very blue. Very far, and very blue." },
       { by: 'a', say: "I already ate the pepper! Don't make it be for nothing!" },
     ] },

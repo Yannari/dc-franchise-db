@@ -157,7 +157,7 @@ export const HANDOVER = {
     any: ["Welcome to my cart! Your clue. Mild, hot, or fiery. Choose with your heart, eat with your courage.",
       "Here, here. Take. The fiery one, everybody says no. Then everybody says yes. Then everybody cries.",
       "For you, the envelope. And water is over there. You will want it."],
-    ahead: ["First customers! All my peppers are still here. Lucky, or unlucky, who knows?"],
+    ahead: ["Early! Most of my peppers are still here. Lucky, or unlucky, who knows?"],
     behind: ["Many have come already, my friend. Only the hot ones left now. Very hot."],
   },
   'catfish-fisherman': {

@@ -51,6 +51,19 @@ export default {
     don("Touchdown for flight number one. Let's see who can find a cab first."),
     don("Flight number one is in, and the leaders are out of the airport before their luggage is."),
   ]),
+  // a later flight that lands first (a layover on the first one, travel.js)
+  'don-narrate.flight-overtook': ids('nfo', [
+    don("Flight number {flight} left after flight number {passed}, and it's landed before it. The teams on it can't believe their luck."),
+    don("Flight number {passed} had a layover, so flight number {flight} beats it to the ground, and the teams on it are in front now."),
+    don("Flight number {flight} has landed, and flight number {passed} is still in the air. Some teams who were behind are suddenly ahead."),
+    don("Wheels down for flight number {flight}, ahead of flight number {passed}, which left before it. Somebody on that plane is going to be furious."),
+  ]),
+  'don-narrate.first-late': ids('nfl', [
+    don("Flight number one finally lands, well after a flight that left after it. Those teams were in front, and now they're not."),
+    don("And here's flight number one, at last. The teams on it took the early flight, and they're behind anyway."),
+    don("Flight number one is finally on the ground. That layover has cost those teams their lead."),
+    don("At last, flight number one touches down. The teams on it have just found out they're behind."),
+  ]),
   'don-narrate.flight-landed': ids('nl', [
     don("And now flight number {flight} touches down. Seatbelts off, everybody running."),
     don("Flight number {flight} touches down, and those teams have a lot of catching up to do."),

@@ -11,7 +11,7 @@ import { raceCast } from './helpers/rr-cast.js';
 import { PLACES } from '../js/rr/places.js';
 
 const SAYS = /\b(sacred|holy|shrines?|temples?|church|churches|chapels?|monastery|cathedral|religious-looking)\b/i;
-const NOT = /church choir|religious experience/i;
+const NOT = /church choir|religious experience/gi;   // (every one: "it was the Church Choir, it's always the Church Choir")
 const hits = [];
 let legs = 0;
 beforeAll(() => {

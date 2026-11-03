@@ -169,9 +169,11 @@ describe('rr: what they are, and how they feel about it', () => {
     setPlayers([{ name: 'Lorraine', gender: 'f', age: 52, stats: {} }, { name: 'Jace', gender: 'm', age: 24, stats: {} },
       { name: 'Ana', gender: 'f', stats: {} }, { name: 'Zoe', gender: 'f', stats: {} },
       { name: 'Ahanu', gender: 'm', age: 49, stats: {} }, { name: 'Suki', gender: 'f', age: 20, stats: {} }]);
-    expect(relLabel({ rel: 'aunt-uncle', a: 'Jace', b: 'Lorraine', elder: 'Lorraine' })).toBe('aunt and nephew');
+    expect(relLabel({ rel: 'aunt-uncle', a: 'Jace', b: 'Lorraine', elder: 'Lorraine' })).toBe('nephew and aunt');
+    expect(relLabel({ rel: 'aunt-uncle', a: 'Lorraine', b: 'Jace', elder: 'Lorraine' })).toBe('aunt and nephew');
     expect(relLabel({ rel: 'siblings', a: 'Ana', b: 'Zoe', history: { kin: 'twins' } })).toBe('twin sisters');
-    expect(relLabel({ rel: 'parent-child', a: 'Ahanu', b: 'Suki', feel0: 'strained' })).toBe("father and daughter, and it's complicated");
+    expect(relLabel({ rel: 'parent-child', a: 'Ahanu', b: 'Suki', feel0: 'strained' })).toBe('father and daughter');
+    expect(relLabel({ rel: 'parent-child', a: 'Suki', b: 'Ahanu' })).toBe('daughter and father');
     // one-sided looks warm from outside: Don doesn't know
     expect(relLabel({ rel: 'parent-child', a: 'Ahanu', b: 'Suki', feel0: 'one-sided' })).toBe('father and daughter');
   });

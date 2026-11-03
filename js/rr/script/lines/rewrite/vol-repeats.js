@@ -143,11 +143,11 @@ export default {
         by('c', "It does today."),
       ] },
       { id: 'vr.cr3', turns: [
-        by('c', "You laughed at {b}'s joke."),
-        by('a', "It was funny."),
-        by('c', "It was about a sock."),
-        by('a', "It was a really funny sock."),
-        by('c', "Nobody laughs that hard at a sock unless they like the person telling it."),
+        by('c', "You keep laughing at everything {b} says."),
+        by('a', "{b.Sub}'s funny."),
+        by('c', "Nobody is that funny."),
+        by('a', "{b.Sub} is a little bit that funny."),
+        by('c', "Uh-huh."),
         by('a', "Shh."),
       ] },
       { id: 'vr.cr4', turns: [

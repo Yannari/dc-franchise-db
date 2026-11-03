@@ -259,11 +259,11 @@ export default {
     'closed-for-night.cant-sleep': [
       { id: 'rm.cn1', turns: [
         { by: 'a', say: "Are you awake?" },
-        { by: 'c', ...V("Nobody can sleep. Somebody's snoring like a lawnmower.", "Someone's snoring like a lawnmower.", "Can't sleep. Lawnmower snoring.", "NOBODY can sleep! Somebody's snoring like a LAWNMOWER!", "Nobody can sleep. Somebody is snoring like a lawnmower.", "Nobody sleeps tonight. There's a lawnmower among us.") },
-        { by: 'b', say: "That's my partner. I've had to listen to that for years." },
-        { by: 'd', say: "You poor thing." },
-        { beat: 'The snoring gets louder. All of them start laughing into their pillows.' },
-        { by: 'a', say: "This is the best night of the whole race, and nobody's slept." },
+        { by: 'c', say: "Nobody can sleep. Somebody over there is snoring like a lawnmower." },
+        { by: 'b', say: "How are they even asleep? The ground is all rocks." },
+        { by: 'd', say: "Some people can sleep anywhere. I hate those people." },
+        { beat: 'The snoring gets louder. Everybody starts laughing into their sleeves.' },
+        { by: 'a', say: "Nobody's slept, and this is still the most fun I've had all day." },
       ] },
       { id: 'rm.cn2', turns: [
         { by: 'b', say: "Is anyone else awake?" },

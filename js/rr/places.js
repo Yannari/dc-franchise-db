@@ -67,6 +67,10 @@ export const PLACES = Object.fromEntries([homeCity, redSandDesert, fireMountainI
   fjordSea, greatFalls, bambooWallHills, grassSavanna, stoneHeadIsland, badlands].map(p => [p.id, p]));
 
 export const getPlace = id => PLACES[id] || null;
+// the challenges under a roof (or under the ground): a general line about a fountain, a ditch or a path that narrows to
+// one person wide has no place there (2026-11-03 read: four of them at a dance academy, script/write.js OUTDOOR; talk.js)
+export const INDOOR = new Set(['costume', 'broken-statue', 'pinball', 'wedding-slots', 'coffin', 'gym', 'catacombs', 'tango', 'stew',
+  'sauna', 'shearing', 'artifact', 'prison-cell', 'pirate-map', 'tower-stairs', 'bull', 'sewer', 'tunnels', 'borehole', 'doubloons']);
 
 // Region order for flight lengths (travel.js: 240 minutes + 120 per hop).
 export const REGIONS = ['north', 'desert', 'old-coast', 'ocean', 'far-east'];

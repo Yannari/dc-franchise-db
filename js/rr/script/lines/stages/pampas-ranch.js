@@ -12,10 +12,10 @@ export default {
   'task-stage.ok': [
     // ── the dance ──
     { id: 'pmp.st.ls1', when: at('tango', 'lesson'), turns: [
-      beat('The instructor walks across the academy floor without a sound, takes a rose from between his teeth, and points it at {a}.'),
+      beat('The instructor walks across the academy floor without a sound, takes a rose from between her teeth, and points it at {a}.'),
       by('a', "Me? What did I do?"),
       by('b', "I think that means you lead."),
-      beat('He shows them the steps once: slow, slow, quick-quick, turn, and a dip so low his hair touches the floor.'),
+      beat('She shows them the steps once: slow, slow, quick-quick, turn, and a dip so low her hair touches the floor.'),
       by('a', "Once? We get to see it once?"),
     ] },
     { id: 'pmp.st.ls2', when: at('tango', 'lesson'), turns: [
@@ -70,13 +70,13 @@ export default {
       by('a', "One clap is a tip. One clap is perfect."),
     ] },
     { id: 'pmp.st.vd2', when: at('tango', 'verdict'), turns: [
-      beat('The instructor takes the rose from his teeth and gives it to {b}.'),
+      beat('The instructor takes the rose from her teeth and gives it to {b}.'),
       by('b', "For me? Thank you!"),
-      beat('He takes it back and gives them the tip instead.'),
+      beat('She takes it back and gives them the tip instead.'),
       by('a', "That's fair. The tip's more useful."),
     ] },
     { id: 'pmp.st.vd3', when: at('tango', 'verdict'), turns: [
-      beat('The instructor nods, very slightly, and something in his face nearly becomes a smile.'),
+      beat('The instructor nods, very slightly, and something in her face nearly becomes a smile.'),
       by('a', "Did you see that? He almost smiled."),
       by('b', "That's as close as he gets. Take the tip. Let's go."),
     ] },
@@ -153,7 +153,7 @@ export default {
       beat('Quick-quick turns into quick-quick-ow. {a} has stepped on {b}\'s foot for the fourth time.'),
       by('b', "Same foot! Every time, the same foot!"),
       by('a', "It's right there! It's always right there!"),
-      beat('The instructor taps the floor with his cane. Back to the barre. From the beginning.'),
+      beat('The instructor taps the floor with her cane. Back to the barre. From the beginning.'),
     ] },
     { id: 'pmp.sf.pr2', when: at('tango', 'practice'), turns: [
       beat('{a} and {b} try the turn at full speed and go round one and a half times instead of once.'),

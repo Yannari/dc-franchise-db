@@ -160,7 +160,7 @@ const tower = {
     ] },
     { id: 'hc.st-a2', when: ST, turns: [
       { by: 'a', say: "What floor is this?" },
-      { by: 'b', say: "It doesn't say. It's been not saying for ten floors." },
+      { by: 'b', say: "No idea. I stopped reading the numbers ten floors ago." },
       { by: 'a', say: "Then we just keep going until there's no more stairs." },
     ] },
     { id: 'hc.sd-a1', when: SD, turns: [

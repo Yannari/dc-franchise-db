@@ -110,7 +110,7 @@ export default {
         { by: 'b', say: "That baby is more tired than I am." },
         { by: 'c', say: "Nobody is more tired than I am." },
         { by: 'a', say: "Should we sing to it?" },
-        { by: 'd', ...V("Please don't. Everyone on this plane has heard you sing.", "Please don't. We've heard you sing.", "No. We've heard you.", "Please DON'T! EVERYONE on this plane has HEARD you sing!", "Please don't. Everyone on this plane has heard you sing.", "No. The baby has suffered enough.") },
+        { by: 'd', say: "Please don't. It's had a hard enough day already." },
         { beat: 'They sing to it anyway, very softly. It falls asleep. Nobody can quite believe it.' },
       ] },
       { id: 'vt.sf14', when: A, turns: [

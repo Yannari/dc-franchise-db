@@ -23,7 +23,7 @@ export default {
   'mm.r16:0': "In {placing} place, {team}, and please don't trip on the way off.",
   'mm.r17:0': "Here come {team}, in {placing} place, so let's have the next team!",
   'mm.r18:0': "{team}, you're the {placing} team to arrive, so go and sit with the others.",
-  'mm.r19:0': "{team}, you're in {placing} place, and you're dripping all over my mat.",
+  'mm.r19:0': "{team}, you're in {placing} place, and you both look like you need a long nap.",
   'mm.r20:0': "In {placing} place, it's {team}, so please, nobody faint.",
   'mm.r21:0': "{team}, you're in {placing} place, and I've got a lot of teams to get through, so off you go.",
   'mm.r22:0': "{team}, you're the {placing} team to arrive, and that's all I've got for you, so go.",

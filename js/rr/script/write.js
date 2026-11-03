@@ -29,6 +29,14 @@ import { factsFor } from './facts.js';
 import { identityLine } from './identity.js';
 import { REL_TAGS } from './lines/premiere-rel-tags.js';
 import { VET_TAGS } from './lines/premiere-vet-tags.js';
+// a team bitter on both sides says so, to camera, after its introduction (Don's label no longer does)
+const FEEL_TAGS = {
+  strained: [
+    "We're not really speaking at the moment. This race is supposed to fix that.",
+    "Things between us are complicated right now. You'll see.",
+    "We haven't been getting along. Everybody back home thinks this will help.",
+  ],
+};
 import { metOn, sharedSeason } from '../past.js';
 import { showName } from '../../shows.js';
 import { handoverLine } from './lines/local-handover.js';
@@ -54,7 +62,7 @@ export const DIRECTOR_KINDS = {
   'ride': ['any'],
   // Don narrating the episode (director.js): the departure order, the flights, a bridge between the leaders and the
   // rest, the bottom of an elimination leg
-  'don-narrate': ['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'bridge', 'chill', 'last-stretch', 'overnight'],
+  'don-narrate': ['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'flight-overtook', 'first-late', 'bridge', 'chill', 'last-stretch', 'overnight'],
   // the premiere: Don introduces every team as it turns up (director.js, leg one)
   'team-intro': ['any'],
 };
@@ -97,7 +105,12 @@ export function voicedLine(turn, speaker, { relFam = null, rng = Math.random, le
     if (hard && AGE.has(t)) continue;
     for (const key of [...new Set([t, FAMILY[t]].filter(Boolean))]) {
       if (skip && (skip.has(key) || skip.has(FAMILY[key]))) continue;
-      const x = fresh(v[key]);
+      // (the user, 2026-11-03: "they talk like bots, the english is super broken": the odd voice's surreal lines,
+      // "The map was your child", "Our souls are finished", and the clipped ones, "Twice now. You.", "Feet. Sacred
+      // table.", are not how a person talks. A voice says the line its own way only in whole sentences, about as full
+      // as the line itself)
+      if (key === 'odd') continue;
+      const x = fresh([v[key]].flat().filter(c => fluent(c, base)));
       if (!x) continue;
       spend(x);
       return { text: x, tag: key };
@@ -106,11 +119,28 @@ export function voicedLine(turn, speaker, { relFam = null, rng = Math.random, le
   return { text: base, tag: null };
 }
 
+// a variant that says the whole line, in whole sentences: at least 70% of its words, and no sentence of under three
+const wordsIn = s => String(s).replace(/\{[^}]+\}/g, 'X').split(/\s+/).filter(Boolean).length;
+export function fluent(variant, base) {
+  if (!variant) return false;
+  if (wordsIn(variant) < wordsIn(base) * 0.7) return false;
+  return (String(variant).match(/[^.!?]+[.!?]*/g) || []).map(x => x.trim()).filter(Boolean).every(x => wordsIn(x) >= 3 || /^(yes|no|okay|ok|right|fine|what|why|oh|wow|sure|good|great|thanks)\b/i.test(x));
+}
+
 const TOKEN = /\{(\w+)(?:\.(\w+))?\}/g;
 // a team slot is the team talked about ("the Goths"); spoken to, it's the two of them ("Sorry, Alec and Spud.")
 const TEAM_SLOTS = ['team', 'teamB', 'target'];
+// Capitals for emphasis ("That TOWER! I didn't know it went up THAT far!", "LEFT, LEFT, RIGHT") read as a machine
+// shouting (the user, 2026-11-03: "they dont talk human"): the words are said as words, the "!" carries the volume.
+// (an abbreviation stays one: TV, OK)
+const KEEP_CAPS = new Set(['TV', 'OK', 'DJ', 'UK', 'USA', 'GPS', 'ID', 'SOS', 'VIP', 'BBQ', 'CPR', 'ATM', 'DIY', 'LA', 'NYC', 'PE', 'BFF']);
+export function calmCaps(s) {
+  const out = String(s).replace(/\b[A-Z][A-Z']*[A-Z]\b/g, w => (KEEP_CAPS.has(w) ? w : w.toLowerCase()));
+  return out.replace(/\bi\b/g, 'I').replace(/\bi'(m|ll|d|ve)\b/g, "I'$1")
+    .replace(/(^|(?<!\.\.)[.!?]\s+|^\()([a-z])/g, (m, a, b) => a + b.toUpperCase());
+}
 export function fill(text, roles, slots) {
-  let s = String(text);
+  let s = calmCaps(String(text));
   // "the Lawyers' case", not "the Lawyers's case"
   for (const k of TEAM_SLOTS) if (/s$/.test(slots[k] || '')) s = s.split(`{${k}}'s`).join(`{${k}}'`);
   return s.replace(TOKEN, (m, role, part, at, whole) => {
@@ -151,6 +181,42 @@ export const TASK_LINES = new Set(Object.values(POOLS).flatMap(l => l.map(e => e
 const TASK_TALK = /\b(task|judge)\b/i;
 const TASKY = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => TASK_TALK.test([t.say, t.conf, t.beat].join(' ')))));
 // kinds that are about a task whatever stretch they're filed under (Don explaining it, a team doing it)
+// what a line needs a road vehicle for ("Left at the roundabout", "We'll split the cab", "the driver"): only where the
+// team is in one (2026-11-03 read: a roundabout with five exits on the walk to the first tower, a cab deal inside it)
+const VEHICLE_TALK = /\b(roundabouts?|taxis?|cabs?|bus|buses|the driver|our driver|drivers|steering wheel|petrol|gas station|parking (space|spot|lot)|park the car|the car\b|our car)\b/i;
+const RIDING = new Set(['taxi', 'drive', 'bus', 'car', 'jeep', 'truck']);
+const VETERAN_TALK = /\b(doing this (kind of thing )?(a lot )?longer than you|I've done this before|done this kind of thing|last time I was on (a show|television|TV))\b/i;
+const MUST_WORDS = /^(don-|team-intro$|int-exit$|int-bleachers$|goodbye|farewell|.*-montage$|medevac|boomerang|task-|attempt-fail$|ride$)/;
+const linesWith = re => new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => re.test([t.say, t.conf, t.beat].join(' ')))));
+const YESTERDAY = linesWith(/\byesterday/i);
+const MORNING = linesWith(/\b(good morning|rise and shine|first tip of the day|still yawning)\b/i);
+const DAYLIGHT = linesWith(/\b(a hose|the market|market stall|shopkeeper|the shops?|caf[eé])\b/i);
+// (the sun itself: not after dark, evening included: "It's a nice day" at twenty to nine at night, read 2026-11-03)
+// (a place's own lines are written for it: only the general ones)
+const OUTDOOR = new Set([...linesWith(/\b(fountain|the path|path narrows|ditch|swamp\w*|flooded|hedges?|puddles?|the field|the grass|the road|the trail|the bushes|a tree|the trees|the hill|mud|muddy|the river|the beach|the sand|the shade)\b/i)]
+  .filter(e => !e.when?.taskId && !e.when?.place));
+const SUNLIT = linesWith(/\b(nice day|lovely day|sunny|sunshine|sunburn\w*|in the heat|the midday|this sun)\b/i);
+const MANY_PLACES = linesWith(/\b(best|worst|favourite|favorite) (place|country|city|leg|challenge|food)( we've (been|had|done))? so far\b|\bplaces we've been\b|\bevery (place|country) we've\b|\bthe first night\b|\bfor (days|weeks)\b|\bdays of racing\b/i);
+// the minute a scene happens, on the race's clock (the leg's start, js/rr/leg.js clockStart, plus the scene's own minute)
+function minuteOf(state, scene) {
+  const leg = scene.leg ?? scene.data?.snap?.leg ?? state.leg;
+  const start = state.legs?.[leg - 1]?.clockStart ?? state.clock ?? 420;
+  return start + (scene.data?.t ?? 0);
+}
+function todAt(state, scene) {
+  const m = ((Math.round(minuteOf(state, scene)) % 1440) + 1440) % 1440;
+  return m >= 1320 || m < 300 ? 'night' : m < 660 ? 'morning' : m < 1020 ? 'day' : 'evening';
+}
+// has a midnight passed since the last leg ended: in the rest before this one (js/rr/chill.js), or during this leg
+function sinceMidnight(state, scene) {
+  const leg = scene.leg ?? scene.data?.snap?.leg ?? state.leg;
+  if (!(leg > 1)) return false;
+  return !!state.legs?.[leg - 2]?.overnightAfter || minuteOf(state, scene) >= 1440;
+}
+const KNACK_TALK = /\b(doing it backwards|the wrong way round|start from the end|the pieces?|the knot|the pattern|the code|it's upside down|fold(ing|ed)? it|turn it (over|round))\b/i;
+const KNACK = new Set(Object.values(POOLS).flat().filter(e => !e.when?.taskId && !e.when?.place && e.turns.some(t => KNACK_TALK.test([t.say, t.conf, t.beat].join(' ')))));
+const VETERAN_CLAIM = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => t.by === 'a' && VETERAN_TALK.test([t.say, t.conf].join(' ')))));
+const VEHICULAR = new Set(Object.values(POOLS).flat().filter(e => e.turns.some(t => VEHICLE_TALK.test([t.say, t.conf, t.beat].join(' ')))));
 export const KIND_AT_TASK = new Set(['task-stage', 'task-start', 'task-try', 'task-done', 'attempt-fail', 'quit-task', 'helped-botch', 'allin-alone',
   'whose-botch', 'watching-botch', 'decide-side', 'don-demo', 'don-rule', 'don-ruling', 'judge-yes', 'identity-moment']);
 // the interviews that are about the moment before them: only a line written for that kind of moment will do
@@ -200,11 +266,20 @@ export function canVoice(state, scene) {
 export const HISTORY = [/(?<!since )yesterday/i, /every (single )?day/i, /\b(an hour|hours|ages) ago\b/i, /for ages\b/i, /finally (show|turn)/i,
   /broke down/i, /\bthe bus\b|\bmost buses\b|\bwhole bus\b/i, /last (night|time|leg|week)\b/i, /we passed you/i, /all (week|race long)/i,
   /\b(so|miles) (far )?ahead\b/i, /\bagain\b.*\b(lost|wrong|late|last)\b/i, /been (wrong|right|lost|late) (all|every)/i,
-  /money left/i, /every flight/i];
+  /money left/i, /every flight/i,
+  // (2026-11-03 read, leg 1 at 07:00-07:30: "Did you two finally learn to read a map?", "You didn't have to wait for me
+  // back there", "Is it true you two cried at the last check-in?", "the wrong bus this morning")
+  /\bfinally\b/i, /\bback there\b/i, /\blast (check-in|mat|chill zone|challenge|stop)\b/i, /\bever since\b/i, /\bin the last (five|ten|twenty|few) minutes\b/i, /\bevery (tip|leg|challenge|mat|time)\b/i, /\bstill (here|trying)\b/i, /\bby now\b/i, /\bin your position\b/i, /\bon a plane home\b/i,
+  /\bwe beat (you|them)\b/i, /\bkeep (calling|saying|asking|trying|looking)\b/i, /\ball race\b/i, /\bsince we started\b/i,
+  // (2026-11-03 read, the first twenty minutes: "You know everybody's talking about you two", "You two look like you've
+  // been crying" / "For twenty minutes?")
+  /\beverybody'?s (been )?(talking|saying)\b/i, /\b(look|looks) like (you'?ve|they'?ve) been\b/i, /\bfor (twenty|thirty|forty) minutes\b/i];
 // ...and on the first leg, at any hour, there is no earlier leg, no night on the road and no flight yet (seed 21's
 // Home City read, 2026-10-21: "We haven't slept since leg two", "I carried you last leg like a backpack")
 export const PAST_LEGS = [/last leg/i, /since leg/i, /\bleg (one|two|three|four|five)\b/i, /every leg/i, /the other legs/i,
-  /(?<!since )yesterday/i, /last night/i, /every flight/i, /the camel/i];
+  /(?<!since )yesterday/i, /last night/i, /every flight/i, /the camel/i,
+  // (no plane yet on the first leg: "My legs are still asleep from the plane" at the foot of the first tower)
+  /from the plane/i, /on the plane\b/i, /\bthe planes\b/i, /\bjet ?lag/i, /\bthe flight\b/i, /\bcountr(y|ies)\b/i];
 const textsOf = entry => (entry.turns || []).flatMap(t => [t.say, t.conf, t.beat, ...Object.values(t.v || {}).flat()]).filter(x => typeof x === 'string');
 const historyCache = new WeakMap(), pastCache = new WeakMap();
 export function talksHistory(entry) {
@@ -221,7 +296,7 @@ export function talksPastLegs(entry) {
 }
 
 /** { lines: [{ kind, by, text, voice }], lineId } or null when the kind has no pool (or no entry fits). */
-export function writeScene(state, scene, { roles: given = null } = {}) {
+export function writeScene(state, scene, { roles: given = null, keep = false } = {}) {
   const r = given || rolesOf(scene, state);
   if (!r) return null;
   // the finale's halfway mat has its own lines: nobody there has placed or is safe (lines/rewrite/finale-midmat.js)
@@ -234,7 +309,27 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   const pools = {};
   const facts = factsFor(scene, r, state);
   // a line that talks as if it were at a task ("they go at the task twice as hard") plays only at one
-  const placed = e => !(facts.at && facts.at !== 'task' && !KIND_AT_TASK.has(scene.kind) && TASKY.has(e));
+  const tod = facts.tod ?? todAt(state, scene);
+  const yesterdayOk = sinceMidnight(state, scene);
+  // (an introduction is about who they are at home, their car, their mornings, their yesterday: none of the race's own
+  // rules of place and time apply to it)
+  const intro = scene.kind === 'team-intro';
+  const placed = e => intro || !(facts.at && facts.at !== 'task' && !KIND_AT_TASK.has(scene.kind) && TASKY.has(e))
+    && !(VEHICULAR.has(e) && !RIDING.has(facts.mode))
+    // ("I've been doing this a lot longer than you" from somebody who has never been on a show)
+    && !(VETERAN_CLAIM.has(e) && !facts.aVet)
+    // (a general line about the knack of a task, "you're doing it backwards, start from the end", only where there's
+    // something in their hands to get right: it aired on the tower's stairs, read 2026-11-03)
+    && !(KNACK.has(e) && !facts.handsOn)
+    // ("You said that yesterday" when the leg began the same evening the last one ended, "Good morning, racers!" at ten
+    // to eight at night, and a woman with a hose in her garden at twenty to four in the morning: read 2026-11-03)
+    && !(YESTERDAY.has(e) && !yesterdayOk)
+    && !(MORNING.has(e) && tod !== 'morning')
+    && !(DAYLIGHT.has(e) && tod === 'night')
+    && !(SUNLIT.has(e) && (tod === 'night' || tod === 'evening'))
+    && !(OUTDOOR.has(e) && facts.indoor)
+    // ("Best place we've been so far?" with one place behind them: a comparison needs two, read 2026-11-03)
+    && !(MANY_PLACES.has(e) && !((scene.leg ?? scene.data?.snap?.leg ?? state.leg) >= 3));
   // an interview about a moment is one written for that kind of moment, or there is no interview
   const aboutIt = e => !ABOUT_INTERVIEWS.has(scene.kind) || scene.data?.about == null || e.when?.cause != null;
   // (an opener whose setting isn't made yet waits for its plate: vp-rr-ep/opener-shots.js, the user 2026-10-20)
@@ -256,13 +351,24 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   }
   state.lineLedger ||= newLedger();
   const clock = scene.leg ?? state.leg;
+  // No exchange airs twice in one episode: when every line that fits has been heard this leg, a scene that can be cut is
+  // (two teams at the tower said the same "The elevator does half the work for us" choice, and the BroSIS shut the
+  // elevator on two teams in the same words, a minute apart: read 2026-11-03). Don, the introductions, the check-ins
+  // and the montages always air.
+  if (!keep && !MUST_WORDS.test(scene.kind)) {
+    const day = state.lineLedger.day || {};
+    const all = Object.values(pools).flat();
+    if (all.length && all.every(e => day[e.id] === clock)) return { lines: [], lineId: null, repeat: true };
+  }
   const speakers = Object.entries(r.roles).filter(([k]) => k !== 'don' && k !== 'local').map(([, n]) => n);
   const pairKey = [r.roles.a, r.roles.b].filter(Boolean).sort().join('|');
   const rng = stableRng(state.seed, 'rr-line', scene.id);
   // the premiere's introductions: a team's own identity (or, without one, its relationship) always wins over the
   // general lines, which are only for a team nothing else fits
   const prefer = scene.kind === 'team-intro' ? [...PREFER, 'identity', 'rel'] : PREFER;
-  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: STRONG, prefer });
+  // (`fresh`: every line that fits airs once before any of them comes back this season, as Big Brother asks: two teams'
+  // interviews were the same "How do we know each other? Long story." in one leg, read 2026-11-03)
+  const entry = pickEntry(state.lineLedger, pools, key, facts, pairKey, rng, speakers, clock, { strong: STRONG, prefer, fresh: scene.kind !== 'team-intro' });
   if (!entry) return null;
   const relFam = scene.data?.snap?.relFam || null;
   const capped = {};
@@ -295,10 +401,10 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   });
   // an identity's introduction can't know what the two of them are: one of them says it (lines/premiere-rel-tags.js)
   let relTagged = false;
-  if (scene.kind === 'team-intro' && /^(pi|ci)\./.test(entry.id) && entry.id !== 'ci.own' && lines.some(l => l.kind === 'conf')) {
+  if (scene.kind === 'team-intro' && /^(pi|ci)\./.test(entry.id) && !entry.id.startsWith('ci.own') && lines.some(l => l.kind === 'conf')) {
     const t = state.teams[scene.data?.team];
     // an engaged couple (set in the Pairs view, or from their history) say that, not just that they're together
-    const tags = t && (t.history?.engaged ? REL_TAGS.engaged : REL_TAGS[t.rel]);
+    const tags = t && (t.history?.engaged ? REL_TAGS.engaged : REL_TAGS[t.rel0 || t.rel] || ((t.feel0 || t.feel) === 'strained' ? FEEL_TAGS.strained : null));
     if (tags?.length) {
       const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
       const who = lastBy === t.a ? t.b : t.a;
@@ -319,7 +425,7 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
   // the introduction, unless it already had a relationship line, or is the vets' own (it says they've done this) or the
   // user's own (their words, as they wrote them)
   const vt = scene.kind === 'team-intro' ? state.teams[scene.data?.team] : null;
-  if (vt?.past && !relTagged && vt.rel !== 'reality-vets' && entry.id !== 'ci.own' && !facts.ownIntro && lines.some(l => l.kind === 'conf')) {
+  if (vt?.past && !relTagged && vt.rel !== 'reality-vets' && !entry.id.startsWith('ci.own') && !facts.ownIntro && lines.some(l => l.kind === 'conf')) {
     const vets = [vt.a, vt.b].filter(n => vt.past[n]);
     const lastBy = [...lines].reverse().find(l => l.kind === 'conf')?.by;
     const who = vets.find(n => n !== lastBy) || vets[0];
@@ -344,7 +450,9 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
     // at a challenge it opens the moment, said by whoever doesn't speak first: a task beat is a tight exchange that ends
     // on its button, and a line after the button answers nothing (2026-10-20 read: "Please don't. People walk on it." /
     // "This is a highlight run, Luis.")
-    const opens = OPENS.has(scene.kind);
+    // (a celebration and an arrival are tight exchanges too: the identity line first, not after the joke that ends them,
+    // "I finished a jigsaw once." / "This is the best I've felt all race...", read 2026-11-03)
+    const opens = OPENS.has(scene.kind) || HOOK_FIRST.has(scene.kind);
     const partner = r.roles.b && partnerOf(state, r.roles.a) === r.roles.b ? r.roles.b : null;
     let who;
     if (opens) {
@@ -358,7 +466,11 @@ export function writeScene(state, scene, { roles: given = null } = {}) {
       who = lastBy === r.roles.a && partner ? partner : r.roles.a;
     }
     if (hook && who && stableRng(state.seed, 'rr-idhook', scene.id)() < AUTO_SHARE) {
-      const said = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id), { types: scene.data?.snap?.taskTypes });
+      const got = identityLine(state, who, hook, stableRng(state.seed, 'rr-idline', scene.id), { types: scene.data?.snap?.taskTypes });
+      // (held to what the scene's own lines are held to: no history in the first hour, no earlier leg on the first one,
+      // no car on foot)
+      const said = got && !(facts.fresh && HISTORY.some(re => re.test(got))) && !(facts.firstLeg && PAST_LEGS.some(re => re.test(got)))
+        && !(VEHICLE_TALK.test(got) && !RIDING.has(facts.mode)) ? got : null;
       // said in the scene: before the closing interview, if the scene ends on one; at a challenge, first of all (after
       // an action line it splits the action from the reaction to it)
       let at = lines.length;
@@ -382,9 +494,10 @@ const HANDED = new Set(['clue', 'box-grab']);
 // Where a team's identity speaks on its own (identity.js hooks), and how often: at a task it's good or bad at,
 // when a task keeps failing or is given up, on arriving somewhere new, first or last on the mat, going home,
 // at a rival in trash talk, at a friend in good small talk.
-const AUTO_SHARE = 0.5;
+const AUTO_SHARE = 0.6;
 // the moments at a challenge, where the identity line opens the exchange instead of following it
 const OPENS = new Set(['task-start', 'task-try', 'task-done', 'attempt-fail', 'task-stage']);
+const HOOK_FIRST = new Set(['celebrate', 'arrival-awe']);
 const AUTO_HOOK = {
   // after-fails is the try that finally worked: no struggle line over it. A 'bad' line reacts to a struggle ("this is
   // why"), so it isn't said at the start or over a first-try success (2026-10-20 read: "I skipped gym. This is why." at
@@ -399,9 +512,9 @@ const AUTO_HOOK = {
   'arrival-awe': () => 'arrive',
   'don-place': f => (f.matPlace === 'first' ? 'mat-first' : f.matPlace === 'last' ? 'mat-last' : null),
   'int-exit': () => 'elim',
-  'trash-talk': () => 'about-friction',
-  'gloat': () => 'about-friction',
-  'small-talk': f => (f.ending === 'click' ? 'about-friend' : null),
+  // (not tacked onto a scene between two teams: "The Streamers keep trying to make me smile" after a row about a map,
+  // "Tourists look at my jacket like it's going to bite them" after one about last place, read 2026-11-03: a line about
+  // the other team that answers nothing anybody said)
 };
 
 function relFamOfPerson(state, n) {

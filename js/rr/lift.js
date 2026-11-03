@@ -122,7 +122,8 @@ export function rideLift(state, stretch, id, t, api, rng) {
     }
     // the doors closing on one team inside as this one runs up: held, or shut by a team that's in first
     const closing = openRide(L, t);
-    if (closing && closing.teams.length === 1 && closing.dep - t <= LIFT.doors && there(closing)) {
+    // (the team inside got there first: two teams at the doors in the same minute are both still outside them)
+    if (closing && closing.teams.length === 1 && closing.dep - t <= LIFT.doors && there(closing) && (L.riders[closing.teams[0]]?.at ?? -Infinity) < t) {
       const inside = closing.teams[0];
       const who = schemer(state, inside);
       const p = who ? clamp(0.3 + 0.06 * (S(who, 'boldness') - 5) - 0.04 * (S(who, 'loyalty') - 5)

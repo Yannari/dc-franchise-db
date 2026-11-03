@@ -11,7 +11,7 @@ import { voiceOf } from '../../td/story/voice.js';
 import { players } from '../../core.js';
 import { FAMILY } from '../../td/story/voice-family-map.js';
 import { liftFacts } from '../lift.js';
-import { PLACES } from '../places.js';
+import { PLACES, INDOOR } from '../places.js';
 import { metOn, pastEdge } from '../past.js';
 
 export const RR_FACT_KEYS = [
@@ -38,6 +38,8 @@ export const RR_FACT_KEYS = [
   'sabKind', 'weArrived',
   // the task is one the identity is good at, or bad at
   'idGood', 'idBad',
+  // something in their hands to get right (a hands or brains task: write.js KNACK); a challenge under a roof (places.js INDOOR)
+  'handsOn', 'indoor',
   // where they think they are in the race; the money; a team not speaking
   'behind', 'ahead', 'broke', 'snapped',
   // the hour, as a word: night (22-5), morning (5-11), day (11-17), evening (17-22)
@@ -104,6 +106,7 @@ function weOwe(scene, state) {
   return deal ? deal.a === d.other : null;
 }
 const todWord = m => (m == null ? null : m >= 1320 || m < 300 ? 'night' : m < 660 ? 'morning' : m < 1020 ? 'day' : 'evening');
+
 const ageOf = n => players.find(p => p.name === n)?.age ?? null;
 // the team's elder: authored on the team (the Casting Room), else from the two ages, a generation apart
 export function elderOf(team) {
@@ -151,8 +154,9 @@ export function factsFor(scene, roles, state) {
     behind: !s.fresh && s.rank != null && s.rank > 0.66, ahead: !s.fresh && s.rank != null && s.rank < 0.33,
     broke: !!s.broke, snapped: !!s.snapped,
     tod: todWord(s.tod),
-    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach') && !s.noEat, puzzle: types.includes('brains'),
+    stretchKind: s.stretchKind ?? null, taskType: types[0] ?? null, mode: s.mode ?? null, fearDoes: s.fearDoes ?? null, eats: types.includes('stomach') && !s.noEat, puzzle: types.includes('brains'), handsOn: types.some(x => x === 'hands' || x === 'brains'),
     sacred: !!PLACES[s.place]?.sacred,
+    indoor: INDOOR.has(d.stretch),
     side: s.side ?? null,
     at: atOf(s, d),
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,

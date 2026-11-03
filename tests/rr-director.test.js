@@ -21,6 +21,10 @@ describe('rr director', () => {
       const rows = (st.taskLog || []).filter(r => r.leg === leg.n);
       expect(rows.length).toBeGreaterThan(0);
       for (const r of rows) {
+        // (a team Don went out to was out from that minute: a challenge it only started afterwards never airs, director.js
+        // `reached`; seed 4 leg 12, Don reached t10 at the lagoon, and its run at the statue began after)
+        const exit = aired[i].segments.find(s => s.kind === 'don-arrives' && s.teams.includes(r.team))?.t;
+        if (exit != null && r.from > exit) continue;
         const seen = aired[i].segments.some(s => s.stretch === r.stretch && s.teams.includes(r.team));
         expect(seen, `leg ${leg.n}: ${r.team} at ${r.stretch}`).toBe(true);
       }

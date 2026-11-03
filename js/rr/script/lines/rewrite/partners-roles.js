@@ -149,7 +149,7 @@ export default {
         { by: 'b', say: "That was beautiful. I didn't expect it to be beautiful." },
         { by: 'a', ...V("They've been doing it the same way for hundreds of years, and they let us join in.", "Hundreds of years, and they let us join in.", "Hundreds of years. And we joined in.", "They've been doing it the SAME way for HUNDREDS of YEARS, and they let US join in!", "They've been doing it the same way for hundreds of years, and they let us join in.", "Centuries of the same steps, and today two strangers got to borrow them.") },
         { by: 'b', say: "I'm going to remember that for the rest of my life." },
-        { beat: 'The family who taught them waves them off down the road.' },
+        { beat: 'The people who taught them wave them off as they go, all the way to the door.' },
         { by: 'a', say: "I want to come back here. When there's no race. Just to say thank you." },
         { by: 'b', say: "We'll come back." },
       ] },

@@ -121,9 +121,15 @@ function narrate(state, leg, scenes) {
     // the wait is worth a line when a crowd is left at the gate ("one teams" was the bug)
     if (flights[1].data.teams.length >= 2) add('flight-wait', flights[0].data.t, { count: NUM[flights[1].data.teams.length] || String(flights[1].data.teams.length),
       gap: gapWords(flights[1].data.t - flights[0].data.t) });
+    // (a layover, travel.js: a later flight can land first. "Wheels down for flight number two. Time to start catching
+    // up." aired forty minutes before flight one landed, and flight one's teams were the ones behind, read 2026-11-03)
     flights.forEach((f, k) => {
       if (f.data.lands == null) return;
-      add(k ? 'flight-landed' : 'first-landed', f.data.lands, { flight: NUM[k + 1] });
+      const overtaken = flights.slice(k + 1).some(g => g.data.lands != null && g.data.lands < f.data.lands);
+      // (the first flight that left before this one and lands after it: three flights, the third down before the second)
+      const passed = flights.slice(0, k).findIndex(g => g.data.lands != null && g.data.lands > f.data.lands);
+      const ending = k === 0 ? (overtaken ? 'first-late' : 'first-landed') : passed >= 0 ? 'flight-overtook' : 'flight-landed';
+      add(ending, f.data.lands, { flight: NUM[k + 1], passed: NUM[passed + 1] });
     });
   }
   // the bridge: the leaders reach a later task while somebody is still at an earlier one
@@ -288,7 +294,7 @@ function cutByChallenge(segs, leg) {
     for (const l of r) if (l.from <= t + 0.01) at = l.stretch;
     return at;
   };
-  const START = new Set(['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed']);
+  const START = new Set(['welcome', 'depart', 'flight-wait', 'first-landed', 'flight-landed', 'flight-overtook', 'first-late']);
   const part = new Map();
   for (const x of segs) {
     let p = partOf(x.stretch);
@@ -707,15 +713,20 @@ export function airLeg(state, leg) {
     // (a challenge in rooms, the sauna's huts: one shared beat is the teams that were in one room together, 2026-10-22;
     // a team alone in its hut has its own)
     const byStretch = {};
-    for (const b of beats) if (CLEAN(b) && quiet(b.data.team)) (byStretch[roomed[`${b.data.team}|${b.data.stretch}`] || b.data.stretch] ||= []).push(b);
+    // (and by side: an Either/Or's two sides are two places, and a montage with no side was shot standing at the foot,
+    // so a team that climbed the stairs was never seen on them, rr-ride-seen 2026-11-03)
+    const sideOf = b => b.data.side ?? b.data.snap?.side ?? null;
+    for (const b of beats) if (CLEAN(b) && quiet(b.data.team)) (byStretch[roomed[`${b.data.team}|${b.data.stretch}`] || `${b.data.stretch}|${sideOf(b) || ''}`] ||= []).push(b);
     for (const [key, group] of Object.entries(byStretch)) {
       const stretch = group[0].data.stretch;
-      if (group.length < 2) continue;
+      // (once each: a team's clean start and its clean finish are two beats, and listed both "the Vloggers, the
+      // Survivalists and the Vloggers", read 2026-11-03)
+      const ids = [...new Set(group.map(b => b.data.team))];
+      if (group.length < 2 || ids.length < 2) continue;
       for (const b of group) beats.splice(beats.indexOf(b), 1);
       const first = [...group].sort((x, y) => x.data.t - y.data.t)[0];
-      const ids = group.map(b => b.data.team);
       montages.push({ scene: null, beat: `taskm:${n}:${key}`, kind: 'task-montage', ending: 'any', stretch, t: first.data.t,
-        teams: ids, who: group.flatMap(b => b.who), side: null, tier: 1,
+        teams: ids, who: group.flatMap(b => b.who), side: sideOf(first), tier: 1,
         src: { ...first, id: `taskm:${n}:${key}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
     }
   }
@@ -757,7 +768,8 @@ export function airLeg(state, leg) {
   for (const group of Object.values(picks)) for (const b of group.slice(2)) b.data.t = Math.round(b.data.from ?? b.data.t);
   const spot = {};
   // (in a challenge in rooms, the teams of one room together: roomed below)
-  for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${b.data.t}|${b.kind}${roomed[`${b.data.team}|${b.data.stretch}`] ? '|' + roomed[`${b.data.team}|${b.data.stretch}`] : ''}`] ||= []).push(b);
+  const sideOfBeat = b => b.data.side ?? b.data.snap?.side ?? null;
+  for (const b of beats) if (CLEAN_BEAT(b)) (spot[`${b.data.stretch}|${sideOfBeat(b) || ''}|${b.data.t}|${b.kind}${roomed[`${b.data.team}|${b.data.stretch}`] ? '|' + roomed[`${b.data.team}|${b.data.stretch}`] : ''}`] ||= []).push(b);
   for (const [key, group] of Object.entries(spot)) {
     if (group.length < 3) continue;
     // a small cast keeps every team in full: the third one there that minute is seen at the other end of its run
@@ -771,9 +783,9 @@ export function airLeg(state, leg) {
     const rest = group.slice(1);
     for (const b of rest) beats.splice(beats.indexOf(b), 1);
     const first = rest[0];
-    const ids = rest.map(b => b.data.team);
+    const ids = [...new Set(rest.map(b => b.data.team))];
     montages.push({ scene: null, beat: `taskm:${n}:${key}`, kind: 'task-montage', ending: 'any', stretch: first.data.stretch, t: first.data.t,
-      teams: ids, who: rest.flatMap(b => b.who), side: null, tier: 1,
+      teams: ids, who: rest.flatMap(b => b.who), side: sideOfBeat(first), tier: 1,
       src: { ...first, id: `taskm:${n}:${key}`, kind: 'task-montage', data: { ...first.data, ending: 'any', teamsList: ids } } });
   }
 
@@ -781,9 +793,32 @@ export function airLeg(state, leg) {
   // struggles that happen to peak together) is shown at the end of its own run instead
   const still = {};
   for (const b of beats) (still[`${b.data.stretch}|${b.data.t}|${b.kind}`] ||= []).push(b);
+  // (other teams': one team's own stages in one minute are its run in order, the elevator, a missed clip and the clip
+  // on: moved to the end of the run, the clip-on aired after the deck was walked, read 2026-11-03)
   for (const group of Object.values(still)) for (const b of group.slice(2)) {
+    const at = t => `${b.data.stretch}|${t}|${b.kind}`;
+    const room = t => (still[at(t)] || []).filter(x => x !== b).length < 2;
+    // the team's own beats either side of it: a move never takes it past one (each team's story stays in clock order)
+    const mine = beats.filter(x => x !== b && x.data.team != null && x.data.team === b.data.team);
+    const i = beats.indexOf(b);
+    const lo = Math.max(-Infinity, ...mine.filter(x => beats.indexOf(x) < i).map(x => x.data.t));
+    // ...nor out of its own run (its next checkpoint airs later, at the run's end: a landing moved a minute on aired
+    // after the team's next tip)
+    const hi = Math.min(Math.round(b.data.to ?? Infinity), ...mine.filter(x => beats.indexOf(x) > i).map(x => x.data.t));
+    const move = t => {
+      group.splice(group.indexOf(b), 1, null);
+      (still[at(t)] ||= []).push(b);
+      b.data.t = t;
+    };
+    // a team's own stages in one minute are its run in order (the elevator, a missed clip, the clip on): the next minute
+    // with room, not the end of the run (the clip-on aired after the deck was walked, read 2026-11-03)
+    const own = b.kind === 'task-stage' && group.slice(0, group.indexOf(b)).some(x => x && x.data.team === b.data.team);
+    // ...another team's: the end of its own run, else the nearest minute with room (a run that ends in this minute)
     const to = Math.round(b.data.to ?? b.data.t);
-    if (to !== b.data.t) b.data.t = to;
+    const tries = !own && to > b.data.t && to <= hi ? [to] : [];
+    for (let d = 1; d <= 6; d++) tries.push(b.data.t + d, ...(own ? [] : [b.data.t - d]));
+    const t = tries.find(x => x >= lo && x <= hi && room(x));
+    if (t != null) move(t);
   }
 
   // Don narrating it (the real show: the departure order, the flights, a bridge, the bottom of the leg)
@@ -913,14 +948,19 @@ export function airLeg(state, leg) {
   // write what aired (only now are its words spent), and remember the storylines that moved
   state.storyAired ||= {};
   const unwritten = [];
+  const cutRepeat = new Set();
   for (const seg of segs) {
     // a check-in run is one line from Don per team
-    const ws = (seg.srcs || [seg.src]).map(src => writeScene(state, src));
+    // (what must air airs, its words heard this leg or not: write.js `keep`)
+    const ws = (seg.srcs || [seg.src]).map(src => writeScene(state, src, { keep: MUST.has(src.kind) || seg.tier === 0 }));
     const lines = ws.flatMap(w => w?.lines || []);
     seg.lines = lines.length ? lines : null;
     seg.lineId = ws.map(w => w?.lineId).filter(Boolean).join(',') || null;
     if (ws.some(w => !w) && !seg.kind.startsWith('int-')) unwritten.push(seg.kind + (seg.ending ? '.' + seg.ending : ''));
     for (const src of seg.srcs || [seg.src]) for (const id of src.data?.threadIds || []) state.storyAired[id] = (state.storyAired[id] || 0) + 1;
+    // (a moment cut for having no words left this leg takes its interview with it: write.js `repeat`)
+    if (ws.every(w => w?.repeat) && typeof seg.scene === 'number') cutRepeat.add(seg.scene);
+    if (seg.src?.data?.about != null && cutRepeat.has(seg.src.data.about)) seg.lines = null;
     delete seg.src;
     delete seg.srcs;
   }

@@ -4,8 +4,8 @@
 // lines when the place has some.
 export default {
   'home-city': [
-    "Last time on The Ridonculous Race, after {summary}, our teams were off around the world. Some of them were wet. I was dry, and gorgeous.",
-    "Last time on The Ridonculous Race, after {summary}, our teams started the race of their lives. A few of them started it in the lake.",
+    "Last time on The Ridonculous Race, after {summary}, our teams were off around the world. Some of them were sweaty. I was not, and I looked gorgeous.",
+    "Last time on The Ridonculous Race, after {summary}, our teams started the race of their lives. Some of them started it screaming.",
   ],
   'red-sand-desert': [
     "Last time on The Ridonculous Race, after {summary}, our teams worked up a serious hunger. I lost mine watching them eat.",

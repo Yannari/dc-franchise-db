@@ -9,7 +9,7 @@ import { REAL } from '../js/rr/places.js';
 import { fixtureCtx } from './helpers/rr-catalogue.js';
 
 const ROLE_KEYS = ['a', 'b', 'c', 'd', 'e', 'f', 'don', 'local'];
-const SLOT_KEYS = ['placing', 'number', 'relTag', 'teaser', 'teams', 'winners', 'count', 'gap', 'flight', 'prevTask', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local', 'ownA', 'ownB', 'donLabel', 'allyTeam',
+const SLOT_KEYS = ['placing', 'number', 'relTag', 'teaser', 'teams', 'winners', 'count', 'gap', 'flight', 'passed', 'prevTask', 'team', 'teamB', 'identity', 'identityB', 'place', 'task', 'side', 'partner', 'crush', 'target', 'reward', 'penalty', 'amount', 'local', 'ownA', 'ownB', 'donLabel', 'allyTeam',
   // the shows before this one (rr/past.js, roles.js)
   'show', 'showB', 'showX'];
 const PRON = ['sub', 'obj', 'pos', 'posAdj', 'ref', 'Sub', 'Obj', 'PosAdj'];

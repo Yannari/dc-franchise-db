@@ -352,7 +352,9 @@ export function interviewAfter(state, sc, rng, { force = false } = {}) {
   const firstTime = !state.scenes.some(x => x.kind.startsWith('int-') && x.data.team === tid);
   if (kind?.family === 4 && lovers.some(n => who.includes(n)) && rng() < 0.5) kindId = 'int-secret';
   else if (kind?.scheme || ['alliance-pitch', 'deal', 'boomerang-decide', 'express-give'].includes(sc.kind)) kindId = 'int-strategy';
-  else if (sc.data.other && [2, 4, 7, 8, 12].includes(kind?.family) && kindId !== 'int-secret') kindId = 'int-about-team';
+  // (not in the race's first hour: "They've earned it. They work so hard." about a team met two minutes ago, read
+  // 2026-11-03; nobody has done anything yet to respect or fear)
+  else if (sc.data.other && [2, 4, 7, 8, 12].includes(kind?.family) && kindId !== 'int-secret' && !(state.leg === 1 && (sc.data.t ?? 0) < 60)) kindId = 'int-about-team';
   // a forced interview (leg.js floor) is how the leg felt: the kinds written for a check-in
   else if (!force && partnerBond < 0 && who.length === 2 && rng() < 0.4) kindId = 'int-contradict';
   else if (firstTime) kindId = 'int-backstory';                 // the first time a team sits down: who they are

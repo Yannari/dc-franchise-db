@@ -109,8 +109,8 @@ export default {
         { by: 'd', say: "Honestly? {c} saw an advert and filled in the form before I could stop {c.obj}." },
         { by: 'c', say: "And you're glad I did." },
         { by: 'd', ...V("I'm glad sometimes. Not today. Today my feet hurt.", "Glad sometimes. Not today.", "Sometimes. Not today.", "I'm GLAD sometimes! NOT today! Today my FEET hurt!", "I'm glad sometimes, but not today. Today my feet hurt.", "I'm glad on Tuesdays. Today is not a Tuesday.") },
-        { by: 'b', say: "Same story with us. Exactly the same." },
-        { by: 'a', say: "It's not the same. I asked you first." },
+        { by: 'b', say: "Same with us, except I'm the one who filled in the form." },
+        { by: 'a', say: "And now my feet hurt too. So thanks for that." },
       ] },
       { id: 'vs.c3', turns: [
         { by: 'b', say: "What's the first thing you're going to do when you get home?" },
@@ -120,15 +120,7 @@ export default {
         { by: 'b', say: "That's beautiful." },
         { by: 'c', say: "That's the best plan anyone's had all race." },
       ] },
-      { id: 'vs.c4', turns: [
-        { by: 'a', say: "Is that a scar? How did you get it?" },
-        { by: 'c', say: "Fell off a trampoline. I was thirty-one." },
-        { by: 'b', ...V("Thirty-one?", "Thirty-one?", "At thirty-one?", "THIRTY-ONE?", "You were thirty-one?", "Thirty-one? That's an adult trampoline injury.") },
-        { by: 'd', say: "It was a birthday party. A kid's birthday party. {c} was not invited onto the trampoline." },
-        { by: 'c', say: "I invited myself." },
-        { by: 'a', say: "I like you. I really like you." },
-      ] },
-      { id: 'vs.c5', turns: [
+            { id: 'vs.c5', turns: [
         { by: 'd', say: "Do you two want to split a pizza? We'll never finish a whole one." },
         { by: 'b', say: "We will absolutely finish a whole one." },
         { by: 'a', say: "But we'll split it. For the company." },

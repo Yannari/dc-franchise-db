@@ -147,13 +147,40 @@ export function rolesOf(scene, state) {
     ...(scene.kind === 'team-intro' && state.teams[tid]?.lines?.introA ? {
       ownA: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introA' : 'introB'] || null,
       ownB: state.teams[tid].lines[roles.a === state.teams[tid].a ? 'introB' : 'introA'] || null,
-      donLabel: [identityName(state, tid), d.slots?.relTag].filter(Boolean).join(' and ') || null } : {}),
+      donLabel: donLabelOf(identityName(state, tid), d.slots?.relTag) } : {}),
   };
+  // a name that already says what they are ("Creepy Cousins", "Exes", "Father & Daughter") isn't followed by it again
+  // ("Creepy Cousins and cousins", read 2026-11-03): the intro lines that need the relationship are left out
+  if (scene.kind === 'team-intro' && slots.relTag && sameKin(identityName(state, tid), slots.relTag)) delete slots.relTag;
   for (const k of Object.keys(slots)) if (slots[k] == null) delete slots[k];
   return { roles, ending: d.ending ?? 'any', slots };
 }
 
 // "A", "A and B", "A, B and C"; "the Goths, Alec and Spud, and the Nurses" when a name has its own "and"
+// What the two of them are, as words a name can already contain
+const KIN_WORDS = /\b(cousins?|sisters?|brothers?|siblings?|bros|sis|twins?|exes|ex|father|daughter|dad|mother|mum|mom|son|aunt|uncle|nephew|niece|grand\w*|couple|married|husband|wife|best friends|bffs?|friends|enemies|rivals|coworkers|roommates)\b/i;
+const kinOf = s => new Set([...String(s || '').toLowerCase().matchAll(new RegExp(KIN_WORDS.source, 'gi'))].map(m => m[1]
+  .replace(/^(sis|sisters?)$/, 'sister').replace(/^(bros|brothers?)$/, 'brother').replace(/s$/, '').replace(/^bff$/, 'friend').replace(/^best friend$/, 'friend')));
+export function sameKin(identity, relTag) {
+  const a = kinOf(identity), b = kinOf(relTag);
+  // (a "BroSIS" team is a brother and a sister)
+  if (/bro/i.test(identity || '') && /sis/i.test(identity || '')) { a.add('brother'); a.add('sister'); }
+  return [...a].some(x => b.has(x));
+}
+/** Don's label for a team that wrote its own introduction: "cousins, the Creepy Cousins", "a couple from Drag Race, the
+ *  Drag Queens", "the Exes, from Big Brother", "Team BCBG". */
+export function donLabelOf(identity, relTag) {
+  const name = String(identity || '').replace(/^the\s+/i, '').trim();
+  const rel = String(relTag || '').trim();
+  const tail = rel.match(/,? and it's complicated$/)?.[0] || '';
+  const core = tail ? rel.slice(0, -tail.length) : rel;
+  const team = !name ? '' : /s$/i.test(name) ? `the ${name}` : `Team ${name}`;
+  if (!team) return rel || null;
+  if (!core) return team;
+  if (sameKin(name, core)) { const from = core.match(/\bfrom .+$/)?.[0]; return `${team}${from ? `, ${from}` : ''}${tail}`; }
+  return `${core}, ${team}${tail}`;
+}
+
 function pastOfName(state, n) {
   return n ? Object.values(state.teams).find(t => t.a === n || t.b === n)?.past?.[n] || null : null;
 }

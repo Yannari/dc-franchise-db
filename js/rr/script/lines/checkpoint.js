@@ -22,7 +22,7 @@ export default {
     { id: 'cp.m2', turns: [{ beat: '{a} reads the tip, nods, and sets off in completely the wrong direction.' }, { by: 'b', say: "Where are we going?" }, { by: 'a', say: "Where it said!" }, { by: 'b', say: "It did not say that." }] },
     { id: 'cp.m3', turns: [{ by: 'b', say: "Did you read the whole thing?" }, { by: 'a', say: "I read enough of it." }, { by: 'b', say: "You read the first line. Read the rest." }] },
     { id: 'cp.m4', turns: [{ beat: "{a} reads the tip out loud with total confidence, and gets one important word wrong." }, { by: 'b', say: "Let me see that." }, { by: 'a', say: "I know what it says." }, { by: 'b', say: "Read it again. Slowly." }] },
-    { id: 'cp.m5', turns: [{ by: 'a', say: "We do it together. Both of us. Says so right here." }, { beat: 'Ten minutes later, somebody points out the part where it says only one of them can.' }, { by: 'b', say: "Right here, you said." }] },
+    { id: 'cp.m5', when: { stretchKind: 'botch' }, turns: [{ by: 'a', say: "We do it together. Both of us. Says so right here." }, { beat: 'Ten minutes later, somebody points out the part where it says only one of them can.' }, { by: 'b', say: "Right here, you said." }] },
     { id: 'cp.m6', turns: [{ beat: "{a} reads the tip and sets off, and {b} has to call {a.obj} back." }, { by: 'b', say: "Wrong way. It says left, not right." }, { by: 'a', say: "Sorry. I read it too fast." }] },
   ],
   'clue.count-ahead': [

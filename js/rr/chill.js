@@ -221,6 +221,8 @@ export function checkIn(state, leg, finish, notFinished = [], rng = () => 0.5) {
   state.lastOrder = order.filter(id => !result.eliminated.includes(id));
   const min = Math.min(...finished.map(id => times[id]));
   result.depart = Object.fromEntries(state.lastOrder.filter(id => id in times).map(id => [id, times[id] - min]));
+  // (whether a night passes before the next leg: else it starts the same evening, and "yesterday" is today, write.js)
+  result.overnightAfter = (state.clock + min + (state.options?.restMinutes ?? 720)) >= 1440;
   state.clock = (state.clock + min + (state.options?.restMinutes ?? 720)) % 1440;
   state.legs.push(result);
   return result;

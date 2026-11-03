@@ -39,7 +39,7 @@ describe('rr narration', () => {
       // the wait is narrated when a crowd is left at the gate: one team waiting has no line ("one teams")
       const waiting = [...flights].sort((x, y) => x.data.flight - y.data.flight)[1].data.teams.length;
       expect(narr(ep, 'flight-wait').length, `leg ${ep.n}`).toBe(waiting >= 2 ? 1 : 0);
-      expect(narr(ep, 'first-landed').length + narr(ep, 'flight-landed').length, `leg ${ep.n}`).toBe(flights.length);
+      expect(['first-landed', 'flight-landed', 'flight-overtook', 'first-late'].reduce((n, e) => n + narr(ep, e).length, 0), `leg ${ep.n}`).toBe(flights.length);
     });
     expect(legs).toBeGreaterThan(0);
   });

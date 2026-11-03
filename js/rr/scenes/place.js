@@ -21,7 +21,9 @@ register([
     moved: { w: c => c.S(c.A, 'social') / 4, fx: (fx, c) => { fx.mind(c.A, 'morale', 10); fx.bond(c.A, c.B, 1); } },
     disrespectful: { w: c => (10 - c.S(c.A, 'social')) / 10, fx: (fx, c) => { fx.time(c.tid, 10); fx.pop(c.A, -2); } },
   } }),
-  K({ id: 'souvenir', family: 10, moments: ['quiet', 'pass'], when: () => 0.02, endings: {
+  // (not on the first leg: every souvenir line is about something that happened to them, a near miss, the bus with the
+  // goat, and on the first leg nothing has yet: read 2026-11-03, a rock kept at the top of the first tower)
+  K({ id: 'souvenir', family: 10, moments: ['quiet', 'pass'], when: c => (c.state.leg >= 2 ? 0.02 : 0), endings: {
     kept: { w: 1, fx: (fx, c) => fx.note(`souvenir:${c.tid}`, c.state.leg) },
     left: { w: c => c.S(c.A, 'loyalty') / 5, fx: (fx, c) => fx.mind(c.A, 'morale', 1) },
   } }),
@@ -30,7 +32,8 @@ register([
     'quit-and-unquit': { w: 0.5, fx: (fx, c) => { fx.time(c.tid, 30); fx.bond(c.A, c.B, 1); } },
     accept: { w: c => c.S(c.A, 'temperament') / 5, fx: (fx, c) => fx.bond(c.A, c.B, 2) },
   } }),
-  K({ id: 'weather', family: 10, moments: ['travel', 'tip'], when: () => 0.03, endings: {
+  // (not on a plane or at the gate: "it nearly blew us off a hill" at an airport, read 2026-11-03)
+  K({ id: 'weather', family: 10, moments: ['travel', 'tip'], when: c => (c.stretch?.mode === 'flight' ? 0 : 0.03), endings: {
     'wait-it-out': { w: 1, fx: (fx, c) => fx.time(c.tid, 30) },
     'push-on': { w: c => teamLevel(c.state, c.tid, ['nerve']) / 5, fx: (fx, c) => { fx.time(c.tid, 10); fx.mind(c.A, 'stress', 6); } },
   } }),

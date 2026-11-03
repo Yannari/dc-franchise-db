@@ -258,7 +258,9 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const atStart = mine === 'start';
       const car = inCar(id, tt) && now.every(x => rideOf(x) === rideOf(id));
       extra += talkAtOverlap(state, id, now, s, tt, api, rng, { atStart, sure: car }).extra || 0;
-      if (!watched && !atStart && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
+      // (not on one side of an Either/Or: three teams on one flight of the tower's stairs are all climbing, nobody is
+      // watching "the racer out there", read 2026-11-03)
+      if (!watched && !atStart && !s.sides && now.length >= 2) { watched = true; talkAtWait(state, [id, ...now], s, tt, api, rng, 'watching'); }
     }
     return extra;
   };
@@ -307,7 +309,11 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
       const vs = visits(sc.data.team, sc.data.stretch);
       const l = [...vs].reverse().find(x => x.from <= sc.data.t + 0.5) || vs[0];
       if (!l || !(l.to >= l.from)) continue;
-      if (['pass', 'tip'].includes(sc.data.moment)) sc.data.t = l.to;
+      // (a moment that costs the team minutes, waiting out a storm, happens before them: at the end it aired after the
+      // team had landed, "We'll lose an hour" and fifth on the mat in the same minute, read 2026-11-03)
+      // (a 'pass' moment is the pass itself, an injury on the way through it: that stays at the end)
+      const cost = sc.data.moment !== 'tip' ? 0 : (sc.data.effects || []).filter(e => e[0] === 'time' && e[1] === sc.data.team && e[2] > 0).reduce((a, e) => a + e[2], 0);
+      if (['pass', 'tip'].includes(sc.data.moment)) sc.data.t = Math.max(l.from, l.to - cost);
       else sc.data.t = Math.min(l.to, Math.max(l.from, sc.data.t));
       // a fear at its stage, as the run now stands
       if (sc.data.atStage) {

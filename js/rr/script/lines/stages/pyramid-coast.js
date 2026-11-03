@@ -74,7 +74,7 @@ export default {
 
   'task-stage.fail': [
     { id: 'pc.sf.ep1', when: at(T, 'eat-pepper'), turns: [
-      beat('{a} takes one bite of the red pepper, spits it straight out, and fans {a.posAdj} mouth with both hands.'),
+      beat('{a} takes one bite of the pepper, spits it straight out, and fans {a.posAdj} mouth with both hands.'),
       by('a', "No! No! I can't! That's not food!"),
       by('b', "Okay. Okay. Pick a different one."),
     ] },

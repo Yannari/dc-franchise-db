@@ -17,6 +17,7 @@ import { threadSteps, advanceThreads } from './threads.js';
 import { see } from './knowledge.js';
 import { getBond } from '../bonds.js';
 import { S } from './state.js';
+import { INDOOR } from './places.js';
 
 const ONE = 0.6, TWO = 0.25;              // partner moments at a stretch: one 60%, two 25%, none 15%
 const PAIR_CAP = 3;                       // the same two people (of different teams), moments per leg
@@ -141,7 +142,11 @@ function draw(cands, rng) {
 // What reacts to a task (celebrating, gloating, watching) is fine: the first task is a task.
 export const FRESH_MINUTES = 60;
 export const NOT_FRESH = new Set(['bond-moment', 'small-talk', 'manage-partner', 'snap', 'blame',
-  'pep-talk', 'homesick', 'quit-talk', 'silent-treatment', 'makeup']);
+  'pep-talk', 'homesick', 'quit-talk', 'silent-treatment', 'makeup',
+  // (a crush noticed, confided, matched or minded in the first hour of the race: they've only just met, read
+  // 2026-11-03; and the relationship stories of the partners need something to have happened first)
+  'crush-noticed', 'crush-confided', 'matchmaking', 'jealousy', 'flirt', 'pining', 'crush-jealous', 'dig', 'keep-score', 'gush',
+  'cold-shoulder', 'sore-spot', 'frenemy-turn']);
 export const isFresh = (state, t) => state.leg === 1 && (t ?? 0) < FRESH_MINUTES;
 
 function bestMoment(kind, ctx, moments) {
@@ -244,6 +249,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
   const moments = momentsAt(state, id, stretch);
   const mine = people(state, id);
   const played = new Set();
+  let feared = false;
   // who else is here (a gloat needs an audience; a side can be chosen by watching)
   // (at an Either/Or, only who is at its start with them: the others are up the tower, out on the deck)
   const inside = TASK_KINDS.has(stretch?.kind) && !!stretch?.sides;
@@ -256,7 +262,8 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
       for (const flip of [false, true]) {
         const ctx = baseCtx(state, id, null, stretch, t, api, { present, flip });
         const b = bestMoment(kind, ctx, moments);
-        if (b.w > 0) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id) / 2, moment: b.moment, flip });
+        // (one fear a stretch: a phobia and then a fear-through had the two of them swap who was scared, read 2026-11-03)
+        if (b.w > 0 && !(b.moment === 'fear' && feared)) cands.push({ kind: kind.id, w: b.w * damp(state, kind.id, id) / 2, moment: b.moment, flip });
       }
     }
     for (const s of threadSteps(state, mine)) {
@@ -273,7 +280,7 @@ export function talkAtStretch(state, team, stretch, t, api, rng, end = null) {
       cands.splice(cands.indexOf(c), 1);
       const ctx = baseCtx(state, id, null, stretch, momentTime(state, id, stretch, c.moment, t, end), api, c.people ? { people: c.people, present } : { present, flip: !!c.flip });
       ctx.moment = c.moment;
-      if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); break; }
+      if (tryPlay(state, ctx, c.kind, rng, out)) { played.add(c.kind); if (c.moment === 'fear') feared = true; break; }
     }
   }
   return out;
@@ -304,6 +311,8 @@ const NEEDS_WORK = new Set(['spy', 'steal', 'help-offer', 'rescue', 'tug-of-war'
 // what needs a road, a course or a task (a shove into a hedge, a fake shortcut down "the low path", a hand over the
 // course): never at the gate or on the plane (2026-10-21: both aired while two teams waited for the same flight)
 const ROAD_ONLY = new Set([...NEEDS_WORK, 'push', 'ram', 'fake-shortcut', 'save-your-enemy', 'shove', 'collision', 'follow', 'gloat']);
+const OUTSIDE_ONLY = new Set(['push', 'ram', 'fake-shortcut', 'shove', 'follow']);
+const TEAMS_AT_ONCE = 2;
 // `sure`: two teams shut in together (an elevator car) always have a moment, there's nowhere else to look
 export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atStart = false, sure = false } = {}) {
   const id = idOf(team);
@@ -316,10 +325,18 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
   const moments = stretch?.kind === 'mat' ? ['mat']
     : ['overlap', ...(stretch?.capacity ? ['queue'] : []), ...(stretch?.mode === 'flight' ? ['airport', 'plane'] : [])];
   const onFlight = stretch?.mode === 'flight';
-  const barred = kindId => (atStart && NEEDS_WORK.has(kindId)) || (onFlight && ROAD_ONLY.has(kindId));
+  // (under a roof, nobody is pushed into a hedge or sent down the low path: places.js INDOOR)
+  const indoor = INDOOR.has(stretch?.id);
+  const barred = kindId => (atStart && NEEDS_WORK.has(kindId)) || (onFlight && ROAD_ONLY.has(kindId)) || (indoor && OUTSIDE_ONLY.has(kindId));
+  // two moments with other teams at one challenge at most, for either team (the LARPers shoved, pushed, stole and
+  // accused, four teams in one minute at the dance academy, read 2026-11-03)
+  const busy = x => state.scenes.filter(s => s.leg === state.leg && s.data?.stretch === stretch?.id && SCENES[s.kind]?.cast === 'teams'
+    && !s.kind.startsWith('lift-') && (s.data.team === x || s.data.other === x)).length >= TEAMS_AT_ONCE;
   for (const o of ids) {
     const key = `${state.leg}|${stretch?.id}|${pairKey(id, o)}`;
     if (state.metAt[key]) continue;
+    // (the elevator's own moments always play: who held the doors and who shut them decides the ride, lift.js)
+    const capped = !sure && stretch?.kind !== 'mat' && stretch?.mode !== 'flight' && (busy(id) || busy(o));
     state.metAt[key] = true;
     // the first time these two teams ever meet (size-up reads it; `see` below records the meeting)
     const firstMeet = !state.seen?.[id]?.[o];
@@ -346,6 +363,7 @@ export function talkAtOverlap(state, team, others, stretch, t, api, rng, { atSta
       const bm = bestMoment(kind, ctx, moments);
       if (bm.w > 0) { cands.push({ kind: kind.id, w: s.weight * THREAD_PULL, moment: bm.moment, a, b, people: extra.people }); pull += s.weight; }
     }
+    if (capped) for (let k = cands.length - 1; k >= 0; k--) if (!cands[k].kind.startsWith('lift-')) cands.splice(k, 1);
     const total = cands.reduce((s, c) => s + c.w, 0);
     if (!sure && rng() >= Math.min(MEET_MAX, MEET * Math.min(1, total) + MEET_THREAD * pull)) continue;
     while (cands.length) {

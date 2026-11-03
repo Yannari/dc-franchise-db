@@ -380,11 +380,11 @@ export default {
     ],
     'overheard.mishears': [
       { id: 'sc.om1', turns: [
-        { by: 'b', say: "I think they said they're going to the harbour." },
-        { by: 'a', ...V("Then we go to the harbour. First.", "Then the harbour. First.", "Harbour. Before them.", "Then we go to the HARBOUR! FIRST!", "Then we'll go to the harbour first.", "Then we beat them to the harbour. The harbour is ours.") },
-        { beat: 'They go to the harbour. Nobody is there. A seagull looks at them.' },
-        { by: 'b', say: "Maybe they said the market." },
-        { by: 'a', say: "Market and harbour don't sound anything alike." },
+        { by: 'b', say: "I think they said they're going left at the end." },
+        { by: 'a', say: "Then we go left. And we get there before them." },
+        { beat: 'They go left. Nobody is there. A pigeon looks at them.' },
+        { by: 'b', say: "Maybe they said right." },
+        { by: 'a', say: "Left and right don't sound anything alike." },
         { by: 'b', say: "They do if somebody's eating a sandwich." },
       ] },
       { id: 'sc.om2', turns: [

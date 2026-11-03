@@ -54,14 +54,15 @@ function relTag(t) {
   if (t.rel === 'aunt-uncle') {
     const old = elderOf(t) || x, kid = old === x ? y : x;
     const a = { he: 'uncle', she: 'aunt' }[he(old)], b = { he: 'nephew', she: 'niece' }[he(kid)];
-    return a && b ? `${a} and ${b}` : 'aunt or uncle and nephew or niece';
+    return a && b ? (old === x ? `${a} and ${b}` : `${b} and ${a}`) : 'aunt or uncle and nephew or niece';
   }
   if (t.rel === 'parent-child' || t.rel === 'grandparent-grandchild') {
     const old = elderOf(t) || x, kid = old === x ? y : x;
     const up = t.rel === 'parent-child' ? { he: 'father', she: 'mother' } : { he: 'grandpa', she: 'grandma' };
     const down = t.rel === 'parent-child' ? { he: 'son', she: 'daughter' } : { he: 'grandson', she: 'granddaughter' };
     const a = up[he(old)], b = down[he(kid)];
-    return a && b ? `${a} and ${b}` : t.rel === 'parent-child' ? 'parent and kid' : 'grandparent and grandkid';
+    // (in the order the names are said: "Suki and Ahanu, daughter and father")
+    return a && b ? (old === x ? `${a} and ${b}` : `${b} and ${a}`) : t.rel === 'parent-child' ? 'parent and kid' : 'grandparent and grandkid';
   }
   return REL_TAG[t.rel] || 'partners';
 }
@@ -69,16 +70,21 @@ function relTag(t) {
 // what the two of them are, as Don labels a team at its introduction: "best friends", "a married couple", "father and son"
 const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
   'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets', frenemies: 'best friends, supposedly' };
-export function relLabel(t) {
+export function relLabel(t0) {
+  // (what they were when the race began: a premiere written after a mid-race falling-out introduced two best friends
+  // as "sworn enemies", read 2026-11-03)
+  const t = t0 && (t0.rel0 && t0.rel0 !== t0.rel) ? { ...t0, rel: t0.rel0 } : t0;
   // two who were last on the same show (rr/past.js): what they are, from it ("a married couple from Total Drama, who are
   // still married, for now": a "back from" read as a second clause in Don's own); two vets and nothing else, its veterans
   const shows = [t?.a, t?.b].map(n => t?.past?.[n]?.show || null);
   const same = shows[0] && shows[0] === shows[1] ? shows[0] : null;
   if (same && t.rel === 'reality-vets') return `${same} veterans`;
-  const base = same ? `${relLabelOf(t)} from ${same}` : relLabelOf(t);
-  // Don introduces a team that's bitter on both sides as what they are, and says so (a one-sided team looks warm: he
-  // doesn't know). The feeling they walked in with (season.js feel0), whatever the race made of it since.
-  return (t?.feel0 || t?.feel) === 'strained' ? `${base}, and it's complicated` : base;
+  const own = relLabelOf(t);
+  // ("old friends from another show": the show it was, not "...from another show from Total Drama")
+  const base = !same ? own : /another show/.test(own) ? own.replace(/another show/, same) : /\bsince their last show\b/.test(own) ? own.replace(/their last show together/, same) : `${own} from ${same}`;
+  // (a team bitter on both sides says so itself, to camera: write.js FEEL_TAGS. ", and it's complicated" on Don's
+  // label ran his sentences on: "vloggers and brothers, and it's complicated, and every second of this...", 2026-11-03)
+  return base;
 }
 function relLabelOf(t) {
   // what their history made them (rr-run.js raceHistoryRel): an engagement, or a bond from another show
@@ -107,8 +113,14 @@ function clipOf(ep, sceneId, max = 2) {
   const said = (seg?.lines || []).filter(l => l.kind === 'say' || l.kind === 'conf');
   if (!said.length) return [];
   const score = (l, i) => (l.text.length <= 110 ? 2 : 0) + (/!/.test(l.text) ? 2 : /\?/.test(l.text) ? 1 : 0) + i / said.length;
+  // (a clip opens on a line that stands on its own: "> Jiwon: Deal." and "> Jisoo: Which is?" opened a recap clip in the
+  // middle of an exchange, read 2026-11-03)
+  const REPLY = /^(and|but|which|then|so|or|because|yes|yeah|no|nope|okay|ok|deal|fine|right|sure|exactly|that's|it's not|me too)\b/i;
+  const opener = l => l.text.split(/\s+/).length >= 4 && !REPLY.test(l.text.replace(/^\W+/, ''));
+  const anyOpener = said.some((l, i) => opener(l) && i + Math.min(max, said.length) <= said.length);
   let best = 0, bestScore = -1;
   for (let i = 0; i + Math.min(max, said.length) <= said.length; i++) {
+    if (anyOpener && !opener(said[i])) continue;
     const sc = said.slice(i, i + max).reduce((a, l, k) => a + score(l, i + k), 0);
     if (sc >= bestScore) { best = i; bestScore = sc; }
   }

@@ -29,19 +29,19 @@ export default {
     'blame.deflected': [
       { id: 'ps.bd1', turns: [
         { by: 'a', say: "We lost so much time because of you." },
-        { by: 'b', ...V("Because of me? You were the one holding the map.", "Me? You had the map.", "You had the map.", "Because of ME? YOU were the one holding the MAP!", "Because of me? You were the one who was holding the map.", "Me? The map was in your hands. The map was your child.") },
-        { by: 'a', say: "Upside down. Because you gave it to me upside down." },
-        { by: 'b', say: "It's a map. You turn it round. It's not hard." },
+        { by: 'b', say: "Because of me? You picked the way." },
+        { by: 'a', say: "And you agreed with it." },
+        { by: 'b', say: "I agreed because you wouldn't stop talking." },
         { beat: 'They walk on, side by side, both completely sure it was the other one.' },
         { by: 'a', say: "It was you." },
       ] },
       { id: 'ps.bd2', turns: [
-        { by: 'a', ...V("That's twice now you've cost us.", "That's twice you've cost us.", "Twice now. You.", "That's TWICE now you've COST us!", "That's the second time now that you've cost us.", "That's twice. Two times. A pattern, some might say.") },
-        { by: 'b', say: "Twice? Who got us on the wrong bus this morning?" },
-        { by: 'a', say: "That bus had the right number on it." },
-        { by: 'b', say: "It had the right number going the wrong way." },
+        { by: 'a', say: "That's twice now you've cost us." },
+        { by: 'b', say: "Twice? Who read the tip wrong?" },
+        { by: 'a', say: "That was one word." },
+        { by: 'b', say: "It was the most important word on it." },
         { by: 'a', say: "That doesn't count." },
-        { by: 'b', say: "It counts for exactly as much as yours." },
+        { by: 'b', say: "It counts exactly as much as mine does." },
       ] },
     ],
     'blame.blow-up': [

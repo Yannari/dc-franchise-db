@@ -14,7 +14,11 @@ const intro = (id, ...turns) => ({ id: `ci.${id}`, when: { custom: true }, turns
 export const INTROS = {
     'team-intro.any': [
       // the one the user wrote: Don's label, then each of them, to camera
-      { id: 'ci.own', when: { ownIntro: true }, turns: [don('{a} and {b}: {donLabel}.'), say('a', '{ownA}'), say('b', '{ownB}')] },
+      // (Don introduces them the way a host does, "Next up, cousins Silas and Penelope, the Creepy Cousins", not
+      // "Silas and Penelope: Creepy Cousins and cousins.", read 2026-11-03)
+      { id: 'ci.own', when: { ownIntro: true }, turns: [don('Next up, {a} and {b}, {donLabel}.'), say('a', '{ownA}'), say('b', '{ownB}')] },
+      { id: 'ci.own2', when: { ownIntro: true }, turns: [don('Here come {a} and {b}, {donLabel}!'), say('a', '{ownA}'), say('b', '{ownB}')] },
+      { id: 'ci.own3', when: { ownIntro: true }, turns: [don('And now, {a} and {b}, {donLabel}.'), say('a', '{ownA}'), say('b', '{ownB}')] },
 
       // rewritten 2026-10-19 with the premiere ("really robotic and AI"): one of them mostly talks, the other reacts
       intro('first', "{a} and {b}. {identity}, and {relTag}. That's a first for this show.",

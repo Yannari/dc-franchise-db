@@ -39,7 +39,7 @@ export default {
     { id: 'mm.r16', turns: [{ by: 'don', say: "{placing}, {team}. Don't trip on the way off." }] },
     { id: 'mm.r17', turns: [{ by: 'don', say: "Here come {team}. {placing}. Next!" }] },
     { id: 'mm.r18', turns: [{ by: 'don', say: "{team}, you're {placing}. Go and sit with the others." }] },
-    { id: 'mm.r19', turns: [{ by: 'don', say: "{team}. {placing}. You're dripping on my mat." }] },
+    { id: 'mm.r19', turns: [{ by: 'don', say: "{team}. {placing}. You both look like you need a nap." }] },
     { id: 'mm.r20', turns: [{ by: 'don', say: "{placing} place: {team}. Nobody faint." }] },
     { id: 'mm.r21', turns: [{ by: 'don', say: "{team}, {placing}. I've got a lot of teams to get through. Shoo." }] },
     { id: 'mm.r22', turns: [{ by: 'don', say: "{team}, you're {placing}. That's all I've got. Go." }] },

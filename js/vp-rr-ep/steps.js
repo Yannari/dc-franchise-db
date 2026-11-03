@@ -362,7 +362,11 @@ export function episodeScreens(res, eps, i) {
       const sg = k === 'task-stage' ? sp?.stages?.[seg.stage] : null;
       if (sg) {
         const ti = Math.max(0, st.order.indexOf(segTeams[0]));
-        const opts = seg.ending === 'fail' && sg.fail ? [sg.fail] : [sg.plate, ...(sg.alt || [])];
+        // (a team's own angle is the same kind of shot as the stage's: a ride's alternate that only stands them in
+        // place showed a team followed briefly, its ride and its finish, never riding, read 2026-11-03)
+        const acts = p => !!(p?.mode && (p.path || IN_PLACE.has(p.mode)));
+        const all = seg.ending === 'fail' && sg.fail ? [sg.fail] : [sg.plate, ...(sg.alt || [])];
+        const opts = all.filter(p => acts(p) === acts(all[0])).length ? all.filter(p => acts(p) === acts(all[0])) : all;
         plate = opts[ti % opts.length];
         mode = plate.mode && (plate.path || IN_PLACE.has(plate.mode)) ? 'act' : 'talk';
         hudTask += ` · ${sg.label}`;
@@ -436,8 +440,9 @@ export function episodeScreens(res, eps, i) {
         const on = far > (at ?? Infinity) ? so.plates.slice(far).find(p => p && standable(p)) : null;
         if (on) plate = on;
       }
-      // a narrow corner (a stair landing) holds two teams: three or more go to the stretch's widest standing plate
-      if (mode === 'talk' && segTeams.length > 2 && plate?.x && plate.x[1] - plate.x[0] < 11 * segTeams.length) {
+      // a narrow corner (a stair landing) holds two teams side by side only if it's twelve wide for each (two teams on a
+      // corner twenty-two wide stood 8 apart, faces on faces, 2026-11-03); more go to the stretch's widest standing plate
+      if (mode === 'talk' && segTeams.length >= 2 && plate?.x && plate.x[1] - plate.x[0] < 12 * segTeams.length) {
         // (not up to a stage none of them has reached: the stairs' widest shot is the hallway at the top, 2026-10-22, and a
         // crowd on the landings sent there had all four "at the top" for the rest of the climb)
         const so = stretch?.stages?.length || stretch?.sides ? stageOrderOf(placeId, stretch, seg.side) : null;
@@ -673,11 +678,17 @@ function decorate(scr, seg, scene, leg, ctx) {
     const ids = (seg.scenes || []).map(id => ctx.sceneById.get(id)).filter(Boolean);
     scr.arriving = ids.map(s => s.data.team);
     let next = 0;
+    // (a whole name, of a team not checked in yet: "Emmah and Natalia" found Emma's team in "Emmah", and Emmah's team,
+    // never checked in, stood on the mat from the first step)
+    const esc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const says = (text, name) => !!name && new RegExp(`(^|[^\\p{L}])${esc(name)}(?![\\p{L}])`, 'u').test(text);
+    const done = new Set();
     scr.steps.forEach((step, si) => {
       if (step.by !== 'Don') return;
-      let s = ids.find(x => ctx.membersOf(x.data.team).some(n => step.text.includes(n)) || step.text.includes(ctx.nameOfTeam(x.data.team)));
+      let s = ids.find(x => !done.has(x) && (ctx.membersOf(x.data.team).some(n => says(step.text, n)) || says(step.text, ctx.nameOfTeam(x.data.team))));
       if (!s) s = ids[next];
       if (!s || step.rank) return;
+      done.add(s);
       next = ids.indexOf(s) + 1;
       step.rank = { team: s.data.team, place: s.data.place };
       (step.intel.placed ||= {})[s.data.team] = s.data.place;
@@ -880,7 +891,8 @@ function stageScreen(s, color) {
   // (the start line stands its teams in two rows: a row is what has to fit across)
   const across = s.startLine && s.teams.length > 6 ? Math.ceil(s.teams.length / 2) + 1 : s.teams.length + (s.don ? 0.5 : 0);
   const base = (s.plate?.scale || 1) * sizeFor(across, s.mode);
-  const floor = s.mode === 'cabin' ? 7 : Math.max(4.5, base * 0.62);
+  // (two teams on a corner with no wider shot of the challenge go smaller still before standing on each other, 2026-11-03)
+  const floor = s.mode === 'cabin' ? 7 : s.teams.length === 2 ? Math.max(3.6, base * 0.5) : Math.max(4.5, base * 0.62);
   for (let z = base; ; z *= 0.94) {
     for (const key of STAGED) delete s[key];
     layout(s, Math.max(floor, z));

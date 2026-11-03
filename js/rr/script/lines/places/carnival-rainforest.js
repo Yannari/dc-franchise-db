@@ -22,9 +22,9 @@ const place = {
   'don-opener.annoyed': [
     { id: 'cvr.op1', when: P, turns: [
       beat('Don stands in a jungle clearing, slapping at a mosquito on his neck, then another, then another.'),
-      don("Welcome to Carnival Rainforest! Home of the loudest party on earth, the biggest rainforest on earth, and every mosquito on earth."),
+      don("Welcome to Carnival Rainforest! Home of the loudest party on earth, the biggest rainforest on earth, and a lot of mosquitoes!"),
       don("Today, teams meet some very angry ants, fly over a gorge, and dress up for carnival. Not in that order. Actually, in that order."),
-      beat('A mosquito lands on his nose. He goes cross-eyed looking at it.'),
+      beat('A mosquito lands on his nose, and he swats it away.'),
     ] },
     { id: 'cvr.op2', when: P, turns: [
       don("Carnival Rainforest. It's hot, it's wet, and somewhere out there a drum is playing, and it hasn't stopped since we landed."),
@@ -44,24 +44,24 @@ const place = {
       beat('The trail opens onto a view of rainforest that goes on, green and endless, all the way to the sea.'),
       by('a', "That's all trees. Every bit of that is trees."),
       by('b', "And something in there is singing. Listen."),
-      by('a', "That's a bird. Or a monkey. Or a very good drummer."),
+      by('a', "A bird, maybe. Or a monkey."),
     ] },
     { id: 'cvr.ar2', when: P, turns: [
-      beat('A parrot lands on a branch right next to them, looks at {a}, and says something that sounds like a word.'),
-      by('b', "Did that parrot just talk to you?"),
-      by('a', "I think it said 'hurry'."),
+      beat('A parrot lands on a branch right next to them, bright red and blue.'),
+      by('b', "Look at that parrot. It's so close."),
+      by('a', "It's beautiful. Come on, though."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'cvr.ad1', when: P, turns: [
       by('a', "It says 'ants' on the tip. Why does it say ants?"),
       by('b', "Maybe they're friendly ants."),
-      by('a', "There's a picture of a man crying next to the word."),
+      by('a', "I don't think there's such a thing."),
     ] },
     { id: 'cvr.ad2', when: P, turns: [
-      by('b', "I'm sweating in places I didn't know could sweat."),
+      by('b', "I'm sweating so much."),
       by('a', "We've been here four minutes."),
-      by('b', "Four very long minutes."),
+      by('b', "I know. It's so humid."),
     ] },
   ],
 };
@@ -84,49 +84,49 @@ const ants = {
     { id: 'cvr.an-d1', when: AN, turns: [
       don("In this Botch or Watch, one of you puts a hand into this mitten, full of bullet ants, and pulls out the tip at the bottom."),
       beat('A local holds the mitten up to him. It is moving. Don takes three steps back.'),
-      don("They're called bullet ants because their sting feels like being shot. I did not volunteer to demonstrate."),
+      don("They're called bullet ants because their sting feels like being shot, so good luck!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'cvr.an-d2', when: AN, turns: [
-      don("Pull your hand out empty, and it goes straight back in. The other partner can only watch. And maybe hold a cold drink."),
-      don("I've been told the pain lasts a day. I've been told that by a man who is still crying."),
+      don("Pull your hand out empty, and it goes straight back in. The other partner can only watch."),
+      don("I've been told the pain lasts a whole day!"),
       beat('Off to the side, a crew member is holding his hand in a bucket of ice.'),
     ] },
   ],
   'whose-botch.obvious': [
     { id: 'cvr.an-w1', when: AN, turns: [
       by('b', "You've got the tougher hands. You do manual work."),
-      by('a', "I work in an office. I type."),
-      by('b', "That's manual. Your hands are very used to working. Go."),
+      by('a', "I work in an office."),
+      by('b', "Still tougher than mine. Go."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'cvr.an-w2', when: AN, turns: [
       by('a', "I'll do it. I've been stung by everything. Wasps, bees, a jellyfish. What's one more?"),
       by('b', "These are supposed to be the worst."),
-      by('a', "Then I'll have the full set."),
+      by('a', "I'll be fine. Let me do it."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'cvr.an-w3', when: AN, turns: [
       by('b', "Not me. Absolutely not me. You."),
       by('a', "Why me?"),
-      by('b', "Because I asked first, and asking first is the rule."),
+      by('b', "Because I'm terrified of ants. Please."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'cvr.an-w4', when: AN, turns: [
-      by('a', "'Who has a high pain threshold?' That's not a question. That's a warning."),
+      by('a', "'Who has a high pain threshold?' That's not good."),
       by('b', "You do. You walked on that nail and didn't even notice for an hour."),
-      by('a', "I noticed. I just didn't say anything."),
+      by('a', "Okay. Okay. Fine."),
     ] },
   ],
   'task-start.any': [
     { id: 'cvr.an-s1', when: AN, turns: [
-      beat('{a} stares at the mitten. It ripples, as if the ants inside are waving.'),
+      beat('{a} stares at the mitten. The ants inside are crawling all over each other.'),
       by('a', "They're moving. Why are they moving like that?"),
-      by('b', "They're excited to meet you."),
+      by('b', "Don't look at them. Just go in."),
     ] },
     { id: 'cvr.an-s2', when: AN, turns: [
       by('b', "Fast in, grab, fast out. Don't feel around. Just grab the paper."),
@@ -134,9 +134,9 @@ const ants = {
       by('b', "It's the only thing in there that isn't an ant."),
     ] },
     { id: 'cvr.an-s3', when: AN, turns: [
-      beat('{a} rolls up one sleeve, very slowly, like a surgeon about to operate.'),
-      by('a', "If I scream, it's fine. It's part of the process."),
-      by('b', "Scream away. Nobody here is judging you."),
+      beat('{a} rolls up one sleeve, very slowly.'),
+      by('a', "If I scream, just ignore me."),
+      by('b', "Scream as much as you want."),
     ] },
     { id: 'cvr.an-s4', when: AN, turns: [
       by('a', "Count me down. Count me down so I can't back out."),
@@ -149,12 +149,12 @@ const ants = {
       beat('{a} plunges a hand in, grabs, and pulls out the tip in one move, shaking off three ants.'),
       by('a', "Got it! Got it! Ow, ow, ow, I got it!"),
       by('b', "That was so fast! Did they even get you?"),
-      by('a', "Every single one of them got me!"),
+      by('a', "They got me! They all got me!"),
     ] },
     { id: 'cvr.an-f2', when: AN, turns: [
       by('a', "It's out. It's out, and I'm never doing that again."),
       by('b', "You didn't even scream!"),
-      by('a', "I'm screaming on the inside. It's very loud in there."),
+      by('a', "I wanted to. Believe me."),
     ] },
     { id: 'cvr.an-f3', when: AN, turns: [
       beat('{a} pulls out the tip, hands it to {b} without a word, and walks very calmly to the bucket of ice.'),
@@ -163,37 +163,37 @@ const ants = {
     ] },
     { id: 'cvr.an-f4', when: AN, turns: [
       by('b', "First try! First try in a mitten full of ants!"),
-      by('a', "Put that on my gravestone."),
-      by('b', "You're not going to die."),
+      by('a', "I'm never doing that again."),
+      by('b', "You were amazing."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'cvr.an-a1', when: AN, turns: [
       by('b', "It's at the very bottom. Go deeper. Right to the fingertips of the mitten."),
       beat('{a} goes in again, all the way, and comes out holding the tip, and a lot of ants.'),
-      by('a', "Deeper was worse. But deeper worked."),
+      by('a', "Deeper hurt more. But I got it."),
     ] },
     { id: 'cvr.an-a2', when: AN, turns: [
       beat('Third time in, {a} stops flinching, finds the paper, and pulls it out.'),
-      by('a', "Got it. I've stopped feeling my hand, so it was easy."),
-      by('b', "That's not how it's supposed to work, but I'll take it."),
+      by('a', "Got it. I can't even feel my hand any more."),
+      by('b', "You did it! Come on!"),
     ] },
     { id: 'cvr.an-a3', when: AN, turns: [
       by('a', "I keep pulling out leaves. Why are there leaves in here?"),
-      by('b', "To trick you! Feel for the smooth one!"),
+      by('b', "I don't know! Feel for the smooth one!"),
       beat('{a} feels for the smooth one, and pulls out the tip at last.'),
     ] },
     { id: 'cvr.an-a4', when: AN, turns: [
       by('b', "Don't think. Thinking is what's slowing you down."),
       beat('{a} stops thinking, goes in, and comes out with the tip.'),
-      by('a', "Not thinking is my best skill."),
+      by('a', "That worked. Let's go."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'cvr.an-t1', when: AN, turns: [
       beat('{a} has a hand halfway into the mitten and has been frozen like that for a full minute.'),
       by('b', "In or out! You've got to go in or out!"),
-      by('a', "They're on my wrist. They know I'm here."),
+      by('a', "They're on my wrist. I can feel them."),
     ] },
     { id: 'cvr.an-t2', when: AN, turns: [
       by('a', "I can't feel the paper. I can only feel ants."),
@@ -201,7 +201,7 @@ const ants = {
       by('a', "Then why can't I find it?"),
     ] },
     { id: 'cvr.an-t3', when: AN, turns: [
-      beat("{a}'s hand is red and swollen, and {a} is staring at the mitten like it's a bomb."),
+      beat("{a}'s hand is red and swollen, and {a} is staring at the mitten."),
       by('a', "One more time. Just one more time."),
       by('b', "You said that two times ago."),
     ] },
@@ -213,14 +213,14 @@ const ants = {
       by('a', "When? When will it go down?"),
     ] },
     { id: 'cvr.an-dn2', when: AN, turns: [
-      beat('{a} jogs down the trail, holding one hand up in the air like a waiter carrying a tray.'),
+      beat('{a} jogs down the trail, holding one hand up in the air.'),
       by('b', "Why are you holding it like that?"),
       by('a', "It hurts less up here. Don't ask me why."),
     ] },
     { id: 'cvr.an-dn3', when: AN, turns: [
       by('b', "You were so brave. Honestly. So brave."),
       by('a', "Then you're doing the next one."),
-      by('b', "We'll see what the next one is."),
+      by('b', "Okay. That's fair."),
     ] },
   ],
   'attempt-fail.any': [
@@ -232,7 +232,7 @@ const ants = {
     { id: 'cvr.an-x2', when: AN, turns: [
       beat('{a} pulls a hand out the second it goes in, with a yelp.'),
       by('b', "You didn't even get to the bottom!"),
-      by('a', "There's no bottom! It's just ants all the way down!"),
+      by('a', "I can't! It's just ants!"),
     ] },
     { id: 'cvr.an-x3', when: AN, turns: [
       beat("{a} grabs the tip, but drops it back into the mitten on the way out."),
@@ -243,8 +243,8 @@ const ants = {
   'watching-botch.cheer': [
     { id: 'cvr.an-v1', when: AN, turns: [
       by('b', "You're the bravest person I know! The bravest! Grab it!"),
-      by('a', "Stop shouting! It's upsetting them!"),
-      by('b', "I'm cheering! Ants don't understand cheering!"),
+      by('a', "Stop shouting! I'm trying to concentrate!"),
+      by('b', "Sorry! You've got this!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -265,14 +265,14 @@ const ants = {
     { id: 'cvr.an-v4', when: AN, turns: [
       beat("{b} stands perfectly still and silent, fists clenched, watching every move."),
       by('a', "Why aren't you saying anything?"),
-      by('b', "Because I'm scared that if I talk, they'll hear me."),
+      by('b', "Because I'm too scared to talk."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'cvr.an-h1', when: AN, turns: [
       beat("While the local looks away, {b} blows into the mitten to try to calm the ants down."),
-      by('a', "Did you just blow on them? Why would you blow on them?"),
-      by('b', "It works on bees. I panicked."),
+      by('a', "What are you doing? Stop!"),
+      by('b', "Sorry! I panicked!"),
     ] },
   ],
 };
@@ -281,9 +281,9 @@ const ants = {
 const gorge = {
   'don-demo.gag': [
     { id: 'cvr.go-d1', when: GO, turns: [
-      don("In this All-In, teams cross the gorge by any means necessary. Most people use the vines. I'd use a helicopter."),
+      don("In this All-In, teams cross the gorge, and the only way across is on the vines!"),
       beat('He grabs a vine, tests it with a tug, and it comes away from the tree and falls on his head.'),
-      don("Use a different vine than that one."),
+      don("Maybe pick a different vine than that one!"),
     ] },
   ],
   'don-demo.dry': [
@@ -297,34 +297,34 @@ const gorge = {
     { id: 'cvr.go-s1', when: GO, turns: [
       beat('{a} stands on the edge of the gorge, holding a vine, looking down at the river far below.'),
       by('a', "How do I know it'll hold me?"),
-      by('b', "You don't. That's the fun part."),
+      by('b', "It's held everybody else. Go."),
     ] },
     { id: 'cvr.go-s2', when: GO, turns: [
       by('b', "Run, jump, hold on, let go on the other side. Four things."),
       by('a', "Which is the hard one?"),
-      by('b', "All four. Equally."),
+      by('b', "Letting go. Don't let go too early."),
     ] },
     { id: 'cvr.go-s3', when: GO, turns: [
       beat('{b} grabs a vine, backs up as far as it will go, and runs.'),
-      by('b', "Like a superhero! Like a jungle superhero!"),
-      by('a', "Superheroes don't scream like that!"),
+      by('b', "Here I go!"),
+      by('a', "Go! Go!"),
     ] },
     { id: 'cvr.go-s4', when: GO, turns: [
       by('a', "There are about a thousand coconuts over there."),
       by('b', "Then we'd better get across fast. Lots of shaking to do."),
-      by('a', "I've never shaken a thousand coconuts."),
+      by('a', "Then let's get across. Fast."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'cvr.go-f1', when: GO, turns: [
       beat('{a} swings out over the gorge, perfectly, and lets go at exactly the right moment to land on the far side.'),
-      by('a', "I'm a natural! I was born in a jungle!"),
-      by('b', "You were born in a hospital next to a car park."),
+      by('a', "I did it! I actually did it!"),
+      by('b', "That was perfect!"),
     ] },
     { id: 'cvr.go-f2', when: GO, turns: [
       by('b', "This one! This one sloshes differently!"),
       beat('{b} cracks it open on a rock. Inside, rolled up neatly, is the tip.'),
-      by('a', "You found it with your ears! You're a coconut genius!"),
+      by('a', "You heard it! That's amazing!"),
     ] },
     { id: 'cvr.go-f3', when: GO, turns: [
       beat('Both of them swing across on their first try, one after the other, and land in a heap on the far side.'),
@@ -341,7 +341,7 @@ const gorge = {
     { id: 'cvr.go-a1', when: GO, turns: [
       by('b', "Swing higher. Back up further and swing higher."),
       beat('{a} backs up to the very edge, runs, and swings so high {a} clears the gorge with room to spare.'),
-      by('a', "Too high! But I'm across!"),
+      by('a', "I'm across! I'm across!"),
     ] },
     { id: 'cvr.go-a2', when: GO, turns: [
       beat("After a long search through the pile, {a} finally holds up a coconut that sounds different."),
@@ -356,7 +356,7 @@ const gorge = {
     { id: 'cvr.go-a4', when: GO, turns: [
       by('b', "We've checked this whole side. It has to be on that side."),
       beat('On that side, the very first coconut {b} picks up rattles. Inside is the tip.'),
-      by('a', "It's always the last place you look."),
+      by('a', "Of course it was."),
     ] },
   ],
   'task-try.struggling': [
@@ -367,30 +367,30 @@ const gorge = {
     ] },
     { id: 'cvr.go-t2', when: GO, turns: [
       by('b', "That's fifty coconuts. Fifty coconuts, and nothing."),
-      by('a', "There are nine hundred and fifty to go."),
-      by('b', "Okay, I didn't need to hear that."),
+      by('a', "There are so many more."),
+      by('b', "Don't say that."),
     ] },
     { id: 'cvr.go-t3', when: GO, turns: [
       beat('{a} climbs out of the river for the third time, dripping, covered in leaves.'),
-      by('a', "I'm part of the river now. The river and I are one."),
-      by('b', "Climb back up and be part of the other side instead."),
+      by('a', "I'm so wet. I'm so tired."),
+      by('b', "Climb back up. You'll get it this time."),
     ] },
   ],
   'task-done.any': [
     { id: 'cvr.go-dn1', when: GO, turns: [
-      by('a', "Can we keep the coconut? The one that had the tip?"),
-      by('b', "It's broken in half."),
-      by('a', "Then we keep both halves."),
+      by('a', "That coconut took forever."),
+      by('b', "I never want to see a coconut again."),
+      by('a', "Me neither. Come on."),
     ] },
     { id: 'cvr.go-dn2', when: GO, turns: [
       beat('{a} and {b} jog away from the gorge, both still dripping from the river.'),
       by('b', "My shoes are full of water."),
-      by('a', "My shoes are full of river. There's a difference."),
+      by('a', "Mine too. Keep going."),
     ] },
     { id: 'cvr.go-dn3', when: GO, turns: [
-      by('b', "I swung on a vine over a gorge. I'm basically an action hero."),
+      by('b', "I swung on a vine over a gorge."),
       by('a', "You fell in twice."),
-      by('b', "Action heroes fall in all the time."),
+      by('b', "And then I made it."),
     ] },
   ],
   'attempt-fail.any': [
@@ -402,12 +402,12 @@ const gorge = {
     { id: 'cvr.go-x2', when: GO, turns: [
       beat('{b} cracks open a coconut. Inside is nothing but coconut.'),
       by('b', "Nothing. Just coconut. Why is it just coconut?"),
-      by('a', "Because it's a coconut. Next one."),
+      by('a', "Keep going. Next one."),
     ] },
     { id: 'cvr.go-x3', when: GO, turns: [
       beat("{a} swings out over the gorge, then all the way back to the side {a} started from."),
       by('a', "I'm back. Why am I back?"),
-      by('b', "You didn't let go!"),
+      by('b', "You didn't let go in time!"),
     ] },
   ],
 };
@@ -418,36 +418,36 @@ const costume = {
     { id: 'cvr.co-d1', when: CO, turns: [
       don("In this All-In, teams make a full carnival costume: a headpiece for one of you, a tailpiece for the other. Feathers, sequins, the works."),
       beat('He puts on a giant feathered headpiece. It is taller than he is. He has to hold it up with both hands.'),
-      don("This is the right size. Anything smaller is a hat."),
+      don("This is the right size, and the judge wants it big!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'cvr.co-d2', when: CO, turns: [
       don("Then you parade it for the judge. If it sags, sheds feathers, or just stands there, it's back to the table."),
       don("She wants big. She wants bright. She wants you to dance. Mostly she wants you to dance."),
-      beat('The judge, behind him, is already dancing. She has not stopped since the cameras came on.'),
+      beat('The judge, behind him, is already dancing.'),
     ] },
   ],
   'task-start.any': [
     { id: 'cvr.co-s1', when: CO, turns: [
       beat("{a} and {b} stand over a table piled with feathers, glitter, wire and glue."),
       by('a', "Where do we even start?"),
-      by('b', "With the biggest feathers. Big feathers first. Always big feathers first."),
+      by('b', "With the biggest feathers. Big ones first."),
     ] },
     { id: 'cvr.co-s2', when: CO, turns: [
       by('b', "I'm doing the headpiece. You're doing the tail."),
       by('a', "Why do you get the head?"),
-      by('b', "Because you have a better bottom for a tail."),
+      by('b', "Because I said it first. Go."),
     ] },
     { id: 'cvr.co-s3', when: CO, turns: [
       beat("{a} glues a feather to the wire, and immediately glues {a.posAdj} own hand to it too."),
-      by('a', "I'm stuck. I'm part of the costume now."),
-      by('b', "Then make it a good costume."),
+      by('a', "I'm stuck. My hand's stuck."),
+      by('b', "Pull it off slowly."),
     ] },
     { id: 'cvr.co-s4', when: CO, turns: [
       by('a', "Do you know how to sew?"),
-      by('b', "I know how to glue. Glue is basically sewing for people in a hurry."),
-      by('a', "Let's go with glue."),
+      by('b', "No. But I know how to glue."),
+      by('a', "Glue it is."),
     ] },
   ],
   'task-try.first-try': [
@@ -459,7 +459,7 @@ const costume = {
     { id: 'cvr.co-f2', when: CO, turns: [
       by('a', "Spin! Spin so she can see the tail!"),
       beat('{a} spins. The tail spins with {a.obj}. The judge cheers, and hands over the tip.'),
-      by('b', "We're carnival people now! We live here now!"),
+      by('b', "She loves it! We did it!"),
     ] },
     { id: 'cvr.co-f3', when: CO, turns: [
       beat("The judge walks slowly all the way around them, touches one feather, and nods."),
@@ -468,24 +468,24 @@ const costume = {
     ] },
     { id: 'cvr.co-f4', when: CO, turns: [
       by('b', "Bigger! Make it bigger!"),
-      by('a', "It can't get any bigger, it's already touching the tent!"),
-      beat('It is, it turns out, the perfect size. The judge gives them the tip.'),
+      by('a', "It can't get bigger! It's touching the tent!"),
+      beat('It\'s the perfect size. The judge gives them the tip.'),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'cvr.co-a1', when: CO, turns: [
       by('a', "She said it wasn't big enough. Every feather. Use every single feather on the table."),
-      beat("They use every single feather. The headpiece now reaches the roof. The judge squeals and hands over the tip."),
-      by('b', "More is more. Write that down."),
+      beat("They use every single feather. The headpiece is huge. The judge squeals and hands over the tip."),
+      by('b', "More worked!"),
     ] },
     { id: 'cvr.co-a2', when: CO, turns: [
-      beat('{a} and {b} come back out, and this time they dance like nobody is watching, even though everybody is.'),
+      beat('{a} and {b} come back out, and this time they dance as big as they can.'),
       by('b', "She wanted dancing! Give her dancing!"),
       beat('The judge joins in, dancing with them, and presses the tip into {a}\'s hand.'),
     ] },
     { id: 'cvr.co-a3', when: CO, turns: [
-      by('b', "The tail kept falling off. So we glue it to you."),
-      by('a', "To me? To my actual body?"),
+      by('b', "The tail kept falling off. So we tie it on."),
+      by('a', "Tie it to me? Tight?"),
       beat('The tail stays on. The judge is delighted. The tip is theirs.'),
     ] },
     { id: 'cvr.co-a4', when: CO, turns: [
@@ -497,7 +497,7 @@ const costume = {
   'task-try.struggling': [
     { id: 'cvr.co-t1', when: CO, turns: [
       beat('Half the feathers on their headpiece slide off and drift to the ground.'),
-      by('a', "It's moulting! The costume is moulting!"),
+      by('a', "It's falling apart!"),
       by('b', "More glue! Use all the glue!"),
     ] },
     { id: 'cvr.co-t2', when: CO, turns: [
@@ -515,24 +515,24 @@ const costume = {
     { id: 'cvr.co-dn1', when: CO, turns: [
       by('a', "Can we wear them to the Chill Zone?"),
       by('b', "Yes. Absolutely yes. I'm wearing this forever."),
-      by('a', "Don's going to be so jealous."),
+      by('a', "Don's going to love it."),
     ] },
     { id: 'cvr.co-dn2', when: CO, turns: [
       beat('{a} and {b} jog out of the tent, still shedding feathers, leaving a trail of pink behind them.'),
       by('b', "We look ridiculous."),
-      by('a', "We look magnificent and ridiculous."),
+      by('a', "We look amazing, though."),
     ] },
     { id: 'cvr.co-dn3', when: CO, turns: [
-      by('b', "I think I want to be a costume designer now."),
+      by('b', "That was the most fun I've had all race."),
       by('a', "You glued your hand to a feather."),
-      by('b', "Every designer starts somewhere."),
+      by('b', "And I'd do it again."),
     ] },
   ],
   'attempt-fail.any': [
     { id: 'cvr.co-x1', when: CO, turns: [
       beat('The judge takes one look at their costume, and points back at the tent without a word.'),
       by('a', "She didn't even look at the tail!"),
-      by('b', "She didn't need to. Back to the table."),
+      by('b', "Back to the table. Come on."),
     ] },
     { id: 'cvr.co-x2', when: CO, turns: [
       beat('Halfway through their parade, the headpiece tips over and falls off completely.'),

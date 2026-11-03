@@ -116,7 +116,7 @@ export default {
   'cpl.sh-d2:1': "Don't worry, it always comes round again!",
   'gyi.tp-d2:1': "The geysers go off every few minutes, and nobody knows exactly when, not even me, which makes it very exciting for me.",
   'gyi.ff-d2:1': "Bring me an empty platter or a fossil at the Chill Zone, and never, ever the sheep's head.",
-  'cvr.co-d2:1': "She wants it big and bright, and she wants you to dance, and mostly she wants you to dance.",
+  'cvr.co-d2:1': "She wants it big and bright, and she wants to see you dance!",
   'hcs.cf-d2:1': "The grave digger at the graveyard has your next tip, and he doesn't talk much, because he doesn't need to.",
   'hcs.gy-d2:0': "The coach has to approve, so a wobble, a fall or a lazy split means starting the routine again, and the other partner may only cheer.",
   'hcs.gy-d2:1': "The coach has trained champions and has never once smiled, so don't take it personally.",

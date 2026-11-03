@@ -12,7 +12,7 @@ export default {
   'task-stage.ok': [
     // ── the ant mitten ──
     { id: 'cr.st.mi1', when: at('ants', 'the-mitten'), turns: [
-      beat('A local holds out a woven mitten. The inside of it is moving. The inside of it is entirely ants, big black ones, about an inch long each.'),
+      beat('A local holds out a woven mitten. The inside of it is moving. It\'s full of ants, big black ones, about an inch long each.'),
       by('b', "Those are bullet ants. Apparently the sting feels like getting shot."),
       by('a', "Why would you tell me that right now?"),
     ] },
@@ -32,7 +32,7 @@ export default {
       beat('{a} keeps the hand in, feeling around at the bottom of the mitten, eyes squeezed shut.'),
     ] },
     { id: 'cr.st.hi3', when: at('ants', 'hand-in'), turns: [
-      beat('{a} pushes a hand all the way in up to the wrist, without a single sound, jaw clenched so hard it creaks.'),
+      beat('{a} pushes a hand all the way in up to the wrist, without a sound, jaw clenched.'),
       by('b', "Why aren't you screaming? You're scaring me."),
       by('a', "If I start, I won't stop. Let me find the tip."),
     ] },
@@ -47,40 +47,40 @@ export default {
       by('b', "Not even a rip. Nice."),
     ] },
     { id: 'cr.st.sw1', when: at('ants', 'swollen'), turns: [
-      beat('{a}\'s hand has swollen up so much that it looks like a cartoon hand in a big puffy glove.'),
+      beat('{a}\'s hand has already started to swell.'),
       by('a', "Look at it. It's twice the size."),
       by('b', "You were so brave. I'll hold the tip."),
     ] },
     { id: 'cr.st.sw2', when: at('ants', 'swollen'), turns: [
       by('b', "How does it feel?"),
       by('a', "Like it's on fire. But I'd do it again for a million dollars."),
-      beat('They read the tip and run, {a} holding the swollen hand up in the air like a trophy.'),
+      beat('They read the tip and run, {a} holding the swollen hand up in the air.'),
     ] },
 
     // ── the gorge ──
     { id: 'cr.st.ge1', when: at('gorge', 'gorge-edge'), turns: [
-      beat('The trail ends at the edge of a gorge so deep that the river at the bottom looks like a piece of blue string.'),
+      beat('The trail ends at the edge of a deep gorge, with a river far below.'),
       by('a', "There's no bridge. Why is there no bridge?"),
       by('b', "Look. Vines. We swing across."),
     ] },
     { id: 'cr.st.ge2', when: at('gorge', 'gorge-edge'), turns: [
       by('b', "Don't look down."),
       beat('{a} looks down.'),
-      by('a', "I looked down. Why do people say that? It just makes you look."),
+      by('a', "I looked down. Why did you say that?"),
     ] },
     { id: 'cr.st.vi1', when: at('gorge', 'the-swing'), turns: [
       beat('{a} grabs a vine, runs, and swings out over the gorge, screaming the whole way, and lands on the far side in a heap.'),
       by('a', "I'm alive! I'm over! Your turn!"),
-      beat('{b} swings next, and lands on top of {a}.'),
+      beat('{b} swings next, and lands right beside {a}.'),
     ] },
     { id: 'cr.st.vi2', when: at('gorge', 'the-swing'), turns: [
       by('b', "Okay. Here I go."),
-      beat('{b} swings out over the gorge, does a little yodel in the middle of it, and lets go at exactly the right moment.'),
-      by('a', "Did you just yodel?"),
-      by('b', "You have to yodel on a vine. Everyone knows that."),
+      beat('{b} swings out over the gorge, whooping the whole way, and lets go at exactly the right moment.'),
+      by('a', "That was amazing!"),
+      by('b', "I can't believe I just did that!"),
     ] },
     { id: 'cr.st.vi3', when: at('gorge', 'the-swing'), turns: [
-      beat('They hold the same vine and swing across together, the two of them clinging on like a pair of koalas.'),
+      beat('They hold the same vine and swing across together, both of them clinging on.'),
       by('a', "Are we allowed to both go on one?"),
       by('b', "Nobody said we can't."),
     ] },
@@ -91,23 +91,23 @@ export default {
     ] },
     { id: 'cr.st.cp2', when: at('gorge', 'coconut-pile'), turns: [
       by('a', "Slosh. Slosh. Slosh. They all slosh."),
-      beat('{a} and {b} work through the pile, shaking every coconut next to their ears like two people listening to seashells.'),
+      beat('{a} and {b} work through the pile, shaking every coconut next to their ears.'),
       by('b', "Wait. This one doesn't. Listen."),
     ] },
     { id: 'cr.st.cp3', when: at('gorge', 'coconut-pile'), turns: [
       beat('{b} starts at the bottom of the pile and {a} starts at the top, and the whole mountain shifts and rolls under them.'),
-      by('a', "Avalanche!"),
+      by('a', "Watch out!"),
       beat('Coconuts bounce everywhere. One of them, rolling past {b}\'s foot, rattles.'),
     ] },
     { id: 'cr.st.cc1', when: at('gorge', 'the-coconut'), turns: [
       beat('{a} smashes the coconut on a rock. It splits open, and inside, rolled up and dry, is the travel tip.'),
       by('b', "Yes! Yes, yes, yes!"),
-      by('a', "I'm keeping this coconut. I earned it."),
+      by('a', "Yes! Finally!"),
     ] },
     { id: 'cr.st.cc2', when: at('gorge', 'the-coconut'), turns: [
-      by('b', "\"Make a carnival costume.\" A costume! With feathers!"),
+      by('b', "It says make a carnival costume. With feathers!"),
       by('a', "Finally. Something I'm actually good at."),
-      beat('They run off down the trail, {a} drinking the coconut on the way.'),
+      beat('They run off down the trail.'),
     ] },
 
     // ── the costume ──
@@ -134,7 +134,7 @@ export default {
     { id: 'cr.st.tp1', when: at('costume', 'tailpiece'), turns: [
       beat('{b} builds the tailpiece, a great sweeping fan of feathers that clips onto a belt.'),
       by('b', "How does it look from behind?"),
-      by('a', "Amazing. Like a peacock."),
+      by('a', "Amazing. Really amazing."),
     ] },
     { id: 'cr.st.tp2', when: at('costume', 'tailpiece'), turns: [
       by('a', "Turn round. Wiggle it."),
@@ -142,7 +142,7 @@ export default {
       by('b', "It's staying on! It works!"),
     ] },
     { id: 'cr.st.pa1', when: at('costume', 'the-parade'), turns: [
-      beat('They parade in front of the carnival judge, headpiece swaying, tailpiece swishing, dancing to music only they can hear.'),
+      beat('They parade in front of the carnival judge, headpiece swaying, tailpiece swishing, dancing to the drums.'),
       by('a', "Smile! Wave! Shake it!"),
       by('b', "I am! This is all I've got!"),
     ] },
@@ -157,7 +157,7 @@ export default {
       by('a', "Best challenge ever. Can I keep the headpiece?"),
     ] },
     { id: 'cr.st.jc2', when: at('costume', 'judge-cheers'), turns: [
-      by('a', "\"Hang glide down to the beach.\" Hang glide? In these?"),
+      by('a', "It says hang glide down to the beach. In these?"),
       by('b', "We're going to look amazing up there."),
       beat('They run for the cliffs, still in their feathers.'),
     ] },
@@ -176,14 +176,14 @@ export default {
       beat('{a} is still standing in front of the mitten, not putting a hand in it.'),
     ] },
     { id: 'cr.sf.hi1', when: at('ants', 'hand-in'), turns: [
-      beat('{a}\'s hand goes in. The first sting lands. The hand comes straight back out, empty, at about a hundred miles an hour.'),
+      beat('{a}\'s hand goes in. The first sting lands, and the hand comes straight back out, empty.'),
       by('a', "That was one ant! One!"),
       by('b', "And you have to go back in."),
     ] },
     { id: 'cr.sf.hi2', when: at('ants', 'hand-in'), turns: [
       by('b', "Do you have it? Do you have it?"),
       beat('{a} pulls out a fist, opens it, and finds only ants.'),
-      by('a', "I thought it was the tip! It was a really big ant!"),
+      by('a', "I thought it was the tip! It was just a big ant!"),
     ] },
     { id: 'cr.sf.at1', when: at('ants', 'ant-tip'), turns: [
       beat('{a} gets the tip halfway out, gets stung on the thumb, and lets go. The tip drops back to the bottom of the mitten.'),
@@ -209,9 +209,9 @@ export default {
       by('a', "That's not how three works!"),
     ] },
     { id: 'cr.sf.vi1', when: at('gorge', 'the-swing'), turns: [
-      beat('{a} swings out over the gorge, lets go a second too early, and drops like a stone into the river far below.'),
+      beat('{a} swings out over the gorge, lets go a second too early, and drops into the river far below.'),
       by('a', "Aaaaaaaaah!"),
-      beat('There is a long fall and a very big splash. Then a long, wet climb back up to the start.'),
+      beat('There\'s a long fall and a big splash, then a long, wet climb back up to the start.'),
     ] },
     { id: 'cr.sf.vi2', when: at('gorge', 'the-swing'), turns: [
       by('b', "Grab the next vine! The next vine!"),
@@ -220,8 +220,8 @@ export default {
       by('a', "I'm fine! Just wet!"),
     ] },
     { id: 'cr.sf.vi3', when: at('gorge', 'the-swing'), turns: [
-      beat('The vine {b} picks turns out not to be tied to anything. It is just a vine lying over a branch.'),
-      by('b', "Uh oh."),
+      beat('The vine {b} picks isn\'t tied to anything. It\'s just lying over a branch.'),
+      by('b', "Oh no."),
       beat('{b} lands in the river at the bottom of the gorge, still holding the vine.'),
     ] },
     { id: 'cr.sf.cp1', when: at('gorge', 'coconut-pile'), turns: [
@@ -238,12 +238,12 @@ export default {
     // ── the costume ──
     { id: 'cr.sf.fe1', when: at('costume', 'feathers'), turns: [
       beat('{a} knocks over the pot of glue, and when {a} picks up the feathers, they all stick to {a} instead of the costume.'),
-      by('b', "You look like a chicken."),
+      by('b', "Oh no. Stand still."),
       by('a', "I know. Just help me get them off."),
     ] },
     { id: 'cr.sf.fe2', when: at('costume', 'feathers'), turns: [
       by('b', "Why are none of them sticking?"),
-      by('a', "Because you're using the glitter, not the glue."),
+      by('a', "Because that's glitter, not glue!"),
       beat('Every feather they put on in the last five minutes slides slowly off onto the floor.'),
     ] },
     { id: 'cr.sf.hp1', when: at('costume', 'headpiece'), turns: [
@@ -263,12 +263,12 @@ export default {
     ] },
     { id: 'cr.sf.tp2', when: at('costume', 'tailpiece'), turns: [
       by('a', "Why are there feathers all over the floor?"),
-      beat('With every step {b} takes, the tailpiece drops a feather. There is a trail of them all the way round the table.'),
+      beat('With every step {b} takes, the tailpiece drops a feather.'),
       by('b', "It's falling apart!"),
     ] },
     { id: 'cr.sf.pa1', when: at('costume', 'the-parade'), turns: [
-      beat('They stand in front of the carnival judge in their costumes, and sort of sway a little bit, side to side.'),
-      beat('The judge shakes their head, does a huge, wild samba to show what dancing is, and waves them back to the table.'),
+      beat('They stand in front of the carnival judge in their costumes and sway a little, side to side.'),
+      beat('The judge shakes her head, does a big samba to show them how, and waves them back to the table.'),
       by('a', "Oh. Okay. So, more."),
     ] },
     { id: 'cr.sf.pa2', when: at('costume', 'the-parade'), turns: [

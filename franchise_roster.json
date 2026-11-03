@@ -8377,7 +8377,7 @@
       "hometown": "Port of Spain, Trinidad",
       "occupation": "Influencer",
       "descriptor": "The Firecracker",
-      "backstory": "Zara grew up the middle of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
+      "backstory": "Zara grew up the second of five children in a crowded house in Port of Spain, where you had to be loud to be heard at the dinner table and funny to be remembered. She started filming her family's Sunday cook-ups at nineteen, mostly to make her cousins laugh, and the videos of her mother arguing with the oven found an audience far bigger than the family. By twenty-three she had quit her office job at a shipping company to post full time. She has dated a little and loved once, a boyfriend who wanted her quieter, and she left him the week he said it. She came to the villa because every relationship she has had started in private and ended the moment she was herself in public.",
       "personality": "Zara is open, impulsive and almost impossible to offend, and she assumes everyone else is built the same way. She tells people what she thinks of them to their face, good or bad, and is honestly surprised when the bad half lands harder than she meant. She gets bored of anything predictable, so she tests couples, picks at polite silences and will say the thing everyone is avoiding just to see what happens. Under the noise she is loyal to anyone who can take her at full volume, and she has no patience for people who smile at her and talk about her later. She falls for confidence, then tests whether it is real."
     },
     {
@@ -9741,7 +9741,7 @@
       "sexuality": "straight",
       "voice": "Loud, quick and certain, a coach's voice that carries across a field. Gives instructions in short bursts, praises people by name, and goes clipped and cold when someone talks back. #bossy #competitive",
       "profileSources": {},
-      "speakingVoice": "Adult woman in her late twenties, General American accent with a light Texas warmth. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone.",
+      "speakingVoice": "Adult woman in her late twenties with a Trinidadian accent from Port of Spain, softened by ten years in Texas, so the musical Trinidad lilt comes back strongest when she is angry or excited. Medium-low pitch, strong and full, with a slight rasp from years of shouting across a gym. Fast, clipped and decisive, every instruction landing like a whistle. Sentences end firmly, and under pressure the voice gets louder and sharper rather than higher. Confident, protective and impatient, warm when she is proud of someone.",
       "ties": [
         {
           "name": "Zara",
@@ -9750,13 +9750,13 @@
       ],
       "age": 28,
       "birthdate": "1999-05-03",
-      "ethnicity": "Nigerian American",
-      "nationality": "American",
-      "hometown": "Houston, Texas",
+      "ethnicity": "Black",
+      "nationality": "Trinidadian",
+      "hometown": "Port of Spain, Trinidad",
       "occupation": "High school volleyball coach",
       "descriptor": "The Bossy Team Captain",
-      "backstory": "Amara Okafor grew up in Houston, the oldest of five, and was running the house by the time she was twelve while her parents worked double shifts at the hospital. She captained every team she ever played on, earned a volleyball scholarship to a state college, and came home to coach the girls' team at her old high school, which she took to the state semifinals in her second year. Her players love her and are slightly afraid of her. She applied because she has spent her whole life making other people better at winning and wants to find out what she can do for herself.",
-      "personality": "Amara is protective, competitive and generous. She learns everyone's name on day one, notices who is struggling and quietly fixes it, and she will give a teammate her last bottle of water. She also believes there is a right way to do things and she usually knows it. Being questioned in front of people is the one thing she cannot let go: she gets louder, then colder, and she keeps a list. She apologises when she is wrong, but it takes her a day. In a team she is the first to take charge and the last to admit she has stopped listening."
+      "backstory": "Anaya grew up in Port of Spain, the oldest of five, and was running the house by the time she was twelve while her parents worked double shifts at the hospital. Her sister Zara is the next oldest. Anaya captained every team she ever played on, earned a volleyball scholarship to a college in Houston, and stayed on to coach the girls' team at a high school there, which she took to the state semifinals in her second year. Her players love her and are slightly afraid of her. She applied because she has spent her whole life making other people better at winning and wants to find out what she can do for herself.",
+      "personality": "Anaya is protective, competitive and generous. She learns everyone's name on day one, notices who is struggling and quietly fixes it, and she will give a teammate her last bottle of water. She also believes there is a right way to do things and she usually knows it. Being questioned in front of people is the one thing she cannot let go: she gets louder, then colder, and she keeps a list. She apologises when she is wrong, but it takes her a day. In a team she is the first to take charge and the last to admit she has stopped listening."
     },
     {
       "name": "Beck",
@@ -10253,14 +10253,15 @@
       },
       "sexuality": "straight",
       "voice": "Short, direct and fired up, counts things down and talks in instructions. Laughs big when the pressure is off. #competitive #tough #blunt",
+      "profileSources": {},
       "speakingVoice": "Man in his mid twenties, General American accent. Deep, strong and resonant, a bit gravelly when he pushes. Clipped, punchy delivery during action, relaxed and warm when joking. Sounds like a coach on the floor.",
       "ties": [
         {
           "name": "Chadley",
-          "kin": "best-friends"
+          "kin": "twins"
         }
       ],
-      "age": 24,
+      "age": 25,
       "birthdate": "2002-01-26",
       "ethnicity": "Black",
       "nationality": "American",
@@ -10288,14 +10289,15 @@
       },
       "sexuality": "straight",
       "voice": "Upbeat, cocky and friendly, says 'bro' a lot and hypes everything up. Flirts without thinking about it. #flirty #goofy #warm",
+      "profileSources": {},
       "speakingVoice": "Young man in his early twenties, General American accent with a Southwestern ease. Medium pitch, bright and confident, a little nasal when excited. Quick, bouncy pace, laughs easily, sounds like he is always smiling.",
       "ties": [
         {
           "name": "Bradley",
-          "kin": "best-friends"
+          "kin": "twins"
         }
       ],
-      "age": 23,
+      "age": 24,
       "birthdate": "2003-05-02",
       "ethnicity": "White",
       "nationality": "American",

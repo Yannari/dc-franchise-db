@@ -11,56 +11,56 @@ const cell = {
   'task-start.any': [
     { id: 'swp2.cl-s1', when: CL, turns: [
       { beat: '{a} sits on the bunk. It creaks, sags, and a cloud of dust rises out of the mattress.' },
-      { by: 'a', say: "Somebody's been in here a long time." },
-      { by: 'b', say: "And we're not going to be. Get up and search." },
+      { by: 'a', say: "This place is so old." },
+      { by: 'b', say: "Get up and search. Come on." },
     ] },
     { id: 'swp2.cl-s2', when: CL, turns: [
       { by: 'b', say: "We split it. You try the guard, I try the walls." },
       { by: 'a', say: "Why do I get the guard?" },
-      { by: 'b', say: "Because you talk too much. For once, it's useful." },
+      { by: 'b', say: "Because you're good at talking." },
     ] },
     { id: 'swp2.cl-s3', when: CL, turns: [
-      { beat: '{a} picks up the spoon from the tin plate and holds it up like a sword.' },
-      { by: 'a', say: "This is our way out." },
-      { by: 'b', say: "That's a teaspoon. It's the smallest spoon I've ever seen." },
+      { beat: '{a} picks up the spoon from the tin plate and holds it up.' },
+      { by: 'a', say: "This could be our way out." },
+      { by: 'b', say: "That's a teaspoon. It's so small." },
     ] },
     { id: 'swp2.cl-s4', when: CL, turns: [
-      { by: 'a', say: "We should have a jail name. Everybody in jail has a name." },
-      { by: 'b', say: "You can be Spoons." },
-      { by: 'a', ...V("Spoons. I like that. Nobody messes with Spoons.", "Spoons. Nobody messes with Spoons.", "Spoons. Good.", "SPOONS! Nobody messes with SPOONS!", "Spoons. I like that, nobody messes with Spoons.", "Spoons. Feared on every landing. Mostly by cutlery.") },
+      { by: 'a', say: "How long would it take to dig out with that?" },
+      { by: 'b', say: "Too long. Try the walls first." },
+      { by: 'a', say: "Okay. I'll find the soft spot." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'swp2.cl-f1', when: CL, turns: [
       { beat: '{b} reaches straight up and lifts the lampshade. Taped inside it is a key.' },
       { by: 'a', say: "How did you know?" },
-      { by: 'b', say: "My dad hides the spare key there. Every time. Out we go." },
+      { by: 'b', say: "My dad hides the spare key there. Every time. Let's go." },
     ] },
     { id: 'swp2.cl-f2', when: CL, turns: [
-      { by: 'a', say: "Sir. Do you like your job?" },
+      { by: 'a', say: "Sir. Are you having a long day?" },
       { beat: 'The guard opens his mouth to answer, closes it again, sighs from somewhere very deep, and unlocks the door.' },
-      { by: 'b', say: "You just asked him a question!" },
-      { by: 'a', say: "Nobody ever asks him a question." },
+      { by: 'b', say: "What did you say to him?" },
+      { by: 'a', say: "I just asked how his day was." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'swp2.cl-a1', when: CL, turns: [
       { by: 'b', say: "Stop digging where it's dry. Dig where it's damp. Damp is soft." },
-      { beat: '{a} moves the spoon to a dark, damp patch near the floor. The brick there crumbles like cake, and daylight pours in.' },
-      { by: 'a', say: "Damp! Damp was the answer!" },
+      { beat: '{a} moves the spoon to a dark, damp patch near the floor. The brick there crumbles away, and daylight pours in.' },
+      { by: 'a', say: "That's it! It's coming away!" },
     ] },
     { id: 'swp2.cl-a2', when: CL, turns: [
-      { beat: 'After three sad stories, {a} tries a joke instead. It is a terrible joke about a duck.' },
-      { by: 'b', say: "Why would that work?" },
+      { beat: 'After three sad stories, {a} tries a joke instead. It is a terrible joke.' },
+      { by: 'b', say: "That's your best joke?" },
       { beat: 'The guard snorts, tries to hold it in, snorts again, and opens the cell door just so he can walk away and laugh.' },
-      { by: 'a', say: "Everybody likes the duck one." },
+      { by: 'a', say: "It worked, didn't it?" },
     ] },
   ],
   'task-try.struggling': [
     { id: 'swp2.cl-t1', when: CL, turns: [
-      { by: 'a', say: "The spoon's bent. The spoon is now a different shape." },
+      { by: 'a', say: "The spoon's bent." },
       { by: 'b', say: "Bend it back!" },
-      { by: 'a', say: "If I bend it back, it'll snap, and then I'll have two tiny spoons!" },
+      { by: 'a', say: "If I bend it back, it'll snap!" },
     ] },
     { id: 'swp2.cl-t2', when: CL, turns: [
       { beat: 'From the next cell, another team cheers. Their door clangs open. {a} and {b} stand at their own bars, listening.' },
@@ -82,19 +82,19 @@ const cell = {
   ],
   'task-done.any': [
     { id: 'swp2.cl-dn1', when: CL, turns: [
-      { by: 'a', say: "I'm keeping the spoon. As a souvenir." },
-      { by: 'b', say: "They're going to search us at the gate." },
-      { by: 'a', say: "Then I'm keeping the spoon in my sock." },
+      { by: 'a', say: "I'm keeping the spoon." },
+      { by: 'b', say: "Leave the spoon. Let's go." },
+      { by: 'a', say: "Fine. Bye, spoon." },
     ] },
     { id: 'swp2.cl-dn2', when: CL, turns: [
       { beat: '{a} and {b} sprint past the guard on the way to the gate. He tips his cap to them.' },
       { by: 'b', say: "Did he just say goodbye?" },
-      { by: 'a', say: "Don't look back. Never look back when you break out." },
+      { by: 'a', say: "Don't look back. Just go." },
     ] },
     { id: 'swp2.cl-dn3', when: CL, turns: [
       { by: 'b', say: "Tip says build a raft. Out of junk. To the dock." },
       { by: 'a', say: "Out of jail and straight into a swamp." },
-      { by: 'b', say: "Freedom smells funny." },
+      { by: 'b', say: "It smells so bad out here." },
     ] },
   ],
 };
@@ -104,44 +104,44 @@ const raft = {
     { id: 'swp2.rf-s1', when: RF, turns: [
       { beat: '{a} rolls a barrel into the shallows. It floats. {a} stands on it. It stops floating.' },
       { by: 'a', say: "One barrel's not enough." },
-      { by: 'b', say: "We knew that. Everybody knew that but you." },
+      { by: 'b', say: "We need more. At least four." },
     ] },
     { id: 'swp2.rf-s2', when: RF, turns: [
-      { by: 'b', say: "Plan. Four barrels. One on each corner. Like a table upside down." },
-      { by: 'a', say: "We're sailing a table." },
-      { by: 'b', say: "We're sailing an upside-down table. It's very different." },
+      { by: 'b', say: "Four barrels. One on each corner." },
+      { by: 'a', say: "And the door on top." },
+      { by: 'b', say: "And the door on top. Tie everything." },
     ] },
     { id: 'swp2.rf-s3', when: RF, turns: [
       { beat: 'Something long and lumpy drifts past in the brown water, very slowly. It might be a log.' },
       { by: 'a', say: "Was that a log?" },
-      { by: 'b', say: "It was a log. Say it was a log. Build faster." },
+      { by: 'b', say: "It was a log. Build faster." },
     ] },
     { id: 'swp2.rf-s4', when: RF, turns: [
-      { by: 'a', say: "Do we get a flag? Every ship has a flag." },
-      { by: 'b', say: "You can tie your sock to a stick." },
-      { by: 'a', say: "The spoon sock?" },
+      { by: 'a', say: "Is it ready? Can we go?" },
+      { by: 'b', say: "One more knot. Then we go." },
+      { by: 'a', say: "Okay. Hurry." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'swp2.rf-f1', when: RF, turns: [
       { beat: '{a} and {b} push off from the bank. The raft sits flat and steady on the water, and doesn\'t even rock.' },
       { by: 'b', say: "It floats! It floats like a real boat!" },
-      { by: 'a', say: "Don't say that. Boats can hear you." },
+      { by: 'a', say: "Don't say that. Not yet." },
     ] },
     { id: 'swp2.rf-f2', when: RF, turns: [
       { by: 'a', say: "Paddle together. Left, right. Left, right." },
       { beat: 'Left, right, all the way down the river, round the cypress trees and up to the dock without a single bump.' },
-      { by: 'b', say: "We should be in the navy." },
+      { by: 'b', say: "We're so good at this!" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'swp2.rf-a1', when: RF, turns: [
       { by: 'b', say: "The ropes keep slipping because the planks are wet. Tie them on the dry bank and carry it in." },
       { beat: 'They build it on the bank, tie everything tight, and drag the whole thing into the river. It holds, all the way to the dock.' },
-      { by: 'a', say: "Build dry, sail wet. Got it." },
+      { by: 'a', say: "It held! It's holding!" },
     ] },
     { id: 'swp2.rf-a2', when: RF, turns: [
-      { beat: 'The second raft has {a} at the front with a long pole, pushing off the bottom of the river like a gondolier.' },
+      { beat: 'The second raft has {a} at the front with a long pole, pushing off the bottom of the river.' },
       { by: 'a', say: "It's shallow! We don't paddle, we push!" },
       { by: 'b', say: "Push us to the dock, then!" },
       { beat: '{a} pushes them all the way to the dock.' },
@@ -156,7 +156,7 @@ const raft = {
     { id: 'swp2.rf-t2', when: RF, turns: [
       { beat: 'The raft is going down the river sideways, very slowly, while {a} and {b} paddle in two different directions.' },
       { by: 'b', say: "We're going sideways." },
-      { by: 'a', say: "Sideways is still towards the dock. Technically." },
+      { by: 'a', say: "Stop! Same side! Paddle on the same side!" },
     ] },
   ],
   'attempt-fail.any': [
@@ -167,25 +167,25 @@ const raft = {
     ] },
     { id: 'swp2.rf-x2', when: RF, turns: [
       { beat: 'The current pulls the raft into a low branch. It scrapes {a} straight off the back into the river.' },
-      { by: 'a', say: "Branch! Nobody mentioned branches!" },
+      { by: 'a', say: "The branch! I didn't see the branch!" },
       { by: 'b', say: "Swim back! I'll bring what's left of the raft!" },
     ] },
   ],
   'task-done.any': [
     { id: 'swp2.rf-dn1', when: RF, turns: [
-      { beat: '{a} steps off the raft onto the dock. The raft, finished with its work, quietly comes apart behind them.' },
-      { by: 'b', say: "Did you see that? It waited for us." },
-      { by: 'a', say: "Good raft. Good, loyal raft." },
+      { beat: '{a} steps off the raft onto the dock, and behind them, the raft starts to come apart.' },
+      { by: 'b', say: "Did you see that? Just in time." },
+      { by: 'a', say: "It lasted just long enough." },
     ] },
     { id: 'swp2.rf-dn2', when: RF, turns: [
-      { by: 'a', say: "Sock flag. We sailed under a sock flag." },
-      { by: 'b', say: "Don's going to smell it from here." },
-      { by: 'a', say: "Then he'll know we're coming." },
+      { by: 'a', say: "We actually built a boat." },
+      { by: 'b', say: "And it actually floated." },
+      { by: 'a', say: "Come on. Don's waiting." },
     ] },
     { id: 'swp2.rf-dn3', when: RF, turns: [
       { beat: '{a} and {b} climb onto the dock, green with swamp weed from the knees down.' },
-      { by: 'b', say: "We look like swamp monsters." },
-      { by: 'a', say: "Swamp monsters who broke out of jail. Walk tall." },
+      { by: 'b', say: "We're covered in swamp." },
+      { by: 'a', say: "I don't care. Come on. We're nearly there." },
     ] },
   ],
 };

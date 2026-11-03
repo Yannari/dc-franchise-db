@@ -18,7 +18,7 @@ export default {
       by('a', "So we don't touch it. Simple."),
     ] },
     { id: 'fm.st.lb2', when: at('lava-falls', 'lava-bank'), turns: [
-      by('a', "It's so hot. My eyebrows are hot."),
+      by('a', "It's so hot. I can feel it on my face."),
       by('b', "Then let's be quick about it."),
       beat('They step up to the first stone.'),
     ] },
@@ -52,7 +52,7 @@ export default {
     { id: 'fm.st.rr2', when: at('lava-falls', 'river-raft'), turns: [
       by('a', "Hold on to the sides."),
       beat('The raft spins round once, straightens out, and slides up onto the bank by the falls.'),
-      by('b', "We meant to do that."),
+      by('b', "Okay! We're okay!"),
     ] },
     { id: 'fm.st.bf1', when: at('lava-falls', 'behind-the-falls'), turns: [
       beat('A narrow path runs behind the waterfall, wet and shiny. They shuffle along it with their backs to the rock.'),
@@ -62,16 +62,16 @@ export default {
     { id: 'fm.st.bf2', when: at('lava-falls', 'behind-the-falls'), turns: [
       by('a', "Small steps. Hold the rock."),
       beat('Spray soaks them through, but they inch their way out the other side.'),
-      by('b', "Slower than the lava. But my shoes are fine."),
+      by('b', "That was so slippery. But we made it."),
     ] },
     { id: 'fm.st.fc1', when: at('lava-falls', 'falls-clearing'), turns: [
       beat('Dripping wet, they come out into the jungle clearing. The Don Box sits by a carved tiki.'),
       by('a', "There's the box! Grab the tip!"),
-      by('b', "Can I wring out my socks first?"),
+      by('b', "I'm soaked. Okay, go."),
     ] },
     { id: 'fm.st.fc2', when: at('lava-falls', 'falls-clearing'), turns: [
       by('b', "The lava teams look like they had a worse time."),
-      by('a', "Their shoes are on fire. We're just wet."),
+      by('a', "I think we made the right choice."),
       beat('{a} pulls the tip out of the box.'),
     ] },
 
@@ -83,7 +83,7 @@ export default {
     ] },
     { id: 'fm.st.lw2', when: at('lagoon', 'lagoon-wade'), turns: [
       by('a', "How far is it to the rocks?"),
-      by('b', "Not far. Just keep away from the spiky ball."),
+      by('b', "Not far. Just keep away from the mine."),
       beat('{a} takes a breath and pushes off.'),
     ] },
     { id: 'fm.st.mn1', when: at('lagoon', 'the-mine'), turns: [
@@ -94,7 +94,7 @@ export default {
     { id: 'fm.st.mn2', when: at('lagoon', 'the-mine'), turns: [
       by('b', "Past it! You're past it!"),
       beat('{a} kicks hard and leaves the mine bobbing behind {a.obj}.'),
-      by('a', "Don't follow me. Please don't follow me."),
+      by('a', "Okay. Okay. I'm past it."),
     ] },
     { id: 'fm.st.fr1', when: at('lagoon', 'far-rocks'), turns: [
       beat('{a} hauls {a.ref} up onto the far rocks and slaps the Don Box.'),
@@ -104,14 +104,14 @@ export default {
     { id: 'fm.st.fr2', when: at('lagoon', 'far-rocks'), turns: [
       by('a', "Logs and pineapples. We're building a statue."),
       by('b', "Of who?"),
-      by('a', "Of one of us. Pick a good side."),
+      by('a', "Of one of us."),
     ] },
 
     // ── the offering ──
     { id: 'fm.st.lp1', when: at('statue', 'log-pile'), turns: [
       beat('On the beach lies a pile of logs and a heap of pineapples. The statue has to look like one of them.'),
-      by('b', "It's going to be you. You've got the more pineapple-shaped head."),
-      by('a', "Thanks. I think."),
+      by('b', "Let's do you. It'll be funny."),
+      by('a', "Fine. Let's do it."),
     ] },
     { id: 'fm.st.lp2', when: at('statue', 'log-pile'), turns: [
       by('a', "Logs for the body. Pineapple for the head."),
@@ -120,18 +120,18 @@ export default {
     ] },
     { id: 'fm.st.sb1', when: at('statue', 'the-statue'), turns: [
       beat('Log by log, a little wooden figure takes shape, with a pineapple head and a face carved with a shell.'),
-      by('b', "It looks just like you. Look at the frown."),
-      by('a', "I don't frown like that."),
+      by('b', "It looks just like you."),
+      by('a', "It does not. But okay."),
     ] },
     { id: 'fm.st.sb2', when: at('statue', 'the-statue'), turns: [
       by('a', "Tie the arms on tight. It has to go up a volcano."),
       beat('{b} lashes the log arms on with vines, double knots, then triple.'),
-      by('b', "It's not going anywhere. Except up."),
+      by('b', "It's not going anywhere."),
     ] },
     { id: 'fm.st.uv1', when: at('statue', 'up-the-volcano'), turns: [
       beat('They carry the statue up the steep volcano path, past a stream of lava hissing beside it.'),
       by('a', "Don't let the head roll off!"),
-      by('b', "I'm holding the head! I'm holding the whole head!"),
+      by('b', "I've got it! I've got the head!"),
     ] },
     { id: 'fm.st.uv2', when: at('statue', 'up-the-volcano'), turns: [
       by('b', "Step. Step. Rest."),
@@ -140,7 +140,7 @@ export default {
     ] },
     { id: 'fm.st.cr1', when: at('statue', 'the-crater'), turns: [
       beat('At the rim, they swing the statue back, and throw it into the glowing crater.'),
-      by('a', "Goodbye, me."),
+      by('a', "Bye, statue."),
       beat('The volcano rumbles. Taped to a rock at the rim is the tip.'),
     ] },
     { id: 'fm.st.cr2', when: at('statue', 'the-crater'), turns: [
@@ -160,7 +160,7 @@ export default {
     { id: 'fm.sf.ss2', when: at('lava-falls', 'stepping-stones'), turns: [
       by('a', "My shoe! My shoe's melting!"),
       beat('{a} hops back to the bank on one foot, holding the other in the air.'),
-      by('b', "Put it out! Put your shoe out!"),
+      by('b', "Get it off the stone! Go back!"),
     ] },
 
     // ── Falls ──
@@ -172,12 +172,12 @@ export default {
     { id: 'fm.sf.rr2', when: at('lava-falls', 'river-raft'), turns: [
       by('b', "Why are we going backwards?"),
       beat('The raft spins round and round in an eddy, and won\'t come out.'),
-      by('a', "Paddle! Both sides! No, not both at once!"),
+      by('a', "Paddle! Same side! Same side!"),
     ] },
     { id: 'fm.sf.bf1', when: at('lava-falls', 'behind-the-falls'), turns: [
       beat('{a}\'s foot slips on the wet rock. {a.Sub} grabs {b}, and they both slide back down to where they started.'),
       by('b', "Why did you grab me?"),
-      by('a', "Because you were there!"),
+      by('a', "Sorry! I was falling!"),
     ] },
     { id: 'fm.sf.bf2', when: at('lava-falls', 'behind-the-falls'), turns: [
       by('a', "I can't see the path. There's water everywhere."),
@@ -187,21 +187,21 @@ export default {
 
     // ── the lagoon ──
     { id: 'fm.sf.mn1', when: at('lagoon', 'the-mine'), turns: [
-      beat('A wave nudges the mine straight towards {a}. {a.Sub} bumps it with an elbow, and it lets out a long, loud BEEP.'),
+      beat('A wave pushes the mine straight towards {a}, and {a.posAdj} elbow bumps it. A whistle blows from the beach.'),
       by('b', "You touched it! Back to the beach!"),
-      by('a', "It touched me! It came at me!"),
+      by('a', "It came right at me!"),
     ] },
     { id: 'fm.sf.mn2', when: at('lagoon', 'the-mine'), turns: [
       by('b', "Too close! Too close!"),
       beat('{a} turns to look, and swims right into it with {a.posAdj} foot.'),
-      by('a', "Ow. Spiky. I'm going back."),
+      by('a', "Ow. Okay. I'm going back."),
     ] },
 
     // ── the offering ──
     { id: 'fm.sf.sb1', when: at('statue', 'the-statue'), turns: [
       beat('They stand the statue up. It wobbles, and the pineapple head rolls off into the sand.'),
-      by('a', "My head! You knocked my head off!"),
-      by('b', "It's not your head! It's a pineapple!"),
+      by('a', "The head! You knocked the head off!"),
+      by('b', "I barely touched it!"),
     ] },
     { id: 'fm.sf.sb2', when: at('statue', 'the-statue'), turns: [
       by('b', "Is it supposed to lean like that?"),

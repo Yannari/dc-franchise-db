@@ -20,14 +20,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'swp.op1', when: P, turns: [
       beat('Don stands on a rotting dock in the swamp, fog hanging over the water, swatting at a cloud of gnats.'),
-      don("Welcome to Swamp Prison! An old jail on the edge of a swamp, closed for fifty years, because even the prisoners complained."),
+      don("Welcome to Swamp Prison! An old jail on the edge of a swamp, closed for fifty years!"),
       don("Today, teams get locked up, break out, and sail to the Chill Zone on a raft they build themselves. From junk."),
       beat('Something large slides off the bank into the water behind him. Don very slowly steps away from the edge.'),
     ] },
     { id: 'swp.op2', when: P, turns: [
       don("Swamp Prison. Hot, sticky, and full of things with teeth. And that's just the crew."),
       don("Racers, your taxis are waiting. The prison is at the end of the road. The road is mostly mud."),
-      beat('A frog the size of a dinner plate croaks at his feet. Don croaks back, and immediately regrets it.'),
+      beat('A huge frog croaks at his feet, and Don jumps.'),
     ] },
   ],
   'don-opener.bored': [
@@ -41,13 +41,13 @@ const place = {
     { id: 'swp.ar1', when: P, turns: [
       beat('The taxi comes out of the trees beside the swamp: still black water, moss hanging off every branch, and herons standing on one leg.'),
       by('a', "It's so quiet. It's spooky, but it's beautiful."),
-      by('b', "It looks like a painting. A painting with alligators in it."),
-      by('a', "Don't say alligators."),
+      by('b', "It looks like a painting."),
+      by('a', "There are probably alligators in there, though."),
     ] },
     { id: 'swp.ar2', when: P, turns: [
       beat('The old prison rises out of the swamp ahead of them, grey walls, barred windows, a rusted gate.'),
       by('b', "That's it. That's the prison. We're going in there on purpose."),
-      by('a', "Most people try to get out of places like that."),
+      by('a', "This is so weird."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -59,7 +59,7 @@ const place = {
     { id: 'swp.ad2', when: P, turns: [
       by('b', "Something just splashed. Something big just splashed."),
       by('a', "It was a fish."),
-      by('b', "That was not a fish. Fish don't splash like that."),
+      by('b', "That was not a fish."),
     ] },
   ],
 };
@@ -70,7 +70,7 @@ const roads = {
     { id: 'swp.tm1', when: { taskId: 'bayou-taxi', mishap: 'alligator-on-the-road' }, turns: [
       beat('The taxi brakes hard. An alligator is lying across the road, sunning itself, in no hurry at all.'),
       by('a', "Can we go round it?"),
-      by('b', "The driver says no. The driver says we wait for it to get bored."),
+      by('b', "The driver says no. We just have to wait."),
       beat('Twenty minutes later, the alligator yawns, and slides off into the swamp.'),
     ] },
   ],
@@ -88,20 +88,20 @@ const cell = {
   'don-demo.dry': [
     { id: 'swp.cl-d2', when: CL, turns: [
       don("Every way out takes time, and not every way out works for everyone. A wall that won't dig, a guard who won't budge, try something else."),
-      don("Out of the cell, out of the gate, and the next tip is on the fence. The guard does not take bribes. I've tried."),
+      don("Out of the cell, out of the gate, and the next tip is on the fence. And the guard does not take bribes!"),
       beat('The guard stands at the end of the corridor, arms crossed, chewing on a toothpick, unmoved by anything.'),
     ] },
   ],
   'task-start.any': [
     { id: 'swp.cl-s1', when: CL, turns: [
       beat('The cell door slams shut behind {a} and {b}, and the key turns in the lock.'),
-      by('a', "Okay. We're in jail. What do people in films do?"),
-      by('b', "Dig with a spoon for twenty years."),
+      by('a', "Okay. We're locked in. What do we do first?"),
+      by('b', "Look for the key. Check everything."),
     ] },
     { id: 'swp.cl-s2', when: CL, turns: [
       by('b', "You check the bed. I'll check the toilet."),
       by('a', "Why do I get the bed?"),
-      by('b', "Because I'm braver than you."),
+      by('b', "Just do it. Quick."),
     ] },
     { id: 'swp.cl-s3', when: CL, turns: [
       beat("{a} knocks on every brick in the wall, one by one, listening."),
@@ -110,15 +110,15 @@ const cell = {
     ] },
     { id: 'swp.cl-s4', when: CL, turns: [
       by('a', "Maybe we just ask the guard nicely."),
-      by('b', "Look at his face. He's never done anything nicely in his life."),
-      by('a', "Everybody has a soft side."),
+      by('b', "Look at him. He's not going to help us."),
+      by('a', "It's worth a try."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'swp.cl-f1', when: CL, turns: [
       beat('{a} lifts the corner of the mattress, and there, taped underneath it, is a rusty key.'),
       by('a', "First place I looked! First place!"),
-      by('b', "Open the door! Open it before he notices!"),
+      by('b', "Open the door! Quick!"),
     ] },
     { id: 'swp.cl-f2', when: CL, turns: [
       by('b', "Officer, my partner's mother is very sick, and she's only got this race to watch, and if we lose today..."),
@@ -133,24 +133,24 @@ const cell = {
     { id: 'swp.cl-f4', when: CL, turns: [
       by('a', "This brick moves. This one's loose. Spoon!"),
       beat('Three minutes of scraping later, a hole opens in the wall, and daylight shines through.'),
-      by('b', "We dug out of jail! With a spoon! Like a film!"),
+      by('b', "We dug out! With a spoon!"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'swp.cl-a1', when: CL, turns: [
       by('b', "Wall's solid, guard won't talk. So it has to be the key. We look everywhere. Everywhere."),
-      beat('Everywhere turns out to be inside the hollow leg of the bed. {b} shakes it, and a key falls out.'),
-      by('a', "Who hides a key in a bed leg?"),
+      beat('{b} checks the legs of the bed, and one of them is hollow. {b} shakes it, and a key falls out.'),
+      by('a', "It was in the bed! The whole time!"),
     ] },
     { id: 'swp.cl-a2', when: CL, turns: [
       beat("This time {a} doesn't beg the guard. {a} just talks to him about fishing, for ten whole minutes."),
-      by('a', "...and that's when I knew the catfish was bigger than the boat."),
+      by('a', "...and my dad still talks about that fish. Every single Christmas."),
       beat('The guard laughs, for the first time all day, and unlocks the door.'),
     ] },
     { id: 'swp.cl-a3', when: CL, turns: [
       by('a', "The vent was a dead end. So we try the other vent. Behind the bed."),
       beat('The other vent behind the bed leads all the way outside. They crawl out into the sunshine.'),
-      by('b', "Second vent! It's always the second vent!"),
+      by('b', "The second vent! It worked!"),
     ] },
     { id: 'swp.cl-a4', when: CL, turns: [
       beat("Twenty minutes of scraping at the one soft brick, and finally {b}'s spoon breaks through."),
@@ -161,13 +161,13 @@ const cell = {
   'task-try.struggling': [
     { id: 'swp.cl-t1', when: CL, turns: [
       beat("{a} is sitting on the bed, head in hands, while {b} scrapes uselessly at a solid wall."),
-      by('a', "We're going to be here forever. We live here now."),
+      by('a', "We're never getting out of here."),
       by('b', "Keep looking! There are four ways out!"),
     ] },
     { id: 'swp.cl-t2', when: CL, turns: [
       by('b', "I've told him every sad story I know. He hasn't even blinked."),
-      by('a', "Maybe he doesn't like sad stories."),
-      by('b', "Everybody likes sad stories!"),
+      by('a', "Maybe try something else."),
+      by('b', "Like what? I've tried everything!"),
     ] },
     { id: 'swp.cl-t3', when: CL, turns: [
       beat("{a} is stuck halfway into the air vent, legs kicking in the air of the cell."),
@@ -177,9 +177,9 @@ const cell = {
   ],
   'task-done.any': [
     { id: 'swp.cl-dn1', when: CL, turns: [
-      by('a', "We broke out of jail. We're fugitives."),
-      by('b', "We're not fugitives. They let us out."),
-      by('a', "We're fugitives in my heart."),
+      by('a', "We broke out of jail."),
+      by('b', "They kind of let us out."),
+      by('a', "We still broke out. Come on."),
     ] },
     { id: 'swp.cl-dn2', when: CL, turns: [
       beat('{a} and {b} run out of the prison gate, grab the tip off the fence, and head for the swamp.'),
@@ -187,26 +187,26 @@ const cell = {
       by('a', "Out of what?"),
     ] },
     { id: 'swp.cl-dn3', when: CL, turns: [
-      by('b', "That guard is going to haunt my dreams."),
+      by('b', "That guard was so scary."),
       by('a', "He waved at us when we left."),
-      by('b', "That's what makes it worse."),
+      by('b', "That was even scarier."),
     ] },
   ],
   'attempt-fail.any': [
     { id: 'swp.cl-x1', when: CL, turns: [
       beat("{a} scrapes at the wall with the spoon until it bends in half. The wall doesn't have a scratch on it."),
-      by('a', "The spoon broke! The wall won!"),
+      by('a', "The spoon broke!"),
       by('b', "Then this wall isn't the way out. Something else!"),
     ] },
     { id: 'swp.cl-x2', when: CL, turns: [
       beat('{b} finishes a long, emotional speech at the bars. The guard just shakes his head.'),
       by('b', "Nothing? Not even a little bit?"),
-      by('a', "Try something else. He's made of stone."),
+      by('a', "Try something else. He's not going to budge."),
     ] },
     { id: 'swp.cl-x3', when: CL, turns: [
       beat("{a} crawls all the way through the air vent, and comes out right back in the cell."),
       by('a', "It goes in a circle! The vent goes in a circle!"),
-      by('b', "Who builds a vent that goes in a circle?"),
+      by('b', "Why would anybody build it like that?"),
     ] },
   ],
 };
@@ -217,21 +217,21 @@ const raft = {
     { id: 'swp.rf-d1', when: RF, turns: [
       don("In this All-In, build a raft out of whatever's on the bank: barrels, planks, rope, old doors. Then sail it down the river to the Chill Zone."),
       beat('He kicks a barrel on the pile. It rolls into the water and sinks, quietly.'),
-      don("Try not to use that one. Or anything like it."),
+      don("So maybe don't use that one!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'swp.rf-d2', when: RF, turns: [
       don("If it sinks, falls apart, or drifts into the reeds, swim back to the bank and build it again."),
-      don("The river is slow, warm, and almost certainly fine. I've only seen two things in it with teeth today."),
-      beat('Something with teeth surfaces briefly in the river behind him, and disappears again. Don does not turn round.'),
+      don("The river is slow, warm, and full of alligators, so watch your fingers!"),
+      beat('Something with teeth surfaces briefly in the river behind him, and disappears again.'),
     ] },
   ],
   'task-start.any': [
     { id: 'swp.rf-s1', when: RF, turns: [
       beat('{a} and {b} stand over the junk pile on the bank: barrels, planks, a door, a lot of rope.'),
       by('a', "Have you ever built a raft?"),
-      by('b', "I built a bookshelf once. It leaned."),
+      by('b', "Never. You?"),
     ] },
     { id: 'swp.rf-s2', when: RF, turns: [
       by('b', "Barrels underneath, door on top, rope round everything. Lots of rope."),
@@ -245,52 +245,52 @@ const raft = {
     ] },
     { id: 'swp.rf-s4', when: RF, turns: [
       by('a', "What do we steer with?"),
-      by('b', "A plank. We steer with a plank. And hope."),
-      by('a', "Mostly hope, then."),
+      by('b', "A plank. We paddle with planks."),
+      by('a', "Okay. Let's just try it."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'swp.rf-f1', when: RF, turns: [
       beat("{a} and {b} push the raft into the water. It floats. It stays together. It even goes the right way."),
       by('a', "It's working! We built a boat!"),
-      by('b', "We built a boat out of a door! Paddle!"),
+      by('b', "Don't stop! Paddle!"),
     ] },
     { id: 'swp.rf-f2', when: RF, turns: [
       by('b', "Left, round the big tree. Then it's straight to the dock."),
       beat('The raft drifts round the big tree, down the river, and bumps gently into the dock.'),
-      by('a', "We sailed! We sailed through a swamp!"),
+      by('a', "We made it! It didn't sink!"),
     ] },
     { id: 'swp.rf-f3', when: RF, turns: [
       beat('Their raft glides down the river, smooth and steady, as a heron watches from the bank.'),
-      by('a', "This is actually lovely. I could do this all day."),
+      by('a', "This is actually really nice."),
       by('b', "Don't. Paddle faster. Enjoy it at the dock."),
     ] },
     { id: 'swp.rf-f4', when: RF, turns: [
       by('a', "First raft. First try. Not even wet."),
       by('b', "Your feet are wet."),
-      by('a', "Not even very wet."),
+      by('a', "Fine. A bit wet."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'swp.rf-a1', when: RF, turns: [
       by('b', "It sank because it was too heavy. No door this time. Just barrels and planks."),
       beat('Just barrels and planks floats perfectly. They paddle all the way down to the dock.'),
-      by('a', "Lighter is better. Lighter is always better."),
+      by('a', "Lighter worked. Keep paddling."),
     ] },
     { id: 'swp.rf-a2', when: RF, turns: [
       beat("This time, {a} ties every knot twice, then a third time, and the raft holds together all the way down the river."),
-      by('a', "Three knots! Three knots on everything!"),
+      by('a', "It's holding! The knots are holding!"),
       by('b', "That's the dock! We made it!"),
     ] },
     { id: 'swp.rf-a3', when: RF, turns: [
       by('a', "Keep it in the middle of the river. Away from the reeds. The reeds are what got us."),
       beat('They keep it in the middle the whole way, paddling hard, and reach the dock at last.'),
-      by('b', "The middle! The middle was the answer!"),
+      by('b', "We did it! We stayed out of the reeds!"),
     ] },
     { id: 'swp.rf-a4', when: RF, turns: [
       beat("{a} and {b} rebuild the raft for the third time, soaked and covered in mud, and it finally floats."),
       by('b', "It floats! Third raft's the one!"),
-      by('a', "Get on before it changes its mind!"),
+      by('a', "Get on! Quick!"),
     ] },
   ],
   'task-try.struggling': [
@@ -307,24 +307,24 @@ const raft = {
     { id: 'swp.rf-t3', when: RF, turns: [
       beat("The raft is stuck in the reeds, and {a} is pushing it with a plank, getting nowhere."),
       by('a', "It won't move! The reeds have got it!"),
-      by('b', "Push harder! And keep an eye out for teeth!"),
+      by('b', "Push harder! And watch out for alligators!"),
     ] },
   ],
   'task-done.any': [
     { id: 'swp.rf-dn1', when: RF, turns: [
-      by('a', "Can we keep the raft?"),
-      by('b', "It's made of a door."),
-      by('a', "It's our door. We earned it."),
+      by('a', "We actually built a raft."),
+      by('b', "Out of a door."),
+      by('a', "And it worked."),
     ] },
     { id: 'swp.rf-dn2', when: RF, turns: [
       beat("{a} and {b} jump off the raft onto the dock, and it slowly drifts away down the river without them."),
-      by('b', "Goodbye, raft. You were a good raft."),
-      by('a', "You sank twice. But you were a good raft."),
+      by('b', "Bye, raft."),
+      by('a', "It sank twice. But it got us here."),
     ] },
     { id: 'swp.rf-dn3', when: RF, turns: [
       by('b', "We broke out of jail and sailed home on a door."),
       by('a', "Nobody's going to believe us."),
-      by('b', "It was on television."),
+      by('b', "They'll see it on TV."),
     ] },
   ],
   'attempt-fail.any': [
@@ -340,7 +340,7 @@ const raft = {
     ] },
     { id: 'swp.rf-x3', when: RF, turns: [
       beat("The raft drifts gently sideways, straight into the reeds, and stops, completely stuck."),
-      by('a', "Not the reeds. Anything but the reeds."),
+      by('a', "Not the reeds. Not again."),
       by('b', "We'll have to swim it back and start over."),
     ] },
   ],

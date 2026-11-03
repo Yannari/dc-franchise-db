@@ -11,6 +11,7 @@ import { friendship } from './feelings.js';
 import { getRelationshipDimension, addRelationshipDimension } from '../relationships.js';
 import { coupleStrength } from './ladder.js';
 import { splitOf } from './just-friends.js';
+import { soreToday } from './events.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const partnerOf = (state, n) => { const c = state.couples.find(x => x.includes(n)); return c ? (c[0] === n ? c[1] : c[0]) : null; };
@@ -19,6 +20,8 @@ export function confidantOf(state, n) {
   let best = null, score = 2;
   for (const o of state.villa) {
     if (o === n || o === partnerOf(state, n)) continue;
+    // Nobody they fell out with today (events.js soreToday).
+    if (soreToday(state, n, o)) continue;
     // Not an ex who hasn't got over it, and not one from this week either: Dante
     // asked Zara whether to stay with Valentina, the girl he dumped Zara for (season 1).
     const ex = splitOf(state, n, o);

@@ -245,7 +245,9 @@ const SITUATION = {
   cry: ['walk-doubt', 'walk-after', 'mugged-low', 'betray-end', 'redeem-act', 'crush-move', 'crush-over', 'crush-plea', 'casa-goodbye', 'breakdown', 'comfort', 'dump-reaction', 'photo-split', 'movie-split', 'torch', 'ask-declined', 'jealous-sulk'],
   // The dumped saying goodbye, and anyone walking out.
   goodbye: ['dump-goodbye', 'walk', 'walk-goodbye', 'solidarity', 'kin-goodbye', 'kin-walk'],
-  comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act'],
+  comedy: ['comedy', 'blow-dare', 'blow-slip', 'baby-doll', 'talent-act',
+    // the episode's light story (pm/runner.js)
+    'villa-bit'],
   suspense: ['recouple-open', 'dump-open', 'dump-safe', 'dump-plea', 'dump-decide', 'dump-buildup', 'dump-at-risk', 'ballot-reveal', 'save-vote', 'save-tie', 'dump-tie', 'top-couple-pick', 'couples-vote',
     'ex-ballot', 'final-recoupling', 'recouple-pick', 'recouple-refused', 'steal',
     // Stick or twist: the host, and every walk-in, under the wait (each choice's own music plays over it).

@@ -67,6 +67,18 @@ export function roleOf(state, id) {
   return ROLES.find(r => s[r] === id) || null;
 }
 
+/** The plan's stories as the episode left them, for the row: { a: { type, cast }, … }. Reads only. */
+export function planCasts(state) {
+  const s = state.stretch;
+  if (!s || s.off) return null;
+  const out = {};
+  for (const r of ROLES) {
+    const t = s[r] && byId(state, s[r]);
+    if (t) out[r] = { id: t.id, type: t.type, cast: castOf(t) };
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 /** The highest role ('a' first) of any plan story `n` is in, else null. */
 export function storyRoleOf(state, n) {
   for (const r of ROLES) {

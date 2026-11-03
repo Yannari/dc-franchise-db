@@ -106,7 +106,12 @@ function watches(state, rng, id, events) {
       const temper = st(state, p, 'temperament'), anx = attachment(state.profiles[p]).anxiety;
       const heat = ((attr(state, kk, oo) ?? 0) + (attr(state, oo, kk) ?? 0)) / 20;
       const r = rng();
-      const of = r < (1 - temper) * 0.45 + 0.1 * heat ? 'fuming' : r < 0.55 + 0.3 * anx ? 'fine' : 'laughs';
+      // …and what they watched: a laugh is for a game kiss, rarely for one that
+      // was more than a game (season 41: "Nobody cheers. Everyone is looking at
+      // Tasha", and then Tasha laughing, "That was awful").
+      const real = e.extra?.of === 'crush' || e.extra?.of === 'stir';
+      const fineCut = 0.55 + 0.3 * anx;
+      const of = r < (1 - temper) * 0.45 + 0.1 * heat ? 'fuming' : r < (real ? fineCut + 0.8 * (1 - fineCut) : fineCut) ? 'fine' : 'laughs';
       if (of === 'fuming') { addBond(p, kk, -0.5); addBond(p, oo, -0.6); feel(state, p, 'stress', 0.8); }
       if (of === 'fine') { feel(state, p, 'stress', 0.6); addRelationshipDimension(p, kk, 'trust', -0.3); }
       if (of === 'laughs') { feel(state, p, 'security', 0.3); }

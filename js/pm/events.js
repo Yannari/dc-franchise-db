@@ -183,6 +183,34 @@ const PHASE_ORDER = ['morning', 'day', 'event', 'evening'];
 export function today(state) {
   return (state._today || []).filter(e => e.ep === state.ep);
 }
+// FELL OUT TODAY (2026-11-03, season 41 ep 5: Mia stood on the lawn fuming at
+// Chloe over a game kiss with Mia's partner, and an hour later lay on the
+// sunbeds giving Chloe advice about Callum). A friend somebody fell out with
+// today is nobody's confidant, comfort or group chat today. [who is sore,
+// at whom] by kind; draws nothing.
+const SORE = {
+  'chal-watch': e => (e.extra?.of === 'fuming' ? [[e.players[0], e.players[1]], [e.players[0], e.players[2]]] : []),
+  'chal-row': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  argument: e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'jealous-confront': e => [[e.players[0], e.players[1]], [e.players[0], e.players[2]]],
+  watching: e => (e.extra?.of === 'sees' ? [[e.players[0], e.players[3]]] : []),
+  'told-confront': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'enemy-clash': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'enemy-freeze': e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+  'enemy-snipe': e => [[e.players[1], e.players[0]]],
+  blowup: e => [[e.players[0], e.players[1]], [e.players[1], e.players[0]]],
+};
+// Every scene in which two islanders kissed (season 41 ep 5: Theo and Tasha's
+// hot-tub kiss was played as their first, an hour after two kisses in the game).
+const KISS_KINDS = new Set(['kiss', 'game-kiss', 'challenge-kiss', 'snogger-kiss', 'icebreaker', 'kiss-pick', 'lady-luck-kiss', 'hideaway']);
+export function kissedBefore(state, a, b, except = null) {
+  const pair = e => e !== except && (KISS_KINDS.has(e.kind) || e.extra?.kissed) && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(b);
+  return (state.history || []).some(pair) || today(state).some(pair);
+}
+export function soreToday(state, a, b) {
+  if (!a || !b) return false;
+  return today(state).some(e => (SORE[e.kind]?.(e) || []).some(([x, y]) => (x === a && y === b) || (x === b && y === a)));
+}
 // Having it out over a telling is a row too (haveItOut, below).
 export const ROW_KINDS = new Set(['argument', 'told-confront']);
 export function rowedToday(state, a, b) {
@@ -910,7 +938,9 @@ export const KINDS = {
     // the stretch's stories, answered after its fire pit (pm/stretch.js)
     'stretch-answer', 'secret-kept', 'hook', 'pick-plan',
     // the day before the night (pm/threads.js tonightBeats)
-    'pick-chat', 'vote-worry', 'stick-twist']
+    'pick-chat', 'vote-worry', 'stick-twist',
+    // the episode's light story (pm/runner.js): its beat's bonds are moved there, its pop rides in extra
+    'villa-bit']
     .map(k => [k, { salience: 1, cast: () => null,
       apply: (s, ev) => ({ pop: ev.extra.pop || {}, major: ev.extra.majorPop || [] }) }])),
 };
@@ -1252,10 +1282,7 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   const airP = clamp(0.2 + 0.6 * def.salience + heat, 0.1, 0.95);
   // A couple's first kiss is recorded as such, for the screens to mark (its
   // music, vp-pm/sound.js). Read from what happened; draws nothing.
-  if (kind === 'kiss' && players.length >= 2) {
-    const pair = e => e.kind === 'kiss' && e.players.includes(players[0]) && e.players.includes(players[1]);
-    if (!(state.history || []).some(pair) && !today(state).some(pair)) extra = { ...extra, firstKiss: true };
-  }
+  if (kind === 'kiss' && players.length >= 2 && !kissedBefore(state, players[0], players[1])) extra = { ...extra, firstKiss: true };
   // THE EDIT (2026-10-30, the stretch): the villa's side stories — triangles,
   // rivalries, feuds, enemies, the game players, the arcs — all run every day,
   // and an episode aired ten of them on top of its own three stories. Two an
@@ -1370,7 +1397,36 @@ export function makeEvent(state, rng, { phase, kind, players, extra = {}, aired 
   // The voiceover, over what the public just watched. No ledger effect.
   ev.narrator = ev.tier === 'note' ? null : narratorFor(state, ev);
   if (ev.aired) writeLedger(state, ev, false);
+  noteInterest(state, ev);
   return ev;
+}
+
+// ── who has shown interest in whom, on screen ─────────────────────────
+// (2026-11-03, the spine: 45% of the crushes acted on in a season had nothing
+// on screen before them, and their lines said "I've wanted to kiss {b} for
+// days".) The first aired scene in which a shows they fancy b: after it, a
+// line may say it has been building (script.js `longing`); before it, the
+// moment is the reveal (`firstSign`). Recorded after the scene's words, so a
+// scene is never its own setup. Reads only; draws nothing.
+const INTEREST = {
+  pull: e => [e.players[0], e.players[1]], 'bed-share': e => [e.players[0], e.players[1]],
+  'triangle-case': e => [e.players[0], e.players[1]], loyalty: e => [e.players[0], e.players[1]],
+  'graft-turn': e => [e.players[0], e.players[1]],
+  'chal-spark': e => [e.players[0], e.players[2]],
+  'game-kiss': e => (['crush', 'stir'].includes(e.extra?.of) ? [e.players[0], e.players[1]] : null),
+  'blow-dare': e => (e.extra?.of === 'kiss-other' ? [e.players[0], e.players[1]] : null),
+  'tod-truth': e => (String(e.extra?.of || '').startsWith('named') ? [e.players[0], e.players[1]] : null),
+  'heart-rate': e => (e.players[1] && e.extra?.partner !== e.players[1] ? [e.players[0], e.players[1]] : null),
+  'snog-marry-pie': e => (e.extra?.snog ? [e.players[0], e.extra.snog] : null),
+  kiss: e => [e.players[0], e.players[1]],
+};
+export function noteInterest(state, ev) {
+  if (!ev.aired) return;
+  const pair = INTEREST[ev.kind]?.(ev);
+  if (!pair || !pair[0] || !pair[1]) return;
+  const k = `${pair[0]}>${pair[1]}`;
+  const si = (state.shownInterest ||= {});
+  if (si[k] == null) si[k] = ev.ep ?? state.ep;
 }
 
 function writeLedger(state, ev, late) {

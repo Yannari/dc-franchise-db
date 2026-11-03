@@ -20,7 +20,7 @@
 // trust, security, and what the public make of it.
 import { addBond } from '../bonds.js';
 import { addRelationshipDimension } from '../relationships.js';
-import { partnerOf } from './events.js';
+import { heartOf } from './just-friends.js';
 import { romance, friendship, schemeEligible } from './feelings.js';
 import { nudgeAttraction, attr, compatible } from './chemistry.js';
 import { feel, jealousyHit } from './emotions.js';
@@ -57,6 +57,10 @@ export function roundSize(state, kissers, least = 2) {
 }
 
 /** The choice one islander makes when it is their turn to kiss someone. */
+// The one whose heart they're with: a couple who called it off as friends this
+// morning are not each other's game kiss by the afternoon (season 41: Jess,
+// told at breakfast it was over, kissed Jordan in the game "I'm proud of us").
+const partnerOf = heartOf;
 function choose(state, rng, a, targets) {
   const st = S(state, a), p = partnerOf(state, a);
   const loyal = (st.loyalty ?? 5) / 10, bold = (st.boldness ?? 5) / 10;
@@ -76,10 +80,16 @@ function choose(state, rng, a, targets) {
     // own partner (every islander in the villa was a small crush option, and
     // together they outweighed the partner), held back by loyalty.
     const over = p ? Math.max(0, fancy - 0.8 * own) : fancy;
-    opts.push([['crush', t], 3 * over * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.75 * shut)]);
+    // A crush the villa has seen (events.js noteInterest) comes out in a game
+    // readily; one nobody has seen, less often (2026-11-03: one game had three
+    // crush kisses from nowhere, and every islander seemed to fancy everyone).
+    const shownTo = (state.shownInterest || {})[`${a}>${t}`] != null;
+    opts.push([['crush', t], 3 * over * (p ? 1 - 0.5 * loyal : 1) * (1 - 0.75 * shut) * (shownTo ? 1 : 0.45)]);
     // On purpose, to shake somebody else's couple: a schemer, bold, and the
-    // less they like the partner watching, the more it appeals.
-    if (tp && tp !== a && schemeEligible(state.profiles[a])) {
+    // less they like the partner watching, the more it appeals. Never the one
+    // they've been chasing: that kiss is a crush (season 41: Jordan, after a
+    // day going after Chloe, kissed her "for everyone watching").
+    if (tp && tp !== a && !shownTo && schemeEligible(state.profiles[a])) {
       opts.push([['stir', t], 1.6 * bold * (1 - Math.max(0, friendship(a, tp)) / 10) * (0.5 + fancy)]);
     }
     // A laugh with a friend: likelier the less there is in it.

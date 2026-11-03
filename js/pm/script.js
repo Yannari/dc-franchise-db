@@ -100,7 +100,11 @@ export const FACT_KEYS = ['known', 'sameStart', 'weeks', 'since', 'reclaim', 'st
   // what today did to a couple (sourOf): 'mine' (a did it), 'theirs' (b did), 'row', or null
   'sour',
   // an intro tape's (pm/talk/intro.js)
-  'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape'];
+  'look', 'vibe', 'ick', 'interest', 'from', 'kinOf', 'eyes', 'pastEx', 'hasAge', 'hasJob', 'hasTown', 'into', 'shape',
+  // shown interest (events.js noteInterest): a's in b aired in an earlier episode; nothing shown either way before this scene
+  'longing', 'firstSign', 'flirt',
+  // the episode's light story (pm/runner.js): which bit, which beat, which bet or prank, how it ended
+  'bit', 'step', 'topic', 'out'];
 
 // Archetype groups a pool may name instead of listing them (CLAUDE.md).
 export const VILLAINS = ['villain', 'mastermind', 'schemer'];
@@ -179,7 +183,8 @@ export function factsFor(state, ev) {
   // a kiss that happened (season read 2026-10-25: "I just kissed Molly so I
   // didn't have to say anything", the morning before their first kiss).
   const mine = partnerOf(state, a);
-  const kissedMine = e => e.kind === 'kiss' && e.players.includes(a) && e.players.includes(mine);
+  // (Any kiss: a game kiss is a kiss. events.js kissedBefore keeps the list.)
+  const kissedMine = e => (e.kind === 'kiss' || e.kind === 'game-kiss' || e.kind === 'challenge-kiss' || e.kind === 'hideaway') && e.players.slice(0, 2).includes(a) && e.players.slice(0, 2).includes(mine);
   // A snogger kiss he scored seven or under: nobody grins about that one.
   f.lowScore = ev.extra?.score != null && ev.extra.score <= 7;
   f.paKissed = !!mine && ((state.history || []).some(kissedMine) || (state._today || []).some(kissedMine));
@@ -198,7 +203,7 @@ export function factsFor(state, ev) {
   if (b) { const r = romance(a, b); f.feels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.feels = null;
   // …and how much b feels for a, the same way: whether it is said back.
   if (b) { const r = romance(b, a); f.bFeels = r >= 6 ? 'strong' : r >= 3 ? 'some' : 'little'; } else f.bFeels = null;
-  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said', 'mates', 'took', 'exPick']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
+  for (const k of ['choice', 'cause', 'channel', 'grudge', 'of', 'noticed', 'reason', 'guessed', 'theirs', 'going', 'nth', 'exes', 'what', 'heat', 'game', 'why', 'another', 'ago', 'behind', 'friction', 'chose', 'since', 'staying', 'came', 'risk', 'side', 'subj', 'final', 'score', 'choosing', 'said', 'mates', 'took', 'exPick', 'bit', 'step', 'topic', 'out']) if (ev.extra?.[k] != null) f[k] = ev.extra[k];
   f.story = ev.extra?.thread?.type || null;
   // A recoupling "steal" of the chooser's own partner from before tonight.
   f.reclaim = !!ev.extra?.reclaim;
@@ -263,6 +268,13 @@ export function factsFor(state, ev) {
   // coupled that night, "hasn't been feeling it for days").
   const inFor = n => n == null || state.ep - (state.ledger?.firstEp?.[n] ?? state.ep) >= 2;
   f.known = inFor(a) && inFor(b) && inFor(partnerOf(state, a));
+  // What the viewer has SEEN of a fancying b (events.js noteInterest): "for
+  // days" only when it aired an episode ago or more; the first sign either way
+  // is played as a surprise, never as something long felt.
+  const si = state.shownInterest || {};
+  f.longing = !!b && si[`${a}>${b}`] != null && si[`${a}>${b}`] < state.ep;
+  f.firstSign = !!b && si[`${a}>${b}`] == null && si[`${b}>${a}`] == null;
+  f.flirt = FLIRT_KINDS.has(ev.kind);
   // Walked in on the same night: only then is "remember how nervous we were
   // when we walked in" theirs (season 33: Josh, day 5, and Nadia, day 15).
   f.sameStart = !!b && (state.ledger?.firstEp?.[a] ?? -1) === (state.ledger?.firstEp?.[b] ?? -2);
@@ -491,8 +503,25 @@ const presentFits = (e, facts) => {
   if (facts.atCasa === true && SAID_IN_VILLA.test(text)) return false;
   return true;
 };
+// A crush said to be old ("I've wanted to kiss you for days", "since I walked
+// in") in a flirting scene, or its hut: only once the viewer has seen it in an
+// earlier episode (factsFor `longing`; 2026-11-03 the spine: 45% of the crushes
+// acted on had nothing on screen before them). What {a} says, the staging and
+// the beat; {b} may say anything. Dropped only while something else fits, so a
+// cutaway the engine decided on is never lost to it.
+const FLIRT_KINDS = new Set(['pull', 'game-kiss', 'kiss', 'loyalty', 'chal-spark', 'tod-truth', 'graft-eyes', 'graft-turn',
+  'triangle-case', 'bed-share', 'blow-dare', 'heart-rate', 'snog-marry-pie', 'head-turned']);
+const CLAIM_RE = /for days|since (?:I|you) walked in|since day one|since the first day|all week|been wanting to|for ages|can't stop thinking about|haven't stopped thinking|been thinking about (?:it|you|this|that|kissing)\b[^.?!]{0,20}(?:for|since|all)|everyone in this villa knows|(?:wanted|liked|fancied) (?:you|to|\{b\})[^.?!]{0,25}(?:for (?:days|ages|a while)|since)/i;
+const claimText = e => {
+  if (e._claim != null) return e._claim;
+  const own = t => Array.isArray(t) ? (t[0] === 'a' ? [t[1]] : []) : (t.vary || []).flatMap(v => (v.turns || []).filter(x => x[0] === 'a').map(x => x[1]));
+  const text = [e.stage, e.beat, ...(e.turns || []).flatMap(own)].filter(Boolean).join(' ');
+  Object.defineProperty(e, '_claim', { value: CLAIM_RE.test(text), enumerable: false });
+  return e._claim;
+};
 export function pickScript(state, pool, ps, facts, { allowRepeat = true, rng: own = null, lead = true } = {}) {
   pool = pool.filter(e => castFits(e, facts) && presentFits(e, facts));
+  if (facts.flirt && !facts.longing) { const told = pool.filter(e => !claimText(e)); if (told.length) pool = told; }
   // Candidates at each width, narrowest first: the leading pool, then every
   // entry that fits. A spent leading pool widens before it repeats: a couple
   // who rowed and made up five times in one evening heard the same

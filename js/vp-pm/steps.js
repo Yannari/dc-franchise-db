@@ -109,7 +109,7 @@ export function bgFor(row, phase) {
   if (phase === 'firepit' || phase === 'dumping') return 'night';
   if (phase === 'evening' || phase === 'debrief') return 'terrace';
   if (phase === 'cinema') return 'cinema';
-  if (phase === 'breakdown') return 'night';
+  if (phase === 'breakdown' || phase === 'night') return 'night';
   if (phase === 'triangle' || phase === 'rivals') return 'terrace';
   return 'day';
 }
@@ -120,7 +120,7 @@ export function bgFor(row, phase) {
 // in the kitchen is in the kitchen, and the day moves through the villa
 // instead of standing on one beach. Night or day from the part of the day.
 // Measured over two seasons: 70% of the open-villa scenes name a place.
-const DARK = new Set(['evening', 'debrief', 'breakdown', 'blowup', 'triangle', 'rivals']);
+const DARK = new Set(['evening', 'debrief', 'breakdown', 'blowup', 'triangle', 'rivals', 'night']);
 // The games and the villa-wide moments play on the lawn, the challenge stage.
 const LAWN = new Set(['event', 'challenge']);
 const OPEN = new Set(['morning', 'day', 'arrival', ...LAWN, ...DARK]);

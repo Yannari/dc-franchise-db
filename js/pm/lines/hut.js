@@ -316,7 +316,14 @@ export const HUT = {
     // there is a hut; a missing line must never be what cancels it.
     { id: 'hut.gkiss.h1', when: K('game-kiss', { ...B, of: 'partner', role: 0 }), turns: [['a', "Of course I kissed {b}. Who else was I going to kiss? It's {b}. It's been {b} for a while."]] },
     { id: 'hut.gkiss.h2', when: K('game-kiss', { ...B, of: 'partner', role: 1 }), turns: [['a', "{b} came straight to me. No looking round, no thinking about it. That's all I wanted."]] },
-    { id: 'hut.gkiss.h3', when: K('game-kiss', { ...B, of: 'crush', role: 0 }), turns: [['a', "I've wanted to kiss {b} for days. A challenge was the perfect excuse. Best excuse I've ever had."]] },
+    { id: 'hut.gkiss.h3', when: K('game-kiss', { ...B, of: 'crush', role: 0, longing: true }), turns: [['a', "I've wanted to kiss {b} for days. A challenge was the perfect excuse. Best excuse I've ever had."]] },
+    // The first anyone has seen of it (script.js firstSign): the kiss is the reveal.
+    { id: 'hut.gkiss.f1', when: K('game-kiss', { ...B, of: 'crush', role: 0, firstSign: true }), turns: [['a', "I didn't plan that. I got to the front of the line, I looked at {b}, and my feet just went. Now everybody knows, and I didn't even know I was going to tell them."]] },
+    { id: 'hut.gkiss.f2', when: K('game-kiss', { ...B, of: 'crush', role: 0, firstSign: true }), turns: [['a', "I've never said a word to anyone about {b}. Not one word. And I've just told the whole villa with my mouth."]] },
+    { id: 'hut.gkiss.f3', when: K('game-kiss', { ...B, of: 'crush', role: 0, firstSign: true, taken: true }), turns: [['a', "I'm with {pa}. I know I'm with {pa}. And I still walked over to {b}. I need to work out what that means before {pa} asks me, and {pa} is going to ask me."]] },
+    { id: 'hut.gkiss.f4', when: K('game-kiss', { ...B, of: 'crush', role: 1, firstSign: true }), turns: [['a', "I genuinely did not see that coming. {b} has barely looked at me. And then that. I don't know what to do with my face."]] },
+    { id: 'hut.gkiss.f5', when: K('game-kiss', { ...B, of: 'crush', role: 1, firstSign: true }), turns: [['a', "That wasn't a game kiss. You can tell the difference. Everyone on that lawn could tell the difference."]] },
+    { id: 'hut.gkiss.f6', when: K('game-kiss', { ...B, of: 'crush', role: 0, firstSign: false, longing: false }), turns: [['a', "There's been something with {b} for a little while. Nothing big. A look here and there. That kiss made it a lot bigger."]] },
     { id: 'hut.gkiss.h4', when: K('game-kiss', { ...B, of: 'crush', role: 1 }), turns: [['a', "{b} picked me. Out of everyone on that line. I'm going to be thinking about that for a very long time."]] },
     { id: 'hut.gkiss.h5', when: K('game-kiss', { ...B, of: 'stir', role: 0 }), turns: [['a', "I knew exactly what I was doing when I went for {b}. I wanted to see some faces. I saw some faces."]] },
     { id: 'hut.gkiss.h6', when: K('game-kiss', { ...B, of: 'stir', role: 1 }), turns: [['a', "I know why {b} kissed me. It wasn't about me. It was about who was watching."]] },

@@ -469,6 +469,67 @@ export const RU_PUBLIC = kind('ru-public', ['label'], [
     ['dior', "Do you regret how you played it?"],
     ['a', "I regret how it made people feel. I don't think I'm a bad person. I think I was a bad version of myself for six weeks."],
   ], beat: "Somebody on the sofas nods slowly." },
+  // (Two a label were not enough: five on the sofa can share one, seed 4, 2026-11-03 — four of them fan favourites.)
+  { when: { label: 'fan-favourite' }, turns: [
+    ['dior', "{a}, the public voted for you again and again this summer. What do you say to them?"],
+    ['a', "Thank you. Honestly, thank you. I didn't feel like I was doing anything special. I was just in there being me."],
+    ['dior', "Was that hard?"],
+    ['a', "Some days. It's hard to be yourself when you're tired and everyone's watching. I'm glad it came across."],
+  ], beat: "The audience claps for a long time." },
+  { when: { label: 'fan-favourite' }, turns: [
+    ['dior', "{a}, you've got a lot of fans in this studio tonight."],
+    ['a', "I can hear them. It's mad. A few weeks ago I was in a villa with no idea anyone was watching."],
+    ['dior', "What's been the strangest part?"],
+    ['a', "People knowing things about me that I'd forgotten I'd said. Little things, from the kitchen at two in the morning."],
+  ], beat: "The fans in the front row cheer, and {a} waves at them." },
+  { when: { label: 'liked' }, turns: [
+    ['dior', "{a}, people warmed to you as the summer went on. Did you notice it change?"],
+    ['a', "Not in there. Out here, yes. People come up to me and say they'd want me as a friend."],
+    ['dior', "That's a nice thing to hear."],
+    ['a', "It's the best thing anyone could say. That's all I was trying to be in there."],
+  ], beat: "The audience claps warmly." },
+  { when: { label: 'liked' }, turns: [
+    ['dior', "{a}, you seem to have come out of this with your head held high."],
+    ['a', "I hope so. I tried to be kind, even on the days I didn't feel it."],
+    ['dior', "Were there a lot of those days?"],
+    ['a', "More than it looked. But that's what the beach hut was for."],
+  ], beat: "The studio laughs, and claps." },
+  { when: { label: 'invisible' }, turns: [
+    ['dior', "{a}, I want to give you the floor tonight, because I don't think we saw enough of you."],
+    ['a', "Thank you. I think that's fair, honestly."],
+    ['dior', "What did we miss?"],
+    ['a', "A lot of good conversations that happened at three in the morning. I was there. You just weren't."],
+  ], beat: "The audience laughs, and {a} looks pleased." },
+  { when: { label: 'invisible' }, turns: [
+    ['dior', "{a}, did you ever feel like you were in the background in there?"],
+    ['a', "Sometimes. Everyone else's stories were so big."],
+    ['dior', "And yours?"],
+    ['a', "Mine was quieter. I made good friends, and I left as myself. I'm happy with that."],
+  ], beat: "The studio claps." },
+  { when: { label: 'disliked' }, turns: [
+    ['dior', "{a}, the public weren't always on your side. Have you watched it back?"],
+    ['a', "Once. I won't do it again."],
+    ['dior', "Was it hard?"],
+    ['a', "Very. I didn't recognise myself in some of it. That's on me, not the edit."],
+  ], beat: "The studio is quiet for a moment, then claps." },
+  { when: { label: 'disliked' }, turns: [
+    ['dior', "{a}, a lot of people had a lot to say about you this summer."],
+    ['a', "They did. Some of it I deserved."],
+    ['dior', "And some of it you didn't?"],
+    ['a', "Some of it was about things nobody saw the whole of. But I'm not here to argue with anyone tonight."],
+  ], beat: "A few people clap." },
+  { when: { label: 'villain' }, turns: [
+    ['dior', "{a}, you know what people are calling you."],
+    ['a', "I know. I've heard every version of it."],
+    ['dior', "Does it bother you?"],
+    say('a', "More than I thought it would. I'm not that person at home.", { sharp: "Less than people think. I knew what I was doing in there. I'll own it." }),
+  ], beat: "The studio goes \"ooh\"." },
+  { when: { label: 'villain' }, turns: [
+    ['dior', "{a}, if you went back in tomorrow, would you do it the same way?"],
+    ['a', "No. I'd still play the game, but I'd be kinder about it."],
+    ['dior', "Kinder how?"],
+    ['a', "I'd be honest with people's faces, not behind their backs. That's the bit I'd change."],
+  ], beat: "Somebody in the audience shouts 'too late', and {a} laughs." },
 ]);
 
 // ── the steals ─────────────────────────────────────────────────────────
@@ -771,6 +832,23 @@ export const RU_FEUD = kind('ru-feud', ['now', 'grudge'], [
     ['a', "I said it to your face as well."],
     ['b', "Not all of it."],
   ], beat: "The studio goes very quiet." },
+  // (One a grudge was the only one written: two bad feuds in one night shared it, seed 3, 2026-11-03.)
+  { when: { now: 'worse', grudge: DID }, stage: "{b} sits down, sees who {b.he} is next to, and moves along the sofa.", turns: [
+    ['dior', "{b}, you've moved. Is that about {a}?"],
+    ['b', "It is. I thought we'd be fine by now. We're not."],
+    ['a', "We were nearly fine. Then the episodes came out, and everyone saw what {b} did."],
+    ['b', "Everyone saw it because it happened. I've never said it didn't."],
+    ['dior', "Have you spoken since the final?"],
+    ['a', "Once. It didn't go well."],
+  ], beat: "{a} looks straight ahead for the rest of the segment." },
+  { when: { now: 'worse', grudge: TRAIT }, stage: "{a} and {b} are at opposite ends of the stage, and the audience has noticed.", turns: [
+    ['dior', "{a}, {b}. The two of you didn't get on in there. Has anything changed?"],
+    ['a', "It's worse, honestly. In the villa I could walk away. Out here people keep asking me about {b}."],
+    ['b', "Then stop answering."],
+    ['a', "That's exactly what I mean."],
+    ['dior', "Is there any chance you'll be friends one day?"],
+    ['b', "I'd rather be honest with you than say yes to make tonight easier. No."],
+  ], beat: "The studio goes \"ooh\", and neither of them looks over." },
 ]);
 
 // ── after a clip: the partner has their say ────────────────────────────
@@ -911,6 +989,11 @@ export const RU_ASK = kind('ru-ask', ['q'], [
   { when: { q: 'learned' }, turns: [['dior', "Quick-fire. What did that villa teach you about yourself?"]] },
   { when: { q: 'change' }, turns: [['dior', "Quick one. If you could go back and change one thing, what would it be?"]] },
   { when: { q: 'home' }, turns: [['dior', "Quick-fire. What was the first thing you did when you got home?"]] },
+  // A question asked of a second round (pm/reunion.js runs rounds until everyone has spoken twice).
+  { when: { q: 'again' }, turns: [['dior', "Same question for the rest of you. Would you go back in tomorrow, knowing what you know now?"]] },
+  { when: { q: 'learned' }, turns: [['dior', "Let's go along the sofa. One thing the villa taught you. Quickly."]] },
+  { when: { q: 'change' }, turns: [['dior', "The rest of you, then. One thing you'd do differently. No speeches."]] },
+  { when: { q: 'home' }, turns: [['dior', "And the rest of you. First thing you did once you were home?"]] },
 ]);
 const Q = (q, how, lines) => lines.map(([lead, line]) => ({ when: { q, how }, turns: [['dior', lead], ['a', line]] }));
 export const RU_QUICK = kind('ru-quick', ['q', 'how'], [

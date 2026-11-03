@@ -200,7 +200,8 @@ export function segments(state, after, clips = []) {
   const spoken = Object.fromEntries(cast.map(n => [n, 0]));
   const out = [];
   // Who is sure to speak in a scene: a clip is footage, and the third in a clip's answer or at Casa may only listen.
-  const SURE = { reveal: 0, 'ru-clip': 2, 'ru-casa': 2 };
+  // …nor the one a steal was taken from, who may only be talked about (seed 4, 2026-11-03: one line all night).
+  const SURE = { reveal: 0, 'ru-clip': 2, 'ru-casa': 2, 'ru-steal': 2 };
   const push = (kind, players, extra = {}) => {
     out.push([kind, players, extra]);
     for (const n of players.slice(0, SURE[kind] ?? players.length)) if (n in spoken) spoken[n] += 1;

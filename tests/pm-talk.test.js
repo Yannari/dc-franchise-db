@@ -32,7 +32,9 @@ const THREE = new Set([
   'rival-shade', 'rival-play', 'code-call', 'rival-row', 'rival-step-back', 'rival-won', 'crush-confide', 'crush-watch',
   'triangle-rivals', 'triangle-case', 'triangle-ultimatum', 'triangle-teams', 'triangle-choice', 'camp-rally', 'camp-confront', 'camp-clash', 'camp-lobby', 'camp-split', 'camp-switch', 'camp-after', 'feud-confront', 'feud-interrupt', 'feud-shade', 'feud-ick', 'game-two-faced', 'game-suspect', 'game-called', 'pile-in', 'arrival-chat', 'first-toast', 'bombshell-react', 'tod-truth', 'lie-write', 'hideaway-vote', 'hideaway-morning', 'movie-react', 'snog-marry-pie', 'casa-react', 'vote-fallout', 'receipt', 'look-who', 'headline', 'couple-goals', 'couple-goals-row', 'snogger-row', 'lip-watch', 'talent-snub', 'tower-q', 'blow-dare', 'course-pick', 'step-reveal', 'step-choose', 'steal', 'visit-arrive', 'visit-leave', 'stand-up', 'stand-up-pick', 'bombshell-save', 'public-match', 'return-ex', 'mission-dump', 'sleepover-invite', 'sleepover-choice', 'walk-doubt', 'walk-after', 'ex-partner', 'lady-luck-pick', 'secret-kept', 'pick-plan', 'dump-unfair',
   // the reunion: {b} took {c} from {a}; {a} came back from Casa with {c}; {c} was in the clip with {a}
-  'ru-steal', 'ru-casa', 'ru-clip']);
+  'ru-steal', 'ru-casa', 'ru-clip',
+  // the light story (pm/runner.js): a bit with a third casts three (the prank's target, the snorer…)
+  'villa-bit']);
 const DEBRIEF_THREE = ['robbed', 'stole', 'took-back', 'refused', 'twisted-on', 'twisted', 'miss', 'blame', 'eyeing', 'bomb-fancy', 'bomb-threat', 'rather'];
 // dump-unfair: the couple the villa kept, always both named (talk/dumping.js slots).
 const ABOUT_ALWAYS = new Set(['casa-miss', 'kin-protect', 'dump-unfair']);

@@ -59,7 +59,7 @@ function ladderScenes(state, rng, days = 1) {
           { aired: true, major: [a, b] }));
       } else {
         // Nobody was told: a situationship now, and it will surface.
-        out.push(scene(state, rng, 'head-turned', [a], { pop: pop([a, -0.3, 1]) }, { phase: 'day' }));
+        out.push(scene(state, rng, 'head-turned', [a], { pop: pop([a, -0.3, 1]) }));
       }
     } else if (d.kind === 'exclusive-ask' || d.kind === 'official-ask') {
       const big = d.kind === 'official-ask';
@@ -118,7 +118,7 @@ function hideawayNight(state) {
   if (couples.length < 3) return [];
   const out = [];
   const reader = couples[Math.floor(rng() * couples.length)][Math.floor(rng() * 2)];
-  out.push(scene(state, rng, 'hideaway-text', [reader, partnerOf(state, reader)], { pop: pop([reader, 0, 0.5]) }, { phase: 'event', aired: true }));
+  out.push(scene(state, rng, 'hideaway-text', [reader, partnerOf(state, reader)], { pop: pop([reader, 0, 0.5]) }, { aired: true }));
   // Each couple names another: who they like, and how plainly into each other
   // that couple is, with a little chance in it.
   const tally = new Map();
@@ -130,7 +130,7 @@ function hideawayNight(state) {
       .sort((p, q) => q[1] - p[1])[0]?.[0];
     if (!pick) continue;
     tally.set(pick, (tally.get(pick) || 0) + 1);
-    out.push(scene(state, rng, 'hideaway-vote', [a, b, pick[0], pick[1]], { pop: pop([a, 0.1, 0.5]) }, { phase: 'event', aired: true }));
+    out.push(scene(state, rng, 'hideaway-vote', [a, b, pick[0], pick[1]], { pop: pop([a, 0.1, 0.5]) }, { aired: true }));
   }
   const ranked = [...tally].sort((p, q) => q[1] - p[1] || into(q[0]) - into(p[0]));
   const [w1, w2] = ranked[0][0];
@@ -139,12 +139,12 @@ function hideawayNight(state) {
   for (const e of out.filter(e => e.kind === 'hideaway-vote' && e.players[2] === w1)) {
     for (const v of e.players.slice(0, 2)) { addRelationshipDimension(w1, v, 'affection', 0.3); addRelationshipDimension(w2, v, 'affection', 0.3); }
   }
-  out.push(scene(state, rng, 'hideaway-win', [w1, w2], { pop: pop([w1, 0.6, 2], [w2, 0.6, 2]) }, { phase: 'event', aired: true, major: [w1, w2] }));
+  out.push(scene(state, rng, 'hideaway-win', [w1, w2], { pop: pop([w1, 0.6, 2], [w2, 0.6, 2]) }, { aired: true, major: [w1, w2] }));
   // The couple most into each other that nobody voted for: it stings.
   const snub = couples.filter(c => !tally.has(c) && into(c) >= 5).sort((p, q) => into(q) - into(p))[0];
   if (snub) {
     for (const n of snub) { feel(state, n, 'confidence', -0.6); feel(state, n, 'stress', 0.4); }
-    out.push(scene(state, rng, 'hideaway-snub', [...snub], { pop: pop([snub[0], 0.2, 0.8]) }, { phase: 'event', aired: true }));
+    out.push(scene(state, rng, 'hideaway-snub', [...snub], { pop: pop([snub[0], 0.2, 0.8]) }, { aired: true }));
   }
   // The night itself, and anyone still carrying a torch for either of them.
   out.push(...hideaway(state, rng, w1, w2));
@@ -182,7 +182,7 @@ function feelingScenes(state, rng) {
     // A sulk needs somebody there to sulk at: with the partner at Casa it is overthinking, alone.
     if (apart(state, n, partner) && how !== 'hidden') {
       feel(state, n, 'stress', 0.5);
-      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }, { phase: 'day' }));
+      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }));
       continue;
     }
     if (how === 'confront') {
@@ -193,7 +193,7 @@ function feelingScenes(state, rng) {
     } else if (how === 'sulk') {
       feel(state, n, 'security', -0.5);
       const noticed = !apart(state, n, partner) && rng() < state.profiles[partner].stats.intuition / 10;
-      out.push(scene(state, rng, 'jealous-sulk', [n], { noticed, pop: pop([n, 0.1, 0.8]) }, { phase: 'day' }));
+      out.push(scene(state, rng, 'jealous-sulk', [n], { noticed, pop: pop([n, 0.1, 0.8]) }));
       if (noticed) out.push(reassurance(state, rng, n, partner));
     } else if (how === 'retaliate') {
       const bait = pick(rng, roomMates(state, n).filter(o => o !== partner && attr(state, n, o) != null));
@@ -206,7 +206,7 @@ function feelingScenes(state, rng) {
       out.push(reassurance(state, rng, n, partner));
     } else {
       feel(state, n, 'stress', 0.5);
-      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }, { phase: 'day' }));
+      out.push(scene(state, rng, 'overthinking', [n], { pop: pop([n, 0.3, 0.6]) }));
     }
   }
   return out;
@@ -259,7 +259,7 @@ function advice(state, rng) {
     nudgeAttraction(state, n, partner, 0.6 * v);
     addRelationshipDimension(n, partner, 'trust', 0.5 * v);
     feel(state, n, 'security', v);
-    out.push(scene(state, rng, 'advice', [c, n, partner], { verdict: v, pop: pop([c, 0.1, 0.8]) }, { phase: 'day' }));
+    out.push(scene(state, rng, 'advice', [c, n, partner], { verdict: v, pop: pop([c, 0.1, 0.8]) }));
   }
   return out;
 }
@@ -348,12 +348,27 @@ const RITUALS = {
   })),
 };
 
+// THE ORDER OF THE DAY (2026-11-03, the spine): a scene's words read what was
+// written before it (events.js state._today), so the day is written in the
+// order it airs. The Hideaway breakfast opens the morning and the games play
+// in the afternoon slot (season.js villaDayEvents calls these two); what this
+// file runs after the evening — the ladder, the feelings, the advice, the
+// stories — is the late evening, after dinner, and airs there. It used to be
+// sorted back into the morning and the day, so a friend's advice at lunch
+// could not know about the kiss at the challenge it aired before.
+const EARLY_RITUALS = new Set(['heart-rate', 'snog-marry-pie', 'notes', 'families']);
+export function morningScenes(state, rng) {
+  return hideawayMorning(state, rng);
+}
+export function ritualScenes(state, rng, entry) {
+  return (entry.rituals || []).filter(r => EARLY_RITUALS.has(r)).flatMap(r => RITUALS[r]?.(state, rng) || []);
+}
 export function runVillaDay(state, rng, entry) {
   syncLadder(state);
   const days = entry.days ? Math.max(1, entry.days[1] - entry.days[0] + 1) : 1;
-  const out = [...hideawayMorning(state, rng), ...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
+  const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
     ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
-  for (const r of entry.rituals || []) out.push(...(RITUALS[r]?.(state, rng) || []));
+  for (const r of entry.rituals || []) if (!EARLY_RITUALS.has(r)) out.push(...(RITUALS[r]?.(state, rng) || []));
   // The love triangles (pm/triangle.js), each a story over episodes — on
   // their own dice, before the fights (a rivalry can boil over tonight).
   out.push(...triangles(state, streamFor(state.seed ?? 1, `triangle:${state.ep}${state.epSalt || ''}`), entry));

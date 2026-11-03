@@ -9,7 +9,7 @@
 // DICE: every episode draws from its own `streamFor(seed, 'ep:N')`, every
 // profile from `profile:<name>`, every spark from `spark:a>b`. One episode's
 // draws never move another's (ADDING-A-SHOW §11.5 M).
-import { exitNight, answerStretch, hookFor } from './stretch.js';
+import { exitNight, answerStretch, hookFor, planCasts } from './stretch.js';
 import { gs, setGs, players } from '../core.js';
 import { streamFor } from '../dr/rng.js';
 import { PERFECT_MATCH_FORMAT } from '../shows.js';
@@ -18,7 +18,7 @@ import { seedAttraction, attr, compatible, attractionOf } from './chemistry.js';
 import { createLedger, noteArrival, closeEpisode, ledgerSnapshot, POP_SCALE } from './ledger.js';
 import { setRelationshipDimension } from '../relationships.js';
 import { becomeFriends, rekindle, splitRecords, setSplit } from './just-friends.js';
-import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS } from './events.js';
+import { generateEpisodeEvents, makeEvent, partnerOf, PHASE_BUDGETS, noteInterest } from './events.js';
 import { nightDebrief } from './debrief.js';
 import { runChallenge } from './challenges.js';
 import { romance, friendship, shown, believed, growLove, updateBeliefs, decideMasks,
@@ -27,7 +27,8 @@ import { syncLadder, forgetAsks, stepOf } from './ladder.js';
 import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js';
 import { addBond, getBond, bKey } from '../bonds.js';
 import { proneness } from './breakdown.js';
-import { runVillaDay } from './villa-day.js';
+import { runVillaDay, morningScenes, ritualScenes } from './villa-day.js';
+import { runnerBeat } from './runner.js';
 import { beginThreads, threadBeats, reactions, queueReaction, bedChats, tonightBeats } from './threads.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
 import { MOMENTS, nightOneOpening } from './moments.js';
@@ -130,11 +131,23 @@ function villaDayEvents(state, rng, entry, seed) {
   // stretch) keeps the villa's old texture: a story-less day at the reduced
   // texture aired 82 lines (2026-10-30, the spec audit's floor is 100).
   const quiet = (state._th?.headline || []).length < 2 ? { morning: 2, day: 3, evening: 2 } : { morning: 0, day: 0, evening: 0 };
-  const T = { morning: cut(TEXTURE.morning) + quiet.morning + (casa ? 3 : 0), day: cut(TEXTURE.day) + quiet.day + (casa ? 6 : 0), evening: cut(TEXTURE.evening) + quiet.evening + (entry.moment === 'villa' ? 2 : 0) + (casa ? 7 : 0) };
+  // THE SPINE (2026-11-03; docs/superpowers/specs/2026-11-03-pm-episode-spine-design.md):
+  // with a plan, the day is its stories. Random villa texture was 54 scenes an
+  // episode at four lines each, a third of them about the stories (a real hour
+  // is 15-20 scenes, most of them its one story seen from every side). A day
+  // with a plan keeps a scene of texture a part of the day; the light runner
+  // (pm/runner.js) is its laughs.
+  const planned = !casa && (state.stretch && !state.stretch.off) && (state._th?.plan || []).length >= 2;
+  const base = planned ? { morning: 1, day: 1, evening: 1 } : TEXTURE;
+  const T = { morning: (planned ? base.morning : cut(base.morning)) + quiet.morning + (casa ? 3 : 0), day: (planned ? base.day : cut(base.day)) + quiet.day + (casa ? 6 : 0), evening: (planned ? base.evening : cut(base.evening)) + quiet.evening + (entry.moment === 'villa' && !planned ? 2 : 0) + (casa ? 7 : 0) };
   const part = (phase, n) => storyPhase(state, rng, trng, phase, n, entry);
   if (entry.moment === 'first-coupling') return [...part('day', T.day), ...part('evening', T.evening)];
-  if (!entry.challenge) return [...part('morning', T.morning), ...part('day', T.day + 2), ...part('evening', T.evening)];
-  const out = [...part('morning', T.morning), ...part('day', T.day)];
+  // The Hideaway breakfast opens the morning; the villa's games are the
+  // afternoon (pm/villa-day.js): written where they air, so the evening knows them.
+  const morning = () => [...morningScenes(state, streamFor(seed, `morning:${entry.ep}${state.epSalt}`)), ...part('morning', T.morning)];
+  const games = () => { const g = ritualScenes(state, streamFor(seed, `games:${entry.ep}${state.epSalt}`), entry); for (const e of g) queueReaction(state, e); return g; };
+  if (!entry.challenge) { const out = [...morning(), ...part('day', T.day + 2)]; out.push(...games()); out.push(...part('evening', T.evening)); return out; }
+  const out = [...morning(), ...part('day', T.day)];
   const chal = runChallenge(state, streamFor(seed, `chal:${entry.ep}${state.epSalt}`), entry.challenge);
   if (chal.length) state._namedChallengeEp = entry.ep;
   for (const e of chal) queueReaction(state, e);
@@ -143,6 +156,7 @@ function villaDayEvents(state, rng, entry, seed) {
   // to the villa.
   if (!chal.length) out.push(...part('day', 3));
   // What the game left behind opens the evening (pm/challenge-frame.js).
+  out.push(...games());
   const after = chal.length ? state._chalEvening || [] : [];
   state._chalEvening = null;
   for (const e of after) queueReaction(state, e);
@@ -192,7 +206,10 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
   const per = Math.max(1, Math.floor(texture / (stories + 1)));
   let left = texture;
   out.push(...draw(Math.min(left, per))); left -= Math.min(left, per);
-  for (let i = 0; i < stories; i++) {
+  // The episode's light story (pm/runner.js): its beat for this part of the day, early in it.
+  for (const e of runnerBeat(state, phase, entry)) { queueReaction(state, e); out.push(e); }
+  // (One more slot than stories: the main story's second scene of the part of the day.)
+  for (let i = 0; i < stories + (stories ? 1 : 0); i++) {
     out.push(...threadBeats(state, trng, phase, 1));
     if (left > 0) { const n = Math.min(left, per); out.push(...draw(n)); left -= n; }
     // Halfway through the day and the evening: tonight, on everybody's mind.
@@ -351,6 +368,8 @@ function restoreFromAired(state, rows, queues, seed) {
   // The scenes read what already happened (afterOf, first kisses, clips): the aired history.
   // Copies: the engine marks history as it plays, and the aired rows must never change.
   state.history = JSON.parse(JSON.stringify(rows.flatMap(r => r.pm?.events || [])));
+  // …and who the viewer has seen fancying whom (events.js noteInterest).
+  for (const e of state.history) noteInterest(state, e);
   state.seq = state.history.length + 1;
   gs.activePlayers = [...state.villa];
   return last.num;
@@ -496,7 +515,12 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     // go over it, and what's still due is said before they sleep.
     if (['villa', 'casa-nights'].includes(entry.moment)) {
       const trng = streamFor(seed, `threads-night:${entry.ep}${state.epSalt}`);
-      vday.push(...reactions(state, trng, 'evening', 2), ...bedChats(state, trng, 'evening'));
+      // Last of all, after the fights and the tears: the night's own slot (Lights out).
+      const late = [...reactions(state, trng, 'evening', 2)];
+      late.push(...runnerBeat(state, 'night', entry));
+      late.push(...bedChats(state, trng, 'evening'));
+      for (const e of late) e.phase = 'night';
+      vday.push(...late);
     }
     day.push(...vday);
     state.history.push(...vday);
@@ -634,6 +658,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
         ...(Object.keys(state.kin || {}).length ? { kin: Object.entries(state.kin).map(([k, v]) => [...k.split('|'), v, kinLabel(v)]) } : {}),
         // The couples as the night's moment found them (the day plays first now).
         couplesBefore: pre.couples.map(c => [...c]),
+        // The stories the screen followed this episode (pm/stretch.js), for the screens and the season reads.
+        story: planCasts(state),
         // The night the singles all go, and the couples-only week after it.
         ...(entry.finalRecoupling ? { finalRecoupling: true } : {}), ...(entry.coupled ? { coupled: true } : {}),
         ...(m.extra?.double ? { double: true } : {}),

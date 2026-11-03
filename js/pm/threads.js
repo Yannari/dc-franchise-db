@@ -43,7 +43,7 @@ import { addRelationshipDimension, getRelationshipDimension } from '../relations
 import { broken, splitOf, heartOf, friendsRecords, rekindle } from './just-friends.js';
 import { recordSplit, verdictPop } from './breakups.js';
 import { nudgeBelief, beliefOf } from './ledger.js';
-import { makeEvent, partnerOf, roomMates, apart, today, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
+import { makeEvent, partnerOf, roomMates, apart, today, soreToday, pullBetween, haveItOut, callOutStirrer, tooSoonForWarm } from './events.js';
 import { attr, nudgeAttraction, compatible } from './chemistry.js';
 import { romance, friendship, schemeEligible, revealTruth } from './feelings.js';
 import { stepOf, setStep, tellStep, closedness } from './ladder.js';
@@ -59,7 +59,11 @@ const CAUSE_OF_WHY = { ick: 'clash', eyes: 'moved-on', behind: 'cooling', coolin
 // How many threads an episode is about: the real episodes read had three or
 // four big ones and a smaller one or two (measured 2026-10-25: at four the
 // episode ran 260 clicks against the old 450, and the user wants substance).
-export const HEADLINES = 5;
+// THE SPINE (2026-11-03): five read as five shows at once (season 41 ep13: a
+// break-up, two chases, a doubt and a crush, each in five-line scenes). A real
+// hour (LI USA S8E12) follows one story from every side, a second that builds
+// to a fight, and a light one. Three: the stretch's A, B and C.
+export const HEADLINES = 3;
 const NICE = new Set(['hero', 'loyal-soldier', 'social-butterfly', 'showmancer', 'underdog', 'goat']);
 const PLAYERS = new Set(['villain', 'mastermind', 'schemer']);
 // What the public make of a story's moves (x SCENE_GAIN, like every pop).
@@ -87,7 +91,8 @@ function weighted(rng, opts) {
 /** The friends somebody talks to: their own side first, closest first, none of `not`. */
 export function friendsOf(state, n, not = [], k = 3) {
   const no = new Set([n, ...not, partnerOf(state, n)].filter(Boolean));
-  const room = roomMates(state, n).filter(o => !no.has(o));
+  // …and nobody they fell out with today (events.js soreToday).
+  const room = roomMates(state, n).filter(o => !no.has(o) && !soreToday(state, n, o));
   const mine = room.filter(o => gender(state, o) === gender(state, n));
   const pool = mine.length >= 2 ? mine : room;
   return pool.sort((x, y) => getBond(n, y) - getBond(n, x)).slice(0, k);
@@ -825,16 +830,20 @@ export function threadBeats(state, rng, phase, max = Infinity) {
   const out = [];
   // Called a thread or two at a time, so the stories intercut with the rest
   // of the day: each thread is tried once a part of the day.
+  // …the main story twice (the act, then the side of it somebody else saw).
   const tried = ((th.tried ||= {})[phase] ||= []);
   let moved = 0;
   for (const id of th.headline) {
     if (moved >= max) break;
-    if (tried.includes(id)) continue;
+    const times = tried.filter(x => x === id).length;
+    if (times >= (id === th.top ? 2 : 1)) continue;
+    // (Its second go comes after every other story's first.)
+    if (times === 1 && th.headline.some(o => o !== id && !tried.includes(o))) continue;
     tried.push(id);
     const t = (state.threads || []).find(x => x.id === id);
     if (!t || t.over) continue;
     // The stretch's stories carry the day; a story behind them plays a beat (pm/stretch.js).
-    const cap = id === th.top ? 4 : !th.plan?.length || th.plan.includes(id) ? 3 : 1;
+    const cap = id === th.top ? 6 : !th.plan?.length || th.plan.includes(id) ? 3 : 1;
     if ((th.used[id] || 0) >= cap) continue;
     let evs = [];
     if (t.type === 'graft') evs = phase === 'evening' ? [...graftEvening(state, rng, t, phase)] : [];
@@ -1045,7 +1054,9 @@ export function reactions(state, rng, phase, max = 3) {
     const { center, x, subj, about } = q;
     (th.reacted ||= []).push(center);
     if (!inVilla(state, center)) continue;
-    const fs = friendsOf(state, center, [x, about], 3).filter(f => f !== x && f !== about);
+    // Never x's own partner: the girls round the beanbags asking about Jordan
+    // included Jordan's partner, who nodded along (season 41 ep 5).
+    const fs = friendsOf(state, center, [x, about, x && heartOf(state, x)].filter(Boolean), 3).filter(f => f !== x && f !== about);
     if (!fs.length) continue;
     // Found out, and what came of it (season read 2026-10-25: Sean believed Leah,
     // then told the boys he'd "let Leah sweat"; Molly told the girls "I need to

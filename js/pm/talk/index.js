@@ -24,6 +24,7 @@ import { VENT_WHOLE } from './whole/vent.js';
 import { ICK_WHOLE } from './whole/ick.js';
 import { CHAL_BUZZ_WHOLE, CHAL_WATCH_WHOLE, CHAL_PRIZE_WHOLE, CHAL_ROW_WHOLE, CHAL_SPARK_WHOLE } from './whole/challenge.js';
 import { GAME_KISS_WHOLE } from './whole/game-kiss.js';
+import { VILLA_BIT } from './runner.js';
 import { ARRIVAL_CHAT_WHOLE } from './whole/arrival.js';
 import { extend, build } from './build.js';
 import { DOUBT_END_REASONS, EX_STING, EX_COLD, CASA_REACT_STUNG, BLOWUP_DUMPED, VENT_REASONS, RECOUPLE_EX } from './more/breakup-talk.js';
@@ -171,7 +172,7 @@ ENEMY_CLASH.facts = (state, ev) => {
     && (ev.id == null || e.id !== ev.id) && e.kind === 'enemy-clash' && e.players.slice(0, 2).sort().join('|') === pair) };
 };
 
-export const TALK = { pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
+export const TALK = { 'villa-bit': VILLA_BIT, pull: PULL, loyalty: LOYALTY, chat: CHAT, kiss: KISS, 'deep-chat': DEEP_CHAT, friendship: FRIENDSHIP, gossip: GOSSIP, 'told-confront': TOLD_CONFRONT, 'stirrer-confront': STIRRER_CONFRONT, argument: ARGUMENT,
   comedy: COMEDY, ick: ICK, advice: ADVICE, vent: VENT, comfort: COMFORT, 'casa-miss': CASA_MISS, 'bed-share': BED_SHARE,
   'challenge-kiss': CHALLENGE_KISS, 'challenge-win': CHALLENGE_WIN,
   reassurance: REASSURANCE, 'jealous-confront': JEALOUS_CONFRONT, 'jealous-retaliate': JEALOUS_RETALIATE, confession: CONFESSION, 'no-show': NO_SHOW, debrief: DEBRIEF,

@@ -22,13 +22,13 @@ const place = {
     { id: 'pmp.op1', when: P, turns: [
       beat("Don stands in a cobbled street outside a dance hall, a rose between his teeth, which he takes out to speak."),
       don("Welcome to Pampas Ranch! A city of passion, music and steak, and beyond it, grass as far as the eye can see. And emus. So many emus."),
-      don("Today, teams dance, then ride, then catch a bird with a rope. I've been told it doesn't hurt the bird. I've also been told that about dancing."),
-      beat('He tries a dramatic dance turn on the cobbles, catches his heel, and recovers with great dignity.'),
+      don("Today, teams dance, then ride, then catch a bird with a rope, and don't worry, it doesn't hurt the bird!"),
+      beat('He tries a dance turn on the cobbles and nearly trips.'),
     ] },
     { id: 'pmp.op2', when: P, turns: [
       don("Pampas Ranch. The dance here is slow, close, and dramatic. The men are slow, close and dramatic. Even the waiters are dramatic."),
       don("Racers, taxis to the dance academy. Wear something you can move in. Or don't. Rip a seam. It's dramatic."),
-      beat('Accordion music swells from a café behind him. A waiter places a coffee in his hand, dramatically.'),
+      beat('Accordion music swells from a café behind him.'),
     ] },
   ],
   'don-opener.bored': [
@@ -48,19 +48,19 @@ const place = {
     { id: 'pmp.ar2', when: P, turns: [
       beat('On a street corner, an old couple dances slowly to a radio, as if there is nobody else in the city.'),
       by('b', "Look at them. They've been dancing together for fifty years. You can tell."),
-      by('a', "And we've got about an hour to look like that."),
+      by('a', "And we've got about an hour to learn it."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'pmp.ad1', when: P, turns: [
       by('a', "The tip says 'dance'. In front of a teacher. Who'll judge us."),
       by('b', "You dance at every wedding."),
-      by('a', "That's not dancing. That's waving my arms after cake."),
+      by('a', "That's not dancing. That's just moving around."),
     ] },
     { id: 'pmp.ad2', when: P, turns: [
       by('b', "'Who can ride a horse?' I've never been on a horse."),
       by('a', "Have you been near a horse?"),
-      by('b', "I've seen one on television."),
+      by('b', "Not really. No."),
     ] },
   ],
 };
@@ -71,14 +71,14 @@ const roads = {
     { id: 'pmp.tm1', when: { taskId: 'academy-taxi', mishap: 'parade-in-the-street' }, turns: [
       beat("The taxi turns a corner straight into a parade: drums, flags, dancers, and absolutely no way through."),
       by('a', "Can we go round it?"),
-      by('b', "It's the whole street. It is the street now."),
+      by('b', "It's the whole street."),
       beat('Twenty minutes later, the last drummer passes, and the taxi pushes on.'),
     ] },
     { id: 'pmp.tm2', when: { taskId: 'emu-walk', mishap: 'emu-runs-off' }, turns: [
       beat("Halfway to the cliff, the emu sees something in the grass, pulls its rope out of {a}'s hands, and runs."),
       by('a', "Come back! We just caught you!"),
       by('b', "Run! After it! It's faster than us, but run!"),
-      beat('Twenty minutes later, they find it standing in a puddle, looking pleased with itself.'),
+      beat('Twenty minutes later, they find it standing in a puddle.'),
     ] },
   ],
 };
@@ -108,7 +108,7 @@ const dance = {
     { id: 'pmp.tg-s2', when: TG, turns: [
       by('b', "Slow, slow, quick, quick, slow. That's the whole thing."),
       by('a', "Which bit is the quick bit?"),
-      by('b', "The quick bit is the bit after the slow bit."),
+      by('b', "After the two slows."),
     ] },
     { id: 'pmp.tg-s3', when: TG, turns: [
       beat("{a} tries the leg flick and kicks {b} sharply in the shin."),
@@ -117,37 +117,37 @@ const dance = {
     ] },
     { id: 'pmp.tg-s4', when: TG, turns: [
       by('a', "Look at me with passion. She said passion."),
-      by('b', "This is my passion face."),
-      by('a', "That's your sneezing face."),
+      by('b', "This is my passion face!"),
+      by('a', "Try harder."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'pmp.tg-f1', when: TG, turns: [
       beat("The music starts, and {a} and {b} glide across the floor, turn, flick, and end in a perfect dip. The instructor claps once, sharply."),
       by('b', "She clapped! She clapped!"),
-      by('a', "Did you see my flick? Did everybody see my flick?"),
+      by('a', "Did you see that? We did it!"),
     ] },
     { id: 'pmp.tg-f2', when: TG, turns: [
       by('a', "Don't think. Just feel it. Just feel the music."),
       beat("They stop thinking. They feel the music. The instructor smiles, and claps."),
-      by('b', "We felt it! We actually felt it!"),
+      by('b', "That worked!"),
     ] },
     { id: 'pmp.tg-f3', when: TG, turns: [
-      beat("{a} dips {b} at the end so dramatically that a rose falls out of nowhere onto the floor."),
-      by('b', "Where did the rose come from?"),
+      beat("{a} dips {b} at the end, slow and low, and holds it."),
+      by('b', "Is she clapping?"),
       by('a', "Doesn't matter. She's clapping."),
     ] },
     { id: 'pmp.tg-f4', when: TG, turns: [
-      by('b', "First try! We're dancers! Real dancers!"),
-      by('a', "We should do this at the next wedding."),
-      by('b', "We're doing this at every wedding, forever."),
+      by('b', "First try! We did it!"),
+      by('a', "We're doing this at every wedding now."),
+      by('b', "Every single one."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'pmp.tg-a1', when: TG, turns: [
       by('b', "She said we looked scared. So, no more scared. We look at each other like we mean it."),
       beat("They look at each other like they mean it, and dance it all the way through. The instructor claps."),
-      by('a', "Like we mean it! That was the whole secret!"),
+      by('a', "That was it! We just had to mean it!"),
     ] },
     { id: 'pmp.tg-a2', when: TG, turns: [
       beat("This time {a} counts out loud, under {a.posAdj} breath, the whole way through, and doesn't miss a single step."),
@@ -157,46 +157,46 @@ const dance = {
     { id: 'pmp.tg-a3', when: TG, turns: [
       by('a', "We keep falling on the dip. So I lean, and you hold. You don't lean. You just hold."),
       beat("{b} holds. {a} leans. The dip is perfect, and the instructor applauds."),
-      by('b', "I'm holding! I'm a holder! I'm a natural holder!"),
+      by('b', "I held it! It worked!"),
     ] },
     { id: 'pmp.tg-a4', when: TG, turns: [
       beat("The instructor takes {b}'s place for one run-through, showing {a} every step, then steps back. The next try is perfect."),
       by('a', "One lesson from her, and suddenly I can dance."),
-      by('b', "Suddenly I'm jealous."),
+      by('b', "That's amazing."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'pmp.tg-t1', when: TG, turns: [
-      beat("{a} and {b} are going in opposite directions, still holding hands, like a door that won't close."),
+      beat("{a} and {b} are going in opposite directions, still holding hands."),
       by('a', "Which way are we going?"),
       by('b', "I'm going left! You're supposed to go left too!"),
     ] },
     { id: 'pmp.tg-t2', when: TG, turns: [
       by('b', "I can't do the flick. My leg doesn't flick."),
       by('a', "Everyone's leg flicks."),
-      by('b', "Mine thuds."),
+      by('b', "Mine doesn't."),
     ] },
     { id: 'pmp.tg-t3', when: TG, turns: [
       beat("The instructor watches them, sighs, and shakes her head before they've even finished."),
       by('a', "She didn't even let us finish."),
-      by('b', "She didn't need to. She could tell."),
+      by('b', "She knew we were wrong."),
     ] },
   ],
   'task-done.any': [
     { id: 'pmp.tg-dn1', when: TG, turns: [
       by('a', "I want to take lessons when we get home."),
       by('b', "You hated it for the first hour."),
-      by('a', "And loved it for the last five minutes. That's how love works."),
+      by('a', "And loved it by the end."),
     ] },
     { id: 'pmp.tg-dn2', when: TG, turns: [
       beat("{a} and {b} leave the dance academy still holding hands, still doing tiny steps down the street."),
       by('b', "We can stop dancing now."),
-      by('a', "I can't. My feet won't stop."),
+      by('a', "I can't stop now."),
     ] },
     { id: 'pmp.tg-dn3', when: TG, turns: [
       by('b', "Horses next. And emus. And ropes."),
       by('a', "From dancing to catching birds. What a day."),
-      by('b', "What a strange, strange day."),
+      by('b', "What a strange day."),
     ] },
   ],
   'attempt-fail.any': [
@@ -208,7 +208,7 @@ const dance = {
     { id: 'pmp.tg-x2', when: TG, turns: [
       beat("They finish the dance, breathless, arms up. The instructor shakes her head and points at the mirrors."),
       by('b', "What was wrong?"),
-      by('a', "She says it was 'polite'. Apparently polite is bad."),
+      by('a', "She said it was too polite. We need more."),
     ] },
     { id: 'pmp.tg-x3', when: TG, turns: [
       beat("{b} steps on {a}'s foot, then the other foot, and they stop in the middle of the routine."),
@@ -223,7 +223,7 @@ const emu = {
   'don-demo.gag': [
     { id: 'pmp.em-d1', when: EM, turns: [
       don("In this Botch or Watch, ride out on horseback and catch your team's emu with these. Boleadoras: three weights on a rope. Swing, throw, wrap the legs."),
-      beat('He swings the boleadoras over his head, lets go, and they wrap round his own legs. He falls over very slowly.'),
+      beat('He swings the boleadoras over his head, lets go, and they wrap round his own legs.'),
       don("Like that. But round the emu. Not round you. That's important."),
     ] },
   ],
@@ -231,47 +231,47 @@ const emu = {
     { id: 'pmp.em-d2', when: EM, turns: [
       don("Miss, fall off the horse, or tangle the ropes in the grass, and you ride back to the gaucho for another go. The other one of you watches from the fence."),
       don("Wrap them gently, so the emu stops, not falls. Bring your emu back on a lead, and you get the next tip."),
-      beat("The gaucho, behind him, demonstrates. One throw. The emu stops dead, unhurt and a bit embarrassed."),
+      beat("The gaucho, behind him, demonstrates. One throw, and the emu stops dead, unhurt."),
     ] },
   ],
   'whose-botch.obvious': [
     { id: 'pmp.em-w1', when: EM, turns: [
       by('b', "You did the last one? No. I did. So you're riding."),
       by('a', "I've never been on a horse."),
-      by('b', "Well, now you'll have been on one."),
+      by('b', "There's a first time for everything. Go."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'pmp.em-w2', when: EM, turns: [
       by('a', "I'll ride. I went pony trekking when I was ten."),
       by('b', "Did you stay on?"),
-      by('a', "Most of the time."),
+      by('a', "Most of the time. Let me do it."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'pmp.em-w3', when: EM, turns: [
-      by('b', "The horse looked at me. It looked at me like it didn't like me. You go."),
+      by('b', "That horse doesn't like me. You go."),
       by('a', "It looked at me the same way."),
-      by('b', "It looked at you nicer."),
+      by('b', "It likes you more. Go."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'pmp.em-w4', when: EM, turns: [
       by('a', "'Who can ride a horse?' That's you. You had riding lessons."),
       by('b', "Twice. I had two riding lessons."),
-      by('a', "That's two more than me."),
+      by('a', "That's still more than me."),
     ] },
   ],
   'task-start.any': [
     { id: 'pmp.em-s1', when: EM, turns: [
       beat("{a} climbs onto the horse, swings the boleadoras over {a.posAdj} head, and immediately drops them."),
       by('a', "They're heavier than they look."),
-      by('b', "Everything's heavier than it looks. Pick them up!"),
+      by('b', "Pick them up! Quick!"),
     ] },
     { id: 'pmp.em-s2', when: EM, turns: [
       by('b', "Ride up beside it. Not behind it. Beside it."),
       by('a', "How do I make the horse go beside things?"),
-      by('b', "Ask it nicely?"),
+      by('b', "Pull the reins that way!"),
     ] },
     { id: 'pmp.em-s3', when: EM, turns: [
       beat("{a}'s horse trots out onto the grass. The emu watches it come, completely calm, and then runs."),
@@ -281,36 +281,36 @@ const emu = {
     { id: 'pmp.em-s4', when: EM, turns: [
       by('a', "What if I hit it? What if I hurt it?"),
       by('b', "Aim for the legs. Low and gentle."),
-      by('a', "Low and gentle. On a moving horse. At a moving bird."),
+      by('a', "Low and gentle. Okay."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'pmp.em-f1', when: EM, turns: [
       beat("{a} swings once, twice, and lets go. The boleadoras spin through the air and wrap neatly round the emu's legs. It stops."),
       by('a', "I got it! I got it first throw!"),
-      by('b', "You're a gaucho! You're an actual gaucho!"),
+      by('b', "You did it! First throw!"),
     ] },
     { id: 'pmp.em-f2', when: EM, turns: [
       by('b', "Now! Throw it now!"),
-      beat("{a} throws on {b}'s shout. The emu stops, looks down at its legs, and looks back at {a}, offended."),
-      by('a', "Sorry! Sorry! You're caught!"),
+      beat("{a} throws on {b}'s shout, and the emu stops."),
+      by('a', "Got it! Got it!"),
     ] },
     { id: 'pmp.em-f3', when: EM, turns: [
       beat("{a} rides alongside the emu, matches its speed, and drops the boleadoras right round its legs. The gaucho whistles."),
       by('b', "He whistled! The gaucho whistled at you!"),
-      by('a', "That's the best compliment I've ever had."),
+      by('a', "That was amazing."),
     ] },
     { id: 'pmp.em-f4', when: EM, turns: [
-      by('a', "First throw. I'm a natural."),
+      by('a', "First throw."),
       by('b', "You've never even seen an emu before today."),
-      by('a', "A natural."),
+      by('a', "I know. Still did it."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'pmp.em-a1', when: EM, turns: [
       by('b', "You keep throwing too high. Throw at its knees."),
       beat("{a} throws at its knees. The ropes wrap round, gently, and the emu stops."),
-      by('a', "Knees! Emus have knees!"),
+      by('a', "It worked!"),
     ] },
     { id: 'pmp.em-a2', when: EM, turns: [
       beat("Third ride out. {a} stops chasing, lets the horse walk, and waits for the emu to come closer before throwing."),
@@ -320,12 +320,12 @@ const emu = {
     { id: 'pmp.em-a3', when: EM, turns: [
       by('a', "I watched the gaucho. He swings it slower. Not fast. Slow, and then let go."),
       beat("{a} swings it slow, and lets go. The boleadoras wrap round the emu's legs."),
-      by('b', "Slow works! Why does slow always work?"),
+      by('b', "Slow worked!"),
     ] },
     { id: 'pmp.em-a4', when: EM, turns: [
       beat("After falling off the horse once and missing three times, {a} finally gets the emu."),
       by('a', "Got it! Finally got it!"),
-      by('b', "You're covered in grass! But you got it!"),
+      by('b', "You got it! Finally!"),
     ] },
   ],
   'task-try.struggling': [
@@ -337,11 +337,11 @@ const emu = {
     { id: 'pmp.em-t2', when: EM, turns: [
       by('b', "That's the fifth miss."),
       by('a', "I know. I've been counting too."),
-      by('b', "The emu's been counting. It looks smug."),
+      by('b', "Slow down. Breathe."),
     ] },
     { id: 'pmp.em-t3', when: EM, turns: [
       beat("The boleadoras are tangled round the horse's saddle. {a} is trying to untangle them while the horse walks in circles."),
-      by('a', "I've caught the horse. I've caught my own horse."),
+      by('a', "They're all tangled round the saddle."),
       by('b', "Untangle it! Quickly!"),
     ] },
   ],
@@ -349,17 +349,17 @@ const emu = {
     { id: 'pmp.em-dn1', when: EM, turns: [
       by('a', "Now we walk it to the cliff. On a lead."),
       by('b', "Like a dog."),
-      by('a', "A very big, very angry dog."),
+      by('a', "A very big one."),
     ] },
     { id: 'pmp.em-dn2', when: EM, turns: [
-      beat("{a} and {b} walk away across the grassland, leading the emu on a rope, the emu walking very proudly ahead."),
-      by('b', "It's leading us."),
+      beat("{a} and {b} walk away across the grassland, leading the emu on a rope."),
+      by('b', "It's walking ahead of us."),
       by('a', "As long as it's going the right way."),
     ] },
     { id: 'pmp.em-dn3', when: EM, turns: [
       by('b', "We caught an emu. With a rope. From a horse."),
-      by('a', "I'm putting that on my CV."),
-      by('b', "Under 'skills'."),
+      by('a', "I can't believe it."),
+      by('b', "Nobody back home will believe us."),
     ] },
   ],
   'attempt-fail.any': [
@@ -374,16 +374,16 @@ const emu = {
       by('b', "Get back on! The emu's getting away!"),
     ] },
     { id: 'pmp.em-x3', when: EM, turns: [
-      beat("The boleadoras wrap round a bush instead of the emu, and the emu runs off laughing. Well, it looks like laughing."),
+      beat("The boleadoras wrap round a bush instead of the emu, and the emu runs off."),
       by('a', "I caught a bush."),
       by('b', "We don't need a bush! Back for the ropes!"),
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'pmp.em-v1', when: EM, turns: [
-      by('b', "You can do it! You're a cowboy! A gaucho! A cowboy-gaucho!"),
+      by('b', "You can do it! Go on!"),
       by('a', "Stop shouting! You're scaring the emu!"),
-      by('b', "The emu should be scared! You're coming for it!"),
+      by('b', "Sorry! Go! Go!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -411,7 +411,7 @@ const emu = {
     { id: 'pmp.em-h1', when: EM, turns: [
       beat("While the gaucho isn't looking, {b} tosses a handful of grain over the fence, right where {a} is waiting."),
       by('a', "The emu's coming straight to me! Why?"),
-      by('b', "No idea! Lucky! Throw!"),
+      by('b', "I don't know! Throw!"),
     ] },
   ],
 };

@@ -20,14 +20,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'prr.op1', when: P, turns: [
       beat('Don stands at the ranch gate in a cowboy hat two sizes too big, the prairie flat and golden behind him to the edge of the world.'),
-      don("Welcome to Prairie Ranch! Big sky, big hats, and big portions. Today, you'll find out exactly how big."),
+      don("Welcome to Prairie Ranch! Big sky, big hats, and big portions, and you're about to find out how big!"),
       don("Teams will eat a whole pot of beans, and then ride a bull. Not a real bull. A real bull wasn't insured."),
-      beat('He tips his hat. It falls down over his eyes. He pushes it back up with dignity.'),
+      beat('He tips his hat, and it falls down over his eyes.'),
     ] },
     { id: 'prr.op2', when: P, turns: [
       don("Prairie Ranch. There's nothing for a hundred miles in any direction except wheat, cows, and one diner that only serves beans."),
       don("Racers, there's a pickup truck by the fence. Get in the back. Hold on to something."),
-      beat('A tumbleweed rolls across the road behind him, slowly, as if it has somewhere to be.'),
+      beat('A tumbleweed rolls slowly across the road behind him.'),
     ] },
   ],
   'don-opener.bored': [
@@ -42,12 +42,12 @@ const place = {
       beat('The pickup crests a rise, and the prairie spreads out below them: gold grass, a red barn, and horses running along the fence.'),
       by('a', "It's like a cowboy film. It's exactly like a cowboy film."),
       by('b', "Look at the horses. They're running alongside us."),
-      by('a', "They're racing us. And they're winning."),
+      by('a', "They're racing us!"),
     ] },
     { id: 'prr.ar2', when: P, turns: [
       by('b', "I've never seen this much sky. Where does it end?"),
-      by('a', "It doesn't. That's the point of a prairie."),
-      by('b', "I feel very small."),
+      by('a', "It just keeps going."),
+      by('b', "It's beautiful."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -59,7 +59,7 @@ const place = {
     { id: 'prr.ad2', when: P, turns: [
       by('b', "'Who can hang on?' Hang on to what?"),
       by('a', "Something that's going to try to throw us off."),
-      by('b', "I don't like any of this."),
+      by('b', "I don't like this."),
     ] },
   ],
 };
@@ -70,7 +70,7 @@ const roads = {
     { id: 'prr.tm1', when: { taskId: 'ranch-pickup', mishap: 'cattle-crossing' }, turns: [
       beat('The pickup stops at a cattle crossing. A herd of cows is wandering across the road, very, very slowly.'),
       by('a', "How many cows are there?"),
-      by('b', "All of them. Every cow in the world is crossing this road."),
+      by('b', "Hundreds. It's going to take forever."),
       beat('Twenty minutes later, the last cow ambles off, and the pickup roars on.'),
     ] },
   ],
@@ -95,13 +95,13 @@ const beans = {
   'task-start.any': [
     { id: 'prr.be-s1', when: BE, turns: [
       beat('{a} and {b} sit down at the long table in front of a pot of beans almost as big as a bucket.'),
-      by('a', "That's not a pot. That's a bath."),
+      by('a', "That's not a pot. That's a bucket."),
       by('b', "Grab a spoon. We eat until we see the bottom."),
     ] },
     { id: 'prr.be-s2', when: BE, turns: [
       by('b', "Small spoonfuls. Steady. Like a marathon, not a sprint."),
-      by('a', "I've never run a marathon."),
-      by('b', "Then this is your first one."),
+      by('a', "Okay. Steady."),
+      by('b', "Steady. Go."),
     ] },
     { id: 'prr.be-s3', when: BE, turns: [
       beat("{a} takes one spoonful, then another, and stops to stare at how full the pot still is."),
@@ -118,7 +118,7 @@ const beans = {
     { id: 'prr.be-f1', when: BE, turns: [
       beat("Spoon after spoon, {a} and {b} work through the pot without stopping, until a spoon scrapes metal, and paper."),
       by('b', "The tip! I can see the tip!"),
-      by('a', "Peel it off! Before I see another bean!"),
+      by('a', "Peel it off! Quick!"),
     ] },
     { id: 'prr.be-f2', when: BE, turns: [
       by('a', "Last bean. Who wants the last bean?"),
@@ -127,20 +127,20 @@ const beans = {
     ] },
     { id: 'prr.be-f3', when: BE, turns: [
       beat("{a} and {b} eat in a steady rhythm, one spoon each, turn and turn about, and the pot empties."),
-      by('b', "Turn and turn about. Works every time."),
-      by('a', "Never tell anyone how many beans I just ate."),
+      by('b', "Taking turns worked."),
+      by('a', "I can't believe we ate all that."),
     ] },
     { id: 'prr.be-f4', when: BE, turns: [
       by('b', "We did it! Whole pot! In one go!"),
-      by('a', "Don't shout. Shouting moves the beans."),
-      by('b', "Sorry. Whispering. We did it."),
+      by('a', "Don't shout. I feel sick."),
+      by('b', "Sorry. We did it, though."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'prr.be-a1', when: BE, turns: [
       by('b', "Slower this time. We went too fast and look what happened."),
       beat('Slower this time, spoonful by spoonful, and they reach the bottom of the pot.'),
-      by('a', "Slower works. Slower stays down."),
+      by('a', "Slower worked."),
     ] },
     { id: 'prr.be-a2', when: BE, turns: [
       beat("The cook tops up the pot one last time. {a} and {b} look at each other, pick up their spoons, and finish it."),
@@ -150,36 +150,36 @@ const beans = {
     { id: 'prr.be-a3', when: BE, turns: [
       by('a', "Drink water between every spoonful. Every single one."),
       beat('Water, beans, water, beans, all the way down to the bottom of the pot, and the tip.'),
-      by('b', "Water was the secret. Water's always the secret."),
+      by('b', "The water helped."),
     ] },
     { id: 'prr.be-a4', when: BE, turns: [
       beat("{b} stands up to make more room in {b.posAdj} stomach, and eats the last of the pot standing up."),
-      by('b', "Standing up works! There's more room standing up!"),
-      by('a', "That can't be how stomachs work. But we're done."),
+      by('b', "Standing up helps!"),
+      by('a', "I don't think that's true. But we're done."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'prr.be-t1', when: BE, turns: [
       beat("{a} sits back from the table, holding {a.posAdj} stomach, a spoon still in one hand."),
-      by('a', "I can't. I can't do another one. I'm full of beans."),
+      by('a', "I can't. I can't do another one."),
       by('b', "We're halfway! You can do half a pot!"),
     ] },
     { id: 'prr.be-t2', when: BE, turns: [
       by('b', "Every time we get close, he tops it up."),
       by('a', "Because you keep leaving beans in it."),
-      by('b', "I'm leaving them for you."),
+      by('b', "Okay. Okay. I'll eat them."),
     ] },
     { id: 'prr.be-t3', when: BE, turns: [
       beat('{a} and {b} have both stopped eating, staring at the pot, as if it might empty itself.'),
-      by('a', "Maybe if we look at it long enough."),
-      by('b', "It's not going to empty itself. Pick up your spoon."),
+      by('a', "I can't. I need a minute."),
+      by('b', "Pick up your spoon. Small bites."),
     ] },
   ],
   'task-done.any': [
     { id: 'prr.be-dn1', when: BE, turns: [
       by('a', "I'm never eating a bean again as long as I live."),
       by('b', "You said that about the last thing we ate."),
-      by('a', "And I meant it then, too."),
+      by('a', "And I meant it."),
     ] },
     { id: 'prr.be-dn2', when: BE, turns: [
       beat("{a} and {b} walk very carefully away from the table towards the barn, holding their stomachs."),
@@ -189,7 +189,7 @@ const beans = {
     { id: 'prr.be-dn3', when: BE, turns: [
       by('b', "That was the most beans anybody has ever eaten."),
       by('a', "The cook looked impressed."),
-      by('b', "The cook looked worried."),
+      by('b', "The cook looked surprised."),
     ] },
   ],
   'attempt-fail.any': [
@@ -217,13 +217,13 @@ const bull = {
     { id: 'prr.bu-d1', when: BU, turns: [
       don("In this Botch or Watch, the one of you not holding the tip rides this mechanical bull for eight seconds. One hand on the rope."),
       beat('He climbs on, nods to the cowboy at the controls, and is thrown off onto the hay before the timer reaches one.'),
-      don("That was a demonstration of what not to do. You're welcome."),
+      don("That's what not to do, so you're welcome!"),
     ] },
   ],
   'don-demo.dry': [
     { id: 'prr.bu-d2', when: BU, turns: [
       don("Fall off before eight seconds, and you climb back on and start again. The other partner stays behind the rail and watches."),
-      don("The cowboy at the controls starts it slow. He does not finish it slow."),
+      don("The cowboy at the controls starts it slow, but he doesn't finish it slow!"),
       beat('The cowboy at the controls grins and cracks his knuckles.'),
     ] },
   ],
@@ -231,28 +231,28 @@ const bull = {
     { id: 'prr.bu-w1', when: BU, turns: [
       by('b', "You're holding nothing. I'm holding the tip. You ride."),
       by('a', "Can't I hold the tip?"),
-      by('b', "Too late. It's in my hand. Saddle up."),
+      by('b', "Too late. It's in my hand. Get on."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'prr.bu-w2', when: BU, turns: [
       by('a', "I'll ride. I rode a donkey on holiday once."),
-      by('b', "A donkey isn't a bull."),
-      by('a', "It bucked. A bit. When I sneezed."),
+      by('b', "That's not the same."),
+      by('a', "It's close enough."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'prr.bu-w3', when: BU, turns: [
-      by('b', "I ate more beans than you. If I get on that thing, they're coming back out."),
-      by('a', "That's disgusting."),
-      by('b', "That's why you're riding."),
+      by('b', "I ate more beans than you. If I get on that thing, I'll be sick."),
+      by('a', "Fine. I'll do it."),
+      by('b', "Thank you."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'prr.bu-w4', when: BU, turns: [
       by('a', "'Who can hang on?' It's going to be something that bucks. I know it."),
-      by('b', "You've got the strongest grip. You opened that jar."),
-      by('a', "One jar. One time."),
+      by('b', "You've got the strongest grip."),
+      by('a', "Okay. Fine."),
     ] },
   ],
   'task-start.any': [
@@ -264,7 +264,7 @@ const bull = {
     { id: 'prr.bu-s2', when: BU, turns: [
       by('b', "Squeeze with your knees. Lean back. Arm up in the air."),
       by('a', "Where did you learn that?"),
-      by('b', "Films. Every single film."),
+      by('b', "From films. Do it."),
     ] },
     { id: 'prr.bu-s3', when: BU, turns: [
       beat('The bull starts to rock, slowly, then a bit faster. {a} grips the rope with white knuckles.'),
@@ -273,8 +273,8 @@ const bull = {
     ] },
     { id: 'prr.bu-s4', when: BU, turns: [
       by('a', "Eight seconds. Anybody can do anything for eight seconds."),
-      by('b', "Say that again when you're on it."),
-      by('a', "I'm on it now. I'm saying it now."),
+      by('b', "Okay. Here it goes."),
+      by('a', "Okay. Okay. Hold on."),
     ] },
   ],
   'task-try.first-try': [
@@ -286,24 +286,24 @@ const bull = {
     { id: 'prr.bu-f2', when: BU, turns: [
       by('a', "Yeehaw! Yeehaw!"),
       beat('The timer hits eight. The cowboy stops the bull. {a} slides off and waves the hat in the air.'),
-      by('b', "Where did you even get a hat?"),
+      by('b', "That was amazing!"),
     ] },
     { id: 'prr.bu-f3', when: BU, turns: [
-      beat("{a} grips the bull with both knees and doesn't move at all, as if glued to it, for the full eight seconds."),
+      beat("{a} grips the bull with both knees and doesn't move at all, for the full eight seconds."),
       by('b', "You didn't even wobble!"),
-      by('a', "I was too scared to wobble."),
+      by('a', "I was too scared to move."),
     ] },
     { id: 'prr.bu-f4', when: BU, turns: [
       by('b', "First try! The cowboy's clapping!"),
       by('a', "The cowboy is clapping for me?"),
-      by('b', "For you! On the bull! First try!"),
+      by('b', "For you! First try!"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'prr.bu-a1', when: BU, turns: [
       by('b', "You keep leaning forward. Lean back. Way back."),
       beat("{a} leans way back, and rides the bull all the way to eight."),
-      by('a', "Back! Leaning back was the answer!"),
+      by('a', "Leaning back worked!"),
     ] },
     { id: 'prr.bu-a2', when: BU, turns: [
       beat('Fourth ride. {a} is covered in hay, but hangs on through every buck and spin, and the timer hits eight.'),
@@ -313,11 +313,11 @@ const bull = {
     { id: 'prr.bu-a3', when: BU, turns: [
       by('a', "I'm going to count out loud this time. It helps."),
       beat("One, two, three, all the way to eight, shouting every number, and {a} is still on."),
-      by('b', "You counted that bull into submission!"),
+      by('b', "Counting worked!"),
     ] },
     { id: 'prr.bu-a4', when: BU, turns: [
       beat("{a} climbs back on for the third time, jaw set, and this time just refuses to fall off."),
-      by('a', "Not today, bull. Not today."),
+      by('a', "Not this time. Come on."),
       beat('Eight seconds. The cowboy nods. The tip is theirs.'),
     ] },
   ],
@@ -326,34 +326,34 @@ const bull = {
       beat("{a} lies on the hay where the bull threw {a.obj}, staring up at the barn roof."),
       by('a', "How long was that?"),
       by('b', "Two seconds."),
-      by('a', "It felt like a year."),
+      by('a', "It felt like so much longer."),
     ] },
     { id: 'prr.bu-t2', when: BU, turns: [
       by('b', "That's the fifth time. Is your arm okay?"),
-      by('a', "Which one? They both hurt now."),
-      by('b', "The one you hold on with."),
+      by('a', "They both hurt now."),
+      by('b', "Then use the other one."),
     ] },
     { id: 'prr.bu-t3', when: BU, turns: [
       beat("The bull spins left. {a} goes right. The hay gets {a} again."),
-      by('a', "It knows! It knows which way I'm going to lean!"),
-      by('b', "It's a machine! It doesn't know anything!"),
+      by('a', "It keeps going the other way!"),
+      by('b', "Watch it! Lean with it!"),
     ] },
   ],
   'task-done.any': [
     { id: 'prr.bu-dn1', when: BU, turns: [
-      by('a', "I'm a cowboy now. A real one."),
-      by('b', "You're a person who rode a machine for eight seconds."),
-      by('a', "That's what a cowboy is."),
+      by('a', "I rode a bull."),
+      by('b', "A mechanical one."),
+      by('a', "Still counts."),
     ] },
     { id: 'prr.bu-dn2', when: BU, turns: [
       beat("{a} and {b} walk out of the barn, {a} walking a little bowlegged."),
       by('b', "Why are you walking like that?"),
-      by('a', "Don't ask me questions you know the answer to."),
+      by('a', "You know why."),
     ] },
     { id: 'prr.bu-dn3', when: BU, turns: [
-      by('b', "You were so good! Honestly! Like a rodeo star!"),
+      by('b', "You were so good! Honestly!"),
       by('a', "Did the beans stay down?"),
-      by('b', "Every single one. I'm so proud."),
+      by('b', "Every single one."),
     ] },
   ],
   'attempt-fail.any': [
@@ -375,9 +375,9 @@ const bull = {
   ],
   'watching-botch.cheer': [
     { id: 'prr.bu-v1', when: BU, turns: [
-      by('b', "Ride it! Ride it! You're a cowboy! You're the best cowboy!"),
-      by('a', "I'm not a cowboy!"),
-      by('b', "You are right now!"),
+      by('b', "Ride it! Hold on!"),
+      by('a', "I'm trying!"),
+      by('b', "You're doing it!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -398,14 +398,14 @@ const bull = {
     { id: 'prr.bu-v4', when: BU, turns: [
       beat("{b} leans on the rail without a word, chewing on a piece of straw, eyes never leaving {a}."),
       by('a', "Say something!"),
-      by('b', "I'm concentrating for both of us."),
+      by('b', "I'm too nervous."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'prr.bu-h1', when: BU, turns: [
       beat("While the cowboy fiddles with the timer, {b} kicks a big pile of hay right under where {a} keeps landing."),
       by('a', "That landing was much softer."),
-      by('b', "Was it? Strange. Get back on."),
+      by('b', "Was it? Get back on."),
     ] },
   ],
 };

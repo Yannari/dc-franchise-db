@@ -11,25 +11,25 @@ const dance = {
     { id: 'pmp2.tg-s5', when: TG, turns: [
       { beat: '{a} catches sight of the two of them in the wall of mirrors and stops dead.' },
       { by: 'a', say: "Is that what we look like? From the outside?" },
-      { by: 'b', say: "Don't look at the mirror. The mirror is not our friend." },
-      { by: 'a', say: "The mirror is very honest." },
+      { by: 'b', say: "Don't look at the mirror. Look at me." },
+      { by: 'a', say: "We look so stiff." },
     ] },
     { id: 'pmp2.tg-s6', when: TG, turns: [
-      { by: 'b', say: "She says the man leads. Or the tall one. Or whoever wants it more." },
+      { by: 'b', say: "She says one of us leads." },
       { by: 'a', say: "I want it more." },
-      { by: 'b', say: "I want it more than you want it more." },
-      { beat: 'They both try to lead, and walk into each other like two shopping trolleys.' },
+      { by: 'b', say: "No, I want to lead." },
+      { beat: 'They both try to lead, and walk straight into each other.' },
     ] },
     { id: 'pmp2.tg-s7', when: TG, turns: [
       { beat: 'The instructor clicks her fingers for the beat. {a} clicks along, a beat behind.' },
       { by: 'a', say: "Am I on time?" },
-      { by: 'b', say: "You're on time for the next song." },
-      { by: 'a', say: "Then we'll be ready for that one." },
+      { by: 'b', say: "You're a beat late." },
+      { by: 'a', say: "Okay. Okay. Again." },
     ] },
     { id: 'pmp2.tg-s8', when: TG, turns: [
-      { by: 'a', ...V("Chin up. Chest out. Look at me like I owe you money.", "Chin up. Glare at me.", "Chin up.", "Chin UP! Chest OUT! Look at me like I OWE you!", "Chin up, chest out, and look at me like I owe you a little money.", "Look at me like I sold you a broken bicycle.") },
-      { by: 'b', say: "You do owe me money." },
-      { by: 'a', say: "Perfect. Hold that face." },
+      { by: 'a', say: "Chin up. Chest out. Look at me like you mean it." },
+      { by: 'b', say: "Like this?" },
+      { by: 'a', say: "Yes. Hold that face." },
     ] },
   ],
   'task-try.first-try': [
@@ -39,23 +39,23 @@ const dance = {
       { by: 'a', say: "She's clapping. You can come up now." },
     ] },
     { id: 'pmp2.tg-f6', when: TG, turns: [
-      { by: 'a', say: "Pretend we're in an old film. Black and white. Somebody's about to cry." },
-      { beat: 'They dance it like an old film. Somebody, at the back of the hall, actually does cry. The instructor claps.' },
-      { by: 'b', say: "Who's crying? Why is the piano player crying?" },
+      { by: 'a', say: "Pretend we're in an old film. Really dramatic." },
+      { beat: 'They dance it like an old film, slow and dramatic, and the instructor claps.' },
+      { by: 'b', say: "She clapped! She actually clapped!" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'pmp2.tg-a5', when: TG, turns: [
       { by: 'b', say: "Stop watching your feet. Watch my face. My face knows where we're going." },
       { by: 'a', say: "Your face looks terrified." },
-      { by: 'b', say: "Terrified and correct." },
+      { by: 'b', say: "I know where we're going, though." },
       { beat: 'Eyes locked, no looking down, they get through the whole routine, and the instructor finally claps.' },
     ] },
     { id: 'pmp2.tg-a6', when: TG, turns: [
       { beat: 'Between tries, {a} and {b} practise the dip in the corridor, over and over, until a cleaner has to step round them.' },
       { by: 'a', say: "Once more. For real this time." },
       { beat: 'The dip comes down smooth and stops an inch above the boards. The instructor claps twice.' },
-      { by: 'b', say: "Two claps! Is that better than one clap?" },
+      { by: 'b', say: "Two claps!" },
     ] },
   ],
   'task-try.struggling': [
@@ -63,11 +63,11 @@ const dance = {
       { beat: '{a} and {b} are stuck in the close embrace, cheek to cheek, neither of them sure who moves next.' },
       { by: 'a', say: "Are you going?" },
       { by: 'b', say: "I thought you were going." },
-      { by: 'a', say: "We can't just stand here hugging." },
+      { by: 'a', say: "Somebody has to move." },
     ] },
     { id: 'pmp2.tg-t5', when: TG, turns: [
       { by: 'b', say: "She keeps saying a word. What's the word?" },
-      { by: 'a', say: "I think it means 'more'. Or 'stop'. Or 'why'." },
+      { by: 'a', say: "I think it means 'more'." },
       { beat: 'The instructor says the word again, louder, and does a leg flick so sharp the air cracks.' },
     ] },
   ],
@@ -79,25 +79,25 @@ const dance = {
     ] },
     { id: 'pmp2.tg-x5', when: TG, turns: [
       { beat: 'Halfway through the sharp turns, {b} spins the wrong way and ends up dancing with the coat stand.' },
-      { by: 'b', say: "It was right there! It looked like you!" },
-      { by: 'a', say: "Back to the lesson. Leave the coat stand out of it." },
+      { by: 'b', say: "Sorry! I lost you!" },
+      { by: 'a', say: "Back to the lesson." },
     ] },
   ],
   'task-done.any': [
     { id: 'pmp2.tg-dn4', when: TG, turns: [
       { by: 'b', say: "My back's never going to be straight again after that dip." },
       { by: 'a', say: "Good thing we're riding horses next." },
-      { by: 'b', say: "That's not a good thing. That's the opposite." },
+      { by: 'b', say: "That's not going to help my back." },
     ] },
     { id: 'pmp2.tg-dn5', when: TG, turns: [
       { beat: 'On the steps outside, {a} spins {b} once more, for no reason at all.' },
-      { by: 'b', say: "The music stopped ten minutes ago." },
-      { by: 'a', say: "Not for me it didn't." },
+      { by: 'b', say: "The music stopped." },
+      { by: 'a', say: "I don't care. I loved that." },
     ] },
     { id: 'pmp2.tg-dn6', when: TG, turns: [
-      { by: 'a', say: "She clapped. A woman who has never clapped in her life clapped at us." },
+      { by: 'a', say: "She clapped for us." },
       { by: 'b', say: "She clapped at everybody, I think." },
-      { by: 'a', say: "Let me have this." },
+      { by: 'a', say: "Let me enjoy it." },
     ] },
   ],
 };
@@ -106,37 +106,37 @@ const emu = {
   'task-start.any': [
     { id: 'pmp2.em-s5', when: EM, turns: [
       { beat: 'The gaucho hands {a} the boleadoras. Three leather balls clack together on their ropes.' },
-      { by: 'a', say: "It's like a very heavy yo-yo. Three yo-yos. Tied together." },
-      { by: 'b', say: "You were terrible at yo-yos." },
-      { by: 'a', say: "That's why I'm on a horse this time." },
+      { by: 'a', say: "They're so heavy." },
+      { by: 'b', say: "You'll be fine. Just practise once." },
+      { by: 'a', say: "Okay. Okay." },
     ] },
     { id: 'pmp2.em-s6', when: EM, turns: [
       { by: 'b', say: "Which one's ours? They all look the same." },
-      { by: 'a', say: "Ours has a red tag on its neck. And a really bad attitude." },
+      { by: 'a', say: "Ours has a red tag on its neck." },
       { beat: 'The emu with the red tag turns its head and stares at {a} without blinking.' },
       { by: 'b', say: "Yes. That's ours." },
     ] },
     { id: 'pmp2.em-s7', when: EM, turns: [
-      { beat: '{a}\'s horse sets off at a walk, then a trot, then something bouncier that has no name.' },
+      { beat: '{a}\'s horse sets off at a walk, then a trot, then something much bouncier.' },
       { by: 'a', say: "How do I stop it bouncing?" },
-      { by: 'b', say: "Bounce with it! Be one with the bounce!" },
+      { by: 'b', say: "Go with it! Move with it!" },
     ] },
     { id: 'pmp2.em-s8', when: EM, turns: [
       { by: 'a', say: "Swing it over my head. Like a helicopter." },
-      { by: 'b', say: "Not too close to your head. You've only got the one." },
+      { by: 'b', say: "Not too close to your head!" },
       { beat: 'The boleadoras whirl round once, and the horse flattens its ears.' },
     ] },
   ],
   'task-try.first-try': [
     { id: 'pmp2.em-f5', when: EM, turns: [
-      { beat: 'The emu cuts left. {a} cuts left with it, swings once and lets go, and the ropes coil round both its legs like a ribbon on a present.' },
-      { by: 'b', say: "Gift-wrapped! You gift-wrapped an emu!" },
-      { by: 'a', say: "Nobody's ever going to want this present." },
+      { beat: 'The emu cuts left. {a} cuts left with it, swings once and lets go, and the ropes coil round both its legs.' },
+      { by: 'b', say: "You got it! First throw!" },
+      { by: 'a', say: "I can't believe that worked!" },
     ] },
     { id: 'pmp2.em-f6', when: EM, turns: [
       { by: 'a', say: "I'm just going to throw it and hope." },
-      { beat: '{a} throws it and hopes. The boleadoras catch the emu round the legs, and it sits down in the grass, sulking.' },
-      { by: 'b', say: "Hope works! Write that down!" },
+      { beat: '{a} throws. The boleadoras catch the emu round the legs, and it sits down in the grass.' },
+      { by: 'b', say: "It worked!" },
     ] },
   ],
   'task-try.after-fails': [
@@ -150,19 +150,19 @@ const emu = {
       { beat: 'Back at the gaucho for another set of ropes, {a} asks him something. He answers with one word and a flick of the wrist.' },
       { by: 'a', say: "Wrist. He said wrist. It's all in the wrist." },
       { beat: 'One flick of the wrist later, the boleadoras wrap round the emu\'s legs and it stops, stunned.' },
-      { by: 'b', say: "All in the wrist! He could've said that at the start!" },
+      { by: 'b', say: "It worked! It's all in the wrist!" },
     ] },
   ],
   'task-try.struggling': [
     { id: 'pmp2.em-t4', when: EM, turns: [
       { beat: 'The emu has stopped running and started walking in a slow circle round {a}\'s horse, out of throwing range.' },
       { by: 'a', say: "It's circling me. Why is it circling me?" },
-      { by: 'b', say: "It's hunting you now. You've lost control of this." },
+      { by: 'b', say: "It's playing with you. Wait for it." },
     ] },
     { id: 'pmp2.em-t5', when: EM, turns: [
       { by: 'b', ...V("Your swing goes round and round and then just stops. You have to let go!", "You keep forgetting to let go!", "Let go!", "You have to LET GO! LET GO of it!", "You swing it beautifully, but then you forget to let go.", "You're swinging it like you want to keep it.") },
       { by: 'a', say: "I'm scared I'll hit the horse." },
-      { by: 'b', say: "You're going to hit the horse anyway at this rate." },
+      { by: 'b', say: "You won't. Just let go." },
     ] },
   ],
   'attempt-fail.any': [
@@ -174,24 +174,24 @@ const emu = {
     { id: 'pmp2.em-x5', when: EM, turns: [
       { beat: '{a} lets go a moment too early, and the boleadoras fly backwards, straight past {b}\'s fence post.' },
       { by: 'b', say: "That was me! You nearly caught me!" },
-      { by: 'a', say: "Wrong bird. Back to the gaucho." },
+      { by: 'a', say: "Sorry! Back to the gaucho." },
     ] },
   ],
   'task-done.any': [
     { id: 'pmp2.em-dn4', when: EM, turns: [
-      { beat: '{a} slides off the horse and walks over to {b} like a cowboy who has been riding for a month.' },
+      { beat: '{a} slides off the horse and walks over to {b} very stiffly.' },
       { by: 'b', say: "Why are you walking like that?" },
-      { by: 'a', say: "I don't have a choice anymore." },
+      { by: 'a', say: "My legs are so sore." },
     ] },
     { id: 'pmp2.em-dn5', when: EM, turns: [
-      { by: 'a', say: "We should give it a name. We're going to be walking together a while." },
-      { by: 'b', say: "Something strong. Something proud." },
-      { by: 'a', say: "Mister Legs." },
+      { by: 'a', say: "Come on. We have to walk it all the way." },
+      { by: 'b', say: "Okay. Slowly." },
+      { by: 'a', say: "Easy. Easy." },
     ] },
     { id: 'pmp2.em-dn6', when: EM, turns: [
       { beat: 'The gaucho unwraps the emu\'s legs, hands {a} the lead, and tips his hat.' },
-      { by: 'b', say: "He tipped his hat! That's like a medal, out here!" },
-      { by: 'a', say: "I'm keeping the hat-tip forever. I'm framing it." },
+      { by: 'b', say: "He tipped his hat at you!" },
+      { by: 'a', say: "That made my day." },
     ] },
   ],
 };

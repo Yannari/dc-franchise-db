@@ -17,14 +17,14 @@ export default {
     ] },
     { id: 'pr.st.po2', when: at('beans', 'the-pot'), turns: [
       by('a', "The tip's at the bottom. Taped to the pot."),
-      by('b', "So we just keep eating till we hit metal."),
+      by('b', "So we just keep eating till we get to it."),
       beat('They pick up a spoon each and look at each other.'),
       by('a', "Okay. Go."),
     ] },
     { id: 'pr.st.fh1', when: at('beans', 'first-half'), turns: [
       beat('The first few spoonfuls go down fast. The beans are warm and sweet and honestly not bad.'),
       by('b', "These are actually good."),
-      by('a', "Don't say that. Ask me again in ten minutes."),
+      by('a', "Ask me again in ten minutes."),
     ] },
     { id: 'pr.st.fh2', when: at('beans', 'first-half'), turns: [
       by('a', "Same pace. Spoon, swallow, spoon."),
@@ -53,12 +53,12 @@ export default {
     ] },
     { id: 'pr.st.tp1', when: at('beans', 'beans-tip'), turns: [
       beat('The cook tips the pot towards the light, nods, and lets {a} peel the tip off the bottom.'),
-      by('a', "\"Ride the mechanical bull in the barn.\" Oh no. Not after all that."),
+      by('a', "It says ride the mechanical bull in the barn. Oh no. Not after all that."),
       by('b', "Not me. You're riding it. I'm full."),
     ] },
     { id: 'pr.st.tp2', when: at('beans', 'beans-tip'), turns: [
       by('b', "We did it. We ate a whole pot of beans."),
-      by('a', "Please don't make me laugh. I'll explode."),
+      by('a', "Please don't make me laugh."),
       beat('They walk very carefully towards the barn.'),
     ] },
 
@@ -67,7 +67,7 @@ export default {
       beat('In the barn, a mechanical bull stands on a pile of hay, and a cowboy waits at the controls with a hand on the lever.'),
       by('b', "One hand on the rope. Hold on with your legs."),
       by('a', "How do you know that?"),
-      by('b', "I watch a lot of TV."),
+      by('b', "I've seen it on TV."),
     ] },
     { id: 'pr.st.su2', when: at('bull', 'saddle-up'), turns: [
       by('a', "Okay. I'm on. I'm on the bull."),
@@ -102,7 +102,7 @@ export default {
     { id: 'pr.st.es2', when: at('bull', 'eight-seconds'), turns: [
       by('b', "You did it! Get off, get off! Here's the tip!"),
       beat('{a} slides off the bull and lands in the hay, and stays there for a second.'),
-      by('a', "Give me a second. I can still feel the beans."),
+      by('a', "Give me a second. I feel sick."),
     ] },
   ],
 
@@ -115,7 +115,7 @@ export default {
     ] },
     { id: 'pr.sf.fh2', when: at('beans', 'first-half'), turns: [
       by('a', "Why is it full again? We just ate all that."),
-      by('b', "Because of me. Sorry. They came back."),
+      by('b', "Because of me. Sorry."),
       beat('The cook pours another ladle of beans into the pot, and they start again.'),
     ] },
     { id: 'pr.sf.bw1', when: at('beans', 'bean-wall'), turns: [
@@ -126,7 +126,7 @@ export default {
     { id: 'pr.sf.bw2', when: at('beans', 'bean-wall'), turns: [
       by('b', "I can't. I literally can't fit any more in."),
       by('a', "You have to. Just one more spoon."),
-      beat('One more spoon is one too many. The pot gets topped up again.'),
+      beat('One more spoon is too many, and the pot gets topped up again.'),
     ] },
     { id: 'pr.sf.bt1', when: at('beans', 'the-bottom'), turns: [
       beat('They hand the pot to the cook. The cook looks in it, points at a few beans stuck to the side, and hands it back.'),
@@ -136,19 +136,19 @@ export default {
     { id: 'pr.sf.bt2', when: at('beans', 'the-bottom'), turns: [
       by('a', "Done! It's empty!"),
       beat('The cook tips the pot, and a puddle of bean sauce slides out of the corner.'),
-      by('b', "The sauce counts? The sauce counts."),
+      by('b', "The sauce counts too? Okay."),
     ] },
 
     // ── the bull ──
     { id: 'pr.sf.su1', when: at('bull', 'saddle-up'), turns: [
       beat('{a} swings a leg over the bull, misses, and slides straight off the other side into the hay.'),
       by('b', "It's not even moving yet!"),
-      by('a', "I know! It's slippery!"),
+      by('a', "I know! I slipped!"),
     ] },
     { id: 'pr.sf.su2', when: at('bull', 'saddle-up'), turns: [
       by('b', "Why are you sitting backwards?"),
       beat('{a} looks down, realises {a.sub} is facing the bull\'s tail, and has to climb off and get on again.'),
-      by('a', "Don't tell anyone."),
+      by('a', "Okay. Don't laugh."),
     ] },
     { id: 'pr.sf.ss1', when: at('bull', 'slow-start'), turns: [
       beat('The bull rocks forward once, very gently, and {a} falls off sideways.'),

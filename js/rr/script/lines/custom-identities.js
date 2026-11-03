@@ -74,7 +74,7 @@ export const INTROS = {
         say('b', "So we're here to show them."),
         say('a', "We're going to go a long way. Watch.")),
       intro('family-watching', "Meet {a} and {b}, the {identity}!",
-        say('a', "Everybody we know is watching this. Everybody."),
+        say('a', "Everybody we know is going to watch this. Everybody."),
         say('b', "No pressure, then."),
         say('a', "No pressure at all. Just don't embarrass us.")),
       intro('money', "And next, the {identity}, {a} and {b}.",

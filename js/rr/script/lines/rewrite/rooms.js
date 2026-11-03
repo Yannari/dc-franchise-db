@@ -74,8 +74,8 @@ export default {
         { by: 'c', say: "There's not much to know. I work, I go home, I watch TV with my cat." },
         { by: 'b', say: "What's your cat's name?" },
         { by: 'c', say: "Pumpkin. She's orange." },
-        { by: 'd', say: "Okay, now you have to show us pictures." },
-        { beat: 'For the rest of the flight, they show each other pictures of their pets.' },
+        { by: 'd', say: "Okay, now you have to tell us everything about Pumpkin." },
+        { beat: 'For the rest of the flight, they talk about nothing but their pets.' },
       ] },
       { id: 'rm.ps2', turns: [
         { by: 'b', say: "Can I ask you something? Why did you sign up for this?" },
@@ -386,8 +386,8 @@ export default {
       { id: 'rm.ma1', turns: [
         { beat: '{a} and {b} stagger onto the mat, and the teams already there start clapping.' },
         { by: 'a', say: "Why is everybody clapping? Are they clapping for us?" },
-        { by: 'c', say: "You helped {b} the whole last part. Everybody saw." },
-        { by: 'b', say: "My ankle went. {a} wouldn't leave me." },
+        { by: 'c', say: "You never gave up, the whole last part. Everybody saw." },
+        { by: 'b', say: "We nearly did. {a} wouldn't let us." },
         { by: 'd', say: "That's why we're clapping." },
         { beat: '{a} goes red and sits down quickly.' },
       ] },

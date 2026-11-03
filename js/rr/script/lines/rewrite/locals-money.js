@@ -74,7 +74,7 @@ export default {
         { by: 'a', say: "It's beautiful. It's also not where we're going." },
         L("Five minutes. You will thank me."),
         { by: 'b', say: "We really don't have five minutes." },
-        { beat: 'It takes twenty minutes. {a} takes a photo anyway.' },
+        { beat: 'It takes twenty minutes. {a} can\'t stop staring at it anyway.' },
         { by: 'a', say: "Okay, it was a really good view." },
       ] },
       { id: 'lm.ds2', turns: [
@@ -305,10 +305,10 @@ export default {
       ] },
       // (only where there is something sacred: it aired at a harbour statue and a fjord, 2026-10-23)
       { id: 'lm.lb2', when: { sacred: true }, turns: [
-        L("Please. No photos inside. It's sacred."),
-        { by: 'a', say: "Of course. No photos." },
-        { beat: '{a} takes a photo anyway. The flash goes off.' },
-        { by: 'b', say: "Oh my God. You had the flash on!" },
+        L("Please. Quiet inside. It's sacred."),
+        { by: 'a', say: "Of course. Quiet." },
+        { beat: '{a} trips on the step, and the clatter echoes all round the hall.' },
+        { by: 'b', say: "Oh my God. Could you be any louder?" },
         L("Please leave. Now."),
         { by: 'a', say: "I'm so sorry. I'm so sorry. We're going." },
       ] },
@@ -468,7 +468,7 @@ export default {
       ] },
       { id: 'lm.bc2', turns: [
         { by: 'b', say: "Could you spare some change? We're in a race." },
-        L("I've seen you on TV. You're the ones who pushed that other team."),
+        L("I saw you earlier. You're the ones who pushed that other team."),
         { by: 'a', say: "That wasn't us. That was a different team." },
         L("It was you. Go away."),
         { beat: 'They walk away fast.' },

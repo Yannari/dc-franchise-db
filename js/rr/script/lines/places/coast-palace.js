@@ -386,9 +386,9 @@ const palace = {
   ],
   'task-done.any': [
     { id: 'cpl.sp-dn1', when: SP, turns: [
-      by('a', "Can we take a picture of it before we go? It's the best thing I've ever made."),
+      by('a', "Can we look at it one more time before we go? It's the best thing I've ever made."),
       by('b', "Quickly. Then run."),
-      beat('{a} takes one photo, then another, and {b} pulls {a.obj} away by the arm.'),
+      beat('{a} looks at it for one second, then another, and {b} pulls {a.obj} away by the arm.'),
     ] },
     { id: 'cpl.sp-dn2', when: SP, turns: [
       beat('As they run for the harbour, a wave comes up and takes the front of their sand palace.'),

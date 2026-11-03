@@ -19,7 +19,7 @@ export default {
         { beat: 'He fixes his hair. The wind unfixes it.' },
         { by: 'don', say: "Once they land, teams must make their way across the city and find their next tip." },
         { by: 'don', say: "And as always, the last team to reach the Chill Zone may be eliminated." },
-        { by: 'don', say: "Fingers crossed it's somebody annoying!" },
+        { by: 'don', say: "Let's find out who!" },
       ] },
       { id: 'dr.oa2', turns: [
         { by: 'don', say: "Welcome to {place}! Home of history, culture, and a hotel that lost my luggage." },
@@ -31,7 +31,7 @@ export default {
       ] },
       { id: 'dr.oa3', turns: [
         { beat: 'Don steps out of a car into the sunshine and lowers his sunglasses.' },
-        { by: 'don', say: "{place}! Home of incredible food, beautiful scenery, and the sun, which keeps trying to ruin my tan." },
+        { by: 'don', say: "{place}! Home of incredible food, beautiful scenery, and a very, very hot sun!" },
         { by: 'don', say: "It's an even tan. It took months. The sun doesn't care." },
         { beat: 'He puts the sunglasses back on, very slowly.' },
         { by: 'don', say: "The teams are on their way. Somewhere out there, a tip is waiting for them." },
@@ -177,7 +177,7 @@ export default {
       { id: 'dr.reg1', turns: [
         { beat: 'Don taps the Don Box.' },
         { by: 'don', say: "New rule on this leg, teams. Read your tip, and then read it again." },
-        { by: 'don', say: "There's a twist out there today, and it's not on my side or yours. It's on the side of television." },
+        { by: 'don', say: "There's a twist out there today, and it's written on your tip." },
         { by: 'don', say: "That's all I'm saying." },
         { beat: 'He mimes zipping his lips, then unzips them straight away.' },
         { by: 'don', say: "Okay, one more thing. Good luck. You'll need it." },

@@ -88,7 +88,7 @@ export default {
       { id: 'bt.pl-any2', turns: [
         { by: 'a', say: "Us and you. An alliance. Think about it." },
         { by: 'd', say: "We thought about it." },
-        { by: 'c', say: "And then we remembered you're the team that keeps coming last." },
+        { by: 'c', say: "And then we remembered we've seen you read a map." },
         { by: 'b', say: "Wow. That's harsh." },
         { by: 'd', say: "Sorry. It's true, though." },
         { beat: '{c} and {d} walk away.' },

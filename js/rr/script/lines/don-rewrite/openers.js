@@ -115,7 +115,7 @@ export default {
   'bdl.op2:0': "Welcome to the Badlands, which looks like another planet, scorching in the day, freezing at night, and full of bones.",
   'bdl.op2:1': "Racers, the pickups are at the gate, so drive out into the hoodoos, those rock towers over there!",
   'dr.oa2:5': "Good news, everybody: they found my luggage, and it's in a completely different country. Let's race!",
-  'dr.oa3:2': "It's an even tan that took me months, and the sun doesn't care about any of that.",
+  'dr.oa3:2': "So grab some water, racers, because you're going to need it!",
   'dr.oa5:2': "It's home of beautiful streets, amazing food, and so many pigeons, and please tell me, is it still on me?",
   'rsd.op3:1': "Welcome to the Red Sand Desert, where it's hot in the day, cold at night, and sandy the whole time.",
   'rsd.op3:2': "Today there are spices, camels and a stew, and the teams will find out why soon enough!",

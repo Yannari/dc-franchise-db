@@ -163,7 +163,16 @@ export default {
         { by: 'b', say: "This is their wedding dance. You just told a whole family to hurry up their wedding dance." },
         { beat: 'It takes ten minutes of apologising before the drum starts again.' },
       ] },
-      { id: 'pr.cd2', turns: [
+      // (a sacred table is only where the leg has a sacred site: rr-sacred-setting caught it at the fishing cove)
+      { id: 'pr.cd3', turns: [
+        { by: 'a', say: "Is it just me, or is everybody staring at me?" },
+        { by: 'b', say: "You laughed during the quiet part." },
+        { by: 'a', say: "There was a quiet part?" },
+        { by: 'b', say: "There was a very quiet part, and you laughed right in the middle of it." },
+        { beat: 'An old man shakes his head at {a}, slowly.' },
+        { by: 'a', say: "I'm going to apologise. I'm going to apologise to everybody." },
+      ] },
+      { id: 'pr.cd2', when: { sacred: true }, turns: [
         { by: 'a', say: "Why are they all looking at me?" },
         { by: 'b', ...V("Because you put your feet up on the table. Their sacred table.", "Your feet. On their sacred table.", "Feet. Sacred table.", "Because you put your FEET up on the TABLE! Their SACRED table!", "Because you just put your feet up on their sacred table.", "Because your feet are resting on several centuries of tradition.") },
         { by: 'a', say: "How was I supposed to know it was sacred? It looks like a table." },

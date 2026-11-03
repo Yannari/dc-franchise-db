@@ -39,14 +39,22 @@ export { teamRef };
 const REL_TAG = { cousins: 'cousins', married: 'married couple', dating: 'couple', 'newly-dating': 'brand-new couple',
   'on-off': 'on-again, off-again couple', exes: 'exes', 'once-engaged': 'former fiancés', bffs: 'best friends',
   coworkers: 'coworkers', roommates: 'roommates', rivals: 'rivals', enemies: 'sworn enemies', 'reality-vets': 'reality TV veterans',
-  // both look like best friends from outside, and a one-sided team is introduced the way the fooled one would put it
-  frenemies: 'best friends', 'one-sided': 'best friends' };
+  // frenemies look like best friends from outside
+  frenemies: 'best friends' };
 const he = n => pronouns(n)?.sub;
 function relTag(t) {
   const [x, y] = [t.a, t.b];
   if (t.rel === 'siblings') {
     const g = [he(x), he(y)];
-    return g.every(s => s === 'he') ? 'brothers' : g.every(s => s === 'she') ? 'sisters' : g.includes('he') && g.includes('she') ? 'brother and sister' : 'siblings';
+    // (twins on the roster: "twin sisters")
+    const tw = t.history?.kin === 'twins' ? 'twin ' : '';
+    return g.every(s => s === 'he') ? `${tw}brothers` : g.every(s => s === 'she') ? `${tw}sisters` : g.includes('he') && g.includes('she') ? (tw ? 'twins' : 'brother and sister') : (tw ? 'twins' : 'siblings');
+  }
+  // an aunt or uncle and a nephew or niece: who is which from the roster's tie (team.elder), else the ages
+  if (t.rel === 'aunt-uncle') {
+    const old = elderOf(t) || x, kid = old === x ? y : x;
+    const a = { he: 'uncle', she: 'aunt' }[he(old)], b = { he: 'nephew', she: 'niece' }[he(kid)];
+    return a && b ? `${a} and ${b}` : 'aunt or uncle and nephew or niece';
   }
   if (t.rel === 'parent-child' || t.rel === 'grandparent-grandchild') {
     const old = elderOf(t) || x, kid = old === x ? y : x;
@@ -62,6 +70,12 @@ function relTag(t) {
 const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
   'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets', frenemies: 'best friends, supposedly' };
 export function relLabel(t) {
+  const base = relLabelOf(t);
+  // Don introduces a team that's bitter on both sides as what they are, and says so (a one-sided team looks warm: he
+  // doesn't know). The feeling they walked in with (season.js feel0), whatever the race made of it since.
+  return (t?.feel0 || t?.feel) === 'strained' ? `${base}, and it's complicated` : base;
+}
+function relLabelOf(t) {
   // what their history made them (rr-run.js raceHistoryRel): an engagement, or a bond from another show
   if (t?.history?.engaged) return 'an engaged couple';
   if (t?.history?.from === 'ledger' && t.rel === 'exes') return 'exes, since their last show together';

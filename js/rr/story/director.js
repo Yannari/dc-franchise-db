@@ -31,6 +31,8 @@ export const MUST = new Set(['proposal', 'winner-words', 'don-signoff', 'don-ope
   'boomerang-reveal', 'head-to-head',
   'speed-bump', 'surrender', 'reward', 'call-home', 'int-exit', 'console', 'goodbye-kiss', 'int-bleachers',
   'confession', 'breakup', 'back-together', 'alliance-betrayal', 'deal-broken', 'leader-shift', 'quit-task', 'snap',
+  // the turns of a relationship's own story (scenes/frenemies.js): a secret out, a peace made, an act dropped
+  'finds-out', 'clear-the-air', 'frenemy-turn',
   'push', 'ram', 'steal', 'kidnap-pet', 'course-sabotage', 'fake-shortcut', 'mind-game', 'admin-sabotage', 'revenge',
   'comeuppance', 'save-your-enemy', 'rescue',
   // a Superteam's teams put together: the challenge's own story (a formed group that never airs is a system with no screen)
@@ -73,6 +75,11 @@ const teamOf = (st, n) => Object.keys(st.teams).find(id => st.teams[id].a === n 
 
 // what a confessional about a moment adds to its claim on the airtime (about two small bond moves)
 const IV_BONUS = 2;
+// the everyday moments of a team's own relationship story (frenemies, one-sided, strained; scenes/frenemies.js): what
+// they move is small (a smile held, a dig), but it's the story the season set up, and it played 15-17 times in eight
+// seasons and aired once (measured 2026-11-02)
+const STORY_KINDS = new Set(['gush', 'cold-shoulder', 'quiet-sabotage', 'dig', 'keep-score', 'sore-spot']);
+const STORY_BONUS = 1.5;
 // a fair share (ten teams or fewer): what a moment gains for each moment its least-seen team is behind the average, and
 // for being between two teams
 const FAIR = 0.35;
@@ -325,6 +332,13 @@ function cutByChallenge(segs, leg) {
     // (its arrival at the challenge, the clue at the checkpoint, stays where it got there, with the teams there with it)
     else if (Number.isFinite(opens) && x.t > opens && !aboutOf(x) && !CHECKPOINT.has(x.kind)) part.set(x, M + 1);
   }
+  // (a moment shared with such a team, after the team's own moments went in with the check-ins, goes with them: a clue
+  // montage of two teams aired before the challenge one of them was still doing, 2026-11-02)
+  if (road.size) {
+    const movedAt = new Map();
+    for (const x of segs) if (part.get(x) === M + 1) for (const id of x.teams) if (road.has(id)) movedAt.set(id, Math.min(movedAt.get(id) ?? Infinity, x.t));
+    for (const x of segs) if (part.get(x) < M + 1 && !aboutOf(x) && x.teams.some(id => x.t > (movedAt.get(id) ?? Infinity))) part.set(x, M + 1);
+  }
   for (const x of segs) { const a = aboutOf(x); if (a) part.set(x, part.get(a)); }
   // (a stable sort: within a part the clock order stands)
   const idx = new Map(segs.map((x, i) => [x, i]));
@@ -546,7 +560,7 @@ export function airLeg(state, leg) {
   // a moment somebody talks about to camera is worth its airtime: without this, the moments that had a confessional
   // were the ones cut, and a leg could air none (read 2026-10-19: four interviews played, none aired)
   const talkedAbout = new Set(scenes.filter(s => s.kind.startsWith('int-') && s.data?.about != null).map(s => s.data.about));
-  const airWeight = s => weight(s) + (talkedAbout.has(s.id) ? IV_BONUS : 0);
+  const airWeight = s => weight(s) + (talkedAbout.has(s.id) ? IV_BONUS : 0) + (STORY_KINDS.has(s.kind) ? STORY_BONUS : 0);
   // ten teams or fewer: a fair share (2026-10-21, the user: "every teams should get some focus ... maybe more inter team
   // interactions"). Each spare moment goes to the strongest one left, raised for every moment the least-seen team in it
   // is behind the field's average, and raised again when it is between two teams
@@ -915,12 +929,34 @@ export function airLeg(state, leg) {
     const airedIds = new Set(segs.filter(x => x.lines && typeof x.scene === 'number').map(x => x.scene));
     const cands = scenes.filter(x => isIv(x.kind) && airedIds.has(x.data?.about) && !airedIds.has(x.id) && canVoice(state, x))
       .sort((x, y) => airWeight(byId.get(y.data.about)) - airWeight(byId.get(x.data.about)) || x.id - y.id);
+    let placed = false;
     for (const iv of cands) {
       const w = writeScene(state, iv);
       if (!w?.lines?.length) continue;
       const about = segs.find(x => x.scene === iv.data.about);
       segs.splice(segs.indexOf(about) + 1, 0, { scene: iv.id, kind: iv.kind, ending: iv.data?.ending ?? null, stretch: iv.data?.stretch ?? null,
         t: about.t, teams: iv.data?.team ? [iv.data.team] : about.teams.slice(0, 1), who: [...iv.who], side: null, tier: 2, lines: w.lines, lineId: w.lineId || null });
+      placed = true;
+      break;
+    }
+    // ...and when none of the moments the leg's interviews are about aired, the best of them airs with its interview,
+    // after that team's last moment before it (found 2026-11-02: 8 teams, seed 4, leg 4 played three and aired none)
+    const one = (x, w) => ({ scene: x.id, kind: x.kind, ending: x.data?.ending ?? null, stretch: x.data?.stretch ?? null, t: x.data?.t ?? 0,
+      teams: x.data?.team ? [x.data.team, ...(x.data.other ? [x.data.other] : [])] : [], who: [...x.who], side: null, tier: 2, lines: w.lines, lineId: w.lineId || null });
+    const loose = placed ? [] : scenes.filter(x => isIv(x.kind) && byId.get(x.data?.about) && !airedIds.has(x.data.about) && canVoice(state, x)
+      && !CLASH_KINDS.has(byId.get(x.data.about).kind))
+      .sort((x, y) => airWeight(byId.get(y.data.about)) - airWeight(byId.get(x.data.about)) || x.id - y.id);
+    for (const iv of loose) {
+      const about = byId.get(iv.data.about);
+      const wa = writeScene(state, about), wi = writeScene(state, iv);
+      if (!wa?.lines?.length || !wi?.lines?.length) continue;
+      const seg = one(about, wa);
+      // (that team's own story stays in clock order: it goes after the last of its moments that came before it)
+      let at = -1;
+      segs.forEach((x, k) => { if (x.teams[0] === seg.teams[0] && x.t != null && x.t <= seg.t) at = k; });
+      if (at < 0) at = segs.findIndex(x => x.t != null && x.t > seg.t) - 1;
+      const ivSeg = { ...one(iv, wi), t: seg.t, teams: seg.teams.slice(0, 1) };
+      segs.splice(Math.max(0, at + 1), 0, seg, ivSeg);
       break;
     }
   }

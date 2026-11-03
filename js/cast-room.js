@@ -484,7 +484,9 @@ function _raceTeamPanel(a, b) {
   return `<div class="cr-race-team" data-a="${esc(a.name)}" data-b="${esc(b.name)}" onclick="event.stopPropagation()" ondragstart="event.stopPropagation()">
     <select class="cr-rt" data-f="rrRel" onchange="crRaceTeam(this)" title="What the two of them are to each other. Family teams never have a romance.">
       <option value="">${(() => { const d = window.raceDefaultRel?.(a.name, b.name); return d ? `Relationship: ${esc(d.label.toLowerCase())}${d.from ? ` (from their ${d.from === 'family' ? 'family' : d.from === 'life' ? 'life' : 'past seasons'})` : ' (the default)'}` : 'Relationship: from their history'; })()}</option>${opt(o.rels, v('rrRel'))}</select>
-    ${v('rrRel') === 'one-sided' ? `<select class="cr-rt" data-f="rrResents" onchange="crRaceTeam(this)" title="The one who can't stand the other. The other thinks they're best friends, until they find out.">
+    <select class="cr-rt" data-f="rrFeel" onchange="crRaceTeam(this)" title="How the two of them feel about what they are: any relationship can be bitter on both sides, or on one side only.">
+      <option value="">${(() => { const d = window.raceDefaultRel?.(a.name, b.name); return `Feeling: ${esc((d?.feelLabel || 'Warm').toLowerCase())}${d?.feel && d.feel !== 'warm' && d.from ? ' (from their ties)' : ' (the default)'}`; })()}</option>${opt(o.feels || [], v('rrFeel'))}</select>
+    ${v('rrFeel') === 'one-sided' || v('rrRel') === 'one-sided' ? `<select class="cr-rt" data-f="rrResents" onchange="crRaceTeam(this)" title="The one who can't stand the other. The other has no idea, until they find out.">
       <option value="">Who resents the other: let the race decide</option>${[a, b].map(p => `<option value="${esc(p.name)}"${v('rrResents') === p.name ? ' selected' : ''}>${esc(p.name)} resents ${esc((p === a ? b : a).name)}</option>`).join('')}</select>` : ''}
     <select class="cr-rt" data-f="rrIdentity" onchange="crRaceTeam(this)" title="The kind of team they race as. It shapes what they're good at and how they talk. Two teams can't share one.">
       <option value="">No identity: named after the two of them</option>${opt(o.ids, v('rrIdentity'))}
@@ -536,6 +538,7 @@ export async function crRaceFillLines(btn) {
   const idId = v('rrIdentity');
   const team = {
     rel, relLabel: (o.rels || []).find(x => x.id === rel)?.label || rel, resents: v('rrResents') || null,
+    feel: v('rrFeel') || window.raceDefaultRel?.(a.name, b.name)?.feel || 'warm',
     identity: idId === 'custom' ? v('rrCustomName') : (o.ids || []).find(x => x.id === idId)?.label || '',
     teamName: v('rrTeamName'),
   };
@@ -575,7 +578,7 @@ export function crRaceTeam(el) {
   if (p) window.raceSetTeam?.(p, p === box.dataset.a ? box.dataset.b : box.dataset.a, el.dataset.f, el.value);
   else window.raceSetTeam?.(box.dataset.a, box.dataset.b, el.dataset.f, el.value);
   saveCast();
-  if (el.dataset.f === 'rrIdentity' || el.dataset.f === 'rrRel') crRenderGrid();
+  if (['rrIdentity', 'rrRel', 'rrFeel'].includes(el.dataset.f)) crRenderGrid();
 }
 
 function _pairsBodyHTML(shown) {

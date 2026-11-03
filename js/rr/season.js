@@ -12,7 +12,7 @@
 import { setGs } from '../core.js';
 import { addBond, setBond, getBond } from '../bonds.js';
 import { streamFor } from '../dr/rng.js';
-import { newState, addTeams, teamOf, REL, S, mayScheme } from './state.js';
+import { newState, addTeams, teamOf, REL, FEEL, feelOf, S, mayScheme } from './state.js';
 import { buildSchedule } from './schedule.js';
 import { drawRoute } from './route.js';
 import { PLACES } from './places.js';
@@ -29,13 +29,17 @@ export function resenterOf(t) {
   return score(t.b) > score(t.a) ? t.b : t.a;
 }
 
-/** What the two of each team already are to each other, before the race changes it (state.js REL start). */
+/** What the two of each team already are to each other, and how they feel about it, before the race changes it
+ *  (state.js REL start, FEEL shift). */
 export function walkIn(state) {
   for (const t of Object.values(state.teams)) {
     // (set, not added: addBond scales by temperament and archetype, and this is a starting point, not a moment)
-    if (REL[t.rel]?.start) setBond(t.a, t.b, getBond(t.a, t.b) + REL[t.rel].start);
+    const start = (REL[t.rel]?.start || 0) + FEEL[feelOf(t)].shift;
+    if (start) setBond(t.a, t.b, getBond(t.a, t.b) + start);
     // a one-sided team names who resents whom (the Pairs view); unnamed, it's the colder, sharper of the two
-    if (t.rel === 'one-sided' && ![t.a, t.b].includes(t.resents)) t.resents = resenterOf(t);
+    if (feelOf(t) === 'one-sided' && ![t.a, t.b].includes(t.resents)) t.resents = resenterOf(t);
+    // how they walked in, for what is written about the start once the race has changed it
+    t.feel0 = feelOf(t);
   }
 }
 

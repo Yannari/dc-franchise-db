@@ -72,9 +72,15 @@ export function buildRaceWiki(s, { face = () => '', seasonRow = null } = {}) {
 
   // ── when and how each team left ──
   const exitOf = new Map();
+  // every time a team left, by leg: a team sent home can come back (in for a medevaced team) and leave again, and the
+  // race summary marks both legs (exitOf keeps the last, which is how they left the race)
+  const exitsOf = new Map();
   for (const h of legs) for (const x of h.exits || []) {
     const t = x.team || teams.find(tt => tt.members.includes(x.name))?.team;
-    if (t) exitOf.set(t, { leg: h.leg, channel: x.channel, verb: x.verb, isFinal: !!h.isFinal });
+    if (!t) continue;
+    const e = { leg: h.leg, channel: x.channel, verb: x.verb, isFinal: !!h.isFinal };
+    exitOf.set(t, e);
+    (exitsOf.get(t) || exitsOf.set(t, []).get(t)).push(e);
   }
   const winners = teams.find(t => t.status === 'Winner') || null;
   const finalOrder = s.final?.order || [];
@@ -146,8 +152,8 @@ export function buildRaceWiki(s, { face = () => '', seasonRow = null } = {}) {
   };
   const summary = `<div class="wk-scroll"><table class="rrw-grid"><thead><tr><th class="rrw-team">Team</th>${legs.map(h =>
     `<th title="${esc(h.place || '')}">${h.isFinal ? 'Final' : h.leg}</th>`).join('')}</tr></thead><tbody>${teams.map(t => {
-    const out = exitOf.get(t.team);
     return `<tr><td class="rrw-team">${esc(t.team)}<small>${esc(andList(t.members))}</small></td>${legs.map(h => {
+      const out = (exitsOf.get(t.team) || []).find(e => e.leg === h.leg) || null;
       const o = h.order?.find(x => x.team === t.team);
       if (!o && out && out.leg === h.leg) return `<td data-team="${esc(t.team)}" data-leg="${h.leg}" class="rrw-out" title="${esc(resultOf(t))}"><span class="rrw-p">${t.placement || '✕'}</span></td>`;
       if (!o) return `<td data-team="${esc(t.team)}" data-leg="${h.leg}" class="rrw-gone"></td>`;

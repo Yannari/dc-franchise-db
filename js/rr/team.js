@@ -6,7 +6,7 @@
 // come from"): under pressure a volatile partner snaps, the bond drops, and every
 // task that needs both of them is slower (skill.js teamwork ×0.92) until they make
 // up. Exes snap fastest (state.js REL), a grandparent swallows it for the grandchild.
-import { REL, S } from './state.js';
+import { REL, FEEL, feelOf, S } from './state.js';
 import { getBond } from '../bonds.js';
 import { playScene, interviewAfter } from './scenes.js';
 import { advanceThreads } from './threads.js';
@@ -29,7 +29,7 @@ export function snapCheck(state, id, rng, at = {}) {
   const t = state.teams[id];
   const stress = Math.max(state.mind[t.a].stress, state.mind[t.b].stress);
   const hot = S(t.a, 'temperament') <= S(t.b, 'temperament') ? t.a : t.b;
-  const p = (stress / 100) * ((10 - S(hot, 'temperament')) / 10) * (REL[t.rel]?.snap ?? 1) * 0.15;
+  const p = (stress / 100) * ((10 - S(hot, 'temperament')) / 10) * (REL[t.rel]?.snap ?? 1) * FEEL[feelOf(t)].snap * 0.15;
   if (rng() >= p) return null;
   const other = hot === t.a ? t.b : t.a;
   return withInterview(state, playScene({ state, team: { id }, moment: 'snap', people: [hot, other], ...at }, 'snap', rng), rng);

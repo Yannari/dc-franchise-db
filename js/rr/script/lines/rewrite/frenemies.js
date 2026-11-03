@@ -2,10 +2,14 @@
 //   dig            a says something nice with an edge in it; b lets it go, gives it back, or laughs
 //   keep-score     a challenge is done; a takes the credit, shares it, or keeps the tally
 //   frenemy-turn   the act stops: they're real friends now, or they never were
+//   (one-sided and strained are how a team feels, on ANY relationship: a line here fits a father and daughter, a
+//   married couple and two friends alike, or gates on relFam)
 //   gush           a (who has no idea) says what this means to them; b (who resents a) smiles through it
 //   cold-shoulder  a resents b and lets a little of it show; b has no idea
 //   quiet-sabotage a resents b and does something about it; b has no idea
 //   finds-out      a (who had no idea) sees it; b is the one who resented a
+//   sore-spot      strained: a brings up what's between them; it freezes, reopens, or a reaches out (taken or not)
+//   clear-the-air  strained, and enough has gone right: a starts it; they make their peace, or nearly
 // A general line here plays at a challenge, on the road and on the mat, so it names no place and no object.
 const keys = () => [];
 
@@ -303,7 +307,7 @@ export default {
         { by: 'a', say: "You're the best, you know that?" },
         { by: 'b', say: "You're the best." },
         { beat: '{a} hugs {b}. {b} pats {a.posAdj} back twice and lets go.' },
-        { by: 'a', conf: "{b} is my best friend in the whole world. We're basically the same person." },
+        { by: 'a', conf: "{b} is my favourite person in the whole world. We're basically the same person." },
         { by: 'b', conf: "We are not the same person. I'd know." },
         { by: 'a', say: "Come on, partner. Let's go win this." },
       ] },
@@ -326,7 +330,7 @@ export default {
       { id: 'os.gs5', when: { at: 'mat' }, turns: [
         { by: 'a', say: "We did it! I told you we'd do it!" },
         { by: 'b', say: "You did tell me." },
-        { by: 'a', say: "Best team in the race. Best friends in the race." },
+        { by: 'a', say: "Best team in the race. And the best partner in the race." },
         { by: 'b', conf: "One of those is true. I'll let you work out which one." },
         { by: 'a', say: "What are you smiling about?" },
         { by: 'b', say: "Just happy for us." },
@@ -341,7 +345,7 @@ export default {
         { by: 'b', conf: "A whole month alone with {a}. I'd rather lose." },
         { by: 'a', say: "I'm going to start planning it tonight." },
       ] },
-      { id: 'os.gb2', turns: [
+      { id: 'os.gb2', when: { relFam: 'friends' }, turns: [
         { by: 'a', say: "After this, we should move in together." },
         { by: 'b', say: "We should talk about that later." },
         { by: 'a', say: "Why later? It's perfect. We're perfect together." },
@@ -611,7 +615,7 @@ export default {
         { by: 'b', say: "Honestly? No. Not for a long time." },
         { by: 'a', say: "How long?" },
         { by: 'b', say: "Long enough that I'm tired of pretending." },
-        { by: 'a', conf: "I thought {b.sub} was my best friend. I'd have done anything for {b.obj}. I don't even know what to do with that." },
+        { by: 'a', conf: "I thought we were close. I'd have done anything for {b.obj}. I don't even know what to do with that." },
         { by: 'b', conf: "I'm not proud of it. But I'm not going to lie to {a.obj} anymore, either." },
       ] },
       { id: 'os.fm2', turns: [
@@ -628,8 +632,8 @@ export default {
         { by: 'b', say: "You didn't do anything. That's the problem. You never do anything wrong, and everything always goes your way." },
         { by: 'a', say: "That's not fair." },
         { by: 'b', say: "No, it isn't. That's what I've been saying." },
-        { by: 'a', say: "So that's it? We're not friends?" },
-        { by: 'b', say: "We haven't been friends for a while. You just didn't notice." },
+        { by: 'a', say: "So that's it? That's how you feel about me?" },
+        { by: 'b', say: "That's how I've felt for a while. You just didn't notice." },
         { by: 'a', conf: "We still have to race together. I don't know how we're going to do that." },
       ] },
     ],
@@ -662,6 +666,155 @@ export default {
         { by: 'a', say: "Then stop. Just talk to me." },
         { by: 'b', say: "Okay. I can do that. I want to do that." },
         { by: 'b', conf: "I came on this race not liking {a.obj}. I think I'm going to leave it remembering why I used to." },
+      ] },
+    ],
+
+    // ── sore-spot / clear-the-air ── (strained: bitter on both sides; a brings it up)
+    'sore-spot.cold-war': [
+      { id: 'st.cw1', turns: [
+        { by: 'a', say: "Are you going to say anything to me at all today?" },
+        { by: 'b', say: "Do you want me to?" },
+        { by: 'a', say: "I want you to act like we're on the same team." },
+        { by: 'b', say: "We're on the same team. That doesn't mean we have to talk." },
+        { by: 'a', conf: "This is how it's been for a long time. Polite. Cold. Like two people who know everything about each other and say nothing." },
+        { by: 'b', conf: "I came here to race, not to fix it." },
+      ] },
+      { id: 'st.cw2', turns: [
+        { by: 'a', say: "You could at least pretend you're glad I'm here." },
+        { by: 'b', say: "I'm not going to pretend." },
+        { by: 'a', say: "Fine." },
+        { by: 'b', say: "Fine." },
+        { beat: "Neither of them says anything else for a long time." },
+        { by: 'b', conf: "We've been saying fine to each other for so long that I don't remember what we actually think." },
+      ] },
+      { id: 'st.cw3', when: { relFam: 'family' }, turns: [
+        { by: 'a', say: "We're family. We're supposed to be able to do this." },
+        { by: 'b', say: "Being family is the problem." },
+        { by: 'a', say: "What's that supposed to mean?" },
+        { by: 'b', say: "You know exactly what it means." },
+        { by: 'a', conf: "I thought being stuck together all day would make us talk. It's made us better at not talking." },
+        { by: 'b', conf: "I said yes to this for the family. Not for {a.obj}." },
+      ] },
+    ],
+    'sore-spot.reopens': [
+      { id: 'st.ro1', turns: [
+        { by: 'a', say: "Are we really not going to talk about it?" },
+        { by: 'b', say: "Not here. Not now." },
+        { by: 'a', say: "Then when? You always say not now." },
+        { by: 'b', say: "Because every time we talk about it, this happens." },
+        { by: 'a', say: "This happens because you never listen to me." },
+        { by: 'b', say: "I listened. I just didn't agree." },
+        { beat: "It gets loud enough that a crew member takes a step back." },
+        { by: 'a', conf: "I didn't come here to fight. But it's still there. It's always there." },
+      ] },
+      { id: 'st.ro2', turns: [
+        { by: 'b', say: "Say it. You've wanted to say it all day." },
+        { by: 'a', say: "Fine. You weren't there when it mattered." },
+        { by: 'b', say: "I was there. You just didn't want me there." },
+        { by: 'a', say: "That's not true." },
+        { by: 'b', say: "It's exactly true, and you know it." },
+        { by: 'a', conf: "Same fight. Different place. I'm so tired of it." },
+        { by: 'b', conf: "{a.Sub} always wants me to say sorry. I'm not the only one who should be sorry." },
+      ] },
+      { id: 'st.ro3', when: { relFam: 'family', aElder: true }, turns: [
+        { by: 'a', say: "You still hold it against me, don't you?" },
+        { by: 'b', say: "Every day." },
+        { by: 'a', say: "I did the best I could." },
+        { by: 'b', say: "Your best wasn't very good." },
+        { by: 'a', say: "That's not fair." },
+        { by: 'b', say: "None of it was fair. That's what I'm saying." },
+        { by: 'a', conf: "I want to fix it. I just don't know how, and every time I try, it gets worse." },
+      ] },
+    ],
+    'sore-spot.reach-out': [
+      { id: 'st.rc1', turns: [
+        { by: 'a', say: "Can I say something without it turning into a fight?" },
+        { by: 'b', say: "You can try." },
+        { by: 'a', say: "I miss how we used to be." },
+        { by: 'b', say: "Yeah. Me too." },
+        { by: 'a', say: "Maybe this race is a start." },
+        { by: 'b', say: "Maybe. Let's not push it." },
+        { by: 'b', conf: "That's the first nice thing {a.sub}'s said to me in a long time. I didn't know what to do with it." },
+      ] },
+      { id: 'st.rc2', turns: [
+        { by: 'a', say: "Hey. Thanks for waiting for me." },
+        { by: 'b', say: "We're a team." },
+        { by: 'a', say: "I know. I just wanted to say thank you." },
+        { by: 'b', say: "You're welcome." },
+        { beat: "For a second, they almost smile at each other." },
+        { by: 'a', conf: "It's small. But it's the first time in ages we've said something nice to each other and meant it." },
+      ] },
+      { id: 'st.rc3', when: { relFam: 'family' }, turns: [
+        { by: 'a', say: "Whatever's happened, you're still my family." },
+        { by: 'b', say: "I know." },
+        { by: 'a', say: "I don't want to lose that." },
+        { by: 'b', say: "Then let's not." },
+        { by: 'a', say: "Okay." },
+        { by: 'b', conf: "I've waited a long time for {a.obj} to say something like that. I didn't think {a.sub}'d say it here." },
+      ] },
+    ],
+    'sore-spot.rebuffed': [
+      { id: 'st.rb1', turns: [
+        { by: 'a', say: "Do you want to talk? Properly?" },
+        { by: 'b', say: "No." },
+        { by: 'a', say: "I'm trying here." },
+        { by: 'b', say: "I know you are. I'm just not ready." },
+        { by: 'a', say: "Okay." },
+        { by: 'a', conf: "I put my hand out, and {b.sub} didn't take it. That hurts more than I thought it would." },
+      ] },
+      { id: 'st.rb2', turns: [
+        { by: 'a', say: "I'm sorry. For everything. I mean it." },
+        { by: 'b', say: "Sorry doesn't fix it." },
+        { by: 'a', say: "I know it doesn't. I'm still sorry." },
+        { by: 'b', say: "Let's just race." },
+        { beat: "{b} walks ahead. {a} stays where {a.sub} is for a second, then follows." },
+        { by: 'b', conf: "{a.Sub} wants it to be easy. It isn't easy. It was never going to be easy." },
+      ] },
+    ],
+    'clear-the-air.make-peace': [
+      { id: 'st.mp1', turns: [
+        { by: 'a', say: "Can we stop doing this? The cold thing. I'm tired of it." },
+        { by: 'b', say: "So am I." },
+        { by: 'a', say: "Then let's stop. I'm sorry for my part." },
+        { by: 'b', say: "And I'm sorry for mine." },
+        { beat: "They hug, awkwardly at first, and then not awkwardly at all." },
+        { by: 'a', conf: "I don't know what it was about today. But something changed, and I'm not letting it go back." },
+        { by: 'b', conf: "I came on this race barely speaking to {a.obj}. I think I'm going to leave it with {a.obj} back." },
+      ] },
+      { id: 'st.mp2', turns: [
+        { by: 'b', say: "You know what? I don't even remember what we were so angry about." },
+        { by: 'a', say: "I do. But I don't care anymore." },
+        { by: 'b', say: "Really?" },
+        { by: 'a', say: "Really. I'd rather have you back than be right." },
+        { by: 'b', say: "That's the most grown-up thing you've ever said." },
+        { by: 'a', say: "Don't get used to it." },
+        { by: 'a', conf: "We wasted a lot of time being angry. I don't want to waste any more." },
+      ] },
+      { id: 'st.mp3', when: { relFam: 'family' }, turns: [
+        { by: 'a', say: "I'm proud of you. I should have said that a long time ago." },
+        { by: 'b', say: "You're saying it now." },
+        { by: 'a', say: "Is it too late?" },
+        { by: 'b', say: "No. It's not too late." },
+        { beat: "{b} takes {a.posAdj} hand and holds it for a moment." },
+        { by: 'b', conf: "I didn't know how much I needed to hear that until {a.sub} said it." },
+      ] },
+    ],
+    'clear-the-air.almost': [
+      { id: 'st.al1', turns: [
+        { by: 'a', say: "I think we should talk about it. Really talk." },
+        { by: 'b', say: "Okay." },
+        { by: 'a', say: "I'm sorry for how things went." },
+        { by: 'b', say: "I want to say it's fine. I'm just not there yet." },
+        { by: 'a', say: "That's okay. I can wait." },
+        { by: 'b', conf: "It's closer than it's ever been. It's just not there. Not yet." },
+      ] },
+      { id: 'st.al2', turns: [
+        { by: 'b', say: "I've been thinking about what you said." },
+        { by: 'a', say: "And?" },
+        { by: 'b', say: "And I think you might be a little bit right." },
+        { by: 'a', say: "Only a little?" },
+        { by: 'b', say: "Don't push it. A little is a lot, for me." },
+        { by: 'a', conf: "A little bit right. I'll take it. That's further than we've got in a long time." },
       ] },
     ],
   },

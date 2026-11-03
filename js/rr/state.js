@@ -23,6 +23,8 @@ export const REL = {
   'parent-child': { family: true, snap: 0.8, start: 4 },
   siblings: { family: true, snap: 1.1, start: 2 },
   cousins: { family: true, snap: 0.9, start: 2 },
+  // an aunt or an uncle and a nephew or a niece (which is which: team.elder, from the roster's tie, else the ages)
+  'aunt-uncle': { family: true, snap: 0.9, start: 3 },
   'grandparent-grandchild': { family: true, snap: 0.6, start: 5 },
   married: { snap: 0.9, start: 5 },
   dating: { snap: 1.0, start: 4 },
@@ -38,16 +40,25 @@ export const REL = {
   'reality-vets': { snap: 1.0, start: 0 },
   // best friends in public who keep score: digs pull the bond down, shared wins push it up (scenes/frenemies.js)
   frenemies: { snap: 1.2, start: 1 },
-  // one of them (team.resents) can't stand the other, who thinks they're best friends: the bond is the real one,
-  // the fooled partner's own view of it is state.view (scenes/frenemies.js), until they find out
-  'one-sided': { snap: 1.0, start: -3 },
 };
+
+// How the two of them FEEL about what they are, on top of what they are (the user, 2026-11-02: "a father daughter
+// relationship can be bitter two sides or one side"). `shift` moves the relationship's starting bond, `snap` scales its
+// blow-ups. warm is the relationship as it is; strained is bitter on both sides (an estranged father and daughter,
+// best friends who fell out); one-sided is one of them (team.resents) resenting the other, who has no idea: the bond is
+// the real one, the fooled partner's own view of it is state.view, until they find out (scenes/frenemies.js).
+export const FEEL = {
+  warm: { shift: 0, snap: 1 },
+  strained: { shift: -6, snap: 1.4 },
+  'one-sided': { shift: -7, snap: 1 },
+};
+export const feelOf = t => (FEEL[t?.feel] ? t.feel : 'warm');
 
 // The fooled partner of a one-sided team, and what they think the bond is, while they still don't know.
 export const FOOLED_VIEW = 6;
 export function oneSided(state, teamId) {
   const t = state?.teams?.[teamId];
-  if (t?.rel !== 'one-sided' || !t.resents) return null;
+  if (feelOf(t) !== 'one-sided' || !t.resents) return null;
   const fooled = t.resents === t.a ? t.b : t.a;
   return { resents: t.resents, fooled, found: !!state.found?.[teamId], view: state.view?.[teamId] ?? FOOLED_VIEW };
 }

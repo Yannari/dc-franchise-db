@@ -33,7 +33,7 @@ import { airSeason } from './rr/episode.js';
 import { buildSchedule } from './rr/schedule.js';
 import { drawRoute } from './rr/route.js';
 import { DEFAULT_OPTIONS } from './rr/format.js';
-import { REL } from './rr/state.js';
+import { REL, FEEL } from './rr/state.js';
 import { IDENTITIES } from './rr/identities.js';
 import { teamRef } from './rr/script/roles.js';
 import { TASK_TYPES } from './rr/types.js';
@@ -65,12 +65,15 @@ const _list = () => (players || []).filter(p => p?.name);
 /** The relationships a team can have, for the cast card's picker: id and label. */
 export const RACE_RELATIONSHIPS = Object.keys(REL).map(id => ({ id, label: {
   'parent-child': 'Parent and child', siblings: 'Siblings', cousins: 'Cousins', 'grandparent-grandchild': 'Grandparent and grandchild',
+  'aunt-uncle': 'Aunt or uncle and nephew or niece',
   married: 'Married', dating: 'Dating', 'newly-dating': 'Newly dating', 'on-off': 'On and off', exes: 'Exes',
   'once-engaged': 'Once engaged', bffs: 'Best friends', coworkers: 'Coworkers', roommates: 'Roommates', rivals: 'Rivals',
-  enemies: 'Enemies', 'reality-vets': 'Reality-show vets', frenemies: 'Frenemies (best friends who keep score)',
-  'one-sided': 'One-sided (one secretly resents the other)' }[id] || id }))
+  enemies: 'Enemies', 'reality-vets': 'Reality-show vets', frenemies: 'Frenemies (best friends who keep score)' }[id] || id }))
   // a couple who are engaged: the engine races them as a couple (dating), and everybody knows (history.engaged)
   .concat({ id: 'engaged', label: 'Engaged' });
+/** How the two of them feel about what they are, for the cast card's second picker (rr/state.js FEEL). */
+export const RACE_FEELINGS = [{ id: 'warm', label: 'Warm' }, { id: 'strained', label: 'Strained (bitter on both sides)' },
+  { id: 'one-sided', label: 'One-sided (one secretly resents the other)' }];
 /** The identities a team can race as, for the cast card's picker. */
 export const RACE_IDENTITIES = Object.entries(IDENTITIES).map(([id, x]) => ({ id, label: x.name }));
 
@@ -80,15 +83,27 @@ export const RACE_IDENTITIES = Object.entries(IDENTITIES).map(([id, x]) => ({ id
 // marriage, exes from an old showmance, old allies), then an old grudge between them, then two people who have both
 // played before, then best friends. `from` says where it came from (Don's label uses it), `engaged` an engagement.
 const TIE_REL = { 'parent-child': 'parent-child', grandparent: 'grandparent-grandchild', siblings: 'siblings', twins: 'siblings',
-  'step-siblings': 'siblings', cousins: 'cousins', married: 'married', engaged: 'dating', partners: 'dating', dating: 'dating', exes: 'exes' };
+  'step-siblings': 'siblings', cousins: 'cousins', 'aunt-uncle': 'aunt-uncle', married: 'married', engaged: 'dating', partners: 'dating',
+  dating: 'dating', exes: 'exes',
+  // the friendships a profile can name (ties.js): what they race as
+  'best-friends': 'bffs', 'childhood-friends': 'bffs', 'old-friends': 'bffs', roommates: 'roommates', colleagues: 'coworkers',
+  // a falling-out: still what they were, now bitter on both sides (an estranged relative's kind of family isn't on the
+  // tie, so the ages say it: a generation apart is a parent and child, otherwise siblings)
+  'ex-friends': 'bffs', estranged: 'siblings' };
+const TIE_FEEL = { 'ex-friends': 'strained', estranged: 'strained' };
+const FAMILY_TIES = new Set(['parent-child', 'grandparent', 'siblings', 'twins', 'step-siblings', 'cousins', 'aunt-uncle', 'estranged', 'in-laws']);
 const KIN_REL = { dating: 'dating', partners: 'dating', engaged: 'dating', married: 'married', exes: 'exes', 'old-friends': 'bffs' };
-export function raceHistoryRel(a, b, carried, tie, vets = false) {
+export function raceHistoryRel(a, b, carried, tie, vets = false, gap = 0) {
   const pair = x => (x.a === a && x.b === b) || (x.a === b && x.b === a);
   const k = (carried?.kin || []).find(pair);
   // a couple's tie is where their life starts; the life layer and later seasons have the last word on a couple (ties.js).
   // Family stays family.
   const coupleTie = tie && ['married', 'engaged', 'partners', 'dating', 'exes'].includes(tie.kin);
-  if (tie && TIE_REL[tie.kin] && !(coupleTie && k && KIN_REL[k.kin])) return { rel: TIE_REL[tie.kin], from: 'family', engaged: tie.kin === 'engaged', kin: tie.kin };
+  if (tie && TIE_REL[tie.kin] && !(coupleTie && k && KIN_REL[k.kin])) {
+    const rel = tie.kin === 'estranged' && gap >= 15 ? 'parent-child' : TIE_REL[tie.kin];
+    return { rel, from: FAMILY_TIES.has(tie.kin) || coupleTie ? 'family' : 'ties', engaged: tie.kin === 'engaged', kin: tie.kin,
+      ...(TIE_FEEL[tie.kin] ? { feel: TIE_FEEL[tie.kin] } : {}) };
+  }
   if (k && KIN_REL[k.kin]) return { rel: KIN_REL[k.kin], from: k.from || 'ledger', engaged: k.kin === 'engaged', kin: k.kin };
   const grudge = (carried?.bonds || []).filter(pair).reduce((m, x) => Math.min(m, Number(x.delta) || 0), 0);
   if (grudge <= -4) return { rel: 'enemies', from: 'ledger', engaged: false, kin: 'grudge' };
@@ -137,24 +152,40 @@ export function raceTeams(list = _list(), config = seasonConfig) {
     seen.add(p.name); seen.add(o);
     const q = _player(o) || {};
     const pick = k => p[k] || q[k] || null;
-    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), resents: pick('rrResents'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
+    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), feel: pick('rrFeel'), resents: pick('rrResents'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
       customName: pick('rrCustomName'), customLike: [pick('rrCustomLike'), pick('rrCustomLike2'), pick('rrCustomLike3')],
       customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')], carried,
       lines: _teamLines(p, q) }));
   }
   return out;
 }
-// a one-sided team: who resents the other, when the Pairs view named one of the two
-const oneSidedOf = (rel, resents, a, b) => (rel === 'one-sided' && [a, b].includes(resents) ? { resents } : {});
-function _team(i, a, b, { rel = null, resents = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null, lines = null } = {}) {
+// How they feel (rr/state.js FEEL), and on a one-sided team who resents the other when the Pairs view named one of the
+// two; and on a family team with a direction (a parent, an aunt), who the elder is, from the roster's tie (ties.js
+// roleA: what a is to b), so an aunt of 52 and her nephew of 24 are an aunt and a nephew and not a mother and son.
+const ELDER_ROLES = new Set(['parent', 'grandparent', 'elder']);
+function feelingOf(feel, resents, a, b) {
+  const f = FEEL[feel] ? feel : 'warm';
+  return { ...(f !== 'warm' ? { feel: f } : {}), ...(f === 'one-sided' && [a, b].includes(resents) ? { resents } : {}) };
+}
+function elderFrom(rel, tie, a, b) {
+  if (!REL[rel]?.family || !tie?.roleA) return {};
+  return { elder: ELDER_ROLES.has(tie.roleA) ? a : b };
+}
+const ageOf = n => Number(_player(n)?.age) || null;
+function _team(i, a, b, { rel = null, feel = null, resents = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null, lines = null } = {}) {
   let vets = false;
   try { vets = hasFranchiseHistory(a) && hasFranchiseHistory(b); } catch { vets = false; }
   // a relationship set on the Pairs view wins; else what their history says
   let tie = null;
   try { tie = tieBetween(a, b); } catch { tie = null; }
+  // (a card saved before feelings existed may say rel 'one-sided': best friends who feel it one way)
+  if (rel === 'one-sided') { rel = 'bffs'; feel ||= 'one-sided'; }
   const set = rel === 'engaged' ? 'dating' : REL[rel] ? rel : null;
-  const h = set ? null : raceHistoryRel(a, b, carried, tie, vets);
+  const gap = ageOf(a) && ageOf(b) ? Math.abs(ageOf(a) - ageOf(b)) : 0;
+  const h = set ? null : raceHistoryRel(a, b, carried, tie, vets, gap);
   const r = set || h.rel;
+  // a feeling set on the Pairs view wins; else what their history says (an estranged tie: strained)
+  const mood = { ...feelingOf(feel || h?.feel || null, resents, a, b), ...elderFrom(r, tie, a, b) };
   const history = rel === 'engaged' ? { from: 'set', kin: 'engaged', engaged: true }
     : h?.from ? { from: h.from, kin: h.kin, engaged: !!h.engaged } : null;
   const typed = String(name || '').trim();
@@ -166,11 +197,11 @@ function _team(i, a, b, { rel = null, resents = null, identity = null, name = nu
     const mix = uniq(customLike).filter(x => IDENTITIES[x]).slice(0, 3);
     const good = uniq(customGood).filter(x => TASK_TYPES[x]).slice(0, 2);
     const bad = uniq(customBad).filter(x => TASK_TYPES[x] && !good.includes(x)).slice(0, 2);
-    return { id: 't' + (i + 1), a, b, rel: r, ...oneSidedOf(r, resents, a, b), ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: null, name: typed || own,
+    return { id: 't' + (i + 1), a, b, rel: r, ...mood, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: null, name: typed || own,
       custom: { name: own, mix, voice: mix[0] || null, good, bad, strength: mix[0] || null } };
   }
   const id = IDENTITIES[identity] ? identity : null;
-  return { id: 't' + (i + 1), a, b, rel: r, ...oneSidedOf(r, resents, a, b), ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: id,
+  return { id: 't' + (i + 1), a, b, rel: r, ...mood, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: id,
     // a typed name over an identity's is the team's own (the engine's identityName reads custom.name)
     name: typed || (id ? IDENTITIES[id].name : `${a} & ${b}`),
     custom: typed && (!id || typed !== IDENTITIES[id].name) ? { name: typed } : null };
@@ -479,13 +510,14 @@ export function raceVoteShape(row) {
 }
 
 /** The Pairs view's pickers (cast-room.js): the relationships and identities a team can have. */
-export function raceTeamOptions() { return { rels: RACE_RELATIONSHIPS, ids: RACE_IDENTITIES, types: RACE_TASK_TYPES }; }
+export function raceTeamOptions() { return { rels: RACE_RELATIONSHIPS, feels: RACE_FEELINGS, ids: RACE_IDENTITIES, types: RACE_TASK_TYPES }; }
 /** What the team's relationship will be if the user leaves it: the Pairs view's default, in words. */
 export function raceDefaultRel(a, b) {
   const t = raceTeams().find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
   if (!t) return null;
   const label = RACE_RELATIONSHIPS.find(r => r.id === t.rel)?.label || t.rel;
-  return { rel: t.rel, label: t.history?.engaged ? 'Engaged' : label, from: t.history?.from || null };
+  return { rel: t.rel, label: t.history?.engaged ? 'Engaged' : label, from: t.history?.from || null,
+    feel: t.feel || 'warm', feelLabel: RACE_FEELINGS.find(f => f.id === (t.feel || 'warm'))?.label || 'Warm' };
 }
 /** What a team can be good or bad at, in words (a custom identity's strengths and weaknesses). */
 export const RACE_TASK_TYPES = Object.keys(TASK_TYPES).map(id => ({ id, label: { water: 'Water', heights: 'Heights', strength: 'Strength',
@@ -505,7 +537,7 @@ function _teamLines(p, q) {
 }
 
 /** The team fields the Pairs view sets, on both of the team's cards (so the team reads the same either way round). */
-const TEAM_FIELDS = new Set(['rrRel', 'rrResents', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
+const TEAM_FIELDS = new Set(['rrRel', 'rrFeel', 'rrResents', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
   'rrCustomGood1', 'rrCustomGood2', 'rrCustomBad1', 'rrCustomBad2', 'rrTeamName', ...TEAM_LINES.map(([f]) => f), 'rrLineIntro']);
 // a person's own line (their half of the introduction) is on their card only
 const PERSON_FIELDS = new Set(['rrLineIntro']);

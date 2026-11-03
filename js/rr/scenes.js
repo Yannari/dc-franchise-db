@@ -8,7 +8,7 @@
 // applies it; the words are written later from the record (manual §19). Every
 // ending changes something, and `fx` records it in `data.effects`, so nothing is
 // cosmetic (CLAUDE.md: every social event has consequences).
-import { addScene, S, mayScheme, REL, oneSided, FOOLED_VIEW } from './state.js';
+import { addScene, S, mayScheme, REL, oneSided, FOOLED_VIEW, feelOf } from './state.js';
 import { getBond, addBond } from '../bonds.js';
 import { nudgeMind } from './mind.js';
 import { perceivedRank, believe } from './knowledge.js';
@@ -88,6 +88,8 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     couple: (st.couples || []).some(c => !c.ended && who.includes(c.a) && who.includes(c.b)),
     rel: tid ? st.teams[tid].rel : null,
     relFam: tid ? relFamOf(st.teams[tid].rel) : null,
+    // how they feel about it: warm, strained (bitter both ways), one-sided (state.js FEEL)
+    feel: tid ? feelOf(st.teams[tid]) : null,
     identity: tid ? st.teams[tid].identity ?? null : null,
     identityB: oid ? st.teams[oid].identity ?? null : null,
     money: tid ? st.money[tid] ?? 0 : null,
@@ -132,6 +134,7 @@ export function prepare(ctx) {
     _ready: true, A, B, C, D, tid, oid,
     lead: tid ? st.lead[tid] : null,
     rel: tid ? st.teams[tid].rel : null,
+    feel: tid ? feelOf(st.teams[tid]) : null,
     // how x feels about y: the real bond, except for the fooled partner of a one-sided team, who still thinks they're
     // best friends (their choices follow that; the team's teamwork, skill.js, reads the real one)
     S, bond: (x, y) => viewOf(st, x, y),
@@ -177,6 +180,8 @@ function makeFx(ctx, effects, kindId = null) {
     pop(n, d) { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; push(['pop', n, d]); },
     pending(teamId, m) { st.pending[teamId] = (st.pending[teamId] || 0) + m; push(['pending', teamId, m]); },
     rel(teamId, r) { st.teams[teamId].rel = r; push(['rel', teamId, r]); },
+    // how the two of them feel about what they are (state.js FEEL): a falling-out, a peace made, a secret out
+    feel(teamId, f) { st.teams[teamId].feel = f; push(['feel', teamId, f]); },
     // a one-sided team: what the fooled partner thinks of the friendship moves (never above where it started), or
     // they find out
     view(teamId, d) { st.view ||= {}; st.view[teamId] = Math.min(FOOLED_VIEW, (st.view[teamId] ?? FOOLED_VIEW) + d); push(['view', teamId, d]); },

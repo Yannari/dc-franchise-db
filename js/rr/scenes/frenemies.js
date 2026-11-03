@@ -4,16 +4,22 @@
 // the usual good moments (celebrate, bond-moment) push it up, so their teamwork (skill.js) swings leg to leg. When it
 // goes far enough either way they turn into something real: best friends, or enemies.
 //
-// ONE-SIDED: one of them (team.resents) can't stand the other, who thinks they're best friends. The fooled one's
+// STRAINED (how a team feels, on any relationship): bitter on both sides. Sore spots freeze them out or reopen it, a
+// reach-out that lands pulls the bond up, and once it's high enough they can clear the air and be warm again.
+//
+// ONE-SIDED (how a team feels, on any relationship): one of them (team.resents) can't stand the other, who has no idea. The fooled one's
 // choices follow what they think the bond is (state.view, scenes.js viewOf); the teamwork follows the real one, so the
 // team quietly underperforms. The resenter is cold, and, if they may scheme (CLAUDE.md: never a nice archetype),
 // takes the credit and hands out the blame. Every cold moment the fooled one is sharp enough to catch lowers what they
 // think, and the lower it is the likelier they find out: then the team becomes enemies, or they have it out.
 import { K, register } from './registry.js';
+import { feelOf } from '../state.js';
 
 const both = (fx, c, key, d) => { fx.mind(c.A, key, d); fx.mind(c.B, key, d); };
 const fren = c => c.rel === 'frenemies';
-const blind = c => c.state.teams[c.tid]?.rel === 'one-sided' && !c.state.found?.[c.tid];
+// (one-sided and strained are how a team FEELS, on any relationship: a daughter can resent her father)
+const blind = c => feelOf(c.state.teams[c.tid]) === 'one-sided' && !c.state.found?.[c.tid];
+const strained = c => feelOf(c.state.teams[c.tid]) === 'strained';
 const resenter = c => c.state.teams[c.tid]?.resents;
 // a is the one who resents, or the one who has no idea
 const isRes = c => blind(c) && c.A === resenter(c);
@@ -69,12 +75,28 @@ register([
     // (not before the third leg, so the act has time to play: rare while a still thinks the world of b, likelier with
     // every cold moment a was sharp enough to notice; measured 2026-11-02, found on leg 2 and leg 4 at the old rate)
     when: c => (isFooled(c) && c.state.leg >= 3 ? 0.02 + 0.08 * sharp(c, c.A) + 0.1 * Math.max(0, 6 - c.bond(c.A, c.B)) : 0), endings: {
+    // (the relationship stays what it is, a father is still a father: what changes is how they feel, now both ways)
     'mask-off': { w: c => (10 - c.S(c.B, 'loyalty')) / 4 + (realBond(c) <= -3 ? 1 : 0), fx: (fx, c) => {
-      fx.found(c.tid); fx.rel(c.tid, 'enemies'); fx.bond(c.A, c.B, -1.5);
+      fx.found(c.tid); fx.feel(c.tid, 'strained'); fx.bond(c.A, c.B, -1.5);
       fx.mind(c.A, 'morale', -15); fx.mind(c.A, 'stress', 10); fx.pop(c.B, -2); fx.pop(c.A, 1);
     } },
     'have-it-out': { w: c => (c.S(c.B, 'loyalty') + c.S(c.A, 'social')) / 8 + (realBond(c) >= 0 ? 1 : 0), fx: (fx, c) => {
-      fx.found(c.tid); fx.rel(c.tid, 'bffs'); fx.bond(c.A, c.B, 4); both(fx, c, 'morale', 5); fx.pop(c.B, 1);
+      fx.found(c.tid); fx.feel(c.tid, 'warm'); fx.bond(c.A, c.B, 4); both(fx, c, 'morale', 5); fx.pop(c.B, 1);
     } },
+  } }),
+
+  // ── strained: bitter on both sides ──
+  // the thing between them comes up: they freeze each other out, it reopens, or one of them reaches out (a is the one
+  // who brings it up)
+  K({ id: 'sore-spot', family: 1, moments: ['quiet', 'plane', 'wait', 'travel', 'fail', 'mat'], when: c => (strained(c) ? 1.1 : 0), endings: {
+    'cold-war': { w: 1, fx: (fx, c) => { fx.bond(c.A, c.B, -0.3); both(fx, c, 'stress', 2); } },
+    reopens: { w: c => (10 - Math.min(c.S(c.A, 'temperament'), c.S(c.B, 'temperament'))) / 5, fx: (fx, c) => { fx.bond(c.A, c.B, -1); both(fx, c, 'stress', 4); } },
+    'reach-out': { w: c => 0.3 + Math.max(c.S(c.A, 'social'), c.S(c.A, 'loyalty')) / 12, fx: (fx, c) => { fx.bond(c.A, c.B, 0.8); fx.mind(c.A, 'morale', 2); } },
+    rebuffed: { w: c => (10 - c.S(c.B, 'loyalty')) / 10, fx: (fx, c) => { fx.bond(c.A, c.B, -0.4); fx.mind(c.A, 'morale', -4); } },
+  } }),
+  // enough has gone right between them: they make their peace, or nearly
+  K({ id: 'clear-the-air', family: 1, moments: ['quiet', 'plane', 'mat'], when: c => (strained(c) && c.bond(c.A, c.B) >= 2 ? 1.5 : 0), endings: {
+    'make-peace': { w: c => 1 + c.bond(c.A, c.B) / 4, fx: (fx, c) => { fx.feel(c.tid, 'warm'); fx.bond(c.A, c.B, 1.5); both(fx, c, 'morale', 6); } },
+    almost: { w: c => (10 - c.S(c.B, 'temperament')) / 8, fx: (fx, c) => { fx.bond(c.A, c.B, 0.5); fx.mind(c.A, 'morale', -2); } },
   } }),
 ]);

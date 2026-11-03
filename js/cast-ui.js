@@ -324,7 +324,7 @@ export function submitPlayer() {
   if (editingId) {
     const was = players.find(p => p.id === editingId);
     // (and who resents whom, and their own lines: an edit in this form used to drop the lines typed on the lane)
-    for (const k of ['rrRel', 'rrResents', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3', 'rrCustomGood1', 'rrCustomGood2',
+    for (const k of ['rrRel', 'rrFeel', 'rrResents', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3', 'rrCustomGood1', 'rrCustomGood2',
       'rrCustomBad1', 'rrCustomBad2', 'rrTeamName', 'rrLineIntro', 'rrLineGood', 'rrLineStruggle', 'rrLineWin', 'rrLineElim']) if (was?.[k] !== undefined) player[k] = was[k];
   }
   ensurePortraitSelection(player); // fill in the portrait if the picker was never touched

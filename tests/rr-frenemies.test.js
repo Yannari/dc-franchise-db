@@ -4,14 +4,18 @@
 import { describe, it, expect } from 'vitest';
 import { setGs, setPlayers, players } from '../js/core.js';
 import { getBond } from '../js/bonds.js';
-import { newState, addTeams, REL, FOOLED_VIEW, oneSided, mayScheme } from '../js/rr/state.js';
+import { newState, addTeams, REL, FEEL, FOOLED_VIEW, oneSided, mayScheme } from '../js/rr/state.js';
+import { raceHistoryRel } from '../js/rr-run.js';
+import { relLabel } from '../js/rr/story/previously.js';
 import { walkIn, resenterOf, playRaceSeason } from '../js/rr/season.js';
 import { teamwork } from '../js/rr/skill.js';
 import { playScene, prepare, viewOf } from '../js/rr/scenes.js';
 import { airSeason } from '../js/rr/episode.js';
 import { raceCast } from './helpers/rr-cast.js';
 
-const NEW_KINDS = ['dig', 'keep-score', 'frenemy-turn', 'gush', 'cold-shoulder', 'quiet-sabotage', 'finds-out'];
+const NEW_KINDS = ['dig', 'keep-score', 'frenemy-turn', 'gush', 'cold-shoulder', 'quiet-sabotage', 'finds-out', 'sore-spot', 'clear-the-air'];
+// one-sided and strained are feelings, on any relationship: these tests put them on a parent and child
+const ONE_SIDED = ['parent-child', { feel: 'one-sided' }];
 
 function twoTeams(rel1, rel2, extra = {}) {
   const { cast, teams } = raceCast(4, 3);
@@ -40,14 +44,14 @@ describe('rr: what a team walks in with', () => {
   });
 });
 
-describe('rr: a one-sided team', () => {
+describe('rr: a one-sided team (a parent and child)', () => {
   it('names a resenter when the Pairs view did not, and keeps one it did', () => {
-    const st = twoTeams('bffs', 'one-sided');
+    const st = twoTeams('bffs', ...ONE_SIDED);
     walkIn(st);
     const t = st.teams[st.order[1]];
     expect([t.a, t.b]).toContain(t.resents);
     expect(t.resents).toBe(resenterOf(t));
-    const kept = twoTeams('bffs', 'one-sided', { resents: null });
+    const kept = twoTeams('bffs', 'parent-child', { feel: 'one-sided', resents: null });
     const k = kept.teams[kept.order[1]];
     k.resents = k.b;
     walkIn(kept);
@@ -55,19 +59,19 @@ describe('rr: a one-sided team', () => {
   });
 
   it('the fooled one thinks they are best friends; the teamwork reads the real bond', () => {
-    const st = twoTeams('bffs', 'one-sided');
+    const st = twoTeams('bffs', ...ONE_SIDED);
     walkIn(st);
     const id = st.order[1];
     const o = oneSided(st, id);
     expect(o.found).toBe(false);
     expect(viewOf(st, o.fooled, o.resents)).toBe(FOOLED_VIEW);
-    expect(viewOf(st, o.resents, o.fooled)).toBe(REL['one-sided'].start);
+    expect(viewOf(st, o.resents, o.fooled)).toBe(REL['parent-child'].start + FEEL['one-sided'].shift);
     // what the fooled one believes never props up how they race
     expect(teamwork(st, id)).toBeLessThan(teamwork(st, st.order[0]));
   });
 
   it('a resenter who may not scheme is cold, never a saboteur', () => {
-    const st = twoTeams('bffs', 'one-sided');
+    const st = twoTeams('bffs', ...ONE_SIDED);
     walkIn(st);
     const id = st.order[1];
     const t = st.teams[id];
@@ -83,20 +87,21 @@ describe('rr: a one-sided team', () => {
     expect(cold?.kind).toBe('cold-shoulder');
   });
 
-  it('finding out ends the act: enemies or best friends, and the view is gone', () => {
-    const st = twoTeams('bffs', 'one-sided');
+  it('finding out ends the act: bitter both ways or warm, still parent and child, and the view is gone', () => {
+    const st = twoTeams('bffs', ...ONE_SIDED);
     walkIn(st);
     st.leg = 3;
     const id = st.order[1];
     const t = st.teams[id];
     for (const ending of ['mask-off', 'have-it-out']) {
-      st.found = {}; t.rel = 'one-sided';
+      st.found = {}; t.feel = 'one-sided';
       const ctx = { state: st, team: { id }, other: null, stretch: { id: 's', kind: 'travel' }, t: 100, api: null,
         present: [id], moment: 'quiet', event: { fails: 0 }, flip: t.resents === t.a };
       const sc = playScene(ctx, 'finds-out', () => 0.5, { ending });
       expect(sc.who[0]).not.toBe(t.resents);
       expect(st.found[id]).toBe(3);
-      expect(t.rel).toBe(ending === 'mask-off' ? 'enemies' : 'bffs');
+      expect(t.feel).toBe(ending === 'mask-off' ? 'strained' : 'warm');
+      expect(t.rel).toBe('parent-child');
       expect(oneSided(st, id)).toBeNull();
     }
   });
@@ -110,9 +115,11 @@ describe('rr: frenemies and one-sided teams across seasons', () => {
       const { cast, teams } = raceCast(10, seed);
       setPlayers(cast);
       teams[0].rel = 'frenemies';
-      teams[1].rel = 'one-sided';
-      // (the draw can give other teams these relationships too)
+      teams[1].rel = 'parent-child'; teams[1].feel = 'one-sided';
+      teams[2].feel = 'strained';
+      // (the draw can give other teams frenemies too)
       const relAt = Object.fromEntries(teams.map(x => [x.id, x.rel]));
+      const feelAt = Object.fromEntries(teams.map(x => [x.id, x.feel || 'warm']));
       const res = playRaceSeason({ teams, seed });
       const mine = res.state.scenes.filter(s => NEW_KINDS.includes(s.kind));
       for (const s of mine) {
@@ -121,7 +128,9 @@ describe('rr: frenemies and one-sided teams across seasons', () => {
         if (s.kind === 'finds-out') finds[s.data.ending]++;
         if (s.kind === 'quiet-sabotage') expect(mayScheme(s.who[0])).toBe(true);
         if (['frenemy-turn', 'dig', 'keep-score'].includes(s.kind)) expect(relAt[s.data.team], s.kind).toBe('frenemies');
-        if (['gush', 'cold-shoulder', 'quiet-sabotage', 'finds-out'].includes(s.kind)) expect(relAt[s.data.team], s.kind).toBe('one-sided');
+        if (['gush', 'cold-shoulder', 'quiet-sabotage', 'finds-out'].includes(s.kind)) expect(feelAt[s.data.team], s.kind).toBe('one-sided');
+        // (strained from the start, or after a one-sided team found out)
+        if (['sore-spot', 'clear-the-air'].includes(s.kind)) expect(['strained', 'one-sided']).toContain(feelAt[s.data.team]);
       }
       for (const ep of airSeason(res)) for (const seg of ep.segments || []) {
         const sc = res.state.scenes.find(x => x.id === seg.scene);
@@ -131,8 +140,39 @@ describe('rr: frenemies and one-sided teams across seasons', () => {
         turns[sc.kind] = (turns[sc.kind] || 0) + 1;
       }
     }
-    for (const k of ['dig', 'keep-score', 'gush', 'cold-shoulder']) expect(played[k] || 0, k).toBeGreaterThan(3);
+    for (const k of ['dig', 'keep-score', 'gush', 'cold-shoulder', 'sore-spot']) expect(played[k] || 0, k).toBeGreaterThan(3);
     expect(finds['mask-off'] + finds['have-it-out']).toBeGreaterThan(0);
-    for (const k of ['dig', 'gush', 'cold-shoulder']) expect(turns[k] || 0, `${k} aired`).toBeGreaterThan(0);
+    for (const k of ['dig', 'gush', 'cold-shoulder', 'sore-spot']) expect(turns[k] || 0, `${k} aired`).toBeGreaterThan(0);
   }, 300000);
+});
+
+describe('rr: what they are, and how they feel about it', () => {
+  it('a feeling moves any relationship\'s starting bond, and strained snaps more', () => {
+    const st = twoTeams('parent-child', 'parent-child', { feel: 'strained' });
+    walkIn(st);
+    const [t1, t2] = st.order.map(id => st.teams[id]);
+    expect(getBond(t1.a, t1.b)).toBe(REL['parent-child'].start);
+    expect(getBond(t2.a, t2.b)).toBe(REL['parent-child'].start + FEEL.strained.shift);
+    expect(FEEL.strained.snap).toBeGreaterThan(FEEL.warm.snap);
+    expect(t2.feel0).toBe('strained');
+  });
+
+  it('reads the roster\'s ties: an aunt and nephew, colleagues, a falling-out, an estranged relative', () => {
+    expect(raceHistoryRel('Lorraine', 'Jace', null, { kin: 'aunt-uncle', roleA: 'elder' })).toMatchObject({ rel: 'aunt-uncle', from: 'family' });
+    expect(raceHistoryRel('Mia', 'Cory', null, { kin: 'colleagues' })).toMatchObject({ rel: 'coworkers', from: 'ties' });
+    expect(raceHistoryRel('A', 'B', null, { kin: 'ex-friends' })).toMatchObject({ rel: 'bffs', feel: 'strained' });
+    expect(raceHistoryRel('A', 'B', null, { kin: 'estranged' }, false, 30)).toMatchObject({ rel: 'parent-child', feel: 'strained' });
+    expect(raceHistoryRel('A', 'B', null, { kin: 'estranged' }, false, 4)).toMatchObject({ rel: 'siblings', feel: 'strained' });
+  });
+
+  it('Don names an aunt and nephew, twins, and a strained father and daughter for what they are', () => {
+    setPlayers([{ name: 'Lorraine', gender: 'f', age: 52, stats: {} }, { name: 'Jace', gender: 'm', age: 24, stats: {} },
+      { name: 'Ana', gender: 'f', stats: {} }, { name: 'Zoe', gender: 'f', stats: {} },
+      { name: 'Ahanu', gender: 'm', age: 49, stats: {} }, { name: 'Suki', gender: 'f', age: 20, stats: {} }]);
+    expect(relLabel({ rel: 'aunt-uncle', a: 'Jace', b: 'Lorraine', elder: 'Lorraine' })).toBe('aunt and nephew');
+    expect(relLabel({ rel: 'siblings', a: 'Ana', b: 'Zoe', history: { kin: 'twins' } })).toBe('twin sisters');
+    expect(relLabel({ rel: 'parent-child', a: 'Ahanu', b: 'Suki', feel0: 'strained' })).toBe("father and daughter, and it's complicated");
+    // one-sided looks warm from outside: Don doesn't know
+    expect(relLabel({ rel: 'parent-child', a: 'Ahanu', b: 'Suki', feel0: 'one-sided' })).toBe('father and daughter');
+  });
 });

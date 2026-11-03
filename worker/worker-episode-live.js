@@ -4060,16 +4060,23 @@ async function generateRaceLines(body, env) {
     p.backstory && `Backstory: ${p.backstory}`,
     p.personality && `Personality: ${p.personality}`,
   ].filter(Boolean).join("\n");
-  const rel = String(team.rel || "").trim();
+  // what they are (a father and daughter, best friends) and, separately, how they feel about it (js/rr/state.js FEEL)
+  let rel = String(team.rel || "").trim();
+  let feel = String(team.feel || "warm").trim();
+  if (rel === "one-sided") { rel = "bffs"; feel = "one-sided"; }
   const resents = [A.name, B.name].includes(team.resents) ? team.resents : null;
   const fooled = resents ? (resents === A.name ? B.name : A.name) : null;
-  const relLine = rel === "one-sided" && resents
-    ? `What they are: ${fooled} thinks they're best friends. ${resents} secretly can't stand ${fooled}, and hides it. ${fooled}'s lines are warm and sincere; ${resents}'s are polite on the surface with the resentment just underneath (a flat reply, a dry aside to camera), never said outright.`
-    : rel === "one-sided"
-      ? "What they are: one of them secretly can't stand the other, who thinks they're best friends. Keep it under the surface: polite, a little flat, never said outright."
-      : rel === "frenemies"
-        ? "What they are: best friends who are also competing with each other. Compliments with an edge, keeping score of who did what. Never outright cruel."
-        : rel ? `What they are: ${String(team.relLabel || rel).toLowerCase()}.` : "";
+  const what = rel === "frenemies"
+    ? "best friends who are also competing with each other: compliments with an edge, keeping score of who did what, never outright cruel"
+    : rel ? String(team.relLabel || rel).toLowerCase() : "";
+  const feelLine = feel === "one-sided" && resents
+    ? `How they feel: ${fooled} adores ${resents} and has no idea. ${resents} secretly resents ${fooled}, and hides it. ${fooled}'s lines are warm and sincere; ${resents}'s are polite on the surface with the resentment just underneath (a flat reply, a dry aside to camera), never said outright.`
+    : feel === "one-sided"
+      ? "How they feel: one of them secretly resents the other, who has no idea. Keep it under the surface: polite, a little flat, never said outright."
+      : feel === "strained"
+        ? "How they feel: bitter on both sides. Something went wrong between them before the race and hasn't been fixed. Don't invent what it was: they talk around it, short and guarded, and it shows."
+        : "";
+  const relLine = [what && `What they are: ${what}.`, feelLine].filter(Boolean).join("\n");
   const prompt = [
     "You are writing a few lines for one team on The Ridonculous Race, an animated travel-race reality show: teams of two race around the world, a host named Don, a mat at the end of every leg where the last team can go home.",
     "These two profiles are the ONLY source of facts about them.",

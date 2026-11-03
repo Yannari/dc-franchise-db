@@ -83,7 +83,7 @@ export const KIND = { either: 'Either/Or', botch: 'Botch or Watch', allin: 'All-
 const REL = {
   'parent-child': 'parent and child', 'grandparent-grandchild': 'grandparent and grandchild', 'newly-dating': 'newly dating',
   'on-off': 'on and off', 'once-engaged': 'once engaged', bffs: 'best friends', 'reality-vets': 'reality-show veterans',
-  'one-sided': 'best friends, on one side',
+  'aunt-uncle': 'aunt or uncle and nephew or niece',
 };
 export const relWords = r => (r ? REL[r] || r.replace(/-/g, ' ') : '');
 

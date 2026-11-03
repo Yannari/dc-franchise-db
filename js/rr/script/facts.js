@@ -79,8 +79,10 @@ export const RR_FACT_KEYS = [
   'aDid', 'exitHow',
   // a is the older of the two by a generation (a parent, a grandparent): true / false; null when unknown
   'aElder',
-  // a one-sided team: a is the one who resents the other (true) or the one who thinks they're best friends (false),
-  // and whether the fooled one has found out yet; null on every other team
+  // how the two of them feel about what they are: 'warm', 'strained' (bitter both ways), 'one-sided'
+  'feel',
+  // a one-sided team: a is the one who resents the other (true) or the one who has no idea (false), and whether the
+  // fooled one has found out yet; null on a team that was never one-sided
   'resents', 'found',
   // the scene that caused this one (a chain, or the moment an interview is about), its ending, and the storyline step it moves
   'cause', 'causeEnding', 'threadStep',
@@ -132,7 +134,8 @@ export function factsFor(scene, roles, state) {
     ending: d.ending ?? 'any',
     phase: s.phase ?? null, early: s.phase === 'early', late: s.phase === 'late',
     band: s.band ?? null, bandX: s.bandX ?? null, allied: !!s.allied, rival: (s.rivalry || 0) >= 2, couple: !!s.couple,
-    rel: s.rel ?? null, relFam: s.relFam ?? null, relB: s.relB ?? null, relFamB: s.relFamB ?? null,
+    // (a scene with no snapshot, the premiere's introductions, is how they walked in: state.js feel0)
+    rel: s.rel ?? null, relFam: s.relFam ?? null, feel: s.feel ?? state.teams[d.team]?.feel0 ?? null, relB: s.relB ?? null, relFamB: s.relFamB ?? null,
     brokeB: !!s.brokeB, sabKind: s.sabKind ?? null, weArrived: d.arriving != null ? d.arriving === d.team : null, failsB: !s.failsB ? 0 : s.failsB === 1 ? 1 : 'many', weOwe: weOwe(scene, state), identity: s.identity ?? null, identityB: s.identityB ?? null,
     bloc: !!s.bloc,
     engaged: !!state.teams[d.team]?.history?.engaged,
@@ -153,7 +156,7 @@ export function factsFor(scene, roles, state) {
     // (from the team, which never changes, and the scene's own snapshot of whether it was out yet)
     ...(() => {
       const tm = state.teams[d.team], a = roles?.roles?.a;
-      if (tm?.rel !== 'one-sided' && !s.found) return { resents: null, found: null };
+      if (s.feel !== 'one-sided' && !s.found && !tm?.resents) return { resents: null, found: null };
       return { resents: tm?.resents && [tm.a, tm.b].includes(a) ? a === tm.resents : null, found: !!s.found };
     })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',

@@ -38,12 +38,12 @@ export default {
     ] },
     { id: 'ti.st.tw2', when: at('pirate-map', 'tug-of-war'), turns: [
       by('b', "Hold it with both hands. Don't let anyone near it."),
-      beat('{a} rolls the map up tight and tucks it under {a.posAdj} arm like a rugby ball.'),
+      beat('{a} rolls the map up tight and tucks it under {a.posAdj} arm.'),
       by('a', "Nobody's touching this. Let's go."),
     ] },
     { id: 'ti.st.lm1', when: at('pirate-map', 'logo-map'), turns: [
       beat('They unroll the map one last time to check: the logo, the islands, and an X in the middle of the sea.'),
-      by('b', "X marks the spot. Of course it does."),
+      by('b', "There's an X. That's where we're going."),
       by('a', "Jet skis. Let's go."),
     ] },
     { id: 'ti.st.lm2', when: at('pirate-map', 'logo-map'), turns: [
@@ -55,13 +55,13 @@ export default {
     // ── the doubloons ──
     { id: 'ti.st.to1', when: at('doubloons', 'tank-on'), turns: [
       beat('On the dock, {a} straps on an air tank and pulls a mask down over {a.posAdj} face.'),
-      by('b', "I'll be right here. In the boat. Watching the bubbles."),
-      by('a', "Watch them really closely. Please."),
+      by('b', "I'll be right here in the boat. I'll watch your bubbles."),
+      by('a', "Please don't take your eyes off them."),
     ] },
     { id: 'ti.st.to2', when: at('doubloons', 'tank-on'), turns: [
       by('a', "Breathe through the mouth, not the nose. Right?"),
       by('b', "Right. And don't panic."),
-      by('a', "I'll try not to."),
+      by('a', "Okay. Okay. I'm going."),
     ] },
     { id: 'ti.st.gu1', when: at('doubloons', 'going-under'), turns: [
       beat('{a} rolls backwards off the boat and sinks down past the coral, a trail of bubbles going up behind.'),
@@ -96,12 +96,12 @@ export default {
     { id: 'ti.st.sf1', when: at('doubloons', 'surface'), turns: [
       beat('{a} bursts up out of the water next to the boat and holds up the bag of gold.'),
       by('a', "Gold! Real gold!"),
-      by('b', "It's chocolate. It's chocolate coins in gold paper."),
-      by('a', "I don't care. It's still treasure."),
+      by('b', "It's chocolate. It's chocolate coins."),
+      by('a', "I don't care. We've got it."),
     ] },
     { id: 'ti.st.sf2', when: at('doubloons', 'surface'), turns: [
       by('b', "Did you find it? Tell me you found it."),
-      by('a', "Found it. And a lot of very confused fish."),
+      by('a', "Found it. It was right at the end of the tunnel."),
       beat('{b} pulls {a} back into the boat, and they head for the harbour.'),
     ] },
   ],
@@ -110,8 +110,8 @@ export default {
     // ── the map ──
     { id: 'ti.sf.um1', when: at('pirate-map', 'unroll-maps'), turns: [
       beat('{b} unrolls ten maps in a row. Not one of them has the logo.'),
-      by('b', "How many maps can one museum have?"),
-      by('a', "All of them, apparently. Keep looking."),
+      by('b', "How many maps are there?"),
+      by('a', "Too many. Keep looking."),
     ] },
     { id: 'ti.sf.um2', when: at('pirate-map', 'unroll-maps'), turns: [
       by('a', "This one! It's got a logo!"),
@@ -126,7 +126,7 @@ export default {
     { id: 'ti.sf.tw2', when: at('pirate-map', 'tug-of-war'), turns: [
       by('b', "Pull! Pull harder!"),
       beat('They pull. The other team pulls. The map tears in half down the middle.'),
-      by('a', "Well. Now nobody has it."),
+      by('a', "No! Now nobody has it!"),
     ] },
 
     // ── the doubloons ──
@@ -137,8 +137,8 @@ export default {
     ] },
     { id: 'ti.sf.to2', when: at('doubloons', 'tank-on'), turns: [
       by('b', "Why are you breathing like that?"),
-      by('a', "I'm testing the tank. I'm making sure it works."),
-      beat('{a} tests it for a long time.'),
+      by('a', "I'm scared. Give me a second."),
+      beat('{a} sits there, breathing, for a long time.'),
     ] },
     { id: 'ti.sf.tn1', when: at('doubloons', 'the-tunnels'), turns: [
       beat('{a} takes the right tunnel instead of the left, ends up in a dead end, and checks the air gauge. It\'s low.'),
@@ -157,7 +157,7 @@ export default {
     ] },
     { id: 'ti.sf.gd2', when: at('doubloons', 'the-gold'), turns: [
       by('b', "Have you got it?"),
-      beat('{a} comes up holding a bag. It\'s full of sand and one very small crab.'),
+      beat('{a} comes up holding a bag. It\'s full of sand.'),
       by('a', "Wrong bag. It's still down there."),
     ] },
   ],

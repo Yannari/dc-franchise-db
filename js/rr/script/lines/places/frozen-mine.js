@@ -22,7 +22,7 @@ const place = {
       beat("Don stands on a frozen lake in a full snowsuit, a scarf wrapped round his face, snow-covered pines on every shore."),
       don("Welcome to the Frozen Mine! Land of lakes, saunas, and the deepest mine on the planet. It's twenty below. I asked for a sauna leg. I got the frozen half."),
       don("Today, teams go sailing. On ice. In swimsuits. I'm not making that up. I wish I was."),
-      beat('A gust of wind sends snow across the ice and straight into his face. He doesn\'t move. He just closes his eyes.'),
+      beat('A gust of wind sends snow across the ice and straight into his face.'),
     ] },
     { id: 'fzm.op2', when: P, turns: [
       don("The Frozen Mine. In winter, the sun is up for four hours. You'll be spending most of them in a hole."),
@@ -41,25 +41,25 @@ const place = {
     { id: 'fzm.ar1', when: P, turns: [
       beat("The taxi drives out of the forest, and the lake opens up: flat, white, and endless, with sails moving across it like boats on a sea."),
       by('a', "Those are boats. On ice. Sailing on ice."),
-      by('b', "It's like the lake forgot to melt and everyone just carried on."),
+      by('b', "I've never seen anything like it."),
       by('a', "It's beautiful. I can't feel my nose, but it's beautiful."),
     ] },
     { id: 'fzm.ar2', when: P, turns: [
       by('b', "Look at the trees. Every single one is covered in snow."),
-      by('a', "Like a card. A Christmas card."),
-      by('b', "A Christmas card that's trying to kill us."),
+      by('a', "It looks like a Christmas card."),
+      by('b', "A really cold one."),
     ] },
   ],
   'arrival-awe.dread': [
     { id: 'fzm.ad1', when: P, turns: [
       by('a', "The tip says 'swimsuits'. It's twenty below."),
-      by('b', "Maybe it's a typo."),
-      by('a', "It's underlined."),
+      by('b', "In this weather? That can't be right."),
+      by('a', "It's right there. Swimsuits."),
     ] },
     { id: 'fzm.ad2', when: P, turns: [
       by('b', "'Who is not afraid of the dark?' I'm afraid of the dark."),
       by('a', "Since when?"),
-      by('b', "Since I read the word 'mine'."),
+      by('b', "Since I read that tip."),
     ] },
   ],
 };
@@ -70,8 +70,8 @@ const roads = {
     { id: 'fzm.tm1', when: { taskId: 'lake-taxi', mishap: 'reindeer-on-the-road' }, turns: [
       beat("The taxi stops in the snowy forest. A herd of reindeer is crossing the road, slowly, one by one."),
       by('a', "Reindeer! Real reindeer!"),
-      by('b', "Real reindeer, in our way, for twenty minutes."),
-      beat('The last one finally steps off the road, and looks back at them, unbothered.'),
+      by('b', "They're so slow. We're losing so much time."),
+      beat('The last one finally steps off the road.'),
     ] },
   ],
 };
@@ -88,20 +88,20 @@ const yacht = {
   'don-demo.dry': [
     { id: 'fzm.iy-d2', when: IY, turns: [
       don("Tip over, spin out, or sail the wrong way, and you drag your yacht back to the start and try again."),
-      don("Pull up at the mine gate, still in your swimsuits, and the next tip is yours. Your skin will thank you later. Much later."),
+      don("Pull up at the mine gate, still in your swimsuits, and the next tip is yours!"),
       beat('An ice yacht shoots past behind him, so fast it whistles.'),
     ] },
   ],
   'task-start.any': [
     { id: 'fzm.iy-s1', when: IY, turns: [
       beat("{a} and {b} come out of the changing hut in their swimsuits, and the cold hits them like a slap."),
-      by('a', "I can't. I can't do this. My skin is screaming."),
+      by('a', "I can't. I can't do this. It's so cold."),
       by('b', "Get on the yacht! The faster we go, the sooner it's over!"),
     ] },
     { id: 'fzm.iy-s2', when: IY, turns: [
       by('b', "You steer. I'll do the sail. Pull the rope when I say."),
       by('a', "Which rope?"),
-      by('b', "The only rope. There's one rope."),
+      by('b', "That one. There's only one."),
     ] },
     { id: 'fzm.iy-s3', when: IY, turns: [
       beat("The sail fills with wind, and the yacht jerks forward, skates screeching on the ice."),
@@ -111,24 +111,24 @@ const yacht = {
     { id: 'fzm.iy-s4', when: IY, turns: [
       by('a', "Which way is the mine?"),
       by('b', "Towards the big tower with the wheel on it."),
-      by('a', "There are three towers with wheels on them."),
+      by('a', "There are three of them!"),
     ] },
   ],
   'task-try.first-try': [
     { id: 'fzm.iy-f1', when: IY, turns: [
       beat("The yacht flies across the lake, faster and faster, and slides to a stop right at the mine gate."),
       by('a', "We did it! First go!"),
-      by('b', "Where's the tip? Where are my clothes? In that order!"),
+      by('b', "The tip! Then our clothes!"),
     ] },
     { id: 'fzm.iy-f2', when: IY, turns: [
-      by('b', "That was the fastest I've ever gone in my life. In a swimsuit."),
+      by('b', "That was the fastest I've ever gone in my life."),
       by('a', "My eyelashes froze. Look at them."),
-      by('b', "Grab the tip. Admire your eyelashes inside."),
+      by('b', "Grab the tip. Quick."),
     ] },
     { id: 'fzm.iy-f3', when: IY, turns: [
       beat("{a} and {b} steer the yacht in a perfect line across the lake, the sail tight, and pull up at the gate."),
       by('a', "That was beautiful. That was like flying."),
-      by('b', "Flying, but very, very cold."),
+      by('b', "And so cold."),
     ] },
     { id: 'fzm.iy-f4', when: IY, turns: [
       by('a', "Have you sailed before?"),
@@ -145,12 +145,12 @@ const yacht = {
     { id: 'fzm.iy-a2', when: IY, turns: [
       beat("Second try, {b} lets the sail out a little, and the yacht glides instead of racing, all the way to the gate."),
       by('b', "Less wind! Less wind was better!"),
-      by('a', "Less wind is always better in a swimsuit."),
+      by('a', "It was so much easier."),
     ] },
     { id: 'fzm.iy-a3', when: IY, turns: [
       by('a', "Follow that yacht. That one knows where it's going."),
       beat('They follow the other yacht across the whole lake, right up to the mine gate.'),
-      by('b', "We used them! We used them as a map!"),
+      by('b', "That worked! Following them worked!"),
     ] },
     { id: 'fzm.iy-a4', when: IY, turns: [
       beat("Third time across the ice, frozen to the bone, {a} and {b} finally reach the mine gate still upright."),
@@ -166,8 +166,8 @@ const yacht = {
     ] },
     { id: 'fzm.iy-t2', when: IY, turns: [
       by('b', "I can't feel my fingers. I can't pull the rope."),
-      by('a', "Pull it with your teeth!"),
-      by('b', "My teeth are frozen too!"),
+      by('a', "Then I'll pull it!"),
+      by('b', "I can't let go of the steering!"),
     ] },
     { id: 'fzm.iy-t3', when: IY, turns: [
       beat("The wind drops completely. The yacht stops dead in the middle of the ice."),
@@ -177,9 +177,9 @@ const yacht = {
   ],
   'task-done.any': [
     { id: 'fzm.iy-dn1', when: IY, turns: [
-      by('a', "I'm never wearing a swimsuit again. Not even at the beach."),
-      by('b', "Not even at a hot beach?"),
-      by('a', "Especially not at a hot beach. It'll remind me."),
+      by('a', "I'm never wearing a swimsuit again."),
+      by('b', "Not even on holiday?"),
+      by('a', "Not for a long time."),
     ] },
     { id: 'fzm.iy-dn2', when: IY, turns: [
       beat("{a} and {b} sprint into the mine office, where their clothes are waiting, and pull on everything at once."),
@@ -189,7 +189,7 @@ const yacht = {
     { id: 'fzm.iy-dn3', when: IY, turns: [
       by('b', "The tip says 'borehole'. What's a borehole?"),
       by('a', "A very deep, very narrow hole."),
-      by('b', "Why did I ask?"),
+      by('b', "I wish I hadn't asked."),
     ] },
   ],
   'attempt-fail.any': [
@@ -201,7 +201,7 @@ const yacht = {
     { id: 'fzm.iy-x2', when: IY, turns: [
       beat("The yacht sails beautifully, straight, fast, and right past the mine to the wrong side of the lake."),
       by('b', "That was the mine! We just sailed past the mine!"),
-      by('a', "Back to the start, then. Of course."),
+      by('a', "Back to the start, then."),
     ] },
     { id: 'fzm.iy-x3', when: IY, turns: [
       beat("{b} jumps off the yacht to grab a coat from the bank. The judge blows a whistle and points them back to the start."),
@@ -216,7 +216,7 @@ const borehole = {
   'don-demo.gag': [
     { id: 'fzm.bh-d1', when: BH, turns: [
       don("In this Botch or Watch, one of you is lowered down this borehole into a cavern under the ice, with a headlamp, to find a red ball."),
-      beat('He leans over the borehole, drops a pebble down it, and waits. He is still waiting when the crew moves on.'),
+      beat('He leans over the borehole, drops a pebble down it, and listens for a long time.'),
       don("It's deep. I'm told it's very deep. I'm told that by the pebble."),
     ] },
   ],
@@ -231,7 +231,7 @@ const borehole = {
     { id: 'fzm.bh-w1', when: BH, turns: [
       by('b', "You're smaller. You fit in the harness. You go down."),
       by('a', "I'm not smaller. I'm the same size as you."),
-      by('b', "You're smaller in spirit. Go."),
+      by('b', "You fit in the harness better. Go."),
     ] },
   ],
   'whose-botch.volunteer': [
@@ -245,13 +245,13 @@ const borehole = {
     { id: 'fzm.bh-w3', when: BH, turns: [
       by('b', "Not me. I'm the strong one. I'll work the winch."),
       by('a', "You're not stronger than me."),
-      by('b', "I'm stronger at winching. You're stronger at going down holes."),
+      by('b', "Maybe not. But I'm doing the winch."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'fzm.bh-w4', when: BH, turns: [
       by('a', "'Who is not afraid of the dark?' You sleep with a night light."),
-      by('b', "It's a mood lamp."),
+      by('b', "That's different."),
       by('a', "Then I'm going."),
     ] },
   ],
@@ -263,8 +263,8 @@ const borehole = {
     ] },
     { id: 'fzm.bh-s2', when: BH, turns: [
       by('b', "Shout when you get to the bottom. Shout when you see red. Shout if anything's wrong."),
-      by('a', "So just shout the whole time."),
-      by('b', "Yes. Shout the whole time."),
+      by('a', "So shout all the time."),
+      by('b', "Yes. Just keep talking to me."),
     ] },
     { id: 'fzm.bh-s3', when: BH, turns: [
       beat("The winch turns, and {a} sinks into the hole, the headlamp getting smaller and smaller."),
@@ -273,8 +273,8 @@ const borehole = {
     ] },
     { id: 'fzm.bh-s4', when: BH, turns: [
       by('a', "What if I see something down there? Something that isn't a ball?"),
-      by('b', "Then you don't bring it up."),
-      by('a', "That's not the comfort I wanted."),
+      by('b', "You won't. It's just balls down there."),
+      by('a', "Okay. Okay. Let me down."),
     ] },
   ],
   'task-try.first-try': [
@@ -284,7 +284,7 @@ const borehole = {
       by('b', "First try! In the dark! You're amazing!"),
     ] },
     { id: 'fzm.bh-f2', when: BH, turns: [
-      by('a', "It was right there! Right under the hole! Like it was waiting for me!"),
+      by('a', "It was right there! Right under the hole!"),
       by('b', "Was it scary down there?"),
       by('a', "Terrifying. But I got the ball."),
     ] },
@@ -296,7 +296,7 @@ const borehole = {
     { id: 'fzm.bh-f4', when: BH, turns: [
       by('b', "That was so quick. Did you even reach the bottom?"),
       by('a', "I reached the bottom, grabbed it, and screamed to come up."),
-      by('b', "Efficient."),
+      by('b', "Okay. Let's go."),
     ] },
   ],
   'task-try.after-fails': [
@@ -307,8 +307,8 @@ const borehole = {
     ] },
     { id: 'fzm.bh-a2', when: BH, turns: [
       beat("Third trip down. {a} searches for a long time, and finally the winch pulls up a red ball."),
-      by('a', "Third time! Finally the right colour!"),
-      by('b', "You're shaking. Are you cold, or excited?"),
+      by('a', "Finally! Red!"),
+      by('b', "You're shaking. Are you okay?"),
     ] },
     { id: 'fzm.bh-a3', when: BH, turns: [
       by('a', "Every ball I picked was in the middle. So this time I go to the edge."),
@@ -334,25 +334,25 @@ const borehole = {
     ] },
     { id: 'fzm.bh-t3', when: BH, turns: [
       beat("{b} is cranking the winch for the fourth time, arms shaking."),
-      by('b', "My arms are gone. My arms have left the race."),
+      by('b', "My arms are gone. I can't."),
       by('a', "Keep winching! I'm nearly at the top!"),
     ] },
   ],
   'task-done.any': [
     { id: 'fzm.bh-dn1', when: BH, turns: [
       by('a', "The sauna. The tip says the sauna. The Chill Zone is in a sauna."),
-      by('b', "A hot room? A warm, hot room?"),
+      by('b', "A hot room? Yes!"),
       by('a', "Run. Run now."),
     ] },
     { id: 'fzm.bh-dn2', when: BH, turns: [
       beat("{a} climbs out of the harness, shaking, and hugs {b} for a long time."),
       by('b', "Was it that bad?"),
-      by('a', "It was dark, and deep, and full of white balls. It was exactly that bad."),
+      by('a', "It was so dark, and so deep. Yes. It was bad."),
     ] },
     { id: 'fzm.bh-dn3', when: BH, turns: [
       by('b', "You went down the deepest hole on earth."),
       by('a', "And came back up."),
-      by('b', "That's the important part."),
+      by('b', "That's all that matters."),
     ] },
   ],
   'attempt-fail.any': [
@@ -368,15 +368,15 @@ const borehole = {
     ] },
     { id: 'fzm.bh-x3', when: BH, turns: [
       beat("{a} comes up holding a red ball. The judge looks at it, and turns it over. It's white on the other side."),
-      by('a', "Half red counts! Half red is red!"),
+      by('a', "It's half red! Doesn't that count?"),
       by('b', "It doesn't count! Again!"),
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'fzm.bh-v1', when: BH, turns: [
-      by('b', "You can do it! You're the bravest person in this mine!"),
-      by('a', "I'm the only person in this hole!"),
-      by('b', "Then you're the bravest by far!"),
+      by('b', "You can do it! You're so brave!"),
+      by('a', "I don't feel brave!"),
+      by('b', "You are! Keep going!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -397,7 +397,7 @@ const borehole = {
     { id: 'fzm.bh-v4', when: BH, turns: [
       beat("{b} holds the winch handle without a word, eyes fixed on the rope as it slowly moves."),
       by('a', "Are you still up there?"),
-      by('b', "I'm here. I'm just not breathing until you come up."),
+      by('b', "I'm here. I'm just so nervous."),
     ] },
   ],
   'helped-botch.any': [

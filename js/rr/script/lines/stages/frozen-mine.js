@@ -16,7 +16,7 @@ export default {
     ] },
     { id: 'fm.st.sw2', when: at('ice-yacht', 'swimsuits'), turns: [
       by('a', "Why swimsuits? Why on a frozen lake?"),
-      by('b', "Because it's funny. For Don."),
+      by('b', "I don't know. Just change. Fast."),
       beat('They change as fast as they possibly can, teeth chattering the whole time.'),
     ] },
     { id: 'fm.st.po1', when: at('ice-yacht', 'push-off'), turns: [
@@ -27,7 +27,7 @@ export default {
     { id: 'fm.st.po2', when: at('ice-yacht', 'push-off'), turns: [
       by('b', "You steer, I'll do the sail."),
       by('a', "Which rope is the sail?"),
-      by('b', "The one that's not attached to the steering."),
+      by('b', "That one! In your hand!"),
       beat('The sail snaps tight and the yacht slides off across the ice.'),
     ] },
     { id: 'fm.st.ai1', when: at('ice-yacht', 'across-ice'), turns: [
@@ -47,7 +47,7 @@ export default {
     ] },
     { id: 'fm.st.mg2', when: at('ice-yacht', 'mine-gate'), turns: [
       by('a', "I can't feel my legs. Are my legs still there?"),
-      by('b', "They're there. They're just purple."),
+      by('b', "They're there. They're just bright red."),
       beat('They grab the tip and run for their coats.'),
     ] },
 
@@ -55,7 +55,7 @@ export default {
     { id: 'fm.st.hn1', when: at('borehole', 'the-harness'), turns: [
       beat('At the edge of the borehole, a worker clips {a} into a harness hanging from the winch, and switches on {a.posAdj} headlamp.'),
       by('a', "How deep is it?"),
-      by('b', "The sign says it's the deepest hole on earth. So, deep."),
+      by('b', "Really deep. Don't think about it."),
     ] },
     { id: 'fm.st.hn2', when: at('borehole', 'the-harness'), turns: [
       by('b', "I'll be right here. I'll wind you back up."),
@@ -85,12 +85,12 @@ export default {
     { id: 'fm.st.wu1', when: at('borehole', 'winch-up'), turns: [
       beat('{b} winds the handle round and round, arms burning, and {a} rises slowly back up the shaft.'),
       by('b', "You're so heavy!"),
-      by('a', "I'm holding a ball! It's one ball!"),
+      by('a', "I'm holding on! Keep going!"),
     ] },
     { id: 'fm.st.wu2', when: at('borehole', 'winch-up'), turns: [
       by('a', "I can see daylight!"),
       beat('{a}\'s head comes up out of the hole, then the rest of {a.obj}, with the red ball held up high.'),
-      by('b', "You did it! I'm never letting go of this handle again!"),
+      by('b', "You did it! You got it!"),
     ] },
     { id: 'fm.st.rb1', when: at('borehole', 'red-ball'), turns: [
       beat('The worker takes the red ball, checks it, and hands over the tip.'),
@@ -99,7 +99,7 @@ export default {
     ] },
     { id: 'fm.st.rb2', when: at('borehole', 'red-ball'), turns: [
       by('b', "How was it down there?"),
-      by('a', "Dark. Cold. Full of balls. I don't want to talk about it."),
+      by('a', "Dark and cold. I don't want to talk about it."),
       beat('They run for the sauna.'),
     ] },
   ],
@@ -145,8 +145,8 @@ export default {
     ] },
     { id: 'fm.sf.hn2', when: at('borehole', 'the-harness'), turns: [
       by('b', "Go on. I've got you."),
-      by('a', "Have you, though? Show me your arms."),
-      beat('{a} makes {b} prove the winch works twice before going near the edge.'),
+      by('a', "Promise? Don't let go."),
+      beat('{a} checks the harness twice before going anywhere near the edge.'),
     ] },
     { id: 'fm.sf.bs1', when: at('borehole', 'ball-search'), turns: [
       beat('{a} grabs a ball, gets winched up, and holds it out. In the daylight, it\'s white.'),

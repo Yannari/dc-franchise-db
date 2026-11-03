@@ -11,49 +11,49 @@ const museum = {
     { id: 'tri2.pm-s1', when: PM, turns: [
       { beat: 'A recorded pirate voice booms through the museum: "Arrr, welcome, landlubbers!"' },
       { by: 'b', say: "That made me jump out of my skin." },
-      { by: 'a', say: "Arrr. Find the map, landlubber." },
-      { by: 'b', say: "Please never do that voice again." },
+      { by: 'a', say: "Come on. Find the map." },
+      { by: 'b', say: "Okay. Looking." },
     ] },
     { id: 'tri2.pm-s2', when: PM, turns: [
       { by: 'a', say: "Split up. You do the ship. I'll do the cannons." },
       { by: 'b', say: "There's a ship? Inside the museum?" },
-      { by: 'a', say: "Half a ship. Go. Do your half." },
+      { by: 'a', say: "Half a ship. Go." },
     ] },
     { id: 'tri2.pm-s3', when: PM, turns: [
       { beat: '{b} opens a treasure chest. It\'s full to the top with rolled-up maps.' },
-      { by: 'b', ...V("Why would a pirate keep this many maps? Did they keep getting lost?", "Why so many maps?", "So many maps.", "WHY so many MAPS? Did they keep getting LOST?", "Why would a pirate need this many maps, did they keep getting lost?", "These pirates were very bad at remembering where things were.") },
-      { by: 'a', say: "That's why they buried everything. They forgot where it was." },
+      { by: 'b', say: "Why are there so many maps?" },
+      { by: 'a', say: "Just look at the corners. Quick." },
     ] },
     { id: 'tri2.pm-s4', when: PM, turns: [
       { by: 'a', say: "Gently. Some of these are really old. Don't tear any." },
       { by: 'b', say: "We're on a race. I'm going to tear some." },
-      { by: 'a', say: "Then tear them gently." },
+      { by: 'a', say: "Just be careful." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'tri2.pm-f1', when: PM, turns: [
       { beat: '{a} pulls a map out of a waxwork pirate\'s boot. The logo is right in the middle.' },
       { by: 'a', say: "His boot! It was in his boot!" },
-      { by: 'b', say: "Who looks in a pirate's boot?" },
-      { by: 'a', say: "A winner. A winner looks in the boot." },
+      { by: 'b', say: "How did you think of that?" },
+      { by: 'a', say: "I don't know. It looked like something was in there." },
     ] },
     { id: 'tri2.pm-f2', when: PM, turns: [
       { by: 'b', say: "This one's tied with a ribbon. None of the others have ribbons." },
       { beat: '{b} pulls the ribbon. The map unrolls, and there\'s the logo.' },
-      { by: 'a', say: "The ribbon. Of course. A present for us." },
+      { by: 'a', say: "The ribbon! That's it!" },
     ] },
     { id: 'tri2.pm-f3', when: PM, turns: [
       { beat: '{a} and {b} grab the same map from opposite ends of a barrel, and look at each other.' },
       { by: 'a', say: "Is it?" },
       { by: 'b', say: "It is! It's got the logo!" },
-      { by: 'a', say: "Teamwork! Accidental teamwork!" },
+      { by: 'a', say: "Yes! Let's go!" },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'tri2.pm-a1', when: PM, turns: [
       { by: 'b', say: "We keep picking the big maps. Try the little ones." },
       { by: 'a', say: "The little ones look like nothing." },
-      { by: 'b', say: "That's why nobody's checked them." },
+      { by: 'b', say: "That's why nobody's checking them." },
       { beat: 'The fourth little map has the logo.' },
     ] },
     { id: 'tri2.pm-a2', when: PM, turns: [
@@ -69,8 +69,8 @@ const museum = {
       { beat: 'At the top of the stairs, the first map they open is the right one.' },
     ] },
     { id: 'tri2.pm-a4', when: PM, turns: [
-      { beat: 'A museum guard coughs and looks very hard at a cannon.' },
-      { by: 'b', say: "Is he looking at the cannon? Why is he looking at the cannon?" },
+      { beat: 'A museum guard coughs and nods at a cannon.' },
+      { by: 'b', say: "Is he helping us? I think he's helping us." },
       { by: 'a', say: "Check the cannon." },
       { beat: 'A map is rolled up inside the barrel of the cannon.' },
     ] },
@@ -78,29 +78,29 @@ const museum = {
   'task-done.any': [
     { id: 'tri2.pm-dn1', when: PM, turns: [
       { by: 'b', say: "We've left the museum in a terrible state." },
-      { by: 'a', say: "The pirates would be proud." },
-      { by: 'b', say: "The museum won't be." },
+      { by: 'a', say: "Somebody's going to have to clean that up." },
+      { by: 'b', say: "Not us. Come on." },
     ] },
     { id: 'tri2.pm-dn2', when: PM, turns: [
       { beat: '{a} and {b} sprint out of the museum and down to the jetty, where the jet skis bob in a row.' },
       { by: 'a', say: "I'm driving." },
       { by: 'b', say: "You've never driven one." },
-      { by: 'a', say: "Then it's a good day to start." },
+      { by: 'a', say: "How hard can it be?" },
     ] },
     { id: 'tri2.pm-dn3', when: PM, turns: [
       { by: 'a', say: "Hold the map up. Let me look at it." },
       { by: 'b', say: "It's a sea, some islands and an X." },
-      { by: 'a', say: "That's all I need to know about life." },
+      { by: 'a', say: "That's all I need to know." },
     ] },
     { id: 'tri2.pm-dn4', when: PM, turns: [
       { beat: 'The recorded pirate voice booms one last time as they leave: "Farewell, landlubbers!"' },
-      { by: 'b', say: "Farewell, recorded pirate." },
+      { by: 'b', say: "Bye, pirate." },
       { by: 'a', say: "Don't talk back to it. Run." },
     ] },
     { id: 'tri2.pm-dn5', when: PM, turns: [
-      { by: 'b', say: "I've got dust in my eyes, and I think a parrot feather in my mouth." },
-      { by: 'a', say: "A stuffed parrot?" },
-      { by: 'b', say: "I really hope so." },
+      { by: 'b', say: "I've got dust in my eyes." },
+      { by: 'a', say: "Me too. Keep running." },
+      { by: 'b', say: "I can't see anything." },
     ] },
   ],
 };
@@ -109,8 +109,8 @@ const jetSki = {
   'ride.any': [
     { id: 'tri2.js-r1', when: JS, turns: [
       { beat: 'The jet ski hits a wave and leaves the water completely for a second.' },
-      { by: 'b', say: "WE'RE FLYING!" },
-      { by: 'a', say: "WE'RE LANDING! HOLD ON!" },
+      { by: 'b', say: "Whoa! Hold on!" },
+      { by: 'a', say: "I'm holding on!" },
     ] },
     { id: 'tri2.js-r2', when: JS, turns: [
       { by: 'a', say: "Is that our island, or that one?" },
@@ -125,7 +125,7 @@ const jetSki = {
     { id: 'tri2.js-r4', when: JS, turns: [
       { by: 'b', say: "The water's so clear. I can see the bottom." },
       { by: 'a', say: "Don't look at the bottom. Look at where we're going." },
-      { by: 'b', say: "There's a shark! No, it's a rock. Never mind, it's a rock." },
+      { by: 'b', say: "Is that a shark? No, it's a rock." },
     ] },
   ],
 };
@@ -135,14 +135,14 @@ const doubloons = {
     { id: 'tri2.db-s1', when: DB, turns: [
       { by: 'b', say: "Thumbs up means you're okay. Thumbs down means you're not." },
       { by: 'a', say: "And what does this mean?" },
-      { beat: '{a} gives a wobbly so-so wave of the hand.' },
-      { by: 'b', say: "That means you go anyway." },
+      { beat: '{a} wobbles one hand from side to side.' },
+      { by: 'b', say: "That means come up. Okay?" },
     ] },
     { id: 'tri2.db-s2', when: DB, turns: [
       { beat: '{a} sits on the side of the boat, flippers on, looking at the water.' },
       { by: 'a', say: "How deep is it?" },
-      { by: 'b', ...V("Deep enough for gold. Not deep enough to worry about.", "Deep enough for gold.", "Deep enough.", "Deep enough for GOLD! Not deep enough to WORRY!", "It's deep enough for gold, but not deep enough to worry about.", "Exactly as deep as a fortune.") },
-      { by: 'a', say: "That's not a number." },
+      { by: 'b', say: "Not that deep. You'll be fine." },
+      { by: 'a', say: "Okay. I'm going." },
     ] },
     { id: 'tri2.db-s3', when: DB, turns: [
       { by: 'a', say: "Say the turns one more time." },
@@ -151,9 +151,9 @@ const doubloons = {
       { beat: '{a} goes over the side backwards with a big splash.' },
     ] },
     { id: 'tri2.db-s4', when: DB, turns: [
-      { beat: 'A fish swims up and taps its nose on {a}\'s mask before {a.sub} is even under.' },
+      { beat: 'A fish swims right up to {a}\'s mask before {a.sub} is even under.' },
       { by: 'a', say: "There's a fish looking at me." },
-      { by: 'b', say: "It's saying good luck. Go." },
+      { by: 'b', say: "It's fine. Go." },
     ] },
   ],
   'task-try.first-try': [
@@ -166,12 +166,12 @@ const doubloons = {
     { id: 'tri2.db-f2', when: DB, turns: [
       { by: 'a', say: "It was easy. It was so easy. The cave was right where you said." },
       { by: 'b', say: "I did say it, didn't I?" },
-      { by: 'a', say: "You say it like you knew." },
+      { by: 'a', say: "You did." },
     ] },
     { id: 'tri2.db-f3', when: DB, turns: [
-      { beat: '{a} comes up with the gold and a big piece of seaweed on top of {a.posAdj} head like a hat.' },
-      { by: 'b', say: "You've got a hat." },
-      { by: 'a', say: "I've got gold. The hat is a bonus." },
+      { beat: '{a} comes up with the gold and a big piece of seaweed stuck to {a.posAdj} head.' },
+      { by: 'b', say: "You've got seaweed on your head." },
+      { by: 'a', say: "I don't care. I've got the gold." },
     ] },
   ],
   'task-try.after-fails': [
@@ -184,12 +184,12 @@ const doubloons = {
       { beat: '{a} surfaces next to the boat and pulls off the mask, breathing hard.' },
       { by: 'a', say: "The mask keeps fogging up. I can't see a thing." },
       { by: 'b', say: "Spit in it. Divers spit in the mask." },
-      { by: 'a', say: "That's disgusting." },
+      { by: 'a', say: "Gross. Okay." },
       { beat: '{a} spits in the mask. On the next dive, {a.sub} can see the gold.' },
     ] },
     { id: 'tri2.db-a3', when: DB, turns: [
       { by: 'b', ...V("Slow down in there. You're swimming like you're late for something.", "Slow down in there.", "Slower.", "SLOW down! You're swimming like you're LATE!", "You need to slow down a little in there.", "Swim like a turtle, not like a dropped phone.") },
-      { by: 'a', say: "I am late for something. A million dollars." },
+      { by: 'a', say: "I'm nervous! I can't help it!" },
       { beat: 'Swimming slowly, {a} finds every turn, and the gold.' },
     ] },
     { id: 'tri2.db-a4', when: DB, turns: [
@@ -207,8 +207,8 @@ const doubloons = {
       { by: 'a', say: "Not until we're on the beach." },
     ] },
     { id: 'tri2.db-dn2', when: DB, turns: [
-      { beat: '{b} hauls {a} into the boat by the back of the wetsuit, like a fish.' },
-      { by: 'a', say: "Thank you. My legs are noodles." },
+      { beat: '{b} hauls {a} into the boat by the back of the wetsuit.' },
+      { by: 'a', say: "Thank you. My legs are so tired." },
       { by: 'b', say: "Sit down. I'll drive." },
     ] },
     { id: 'tri2.db-dn3', when: DB, turns: [
@@ -218,14 +218,14 @@ const doubloons = {
     ] },
     { id: 'tri2.db-dn4', when: DB, turns: [
       { beat: '{a} holds up the bag of doubloons and shakes it. It jingles.' },
-      { by: 'a', say: "Pirate treasure. We are actual pirates now." },
-      { by: 'b', say: "Pirates with a jet ski." },
-      { by: 'a', say: "The best kind." },
+      { by: 'a', say: "We found pirate treasure." },
+      { by: 'b', say: "Chocolate pirate treasure." },
+      { by: 'a', say: "Still counts." },
     ] },
     { id: 'tri2.db-dn5', when: DB, turns: [
       { by: 'b', say: "I was so worried. You were down there for ages." },
       { by: 'a', say: "Were you really worried?" },
-      { by: 'b', say: "A bit. Mostly about the gold." },
+      { by: 'b', say: "So worried. I'm so glad you're okay." },
     ] },
   ],
 };

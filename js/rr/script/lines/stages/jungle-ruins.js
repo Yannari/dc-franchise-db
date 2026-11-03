@@ -16,7 +16,7 @@ export default {
       by('b', "There's one. And there. This way."),
     ] },
     { id: 'jr.st.ps2', when: at('jungle-trail', 'painted-stones'), turns: [
-      by('b', "It's so hot in here. It's like breathing soup."),
+      by('b', "It's so hot in here. I can barely breathe."),
       by('a', "Keep your eyes on the stones."),
       beat('They push through the vines from one red stone to the next.'),
     ] },
@@ -31,7 +31,7 @@ export default {
       by('b', "Made it. I'm never doing that again."),
     ] },
     { id: 'jr.st.cp1', when: at('jungle-trail', 'caterpillars'), turns: [
-      beat('A caterpillar the size of a dog drops out of a tree onto the path in front of them, and stares.'),
+      beat('A huge hairy caterpillar drops out of a tree onto the path in front of them.'),
       by('b', "What is that? Why is it so big?"),
       by('a', "It's a caterpillar. It eats leaves. Just walk round it."),
     ] },
@@ -114,7 +114,7 @@ export default {
     { id: 'jr.sf.ps2', when: at('jungle-trail', 'painted-stones'), turns: [
       by('b', "That's a red stone!"),
       by('a', "That's a red flower."),
-      beat('They follow the flower for a while before they work it out.'),
+      beat('They follow the flowers for a while before they realise.'),
     ] },
     { id: 'jr.sf.pl1', when: at('jungle-trail', 'piranha-log'), turns: [
       beat('Halfway across the log, {b}\'s foot slips on the moss, and {b} drops into the stream.'),
@@ -141,7 +141,7 @@ export default {
     { id: 'jr.sf.cv1', when: at('golden-idol', 'carvings'), turns: [
       beat('They stare at the carvings for a long time. Suns, snakes, faces. None of it means anything.'),
       by('b', "I've got nothing. Have you got anything?"),
-      by('a', "I've got a headache."),
+      by('a', "Nothing. I don't get it."),
     ] },
     { id: 'jr.sf.cv2', when: at('golden-idol', 'carvings'), turns: [
       by('a', "The snake. It's pointing at the snake."),

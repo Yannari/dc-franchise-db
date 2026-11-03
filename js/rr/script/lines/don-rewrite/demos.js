@@ -1,8 +1,8 @@
 // Don showing each challenge, in whole sentences, the joke built before it lands (2026-10-20).
 export default {
   'rsd.sp-d1:3': "And that one's paprika, you're welcome!",
-  'itc.ca-d1:3': "That isn't a caricature, that's slander, because my chin is perfect.",
-  'itc.ct-d1:3': "It's very, very strong cheese, so strong that I can no longer feel my face.",
+  'itc.ca-d1:3': "That isn't a caricature, my chin is perfect!",
+  'itc.ct-d1:3': "It's very, very strong cheese, so you'll smell it before you see it!",
   'hc.tw-d1:3': "I did the Sky-deck myself this morning, and I've almost stopped shaking.",
   'sky.ts-d1:2': "I'll be taking the elevator, because I'm the host, and it's in my contract.",
   'sky.bu-d1:2': "And the water is very refreshing, so would somebody please pull me out, because my suit is ruined, my finale suit!",

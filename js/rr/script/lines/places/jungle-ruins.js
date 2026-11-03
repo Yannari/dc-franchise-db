@@ -21,7 +21,7 @@ const place = {
       beat("Don stands on a riverbank in the rainforest, in a safari hat with a net over his face, completely covered in bug spray."),
       don("Welcome to the Jungle Ruins! A rainforest so thick the sun never reaches the ground, and at the end of it, a city nobody has lived in for five hundred years."),
       don("Today, teams cross the jungle, avoid the piranhas, and find some gold. Real gold. One piece of real gold. Good luck."),
-      beat('A caterpillar the size of a hot dog drops from a branch onto his hat. He does not look up. He knows.'),
+      beat('A huge caterpillar drops from a branch onto his hat.'),
     ] },
     { id: 'jgr.op2', when: P, turns: [
       don("The Jungle Ruins. Hot, wet, and full of things that bite. And that's just the air."),
@@ -44,9 +44,9 @@ const place = {
       by('a', "How did they even get the stones up there?"),
     ] },
     { id: 'jgr.ar2', when: P, turns: [
-      by('b', "Everything is so green. I didn't know there were this many greens."),
+      by('b', "Everything is so green."),
       by('a', "And so loud. Every tree is singing."),
-      by('b', "That's not singing. That's bugs."),
+      by('b', "That's bugs. Millions of bugs."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -58,7 +58,7 @@ const place = {
     { id: 'jgr.ad2', when: P, turns: [
       beat("Something big and hairy crawls slowly along a branch at head height, right next to {a}."),
       by('a', "What is that? Is that a caterpillar?"),
-      by('b', "It's the size of my arm. That's not a caterpillar. That's a scarf."),
+      by('b', "It's the size of my arm. Don't touch it."),
     ] },
   ],
 };
@@ -108,43 +108,43 @@ const trail = {
       by('b', "Keep going! Don't stop!"),
     ] },
     { id: 'jgr.jt-s4', when: JT, turns: [
-      by('a', "Is that a stone? Or just a stone?"),
-      by('b', "It's got paint on it. It's a stone stone."),
-      by('a', "Good. Follow the stone stones."),
+      by('a', "Is that one painted?"),
+      by('b', "It's got paint on it. That's one."),
+      by('a', "Good. Keep going."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'jgr.jt-f1', when: JT, turns: [
       beat("{a} and {b} cross the log without a wobble, duck every caterpillar, and burst out of the trees at the foot of the ruins."),
       by('b', "We're here! We're through!"),
-      by('a', "Not one bite! Not one itch!"),
+      by('a', "Not one bite!"),
     ] },
     { id: 'jgr.jt-f2', when: JT, turns: [
-      by('a', "Stone! Stone! Stone! Ruins!"),
+      by('a', "Stone! Stone! There's the ruins!"),
       beat("They follow every painted stone without missing one, and the jungle opens onto the ancient steps."),
-      by('b', "You're amazing at stones!"),
+      by('b', "You didn't miss a single one!"),
     ] },
     { id: 'jgr.jt-f3', when: JT, turns: [
       beat("{a} crosses the log in four quick steps, turns, and reaches out a hand to help {b} across."),
       by('b', "You were so fast!"),
-      by('a', "I didn't want to give the fish time to think about it."),
+      by('a', "I didn't want to look down."),
     ] },
     { id: 'jgr.jt-f4', when: JT, turns: [
       by('b', "First go! The whole jungle! First go!"),
-      by('a', "I've got a caterpillar on my back, haven't I?"),
-      by('b', "Yes. But first go!"),
+      by('a', "Is there something on my back?"),
+      by('b', "Just a leaf. First go!"),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'jgr.jt-a1', when: JT, turns: [
       by('b', "We lost the stones because we were running. This time we walk, and we look."),
       beat("They walk and look, and every painted stone is right where it should be, all the way to the ruins."),
-      by('a', "Walking is faster than running! Who knew?"),
+      by('a', "Walking was faster!"),
     ] },
     { id: 'jgr.jt-a2', when: JT, turns: [
       beat("Second try at the log. {a} crawls across on hands and knees this time, and makes it."),
-      by('a', "Crawling counts! Crawling definitely counts!"),
-      by('b', "It's not pretty, but it counts!"),
+      by('a', "I made it! I don't care how!"),
+      by('b', "You made it!"),
     ] },
     { id: 'jgr.jt-a3', when: JT, turns: [
       by('a', "Close your eyes when we pass the caterpillars. I'll lead you."),
@@ -154,19 +154,19 @@ const trail = {
     { id: 'jgr.jt-a4', when: JT, turns: [
       beat("After one fall off the log and one long detour, {a} and {b} finally stumble out at the foot of the ruins."),
       by('a', "We made it! We're wet and itchy, but we made it!"),
-      by('b', "Mostly itchy."),
+      by('b', "So itchy."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'jgr.jt-t1', when: JT, turns: [
       beat("{a} is frozen in the middle of the log, arms out, refusing to move."),
-      by('a', "I can't go forward. I can't go back. I'm going to live on this log."),
-      by('b', "You can't live on a log! Take one step!"),
+      by('a', "I can't go forward. I can't go back."),
+      by('b', "Yes, you can! One step!"),
     ] },
     { id: 'jgr.jt-t2', when: JT, turns: [
       by('b', "We haven't seen a painted stone in ten minutes."),
-      by('a', "Every stone is a stone. How do I know which one is painted?"),
-      by('b', "The painted one has paint!"),
+      by('a', "They all look the same in here."),
+      by('b', "Look for the red!"),
     ] },
     { id: 'jgr.jt-t3', when: JT, turns: [
       beat("A caterpillar drops onto {a}'s head. {a} stops dead and doesn't move a muscle."),
@@ -186,9 +186,9 @@ const trail = {
       by('a', "And somewhere in it, there's real gold."),
     ] },
     { id: 'jgr.jt-dn3', when: JT, turns: [
-      by('b', "We beat the piranhas."),
-      by('a', "We beat the log."),
-      by('b', "We beat the jungle."),
+      by('b', "We got past the piranhas."),
+      by('a', "And the log."),
+      by('b', "We did it."),
     ] },
   ],
   'attempt-fail.any': [
@@ -215,14 +215,14 @@ const idol = {
   'don-demo.gag': [
     { id: 'jgr.gi-d1', when: GI, turns: [
       don("In this All-In, find the one real golden idol in this wall. There are dozens. One is real gold. The rest are clay, painted gold."),
-      beat('He picks one up, bites it like a coin, and immediately regrets it.'),
+      beat('He picks one up and bites it like a coin.'),
       don("That one's clay. Don't bite them. Take them to the guide, and she'll scratch them with a coin."),
     ] },
   ],
   'don-demo.dry': [
     { id: 'jgr.gi-d2', when: GI, turns: [
       don("Bring her a fake, and it goes back in its hole, and you choose again. The carvings on the wall might help. Might."),
-      don("The real golden idol gets you the next tip. The fakes get you nothing but a lecture."),
+      don("The real golden idol gets you the next tip, so choose carefully!"),
       beat('The old guide sits on the steps with a coin in her hand, ready to scratch.'),
     ] },
   ],
@@ -245,14 +245,14 @@ const idol = {
     { id: 'jgr.gi-s4', when: GI, turns: [
       by('a', "What if we just take them all to her? One after the other?"),
       by('b', "There are about fifty."),
-      by('a', "Then let's be clever instead."),
+      by('a', "Okay. Let's look at the carvings first."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'jgr.gi-f1', when: GI, turns: [
       beat("{b} picks up an idol, weighs it in one hand, and frowns. It's heavy. The guide scratches it. It shines underneath."),
       by('b', "It's real! First one! It's real!"),
-      by('a', "You found real gold! In a wall!"),
+      by('a', "You found it! Real gold!"),
     ] },
     { id: 'jgr.gi-f2', when: GI, turns: [
       by('a', "The suns all point to this one. This one at the top."),
@@ -274,7 +274,7 @@ const idol = {
     { id: 'jgr.gi-a1', when: GI, turns: [
       by('b', "The fakes are all light. So we only take the heavy ones."),
       beat("They lift idol after idol, put back every light one, and the first heavy one is real."),
-      by('a', "Heavy is real! Heavy is always real!"),
+      by('a', "The heavy one! It was the heavy one!"),
     ] },
     { id: 'jgr.gi-a2', when: GI, turns: [
       beat("After two fakes, {a} finally reads the carvings properly, and they lead straight to one idol."),
@@ -284,11 +284,11 @@ const idol = {
     { id: 'jgr.gi-a3', when: GI, turns: [
       by('a', "The fakes have a chip on the base. Look. Real gold wouldn't chip."),
       beat("They check every base. Only one has no chip. It's the real one."),
-      by('b', "You're a detective! A gold detective!"),
+      by('b', "You noticed that? That's so smart!"),
     ] },
     { id: 'jgr.gi-a4', when: GI, turns: [
       beat("Third trip to the guide. She scratches it, looks at it, and smiles. Real gold."),
-      by('a', "Third time! Third time lucky!"),
+      by('a', "Third time! Finally!"),
       by('b', "I was starting to think the real one didn't exist."),
     ] },
   ],
@@ -296,17 +296,17 @@ const idol = {
     { id: 'jgr.gi-t1', when: GI, turns: [
       beat("{a} and {b} have a pile of fake idols at their feet, every one of them clay."),
       by('a', "That's nine fakes. Nine."),
-      by('b', "That's nine we don't have to try again."),
+      by('b', "Then it's one of the others."),
     ] },
     { id: 'jgr.gi-t2', when: GI, turns: [
       by('b', "These carvings don't mean anything. They're just pictures."),
-      by('a', "They're pictures that mean something to somebody."),
-      by('b', "Not to us."),
+      by('a', "They mean something. They have to."),
+      by('b', "Not to me."),
     ] },
     { id: 'jgr.gi-t3', when: GI, turns: [
       beat("{a} is up on the wall, reaching for an idol at the very top, one foot in a niche, the other dangling."),
       by('a', "I can nearly reach it!"),
-      by('b', "Don't fall off an ancient wall! Please!"),
+      by('b', "Don't fall! Please!"),
     ] },
   ],
   'task-done.any': [
@@ -323,7 +323,7 @@ const idol = {
     { id: 'jgr.gi-dn3', when: GI, turns: [
       by('b', "That guide smiled at us."),
       by('a', "Because we finally got it right."),
-      by('b', "Because she's nice."),
+      by('b', "She was so nice."),
     ] },
   ],
   'attempt-fail.any': [
@@ -334,8 +334,8 @@ const idol = {
     ] },
     { id: 'jgr.gi-x2', when: GI, turns: [
       beat("{b} drops an idol on the stone floor, and it breaks clean in half. Clay."),
-      by('b', "Well, that's definitely a fake."),
-      by('a', "We'll take that as a no."),
+      by('b', "Well, that's a fake."),
+      by('a', "Okay. Next one."),
     ] },
     { id: 'jgr.gi-x3', when: GI, turns: [
       beat("The guide looks at the idol they hand her, doesn't even scratch it, and shakes her head."),

@@ -200,8 +200,8 @@ export default {
         { by: 'a', say: "That was the best thing. Better than any prize." },
       ] },
       { id: 'ph.cj2', turns: [
-        { by: 'b', say: "They've been watching. Every single leg." },
-        { by: 'a', say: "They saw us mess up? They saw all of that?" },
+        { by: 'b', say: "I told them everything. The good and the bad." },
+        { by: 'a', say: "You told them how badly we messed up? All of it?" },
         { by: 'b', say: "And they said they're proud of us anyway." },
         { by: 'a', say: "Proud of us? Even after everything?" },
         { by: 'b', say: "Even after everything." },

@@ -128,9 +128,9 @@ export default {
         { by: 'b', say: "Why didn't you tell me that three tries ago?" },
       ] },
       { id: 'pt.w-fam1', when: T({ relFam: 'family' }), turns: [
-        { by: 'a', say: "Remember when you learned to ride a bike? You fell off so many times." },
+        { by: 'a', say: "Remember when you learned to drive? You stalled it so many times." },
         { by: 'b', say: "Is this supposed to help?" },
-        { by: 'a', say: "And then you got it, and you wouldn't get off it for a week." },
+        { by: 'a', say: "And then you got it, and you wouldn't let anybody else drive for a week." },
         { by: 'b', say: "...I remember that." },
         { by: 'a', say: "This is the same. You're about to get it. Go." },
         { beat: '{b} laughs, goes again, and gets it.' },

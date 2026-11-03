@@ -16,8 +16,8 @@ export default {
       beat('Heart. Heart. And, after a long wobble, heart.'),
     ] },
     { id: 'gf.st.lv2', when: at('wedding-slots', 'the-lever'), turns: [
-      by('a', "Third pull's the lucky one. Everybody knows that."),
-      by('b', "Nobody knows that. You made that up."),
+      by('a', "Come on. Come on. Third time."),
+      by('b', "Just pull it!"),
       beat('{a} pulls, and the reels click round to three red hearts.'),
     ] },
     { id: 'gf.st.th1', when: at('wedding-slots', 'three-hearts'), turns: [
@@ -48,7 +48,7 @@ export default {
     { id: 'gf.st.mn2', when: at('wedding-slots', 'the-minister'), turns: [
       by('a', "Tip! We're walking a tightrope over the falls."),
       by('b', "Over the falls? Over those falls?"),
-      by('a', "Those are the only falls."),
+      by('a', "Yes. Those falls."),
     ] },
 
     // ── the tightrope ──
@@ -65,7 +65,7 @@ export default {
     { id: 'gf.st.fs1', when: at('tightrope', 'first-steps'), turns: [
       beat('{a} steps out onto the rope with the long pole held level, and takes one slow step, then another.'),
       by('b', "Don't look down. Look at the far side."),
-      by('a', "I'm looking at the far side. It's so far."),
+      by('a', "I'm looking. It's so far away."),
     ] },
     { id: 'gf.st.fs2', when: at('tightrope', 'first-steps'), turns: [
       by('b', "Heel, toe. Heel, toe."),
@@ -98,17 +98,17 @@ export default {
     // ── the slot machine ──
     { id: 'gf.sf.lv1', when: at('wedding-slots', 'the-lever'), turns: [
       beat('The reels slow down. Heart. Heart. Lemon.'),
-      by('a', "A lemon! Why is there a lemon on a wedding machine?"),
+      by('a', "A lemon! No!"),
       by('b', "Pull it again!"),
     ] },
     { id: 'gf.sf.lv2', when: at('wedding-slots', 'the-lever'), turns: [
       by('b', "Was that three?"),
-      by('a', "Two hearts and a broken heart. I don't think that counts."),
-      beat('The machine makes a sad little noise. {a} pulls again.'),
+      by('a', "Two hearts and a broken heart. That doesn't count."),
+      beat('The machine buzzes. {a} pulls again.'),
     ] },
     { id: 'gf.sf.lv3', when: at('wedding-slots', 'the-lever'), turns: [
       beat('{a} pulls the lever so hard it sticks at the bottom. The reels don\'t move.'),
-      by('a', "It's stuck. I broke it."),
+      by('a', "It's stuck. Did I break it?"),
       by('b', "Let it come back up! Gently!"),
     ] },
     { id: 'gf.sf.rl1', when: at('wedding-slots', 'the-rails'), turns: [
@@ -130,7 +130,7 @@ export default {
     ] },
     { id: 'gf.sf.fs2', when: at('tightrope', 'first-steps'), turns: [
       by('b', "Why are you going backwards?"),
-      by('a', "My feet decided. Not me. My feet."),
+      by('a', "I can't. I can't do it."),
       beat('{a} shuffles back to the rim and takes a deep breath.'),
     ] },
     { id: 'gf.sf.sp1', when: at('tightrope', 'the-spray'), turns: [

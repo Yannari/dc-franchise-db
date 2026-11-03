@@ -13,7 +13,7 @@ export default {
     // ── the plums ──
     { id: 'gs.st.pt1', when: at('plums', 'plum-trees'), turns: [
       beat('Between the huts, the plum trees hang heavy with dark purple fruit. A group of children watch them, footballs at their feet.'),
-      by('b', "Why are they smiling like that?"),
+      by('b', "Why are they all watching us?"),
       by('a', "Don't look at them. Look at the plums."),
     ] },
     { id: 'gs.st.pt2', when: at('plums', 'plum-trees'), turns: [
@@ -24,7 +24,7 @@ export default {
     { id: 'gs.st.pp1', when: at('plums', 'plum-picking'), turns: [
       beat('{a} reaches up and pulls down a whole branch, and {b} picks it clean into the basket.'),
       by('b', "They're so ripe. They come off in your hand."),
-      by('a', "Don't eat any. I can see you thinking about it."),
+      by('a', "Don't eat any. Just pick."),
     ] },
     { id: 'gs.st.pp2', when: at('plums', 'plum-picking'), turns: [
       by('b', "Gently. Don't squash them."),
@@ -48,7 +48,7 @@ export default {
     ] },
     { id: 'gs.st.fl2', when: at('plums', 'full-basket'), turns: [
       by('a', "Tip says gourds. And a cricket bat."),
-      by('b', "I'm so glad to be leaving those children behind."),
+      by('b', "Those kids were so good."),
       beat('A football bounces after them as they go.'),
     ] },
 
@@ -56,11 +56,11 @@ export default {
     { id: 'gs.st.gr1', when: at('gourds', 'gourd-row'), turns: [
       beat('Ten wooden posts stand in a row, a hard round gourd balanced on top of each one.'),
       by('b', "One swing for each. No missing."),
-      by('a', "Ten swings, ten gourds. How hard can it be?"),
+      by('a', "Ten swings, ten gourds. Okay."),
     ] },
     { id: 'gs.st.gr2', when: at('gourds', 'gourd-row'), turns: [
-      by('a', "This bat's flat. Why is it flat?"),
-      by('b', "It's a cricket bat. Just swing it."),
+      by('a', "This bat's so heavy."),
+      by('b', "Just swing it. Hard."),
       beat('{a} takes a couple of practice swings at the air.'),
     ] },
     { id: 'gs.st.fsw1', when: at('gourds', 'first-swings'), turns: [
@@ -71,7 +71,7 @@ export default {
     { id: 'gs.st.fsw2', when: at('gourds', 'first-swings'), turns: [
       by('b', "Eyes on the gourd. Not on me."),
       beat('Crack. Crack. Crack. Three gourds go flying, one after the other.'),
-      by('a', "I'm good at this! Why am I good at this?"),
+      by('a', "I'm actually good at this!"),
     ] },
     { id: 'gs.st.lg1', when: at('gourds', 'last-gourds'), turns: [
       beat('Nine gourds lie smashed in the grass. {a} lines up the last one, and swings.'),
@@ -86,7 +86,7 @@ export default {
     { id: 'gs.st.tt1', when: at('gourds', 'ten-for-ten'), turns: [
       beat('Ten empty posts, ten smashed gourds. {a} drops the bat.'),
       by('b', "Ten for ten! You didn't miss once!"),
-      by('a', "Tip. Grab the tip before I start bragging."),
+      by('a', "Tip. Grab the tip."),
     ] },
     { id: 'gs.st.tt2', when: at('gourds', 'ten-for-ten'), turns: [
       by('a', "Safari next. We have to find some animal."),
@@ -103,7 +103,7 @@ export default {
     { id: 'gs.st.tk2', when: at('safari', 'the-tracks'), turns: [
       by('b', "The grass is broken over there. Something went through."),
       beat('The ranger whistles twice and points the same way.'),
-      by('a', "See? We're natural trackers."),
+      by('a', "Okay. This way."),
     ] },
     { id: 'gs.st.tg1', when: at('safari', 'tall-grass'), turns: [
       beat('They creep through the tall grass on hands and knees. Ahead, black and white stripes show between the stalks.'),
@@ -123,7 +123,7 @@ export default {
     { id: 'gs.st.sd2', when: at('safari', 'sleepy-dart'), turns: [
       by('b', "Big breath. One puff."),
       beat('Fwip. The dart hits, and the animal\'s eyes slowly close.'),
-      by('a', "Sweet dreams. Sorry about that."),
+      by('a', "Sorry. Sleep well."),
     ] },
     { id: 'gs.st.tag1', when: at('safari', 'the-tag'), turns: [
       beat('The ranger creeps up to the sleeping animal and clips a little tag onto its ear.'),
@@ -132,7 +132,7 @@ export default {
     ] },
     { id: 'gs.st.tag2', when: at('safari', 'the-tag'), turns: [
       by('a', "Chill Zone. Out on the plain. Let's go before it wakes up."),
-      by('b', "Bye. Sorry we shot you."),
+      by('b', "Bye. Sorry."),
       beat('They tiptoe away through the grass.'),
     ] },
   ],
@@ -142,11 +142,11 @@ export default {
     { id: 'gs.sf.pp1', when: at('plums', 'plum-picking'), turns: [
       beat('{b} grabs a handful of plums too hard, and they burst all over {b.posAdj} hands.'),
       by('b', "They're squashing! They're too ripe!"),
-      by('a', "Gently! Like eggs! Pick them like eggs!"),
+      by('a', "Gently! Don't squeeze them!"),
     ] },
     { id: 'gs.sf.pp2', when: at('plums', 'plum-picking'), turns: [
       by('a', "Why is the basket purple inside?"),
-      by('b', "I may have squashed a few."),
+      by('b', "I squashed a few. Sorry."),
       beat('They tip out the squashed ones and keep picking.'),
     ] },
     { id: 'gs.sf.fb1', when: at('plums', 'footballs'), turns: [
@@ -157,19 +157,19 @@ export default {
     { id: 'gs.sf.fb2', when: at('plums', 'footballs'), turns: [
       by('b', "Watch out!"),
       beat('{a} turns round just in time to take a ball in the stomach, and drops the whole basket.'),
-      by('a', "Right in the plums. They went right for the plums."),
+      by('a', "They were aiming for the basket. I know it."),
     ] },
 
     // ── the gourds ──
     { id: 'gs.sf.fsw1', when: at('gourds', 'first-swings'), turns: [
       beat('{a} swings hard, and misses the gourd completely. The bat whooshes through thin air.'),
-      by('a', "It moved! The gourd moved!"),
-      by('b', "Gourds don't move. Back to the start."),
+      by('a', "I missed! I don't know how I missed!"),
+      by('b', "That's a miss. Back to the start."),
     ] },
     { id: 'gs.sf.fsw2', when: at('gourds', 'first-swings'), turns: [
       by('b', "Too low! You hit the post!"),
       beat('The post rattles, the gourd stays where it is, and all the smashed gourds are set back up.'),
-      by('a', "My arms are ringing. My whole arms."),
+      by('a', "That really hurt my arms."),
     ] },
     { id: 'gs.sf.lg1', when: at('gourds', 'last-gourds'), turns: [
       beat('Nine down. {a} swings at the tenth. It wobbles, spins round once, and stays on its post.'),
@@ -184,24 +184,24 @@ export default {
 
     // ── the safari ──
     { id: 'gs.sf.tk1', when: at('safari', 'the-tracks'), turns: [
-      beat('They follow the tracks for ages, right up to a very surprised family of warthogs.'),
+      beat('They follow the tracks for ages, right up to a family of warthogs.'),
       by('b', "That's not it. That's definitely not it."),
       by('a', "Back. Slowly. Back to the tracks."),
     ] },
     { id: 'gs.sf.tk2', when: at('safari', 'the-tracks'), turns: [
       by('a', "These are our footprints."),
-      by('b', "We've been following ourselves? In a circle?"),
+      by('b', "We went in a circle?"),
       beat('The ranger whistles, and points the other way.'),
     ] },
     { id: 'gs.sf.tg1', when: at('safari', 'tall-grass'), turns: [
       beat('{b} steps on a dry stick. CRACK. The animal\'s head shoots up, and it gallops off across the plain.'),
-      by('a', "Why that stick? Out of all the sticks?"),
+      by('a', "No! Not now!"),
       by('b', "I didn't see it! It's grass! It's all grass!"),
     ] },
     { id: 'gs.sf.tg2', when: at('safari', 'tall-grass'), turns: [
       by('a', "Achoo!"),
       beat('The sneeze echoes across the savanna. The animal bolts.'),
-      by('b', "You sneezed! On a safari!"),
+      by('b', "You scared it!"),
     ] },
     { id: 'gs.sf.sd1', when: at('safari', 'sleepy-dart'), turns: [
       beat('{a} puffs into the blowpipe. The dart flops out of the end and lands at {a.posAdj} feet.'),

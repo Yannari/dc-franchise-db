@@ -22,7 +22,7 @@ const place = {
   'don-opener.annoyed': [
     { id: 'gsv.op1', when: P, turns: [
       beat("Don stands on the roof of a safari jeep in a khaki shirt and a pith helmet, the golden grass stretching to the horizon, a lone acacia tree behind him."),
-      don("Welcome to the Grass Savanna! Lions, elephants, giraffes, and the biggest sky you'll ever see. I've been here two hours and I've already been charged by a warthog."),
+      don("Welcome to the Grass Savanna! Lions, elephants, giraffes, and the biggest sky you'll ever see!"),
       don("Today, teams pick fruit, swing a bat, and go on safari. The real kind. Where the animals are real and this is their home. Not yours. Theirs."),
       beat('A giraffe walks slowly past behind the jeep, bends its long neck down, and sniffs Don\'s helmet.'),
     ] },
@@ -44,12 +44,12 @@ const place = {
       beat("The jeep bumps out onto the open plain, and a herd of zebras gallops alongside, then an elephant lifts its trunk in the distance."),
       by('a', "Zebras! Real zebras! Running next to us!"),
       by('b', "And an elephant! Look, there's a baby one!"),
-      by('a', "This is the best moment of my whole life."),
+      by('a', "This is amazing. This is so amazing."),
     ] },
     { id: 'gsv.ar2', when: P, turns: [
-      by('b', "The sky's so big. It goes all the way down to the ground."),
+      by('b', "The sky's so big out here."),
       by('a', "There's nothing in the way. Just grass and sky."),
-      by('b', "And a giraffe. Grass, sky and a giraffe."),
+      by('b', "And a giraffe! Look!"),
     ] },
   ],
   'arrival-awe.dread': [
@@ -60,8 +60,8 @@ const place = {
     ] },
     { id: 'gsv.ad2', when: P, turns: [
       by('b', "'Who can swing a bat?' I've never played anything with a bat."),
-      by('a', "You've swung at a fly with a newspaper."),
-      by('b', "That's not the same."),
+      by('a', "You'll be fine. It's just swinging."),
+      by('b', "Easy for you to say."),
     ] },
   ],
 };
@@ -103,24 +103,24 @@ const plums = {
     { id: 'gsv.pl-s2', when: PL, turns: [
       by('b', "I'll guard the basket. You pick. Throw them to me."),
       by('a', "What if you drop them?"),
-      by('b', "I won't drop them. Probably."),
+      by('b', "I won't drop them."),
     ] },
     { id: 'gsv.pl-s3', when: PL, turns: [
       beat("{a} ducks a ball, reaches for a plum, ducks another, and grabs it."),
       by('a', "Got one! Got one!"),
-      by('b', "Only about a hundred to go!"),
+      by('b', "Keep going! Fast!"),
     ] },
     { id: 'gsv.pl-s4', when: PL, turns: [
       by('a', "Why are they so good at kicking?"),
-      by('b', "Because they play every single day."),
-      by('a', "And we're the targets today."),
+      by('b', "They play every day."),
+      by('a', "And today, we're the goal."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'gsv.pl-f1', when: PL, turns: [
       beat("{a} picks, {b} guards the basket with {b.posAdj} whole body, and the basket fills without a single spill."),
       by('b', "Full! It's full!"),
-      by('a', "And you took about fifty footballs for it!"),
+      by('a', "And you got hit so many times!"),
     ] },
     { id: 'gsv.pl-f2', when: PL, turns: [
       by('a', "Kick it back! Kick one back!"),
@@ -130,34 +130,34 @@ const plums = {
     { id: 'gsv.pl-f3', when: PL, turns: [
       beat("{a} and {b} carry the brimming basket to the village elder, who laughs, and hands over the tip."),
       by('b', "First try! Not one spill!"),
-      by('a', "Covered in bruises, but not one spill."),
+      by('a', "I'm covered in bruises, but we did it."),
     ] },
     { id: 'gsv.pl-f4', when: PL, turns: [
       by('b', "The children are clapping!"),
-      by('a', "For us or for their aim?"),
-      by('b', "Let's say for us."),
+      by('a', "For us, or for them?"),
+      by('b', "For us. Let's go."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'gsv.pl-a1', when: PL, turns: [
       by('b', "We keep getting knocked over because we're in the open. Pick from the trees by the wall. They can't reach."),
       beat("By the wall, the footballs can't reach them, and the basket fills in no time."),
-      by('a', "The wall! We should have used the wall from the start!"),
+      by('a', "The wall worked! We should've done that first!"),
     ] },
     { id: 'gsv.pl-a2', when: PL, turns: [
       beat("Second basket. This time {b} sits on the basket lid between every handful, so nothing can knock it over."),
-      by('b', "Sitting on it! Can't spill if I'm sitting on it!"),
+      by('b', "Nothing's getting in now!"),
       by('a', "Full! Take it to the elder!"),
     ] },
     { id: 'gsv.pl-a3', when: PL, turns: [
       by('a', "Let's teach them a game. If they're playing, they're not kicking at us."),
       beat("{a} starts a game of keepy-uppy with the children. While they're busy, {b} fills the basket."),
-      by('b', "Genius! You're a genius!"),
+      by('b', "That was so smart!"),
     ] },
     { id: 'gsv.pl-a4', when: PL, turns: [
       beat("After two spilled baskets and a lot of bruises, {a} and {b} finally carry a full basket to the elder."),
       by('a', "Third basket! Finally!"),
-      by('b', "I'm going to dream about footballs."),
+      by('b', "I'm going to be bruised for a week."),
     ] },
   ],
   'task-try.struggling': [
@@ -165,7 +165,7 @@ const plums = {
       beat("{a} and {b} are pinned behind a tree, footballs bouncing off it from every direction."),
       by('a', "We're surrounded!"),
       by('b', "They're just children!"),
-      by('a', "They're very, very good children!"),
+      by('a', "They're really good, though!"),
     ] },
     { id: 'gsv.pl-t2', when: PL, turns: [
       by('b', "That's the third time they've knocked it over."),
@@ -175,23 +175,23 @@ const plums = {
     { id: 'gsv.pl-t3', when: PL, turns: [
       beat("A football hits the basket out of {b}'s arms just as it's nearly full."),
       by('b', "No! It was nearly full!"),
-      by('a', "The children are cheering. That's not fair."),
+      by('a', "And they're cheering. Great."),
     ] },
   ],
   'task-done.any': [
     { id: 'gsv.pl-dn1', when: PL, turns: [
       by('a', "I've been hit by more footballs today than in my whole life."),
-      by('b', "And you never once played football."),
-      by('a', "Exactly."),
+      by('b', "And we didn't even play."),
+      by('a', "I know. I'm so sore."),
     ] },
     { id: 'gsv.pl-dn2', when: PL, turns: [
       beat("{a} and {b} wave goodbye to the village children, who wave back, then kick one last ball at them."),
-      by('b', "They're lovely."),
-      by('a', "They're lovely and deadly."),
+      by('b', "They were so sweet, though."),
+      by('a', "And so good at football."),
     ] },
     { id: 'gsv.pl-dn3', when: PL, turns: [
       by('b', "Can we eat a plum?"),
-      by('a', "They're the elder's plums now."),
+      by('a', "Not ours. They're for the elder."),
       by('b', "He gave me one. Look."),
     ] },
   ],
@@ -208,8 +208,8 @@ const plums = {
     ] },
     { id: 'gsv.pl-x3', when: PL, turns: [
       beat("{b} trips over a football while carrying the basket, and the plums go flying."),
-      by('b', "That ball wasn't there a second ago!"),
-      by('a', "The children put it there! Pick them up!"),
+      by('b', "I didn't see the ball!"),
+      by('a', "Pick them up! Quick!"),
     ] },
   ],
 };
@@ -219,8 +219,8 @@ const gourds = {
   'don-demo.gag': [
     { id: 'gsv.gd-d1', when: GD, turns: [
       don("In this Botch or Watch, smash ten gourds off ten posts with this cricket bat. One swing each. In order. No misses."),
-      beat('He swings the bat at the first gourd, misses completely, spins round, and sits down in the dust.'),
-      don("Like that, but the opposite of that."),
+      beat('He swings the bat at the first gourd and misses completely.'),
+      don("Not like that, so do better than me!"),
     ] },
   ],
   'don-demo.dry': [
@@ -234,28 +234,28 @@ const gourds = {
     { id: 'gsv.gd-w1', when: GD, turns: [
       by('b', "You did the last one? No, that was me. So you're swinging."),
       by('a', "I've never held a cricket bat."),
-      by('b', "It's like a flat stick. You've held a stick."),
+      by('b', "It's just a bat. You'll be fine."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'gsv.gd-w2', when: GD, turns: [
       by('a', "I'll swing. I played rounders at school."),
       by('b', "Were you good?"),
-      by('a', "I hit the teacher once. By accident. Very hard."),
+      by('a', "Not really. But I liked it."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'gsv.gd-w3', when: GD, turns: [
       by('b', "My arms are dead from the plums. You."),
       by('a', "My arms are dead too!"),
-      by('b', "Less dead than mine. Go."),
+      by('b', "You'll be fine. Go."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'gsv.gd-w4', when: GD, turns: [
       by('a', "'Who can swing a bat?' You can. You've got a great swing."),
       by('b', "That's golf. That's a golf swing."),
-      by('a', "A swing's a swing."),
+      by('a', "It's still a swing. Go."),
     ] },
   ],
   'task-start.any': [
@@ -267,7 +267,7 @@ const gourds = {
     { id: 'gsv.gd-s2', when: GD, turns: [
       by('b', "Eye on the gourd. Don't look at the next one. Just the one in front."),
       by('a', "What if I hit the post?"),
-      by('b', "Then you'll have a very sore arm."),
+      by('b', "Then you start again. So don't."),
     ] },
     { id: 'gsv.gd-s3', when: GD, turns: [
       beat("{a} swings. CRACK. The first gourd flies off its post into the grass."),
@@ -276,52 +276,52 @@ const gourds = {
     ] },
     { id: 'gsv.gd-s4', when: GD, turns: [
       by('a', "How hard do I hit them?"),
-      by('b', "Hard enough that they fall off."),
-      by('a', "That's very helpful."),
+      by('b', "Hard enough to knock it off."),
+      by('a', "Okay. Okay. Hard."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'gsv.gd-f1', when: GD, turns: [
       beat("CRACK, CRACK, CRACK, down the whole row, ten swings, ten gourds, not one miss."),
       by('b', "Ten! All ten! First go!"),
-      by('a', "I'm a cricketer! I'm a gourd cricketer!"),
+      by('a', "I can't believe I did that!"),
     ] },
     { id: 'gsv.gd-f2', when: GD, turns: [
       by('a', "Swing, step, swing, step."),
-      beat("{a} works down the row like a machine, and the last gourd explodes off its post."),
-      by('b', "That was beautiful. That was poetry."),
+      beat("{a} works down the row without stopping, and the last gourd flies off its post."),
+      by('b', "That was perfect."),
     ] },
     { id: 'gsv.gd-f3', when: GD, turns: [
       beat("The tenth gourd flies so far off its post that it disappears into the tall grass, and a bird squawks somewhere."),
-      by('b', "Sorry, bird! But that's ten!"),
+      by('b', "That's ten! All ten!"),
       by('a', "First try! Ten for ten!"),
     ] },
     { id: 'gsv.gd-f4', when: GD, turns: [
       by('b', "First go, not a single miss."),
       by('a', "My arms are buzzing."),
-      by('b', "That's the feeling of winning."),
+      by('b', "You did so well."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'gsv.gd-a1', when: GD, turns: [
       by('b', "You keep missing because you're swinging too early. Wait until you're right in front of it."),
       beat("{a} waits until right in front of each post, swings, and clears all ten."),
-      by('a', "Wait, then swing! That's the secret!"),
+      by('a', "Waiting worked!"),
     ] },
     { id: 'gsv.gd-a2', when: GD, turns: [
       beat("Third row. {a} swings slower this time, but harder, and every gourd drops off its post."),
-      by('a', "Slow and hard! Slow and hard!"),
+      by('a', "Slow and hard worked!"),
       by('b', "Ten! That's ten!"),
     ] },
     { id: 'gsv.gd-a3', when: GD, turns: [
       by('a', "The last one always wobbles. So I hit it from below. Up and over."),
       beat("{a} swings up at the last gourd, and it flies clean off the post."),
-      by('b', "Up and over! Brilliant!"),
+      by('b', "That's it! It worked!"),
     ] },
     { id: 'gsv.gd-a4', when: GD, turns: [
       beat("After two broken rows, {a} finally clears all ten gourds in ten swings."),
       by('a', "Finally! Ten for ten!"),
-      by('b', "The posts look relieved."),
+      by('b', "Finally. Let's go."),
     ] },
   ],
   'task-try.struggling': [
@@ -332,8 +332,8 @@ const gourds = {
     ] },
     { id: 'gsv.gd-t2', when: GD, turns: [
       by('b', "That's the fifth time we've got to number eight."),
-      by('a', "Number eight hates me."),
-      by('b', "Number eight is a gourd. It doesn't hate anyone."),
+      by('a', "I always miss number eight."),
+      by('b', "Forget eight. Just swing."),
     ] },
     { id: 'gsv.gd-t3', when: GD, turns: [
       beat("{a} swings, hits the gourd, and it wobbles, and wobbles, and stays on the post."),
@@ -343,19 +343,19 @@ const gourds = {
   ],
   'task-done.any': [
     { id: 'gsv.gd-dn1', when: GD, turns: [
-      by('a', "I never knew I had it in me."),
-      by('b', "Gourd-smashing?"),
-      by('a', "Gourd-smashing. It's my hidden talent."),
+      by('a', "I didn't know I could do that."),
+      by('b', "Cricket?"),
+      by('a', "Hitting things. I'm good at hitting things."),
     ] },
     { id: 'gsv.gd-dn2', when: GD, turns: [
       beat("{a} and {b} walk away from the row of empty posts, {a} still swinging the bat at the air."),
       by('b', "You can put the bat down now."),
-      by('a', "I'm keeping it. In case of gourds."),
+      by('a', "Sorry. I'm still buzzing."),
     ] },
     { id: 'gsv.gd-dn3', when: GD, turns: [
       by('b', "Safari next. On foot."),
-      by('a', "Can I bring the bat?"),
-      by('b', "No."),
+      by('a', "On foot? With the animals?"),
+      by('b', "With a ranger. We'll be fine."),
     ] },
   ],
   'attempt-fail.any': [
@@ -377,9 +377,9 @@ const gourds = {
   ],
   'watching-botch.cheer': [
     { id: 'gsv.gd-v1', when: GD, turns: [
-      by('b', "Smash it! Smash it! You're a gourd destroyer!"),
+      by('b', "Smash it! You can do it!"),
       by('a', "I'm trying to concentrate!"),
-      by('b', "Concentrate on destroying!"),
+      by('b', "Sorry! Go!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -407,7 +407,7 @@ const gourds = {
     { id: 'gsv.gd-h1', when: GD, turns: [
       beat("While the ranger looks out at the plain, {b} quietly pushes a wobbly gourd a little further off its post."),
       by('a', "That one looks easier."),
-      by('b', "Does it? Lucky you. Swing."),
+      by('b', "Just swing."),
     ] },
   ],
 };
@@ -424,7 +424,7 @@ const safari = {
   'don-demo.dry': [
     { id: 'gsv.sf-d2', when: SF, turns: [
       don("Miss, spook it, or creep up on the wrong animal entirely, and you fall back and track it again."),
-      don("A tagged, sleeping animal gets you the next tip. It wakes up in ten minutes, feeling great. Don't be there when it does."),
+      don("A tagged, sleeping animal gets you the next tip, and it wakes up in ten minutes, so don't hang around!"),
       beat("Somewhere in the tall grass, something large moves, and the grass parts, and closes again."),
     ] },
   ],
@@ -437,7 +437,7 @@ const safari = {
     { id: 'gsv.sf-s2', when: SF, turns: [
       by('b', "Tracks. Big ones. It went this way."),
       by('a', "How big?"),
-      by('b', "Bigger than both our feet together."),
+      by('b', "Really big."),
     ] },
     { id: 'gsv.sf-s3', when: SF, turns: [
       beat("{a} crouches low, blowpipe ready, and peers through a gap in the grass."),
@@ -446,15 +446,15 @@ const safari = {
     ] },
     { id: 'gsv.sf-s4', when: SF, turns: [
       by('a', "What happens if it wakes up?"),
-      by('b', "We run."),
-      by('a', "That's the whole plan?"),
+      by('b', "The ranger's here. We'll be fine."),
+      by('a', "Okay. Okay."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'gsv.sf-f1', when: SF, turns: [
       beat("{a} creeps close, raises the blowpipe, and puffs. The dart lands perfectly. The animal yawns, lies down, and starts to snore."),
       by('b', "It's asleep! First dart!"),
-      by('a', "It's snoring! I made it snore!"),
+      by('a', "It's asleep! It worked!"),
     ] },
     { id: 'gsv.sf-f2', when: SF, turns: [
       by('a', "Shh. Don't move. It hasn't seen us."),
@@ -469,14 +469,14 @@ const safari = {
     { id: 'gsv.sf-f4', when: SF, turns: [
       by('b', "First try! Real safari! Real animal!"),
       by('a', "It looked so peaceful asleep."),
-      by('b', "Let's go before it isn't."),
+      by('b', "Let's go before it wakes up."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'gsv.sf-a1', when: SF, turns: [
       by('b', "We keep spooking it because we talk. No talking. Not one word."),
       beat("Not one word. They creep up in total silence, and the dart lands. The animal naps."),
-      by('a', "Silence works! It works!"),
+      by('a', "Being quiet worked!"),
     ] },
     { id: 'gsv.sf-a2', when: SF, turns: [
       beat("Second try. This time {a} stays downwind, like the ranger said, and gets close enough for an easy dart."),
@@ -486,28 +486,28 @@ const safari = {
     { id: 'gsv.sf-a3', when: SF, turns: [
       by('a', "That was the wrong animal. Ours has a white patch. Look for the patch."),
       beat("They look for the patch, find the right animal by a watering hole, and dart it."),
-      by('b', "The patch! It was all about the patch!"),
+      by('b', "The patch! That's the one!"),
     ] },
     { id: 'gsv.sf-a4', when: SF, turns: [
       beat("After two missed darts and a long chase through the grass, {a} finally puts their animal to sleep."),
-      by('a', "Finally! Nap time!"),
-      by('b', "I've walked about ten miles in this grass."),
+      by('a', "Finally! It's asleep!"),
+      by('b', "I feel like we've walked miles."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'gsv.sf-t1', when: SF, turns: [
       beat("{a} and {b} are lost in the tall grass, turning in circles, the ranger's whistle nowhere."),
       by('a', "Which way was the whistle?"),
-      by('b', "Everywhere. It came from everywhere."),
+      by('b', "I don't know. I can't tell."),
     ] },
     { id: 'gsv.sf-t2', when: SF, turns: [
       by('b', "That's three darts in the grass."),
       by('a', "It keeps moving!"),
-      by('b', "That's what animals do!"),
+      by('b', "Then wait for it to stop!"),
     ] },
     { id: 'gsv.sf-t3', when: SF, turns: [
-      beat("Something huge and grey steps out of the grass in front of them. It is definitely not the animal they're looking for."),
-      by('a', "That's an elephant. That's a whole elephant."),
+      beat("Something huge and grey steps out of the grass in front of them. It's not the animal they're looking for."),
+      by('a', "That's an elephant. That's an actual elephant."),
       by('b', "Back away. Slowly. Very slowly."),
     ] },
   ],
@@ -515,7 +515,7 @@ const safari = {
     { id: 'gsv.sf-dn1', when: SF, turns: [
       by('a', "We went on a real safari. On foot."),
       by('b', "And we're still alive."),
-      by('a', "That's the best part."),
+      by('a', "That's all I wanted."),
     ] },
     { id: 'gsv.sf-dn2', when: SF, turns: [
       beat("{a} and {b} walk out of the tall grass onto the open plain, the sun going down, gold and orange."),
@@ -523,9 +523,9 @@ const safari = {
       by('a', "Look at it quickly. Then run."),
     ] },
     { id: 'gsv.sf-dn3', when: SF, turns: [
-      by('b', "It's going to wake up and wonder why its ear has a tag."),
-      by('a', "And it'll never know it was us."),
-      by('b', "Our secret."),
+      by('b', "I hope it's okay when it wakes up."),
+      by('a', "It will be. The ranger said."),
+      by('b', "Okay. Let's go."),
     ] },
   ],
   'attempt-fail.any': [
@@ -541,7 +541,7 @@ const safari = {
     ] },
     { id: 'gsv.sf-x3', when: SF, turns: [
       beat("They creep up on a large brown shape in the grass, and it turns out to be a rock."),
-      by('a', "We've been stalking a rock."),
+      by('a', "We've been creeping up on a rock."),
       by('b', "For ten minutes. Back to the tracks."),
     ] },
   ],

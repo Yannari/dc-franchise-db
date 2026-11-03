@@ -160,7 +160,7 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
 
   // 2. at most one storyline moment, the biggest the season is following
   const follows = s => (s.data?.threadIds || []).some(id => followed.has(id));
-  const big = aired.filter(s => BIG.has(s.kind) && clausesFor(s) && rolesOf(s, state))
+  const big = aired.filter(s => BIG.has(s.kind) && !(s.kind === 'medevac-choice' && (state.medevacs || []).some(m => m.leg === prevEp.n && m.returned)) && clausesFor(s) && rolesOf(s, state))
     .sort((x, y) => follows(y) - follows(x) || x.id - y.id)[0];
   if (big) {
     const r = rolesOf(big, state);
@@ -181,9 +181,20 @@ export function previouslyFor(state, prevEp, rng = Math.random) {
   }
 
   // 4. who went home (or that nobody did), with a dig
+  // (a medevac after the leg: the team that came last may be back, picked by the team that couldn't go on; "we said
+  // goodbye to the Adversity Twins" and then the Twins raced, the user, 2026-11-03)
+  const med = (state.medevacs || []).find(m => m.leg === prevEp.n);
   const out = prevEp.eliminated?.[0];
   const last = out || prevEp.order?.at(-1);
+  if (med?.returned && RECAP['exit.medevac-return']) {
+    lines.push(say(fill(pick(RECAP['exit.medevac-return'], rng), {}, { med: teamRef(state, med.id), out: teamRef(state, med.returned) })));
+    const choice = aired.find(s => s.kind === 'medevac-choice' && s.data?.team === med.id);
+    if (choice && !kept.includes(choice)) { kept.push(choice); replay(choice.id, 2); }
+    lines.push(say(CLOSE));
+    return { lines, scenes: kept.map(s => s.id), kinds: kept.map(s => s.kind), clips };
+  }
   const key = out ? (prevEp.how?.[out] === 'on-location' ? 'exit.on-location' : 'exit') : 'exit.non-elim';
+  if (med && RECAP['exit.medevac']) lines.push(say(fill(pick(RECAP['exit.medevac'], rng), {}, { med: teamRef(state, med.id) })));
   if (last && RECAP[key]) {
     lines.push(say(fill(pick(RECAP[key], rng), {}, { out: teamRef(state, last), last: teamRef(state, last) })));
     const x = aired.find(s => RESULT.includes(s.kind) && s.kind !== 'don-place' && s.data?.team === last);

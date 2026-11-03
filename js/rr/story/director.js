@@ -61,7 +61,9 @@ const teamsKey = s => (s.data?.team && s.data?.other ? [s.data.team, s.data.othe
 export const BIG_CAST = 10;
 // the moments a team checks in or is sent home, and what may still air of a team after Don has sent it home
 const EXIT_KINDS = new Set(['don-elim', 'don-arrives', 'don-fakeout']);
-const AFTER_EXIT = new Set(['int-exit', 'console', 'goodbye', 'goodbye-kiss', 'mat-montage', 'don-narrate']);
+// (and the medevac after the leg, which brings an eliminated team back: pulled before the exit, the team was brought
+// back before it had been sent home, 2026-11-03)
+const AFTER_EXIT = new Set(['int-exit', 'console', 'goodbye', 'goodbye-kiss', 'mat-montage', 'don-narrate', 'medevac-choice']);
 // what every team gets, story or not
 const BACKGROUND = new Set(['don-place', 'don-opener', 'same-flight', 'int-bleachers']);
 

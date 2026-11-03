@@ -4,7 +4,7 @@
 // lines when the place has some.
 export default {
   'home-city': [
-    "Last time on The Ridonculous Race, after {summary}, our teams were off around the world. Some of them were sweaty. I was not, and I looked gorgeous.",
+    "Last time on The Ridonculous Race, after {summary}, our teams were off around the world, and the race was finally on.",
     "Last time on The Ridonculous Race, after {summary}, our teams started the race of their lives. Some of them started it screaming.",
   ],
   'red-sand-desert': [
@@ -16,7 +16,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams discovered their inner artists. Their inner artists were terrible.",
   ],
   'great-wall-hills': [
-    "Last time on The Ridonculous Race, after {summary}, our teams had bugs for lunch, while I had the noodles, which was the better choice.",
+    "Last time on The Ridonculous Race, after {summary}, our teams had bugs for lunch, and most of them kept them down.",
     "Last time on The Ridonculous Race, after {summary}, our teams learned that anything tastes like chicken if you're scared enough.",
   ],
   'rock-north': [
@@ -28,15 +28,15 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams screamed so loud the rhinos complained.",
   ],
   'treasure-isles': [
-    "Last time on The Ridonculous Race, after {summary}, our teams went full pirate while I went full sunbathing, and we all had a lovely time.",
+    "Last time on The Ridonculous Race, after {summary}, our teams went full pirate, and loved every minute of it.",
     "Last time on The Ridonculous Race, after {summary}, our teams found treasure, which turned out to be chocolate, and they were thrilled anyway.",
   ],
   'tomb-sands': [
-    "Last time on The Ridonculous Race, after {summary}, our teams got sand in places sand should never go, which I checked, from a distance.",
+    "Last time on The Ridonculous Race, after {summary}, our teams got sand in places sand should never go.",
     "Last time on The Ridonculous Race, after {summary}, our teams survived a tomb, a camel and a crocodile. The camel was the worst.",
   ],
   'torch-statue-harbour': [
-    "Last time on The Ridonculous Race, after {summary}, our teams smelled worse than I thought humans could. And I've been on a lot of shows.",
+    "Last time on The Ridonculous Race, after {summary}, our teams came out smelling worse than anything I've ever smelled.",
     "Last time on The Ridonculous Race, after {summary}, our teams took the big city by storm. And through the sewer.",
   ],
   'red-outback': [
@@ -48,7 +48,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams fed a volcano, and the volcano is fine, but the teams are a little less fine.",
   ],
   'coast-palace': [
-    "Last time on The Ridonculous Race, after {summary}, our teams learned that sharks and surfers are equally hard to please. I spent the day on a yacht. Very easy to please.",
+    "Last time on The Ridonculous Race, after {summary}, our teams learned that sharks and surfers are equally hard to please.",
     "Last time on The Ridonculous Race, after {summary}, our teams were soaked, sandy and rejected by a very small surfer. Some of them are still not over it.",
   ],
   'geyser-island': [
@@ -88,8 +88,8 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams learned that eight seconds lasts a very long time. Especially after beans.",
   ],
   'ice-floe': [
-    "Last time on The Ridonculous Race, after {summary}, our teams got very cold and very cosy, the way igloos make you, while I stayed in the plane with the heater.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out that ice is cold, which, as it turns out, everybody already knew.",
+    "Last time on The Ridonculous Race, after {summary}, our teams got very cold, and then very cosy, the way igloos make you.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out just how cold ice can be.",
   ],
   'dragon-isle': [
     "Last time on The Ridonculous Race, after {summary}, our teams got up close with a giant lizard. Closer than he wanted, honestly.",
@@ -109,7 +109,7 @@ export default {
   ],
   'frozen-mine': [
     "Last time on The Ridonculous Race, after {summary}, our teams froze on the lake and then went way down a hole, which is also where their spirits went.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out a swimsuit is not winter wear. I could have told them. I didn't.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out the hard way that a swimsuit is not winter wear.",
   ],
   'tea-hills': [
     "Last time on The Ridonculous Race, after {summary}, our teams picked a lot of leaves and pushed past a lot of elbows. Very civilised.",
@@ -133,7 +133,7 @@ export default {
   ],
   'jungle-ruins': [
     "Last time on The Ridonculous Race, after {summary}, our teams kept all their toes, or most of them, probably.",
-    "Last time on The Ridonculous Race, after {summary}, our teams found out most golden idols are fake. Like most smiles on television. Not mine, obviously.",
+    "Last time on The Ridonculous Race, after {summary}, our teams found out that most golden idols are fake, and some of them found out the hard way.",
   ],
   'glass-pyramid-city': [
     "Last time on The Ridonculous Race, after {summary}, our teams glued a statue back together and walked like supermodels. The statue walked better.",
@@ -144,7 +144,7 @@ export default {
     "Last time on The Ridonculous Race, after {summary}, our teams became honorary locals. The cod is still recovering.",
   ],
   'cliff-pool-isle': [
-    "Last time on The Ridonculous Race, after {summary}, our teams took the plunge, then took the curves. I took a nap.",
+    "Last time on The Ridonculous Race, after {summary}, our teams took the plunge, then took the curves.",
     "Last time on The Ridonculous Race, after {summary}, our teams found out a bobsled works on a tropical island. Sort of.",
   ],
   'twin-tower-bridge': [

@@ -561,7 +561,7 @@ export default {
     ],
     'medevac-choice.repays-kindness': [
       { id: 'tw.mr1', turns: [
-        { beat: 'The medic says {a} and {b} can\'t go on. They get to pick a team to come back in their place.' },
+        { beat: 'At the Chill Zone, the medics take one more look at the injury, and say {a} and {b} can\'t go on. They get to pick a team to come back in their place.' },
         { by: 'a', ...V("It has to be {c} and {d}. It was always going to be {c} and {d}.", "It has to be {c} and {d}.", "{c} and {d}. Has to be.", "It HAS to be {c} and {d}! It was ALWAYS going to be {c} and {d}!", "It has to be {c} and {d}. It was always going to be them.", "{c} and {d}. The universe has been pointing at them all along.") },
         { by: 'b', say: "Because they helped us back there?" },
         { by: 'a', say: "Because they helped us when nobody else would. This is how we pay them back." },
@@ -574,19 +574,21 @@ export default {
         { by: 'c', say: "We're back? We're actually back in the race?" },
         { by: 'b', say: "Go and win it. Win it for both of us." },
         { by: 'd', say: "We will. We promise we will." },
-        { beat: '{a} and {b} watch them go from the side of the road, with ice packs and enormous smiles.' },
+        { beat: '{a} and {b} watch them go from the edge of the mat, with ice packs and enormous smiles.' },
       ] },
     ],
     'medevac-choice.picks-friend': [
       { id: 'tw.mp1', turns: [
+        { beat: 'At the Chill Zone, the medics take one more look at the injury, and say {a} and {b} cannot go on.' },
         { by: 'a', say: "We have to pick somebody to come back. I'm picking our friends." },
         { by: 'b', ...V("{c} and {d}. Who else would it be? We've been friends since day one.", "{c} and {d}. Friends since day one.", "{c} and {d}. Who else?", "{c} and {d}! Who ELSE would it be? We've been FRIENDS since DAY ONE!", "{c} and {d}, obviously. We've been friends since the first day.", "{c} and {d}. Friendship over strategy. Always.") },
-        { by: 'a', say: "Some people will say it should be the team that went out last." },
+        { by: 'a', say: "Some people will say we should have picked somebody else." },
         { by: 'b', say: "Some people aren't the ones who got hurt. We are. We pick." },
-        { beat: 'The call goes out. Somewhere, {c} and {d} are about to get the best phone call of their lives.' },
+        { beat: 'The crew goes to find {c} and {d} and tell them the news.' },
         { by: 'a', say: "Go and win it. And tell everybody it was our idea." },
       ] },
       { id: 'tw.mp2', turns: [
+        { beat: 'At the Chill Zone, the medics say {a} and {b} cannot race on. They have to pick a team to take their place, and they walk straight over to {c} and {d}.' },
         { by: 'c', say: "You picked us? Why us?" },
         { by: 'a', ...V("Because you're our friends. That's the whole reason. That's enough.", "Because you're our friends. That's enough.", "You're our friends. Enough.", "Because you're our FRIENDS! That's the WHOLE reason! That's ENOUGH!", "Because you're our friends, and that's the whole reason. It's enough.", "Because we love you. Don't make it weird. Just go.") },
         { by: 'd', say: "We won't waste it. We swear we won't." },

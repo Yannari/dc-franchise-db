@@ -248,7 +248,13 @@ export function medevac(state, id, legN, rng) {
     returned = cands[0] ?? null;
     if (returned) {
       state.gone = state.gone.filter(x => x !== returned);
-      act(state, 'medevac-choice', id, returned, rng, owed(returned) ? 'repays-kindness' : 'picks-friend');
+      // at the end of the leg, after the last team is in: with no time it aired near the start of the episode, before
+      // anybody had been eliminated, and the team that came back seemed to walk into the next leg from nowhere (the
+      // user, 2026-11-03: "the team eliminated in my ep1 were at the start of my ep2")
+      const leg = state.legs.find(l => l.n === legN);
+      const ends = Object.values(leg?.times || {}).filter(Number.isFinite);
+      const t = ends.length ? Math.max(...ends) + 5 : null;
+      act(state, 'medevac-choice', id, returned, rng, owed(returned) ? 'repays-kindness' : 'picks-friend', { t, stretch: 'mat' });
     }
   }
   state.medevacs.at(-1).returned = returned;

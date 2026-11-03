@@ -43,6 +43,8 @@ import { legRecord } from './rr/leg-record.js';
 import { carriedFor } from './franchise-carry.js';
 import { recordBuiltSeason, hasFranchiseHistory, careerFor } from './franchise-meta.js';
 import { pastOfTeam } from './rr/past.js';
+import { airedEpisode } from './exit-interview/aired.js';
+import { airedAdapter } from './exit-interview/shows.js';
 import { tieBetween } from './ties.js';
 
 export const isRaceSeason = () => seasonFormat(seasonConfig) === RACE_FORMAT;
@@ -411,8 +413,9 @@ function _refreshQueue() {
   return true;
 }
 
-/** Air the next leg, or null when the race is over (or cannot start). */
-export function simulateRaceEpisode() {
+/** Air the next leg, or null when the race is over (or cannot start). Every team that goes out records its exit
+ *  interviews as the leg airs (js/exit-interview/aired.js; the user, 2026-11-03). */
+export const simulateRaceEpisode = airedEpisode(RACE_FORMAT, function simulateRaceEpisodeBody() {
   if (!gs) return null;
   if (!_refreshQueue()) return null;
   // A leg this browser already aired (a save loaded from before it) is dealt again (seen-episodes.js).
@@ -440,7 +443,7 @@ export function simulateRaceEpisode() {
     ? window.snapshotGameState()
     : { initialized: true, activePlayers: [...gs.activePlayers], episode: gs.episode, phase: gs.phase };
   return row;
-}
+}, airedAdapter);
 
 export function raceEpisodesLeft() { return Array.isArray(gs?._rrQueue) ? gs._rrQueue.length : null; }
 

@@ -11,6 +11,7 @@
 
 import * as L from './kristal-exit-lines.js';
 import { pmExchanges } from './kristal-exit-pm.js';
+import { rrExchanges } from './kristal-exit-rr.js';
 import { seasonId, familyOf } from './shows.js';
 
 function hash(key) {
@@ -95,9 +96,11 @@ const fill = (t, f) => capFirst(String(t).replace(/^\[J\]/, '').replace(SLOT_RE,
 
 /** A line whose every slot is fillable, picked by key; the season-wide `used`
  *  set steers away from a line already said this season. */
+const VOTE_TALK = /\b(vote[sd]?|voting|voted|jury|jurors?|the numbers|ballots?|evict(ed|ion)?|nominat(e|ed|ion)|tribal|the block|final chair)\b/i;
 function pick(bank, key, f, used, mine = used?.mine || null) {
   // "[J]" lines are a juror's: somebody with no jury vote cannot bet theirs.
-  const ok = (bank || []).filter(t => slotsOf(t).every(k => has(f, k)) && (!t.startsWith('[J]') || f.juror));
+  // (and on a show nobody ever votes on, the race, no shared line about votes, juries, numbers or nominations)
+  const ok = (bank || []).filter(t => slotsOf(t).every(k => has(f, k)) && (!t.startsWith('[J]') || f.juror) && !(f.noVote && VOTE_TALK.test(t)));
   if (!ok.length) return '';
   // Never twice in one hour; then, as far as the bank allows, never twice in a season.
   const notMine = mine ? ok.filter(t => !mine.has(t)) : ok;
@@ -176,6 +179,8 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   const B = (name, ...path) => {
     let a = L[name], b = S[name];
     for (const k of path) { a = a?.[k]; b = b?.[k]; }
+    // (a kind the show says only its own lines fit: the race's "walked" is not a walk out of a house with no vote)
+    if (S.OWN?.[name]?.includes(path[0]) && Array.isArray(b) && b.length) return [...b];
     return [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])];
   };
   const round = String(words.round || 'Week').toLowerCase();
@@ -186,6 +191,7 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
     partner: r.partner, place: L.PLACE[r.placement] || null,
     players: words.players || 'players', player: words.player || 'player', exit: words.exit || 'eliminated',
     sub: pr.sub, obj: pr.obj, pos: pr.pos,
+    ...(S.NO_VOTE_TALK ? { noVote: true } : {}),
   };
   const exchanges = [];
   const push = (topic, q, a, extra = {}) => { if (q || a) exchanges.push({ topic, q, a, ...extra }); };
@@ -206,7 +212,11 @@ export function composeExit(ep, { words = {}, earlier = [], salt = '', used = nu
   // friend. The general opener's question and answer were drawn apart ("Did you
   // see it coming?" / "I was the realest person in that villa").
   const story = fmt === 'perfect-match' && r.story ? pmExchanges(r, { g, base, K, used, pick }) : [];
+  // A racer is asked how it ended first (last on the mat, Don on the road), then about their own race
+  // (kristal-exit-rr.js): their partner, the Boomerang, the rival team, the leg they won.
+  const race = fmt === 'ridonculous-race' && r.story ? rrExchanges(r, { g, base, K, used, pick }) : [];
   if (story.length) for (const [topic, q, a, extra] of story) push(topic, q, a, extra);
+  else if (race.length) for (const [topic, q, a, extra] of race) push(topic, q, a, extra);
   else {
     const oq = pick(B('OPEN_Q', openKind), `${K}|oq`, base, used)
       || pick(['How are you feeling, now it’s over?', 'How are you, honestly, after that?'], `${K}|oq2`, base, used);

@@ -947,6 +947,80 @@ export const SHOW = {
     },
     NEXT_Q: ['Who gets blocked next?', 'Who’s at the bottom of the next ratings?'],
   },
+  // The Ridonculous Race (the user, 2026-11-03): no vote, ever. A team is last on the mat, found on the road by Don,
+  // cut at the final's halfway mat, out on a medevac, or quits. {with} is their partner, out the same night. The
+  // shared walked/medical lines talk about votes and doors, so the race's own replace them (OWN).
+  'ridonculous-race': {
+    OWN: { COLD: ['walked', 'medical'], OPEN_Q: ['walked', 'medical'], OPEN_A: ['walked', 'medical'] },
+    // nobody on a race votes: the shared lines about votes, juries and numbers never play (kristal-exit.js pick)
+    NO_VOTE_TALK: true,
+    COLD: {
+      'raced-last': [
+        '{guest} and {with} were the last team to the mat in {when}, and Don sent them home. Let’s go through the whole leg.',
+        'Everybody else had checked in. {guest} came running onto the mat in {when}, last, and that was the race. Pull up a chair.',
+        '{when}. The last team on the mat goes home, and it was {guest}’s. I want to hear how it got away from them.',
+      ],
+      'found-on-the-road': [
+        '{guest} never made it to the mat in {when}. Don went out to find them on the road, and that’s how {guest} found out.',
+        'In {when}, {guest} and {with} were still out there after everybody else had checked in. Don walked out to them. Let’s talk about that walk.',
+      ],
+      'cut-at-halfway': [
+        '{guest} made the final, and lost it at the halfway mat. One stop from the finish line. {when}.',
+        'Three teams started the last leg. At the halfway mat, it was {guest}’s team Don stopped. Let’s talk about it.',
+      ],
+      medical: [
+        '{guest} didn’t come last in {when}. The race ended on a medevac. First of all, how are you?',
+        'The race ended for {guest} in {when} with a doctor, not a mat. Let’s start with how you are.',
+      ],
+      walked: [
+        '{guest} quit the race in {when}. Nobody sent them home. I want to understand why.',
+        '{when}, and {guest} decided it was over. Not last on the mat. Gone, by choice.',
+      ],
+      winner: [
+        '{guest} won the Ridonculous Race. The whole thing, all the way round the world. Welcome to the happiest guest of the season.',
+        'The first team across the finish line was {guest}’s. {guest} won the race, and {guest} is here.',
+      ],
+      finalist: [
+        '{guest} made it to the finish line in the final and came {place}. One team wins this race. Let’s talk about the rest of it.',
+        '{guest} raced all the way to the end. Not first, but there, at the finish line. Let’s talk.',
+      ],
+    },
+    OPEN_Q: {
+      'raced-last': ['Take me through the leg.', 'When did you know you were last?', 'What went wrong out there?'],
+      'found-on-the-road': ['What was it like, seeing Don walking towards you?', 'When did you realise everybody else had checked in?'],
+      'cut-at-halfway': ['How close was it at the halfway mat?', 'Take me through the final leg.'],
+      walked: ['What was the moment you decided you were done?', 'Was it your call, or {with}’s?'],
+      medical: ['How are you feeling now?', 'Did you want to keep going?'],
+    },
+    OPEN_A: {
+      'raced-last': {
+        hot: ['We were ahead for half the leg. One wrong turn, one bad challenge, and suddenly everybody’s passing us.', 'We got the worst of everything that day. The wrong taxi, the hardest side, and nobody would help us.'],
+        soft: ['We made one mistake early and spent the whole day trying to catch up. We just ran out of time.', 'Honestly, the other teams were better that day. We did everything we could, and it wasn’t enough.'],
+        hurt: ['I could see the mat. I could see Don standing there. And I knew before we got to him.', 'We ran the last stretch as fast as we’ve ever run anything, and it still wasn’t enough.'],
+      },
+      'found-on-the-road': {
+        hot: ['We were still fighting. We didn’t even know it was over until Don showed up.', 'Nobody told us how far behind we were. We were out there giving everything, for nothing.'],
+        soft: ['When I saw Don walking towards us, I knew. It was almost a relief, honestly. We were so tired.', 'We were lost for hours. When Don came, I just laughed. What else could we do?'],
+        hurt: ['Seeing Don out there on the road, instead of at the mat, is a feeling I never want to have again.', 'I just sat down where I was. I couldn’t even stand up.'],
+      },
+      'cut-at-halfway': {
+        hot: ['We were right there. A few minutes. That’s all it was, after the whole race.', 'We beat most of them all season, and it comes down to one stop. It isn’t fair.'],
+        soft: ['Getting to the final leg was more than anybody expected from us. I’m proud of that.', 'We were the third best team in the world, and I can live with that. Almost.'],
+        hurt: ['We could almost see the finish line. I keep thinking about every minute we lost.', 'Making the final and not getting to finish it is a strange kind of heartbreak.'],
+      },
+      walked: {
+        hot: ['I wasn’t going to keep doing something that was destroying us. No prize is worth that.', 'Everybody acts like quitting is easy. It was the hardest thing I did in the whole race.'],
+        soft: ['We talked about it for a long time. It was the right call for us, even if it doesn’t look like it.', 'I knew we were done. I’d rather go home with my partner than drag us both to the end.'],
+        hurt: ['I let my partner down. I know I did. I couldn’t do one more day.', 'I still don’t know if it was the right thing. I think about it every day.'],
+      },
+      medical: {
+        hot: ['I wanted to keep going. The doctors didn’t give me a choice.', 'I’d have finished that race on one leg if they’d let me.'],
+        soft: ['I’m okay. I’m getting better. I’m just sorry I couldn’t finish it with my partner.', 'It was the right call. I didn’t want to accept it at the time, but it was.'],
+        hurt: ['The worst part is my partner had to stop too, because of me.', 'We were doing so well. And then one moment, and it’s over.'],
+      },
+    },
+    NEXT_Q: ['Which team is last on the mat next?', 'Next team out. Who?'],
+  },
   'the-challenge': {
     COLD: {
       'lost-elimination': [

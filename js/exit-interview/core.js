@@ -48,7 +48,9 @@ const VILLAIN = new Set(['villain', 'mastermind', 'schemer']);
 // night (The Traitors), sent home after a lip sync (Drag Race), dumped (Perfect
 // Match), blocked (The Circle), beaten in an elimination (The Challenge).
 const NO_VOTE = new Set(['walked', 'expelled', 'medical', 'lost-challenge', 'lost-duel', 'finalist',
-  'murdered', 'lip-sync', 'dumped', 'blocked', 'lost-elimination']);
+  'murdered', 'lip-sync', 'dumped', 'blocked', 'lost-elimination',
+  // The Ridonculous Race: last on the mat, found on the road by Don, cut at the final's halfway mat
+  'raced-last', 'found-on-the-road', 'cut-at-halfway']);
 
 /** How hard each stance lands on the person who hears it, before temperament. */
 // Calibrated on five seeded twelve-person Big Brother seasons (2026-10-21):

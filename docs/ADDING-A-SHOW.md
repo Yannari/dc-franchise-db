@@ -3753,8 +3753,8 @@ the user's decision, 2026-10-21. Big Brother is the reference port.
    `exitInterviews` (decisions only; strip `heardBy`).
 
 **A show that plays its season from a seed and airs it from a queue** (The
-Traitors, Drag Race, Perfect Match, The Circle, The Challenge — every show but
-the two on the shared `gs`) does not write a facts file. It adds an entry to
+Traitors, Drag Race, Perfect Match, The Circle, The Challenge, The Ridonculous
+Race — every show but the two on the shared `gs`) does not write a facts file. It adds an entry to
 `AIRED_ADAPTERS` in `js/exit-interview/shows.js` (`howOf` — its door as a kind,
 `ballots` if the audience saw them, `publicVotes` if the room did, `startRoom`
 for the first night, `finalists`, `winners`) and wraps its "air the next row"
@@ -3767,6 +3767,14 @@ under `SHOW[format]` in `js/kristal-exit-lines.js`; its export adds
 `doc.exitInterviews = publishedExits(show)` and its seasons-row merge passes it
 on. Never start the first night from the whole cast: Perfect Match opens with
 half its islanders, and somebody who has not arrived has not left.
+
+**The Ridonculous Race (2026-11-03)** is the port to copy for a show with no vote and a story worth asking about:
+both of a team leave through one door (`pairOf`); its doors are kinds of their own (`raced-last`,
+`found-on-the-road`, `cut-at-halfway`); `exit-interview/rr-story.js` reads what happened to the racer off the aired
+legs and `kristal-exit-rr.js` asks it, each question with its own answers, the way-it-ended question first; the
+show's `OWN` kinds replace the shared lines that talk about doors and votes, and `NO_VOTE_TALK` drops every shared line
+about votes, juries or numbers. Its published document carries `legs` (shows.js `publishedRoundsPath`), or Birdie and
+ChatAlumni read a published race as zero episodes.
 
 **Measure before shipping** (what the Big Brother port measured):
 - the bad-blood pair count with and without the hooks (the first draft added up

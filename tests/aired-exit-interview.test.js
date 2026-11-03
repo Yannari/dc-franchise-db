@@ -12,6 +12,8 @@ import { publishedExits } from '../js/exit-interview/house.js';
 import { makeIslanders } from './helpers/pm-cast.js';
 import { challengeCast } from './helpers/ch-cast.js';
 import { makePlayers } from './helpers/ci-cast.js';
+import { simulateRaceEpisode } from '../js/rr-run.js';
+import { raceCast } from './helpers/rr-cast.js';
 
 const SHOWS = {
   'perfect-match': {
@@ -41,6 +43,18 @@ const SHOWS = {
     },
     air: simulateCircleEpisode,
   },
+  // the race (the user, 2026-11-03): both of a team leave together; teams are two cards naming each other as partners
+  'ridonculous-race': {
+    fresh() {
+      Object.assign(seasonConfig, { format: 'ridonculous-race', seasonNumber: 1, name: '', twistSchedule: [], franchiseMeta: false });
+      const { cast, teams } = raceCast(8, 5);
+      const partner = Object.fromEntries(teams.flatMap(t => [[t.a, t.b], [t.b, t.a]]));
+      setPlayers(cast.map(p => ({ ...p, chPartner: partner[p.name] })));
+      setGs({ initialized: true, episodeHistory: [], popularity: {}, activePlayers: [], rr: { seed: 505 }, seasonNumber: 1 });
+      setFranchiseLedger({ v: 2, active: 'main', franchises: { main: { name: 'Main', seasons: {} } } });
+    },
+    air: simulateRaceEpisode,
+  },
 };
 
 function playAll(air) {
@@ -64,7 +78,8 @@ describe('every queue-aired show records its boots as they air', () => {
       const left = playAll(air);
       expect(gs.phase).toBe('complete');
       // Nobody records who never set foot in the room.
-      const everIn = new Set(gs.episodeHistory.flatMap(r => [...(r.pm?.villa || []), ...(r.ch?.people || []), ...(r.ch?.house || []), ...(r.ci?.people || [])]));
+      const everIn = new Set(gs.episodeHistory.flatMap(r => [...(r.pm?.villa || []), ...(r.ch?.people || []), ...(r.ch?.house || []), ...(r.ci?.people || []),
+        ...(r.rr?.order || []).flatMap(o => [o.a, o.b])]));
       for (const r of (gs.exitInterviews || []).filter(x => x.show === show)) expect(everIn.has(r.guest), r.guest).toBe(true);
       const recs = (gs.exitInterviews || []).filter(r => r.show === show);
       expect(left.size).toBeGreaterThan(2);

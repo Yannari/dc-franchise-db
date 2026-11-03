@@ -725,6 +725,8 @@ export const SHOWS = {
     rosterPlace: 'RACE',
     hasJury: false,
     roundsPath: 'episodeHistory',
+    // ...and in a published season document (rr/export.js feedLeg)
+    publishedRoundsPath: 'legs',
     roundShape: 'placements',
     // The ratings reader for this show's rows (js/ratings-shows.js).
     signals: 'race',
@@ -1009,9 +1011,14 @@ export function roundShape(format) {
  * bare-integer rule applied to state, and NOT another show's array.
  */
 export function seasonRounds(gs, format) {
+  const at = path => path.split('.').reduce((o, k) => (o == null ? o : o[k]), gs);
   const path = SHOWS[format]?.roundsPath || SHOWS[DEFAULT_FORMAT].roundsPath;
-  const list = path.split('.').reduce((o, k) => (o == null ? o : o[k]), gs);
-  return Array.isArray(list) ? list : [];
+  const list = at(path);
+  if (Array.isArray(list)) return list;
+  // a published season document keeps its rounds where the show says (the race's `legs`: a played season's are
+  // gs.episodeHistory, which a document doesn't have)
+  const pub = SHOWS[format]?.publishedRoundsPath ? at(SHOWS[format].publishedRoundsPath) : null;
+  return Array.isArray(pub) ? pub : [];
 }
 
 export function showName(format) {

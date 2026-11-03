@@ -203,6 +203,22 @@ function teamsOf(placements) {
 }
 
 /** The season document. */
+// One leg, slim: what the feed reads (order, exits, the kind of each aired moment, its teams and who spoke), not the
+// transcript (that lives in the episode store)
+const FEED_KINDS = new Set(['phobia', 'fear-through', 'snap', 'blame', 'silent-treatment', 'course-sabotage', 'push', 'shove', 'ram',
+  'steal', 'kidnap-pet', 'fake-shortcut', 'admin-sabotage', 'mind-game', 'flirt', 'near-kiss', 'kiss', 'confession', 'showmance', 'date']);
+function feedLeg(r) {
+  const rr = r.rr;
+  return {
+    format: r.format, num: r.num, exits: (r.exits || []).map(x => ({ ...x })), ...(r.winner ? { winner: r.winner } : {}),
+    rr: { leg: rr.leg, place: rr.place, placeName: rr.placeName, kind: rr.kind, twist: rr.twist,
+      order: (rr.order || []).map(o => ({ ...o })), eliminated: [...(rr.eliminated || [])], how: { ...(rr.how || {}) },
+      people: [...(rr.people || [])], ...(rr.final ? { final: { ...rr.final } } : {}),
+      aired: { segments: (rr.aired?.segments || []).filter(s => FEED_KINDS.has(s.kind)).map(s => ({ kind: s.kind, ending: s.ending ?? null,
+        teams: [...(s.teams || [])], lines: [...new Set((s.lines || []).map(l => l.by).filter(Boolean))].map(by => ({ by })) })) } },
+  };
+}
+
 export function buildRaceSeasonDocument(rows = [], record = null, { seasonNumber = 1, title = null } = {}) {
   const legs = rows.filter(r => r.rr);
   const final = rrFinal(legs);
@@ -224,6 +240,9 @@ export function buildRaceSeasonDocument(rows = [], record = null, { seasonNumber
     placements,
     teams: teamsOf(placements),
     votingHistory: rrVotingHistory(legs),
+    // every leg as the social feed reads it (js/social/packs/ridonculous-race.js events): Birdie and ChatAlumni read a
+    // published race here (shows.js publishedRoundsPath), which had nothing they could read before (2026-11-03)
+    legs: legs.map(feedLeg),
     twists: [],
     settings: {},
     emoji: SHOWS[RACE].emoji,

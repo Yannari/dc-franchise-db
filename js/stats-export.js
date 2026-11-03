@@ -4258,6 +4258,8 @@ export async function exportRaceSeason(onStatus) {
   _status('Building the season document...');
   const { buildRaceSeasonDocument } = await import('./rr/export.js');
   const doc = buildRaceSeasonDocument(rows, gs.rr.record, { seasonNumber: seasonNum, title: seasonConfig?.name || null });
+  // Kristal-talKs: every team that went out, and every finalist (exit-interview/aired.js; the user, 2026-11-03)
+  doc.exitInterviews = publishedExits(RACE_FORMAT);
   _rateSeason(doc, rows, RACE_FORMAT);
   _status(`Built ${doc.seasonId}: ${doc.castSize} racers, ${doc.episodeCount} legs.`);
 
@@ -4391,6 +4393,8 @@ export function mergeRaceSeasonsDatabase(existing, seasonDoc) {
     winner: null,
     winners,
     winningTeam: seasonDoc.winningTeam || null,
+    // Kristal-talKs reads them off the seasons row (kristal.js), Dramagram pays their followers
+    exitInterviews: Array.isArray(seasonDoc?.exitInterviews) ? seasonDoc.exitInterviews : [],
     awards: seasonDoc.awards && typeof seasonDoc.awards === 'object' ? seasonDoc.awards : {},
     theme: _clean(seasonDoc.seasonNarrative, _clean(seasonDoc.subtitle)),
     status: 'Complete',

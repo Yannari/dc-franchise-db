@@ -2,11 +2,14 @@
 //
 // One adapter per show for js/exit-interview/aired.js: how somebody left
 // (the door), the ballots the audience saw, who left beside them, and who
-// finished. Ridonculous Race is not here yet.
+// finished.
 
 import { gs } from '../core.js';
 import { pmStory } from './pm-story.js';
+import { rrStory } from './rr-story.js';
 
+// how a race team went out (rr-run.js VERB), as an interview's kind (core.js NO_VOTE)
+const RR_DOOR = { last: 'raced-last', boomerang: 'raced-last', 'on-location': 'found-on-the-road', medevac: 'medical', quit: 'walked', mid: 'cut-at-halfway', midpoint: 'cut-at-halfway' };
 const exitsOf = row => (Array.isArray(row?.exits) ? row.exits : []).filter(x => x && x.name);
 
 export const AIRED_ADAPTERS = {
@@ -52,6 +55,25 @@ export const AIRED_ADAPTERS = {
     seed: () => gs?.ci?.seed ?? '',
     howOf: () => 'blocked',
     winners: () => gs?.ciWinners || gs?.ci?.winners || [],
+  },
+  // A race has no vote: a team goes out last on the mat, found by Don on the road, on a medevac, by quitting, or cut at
+  // the final's halfway mat. Both of a team leave the same night, through the same door (the user, 2026-11-03).
+  'ridonculous-race': {
+    show: 'ridonculous-race',
+    seed: () => gs?.rr?.seed ?? '',
+    howOf: (name, row) => RR_DOOR[exitsOf(row).find(x => x.name === name)?.channel] || 'raced-last',
+    pairOf: (name, row) => { const x = exitsOf(row).find(e => e.name === name); return (x?.members || []).find(n => n !== name) || null; },
+    startRoom: row => (row?.rr?.order || []).flatMap(o => [o.a, o.b]).filter(Boolean),
+    finalists: row => (row?.rr?.final ? (row.rr.order || []).filter(o => !(row.rr.eliminated || []).includes(o.team)).flatMap(o => [o.a, o.b]).filter(Boolean) : null),
+    winners: row => row?.rr?.final?.winners || [],
+    // a finalist's place is their team's: the winners first, then the order they crossed the line
+    placeOf: (name, row) => {
+      const teams = (row?.rr?.order || []).filter(o => !(row.rr.eliminated || []).includes(o.team));
+      const i = teams.findIndex(o => o.a === name || o.b === name);
+      return i >= 0 ? i + 1 : null;
+    },
+    // their partner, their legs, their rival team, the Boomerang, the fear, how it ended (rr-story.js)
+    story: (name, row) => rrStory(name, row, gs?.episodeHistory || [], gs?.rr?.teams || []),
   },
   'the-challenge': {
     show: 'the-challenge',

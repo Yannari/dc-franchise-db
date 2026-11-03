@@ -214,23 +214,38 @@ export const CHAL_WATCH_WHOLE = { moves: { whole: [
 ] } };
 
 export const CHAL_PRIZE_WHOLE = { moves: { whole: [
-  { when: { of: 'date' }, stage: "The winners' prize arrives by text: dinner for two on the terrace, away from everybody.", turns: [
+  // …on a day one of them is furious with the other (script.js sourOf): the prize is
+  // the two of them alone, which is the last thing either wants (season 21 ep 15:
+  // "I was really proud of you today", a minute after "Don't. Not now.").
+  { when: { of: ['date', 'treat'], sour: 'mine' }, stage: "The winners' prize arrives: time on their own, away from everybody. Neither of them looks pleased about it.", turns: [
+    ['a', "Are you going to talk to me?"],
+    ['b', "I'm here, aren't I?"],
+    ['a', "That's not the same thing."],
+    ['b', "You know why I'm like this. Don't make me say it in front of the cake."],
+  ], beat: "They sit at opposite ends of the table. Nobody touches the cake." },
+  { when: { of: ['date', 'treat'], sour: 'theirs' }, stage: "The prize arrives: the two of them, alone, for the afternoon. {a} sits down without looking at {b}.", turns: [
+    ['b', "I know you're angry with me."],
+    ['a', "I'm not angry. I'm just not in the mood for a date."],
+    ['b', "Can we at least try?"],
+    ['a', "We can sit here. That's what I can do today."],
+  ], beat: "{b} pours two drinks. {a} drinks one, slowly, and says nothing." },
+  { when: { of: 'date', sour: [null, 'row'] }, stage: "The winners' prize arrives by text: dinner for two on the terrace, away from everybody.", turns: [
     ['a', "We actually won something."],
     ['b', "I told you we would."],
     say('a', "I'm just glad I get you to myself for a bit. It never happens in here.", { romantic: "Dinner, just us. I've wanted this all week." }),
     ['b', "Me too. I've missed talking to you without everyone listening."],
   ], beat: "They walk up to the terrace hand in hand, and the villa cheers them off." },
-  { when: { of: 'date' }, stage: "The winners get a text: a picnic on the hill above the villa, just the two of them.", turns: [
+  { when: { of: 'date', sour: [null, 'row'] }, stage: "The winners get a text: a picnic on the hill above the villa, just the two of them.", turns: [
     ['b', "A picnic. We're going on an actual date."],
     ['a', "Do you know what I liked about today? You never once looked at anyone else."],
     ['b', "Why would I? I was trying to win it for us."],
   ], beat: "{a} doesn't stop smiling for the whole walk up the hill." },
-  { when: { of: 'treat' }, stage: "The prize is a hamper and the hot tub to themselves for the afternoon.", turns: [
+  { when: { of: 'treat', sour: [null, 'row'] }, stage: "The prize is a hamper and the hot tub to themselves for the afternoon.", turns: [
     ['a', "Nobody else is allowed in. That's the rule."],
     ['b', "This is the first time we've been on our own all week."],
     say('a', "I know. I didn't realise how much I needed it.", { soft: "I've missed this. Just us." }),
   ], beat: "The others watch from the kitchen window, and {a} and {b} don't notice." },
-  { when: { of: 'treat' }, stage: "The prize arrives: a cake, a bottle of something fizzy, and the terrace to themselves until dinner.", turns: [
+  { when: { of: 'treat', sour: [null, 'row'] }, stage: "The prize arrives: a cake, a bottle of something fizzy, and the terrace to themselves until dinner.", turns: [
     ['b', "Can I tell you something? I was really proud of you today."],
     ['a', "For winning?"],
     ['b', "For trying that hard. You really meant it."],

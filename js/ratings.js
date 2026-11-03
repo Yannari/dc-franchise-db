@@ -558,7 +558,8 @@ function readVillaSignals(ep, prev, opts) {
   const villainy = clamp01(norm(cost, 30) * 0.3 + dirty * 0.25);
 
   // ── mess ──
-  const comic = aired.filter(e => e.kind === 'comedy' || e.kind === 'baby-doll' || e.kind === 'talent-act').length;
+  // (villa-bit: the episode's light story, pm/runner.js — its bets, pranks and sunbed wars.)
+  const comic = aired.filter(e => e.kind === 'comedy' || e.kind === 'villa-bit' || e.kind === 'baby-doll' || e.kind === 'talent-act').length;
   const mess = clamp01(norm(count(VILLA_MESS), 70) * 0.8 + norm(comic, 60) * 0.2);
 
   // ── strategy: this show's smallest — grafting, gossip, the villa's votes ──

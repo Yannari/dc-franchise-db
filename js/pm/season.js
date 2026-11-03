@@ -27,7 +27,7 @@ import { syncLadder, forgetAsks, stepOf } from './ladder.js';
 import { emo, attachment, attachmentLabel, walkRisk, feel } from './emotions.js';
 import { addBond, getBond, bKey } from '../bonds.js';
 import { proneness } from './breakdown.js';
-import { runVillaDay, morningScenes, ritualScenes } from './villa-day.js';
+import { runVillaDay, morningScenes, ritualScenes, hideawayAfter } from './villa-day.js';
 import { runnerBeat } from './runner.js';
 import { beginThreads, threadBeats, reactions, queueReaction, bedChats, tonightBeats } from './threads.js';
 import { seasonSchedule, withPicks, withBookings, resolveRandomGames, buildSchedule, FINAL_COUPLES } from './schedule.js';
@@ -541,6 +541,8 @@ export function playPerfectMatchSeason({ cast, setup = {}, seed = 1, schedule = 
     m.events.push(...nightDebrief(state, streamFor(seed, `debrief:${entry.ep}${state.epSalt}`), entry, pre, m));
     // The stretch's stories, answered by the night (pm/stretch.js): what the fire pit didn't show, said after it.
     m.events.push(...answerStretch(state, streamFor(seed, `answer:${entry.ep}${state.epSalt}`), entry, m));
+    // …and the Hideaway, on a night with a ceremony: after it, to a couple it left standing.
+    m.events.push(...hideawayAfter(state, entry));
     state.history.push(...m.events);
     syncLadder(state);
     forgetAsks(state);

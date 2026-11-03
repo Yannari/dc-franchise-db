@@ -348,6 +348,9 @@ export function sourOf(state, a, b) {
       : e.kind === 'movie-clip' && e.extra?.of !== 'loyalty' && e.extra?.audience ? pair(e.extra.audience[0], e.extra.audience[1])
       : e.kind === 'graft-turn' ? pair(p1, p0)
       : e.kind === 'where-head' && !['reassure', 'lie'].includes(e.extra?.of) ? pair(p0, p1)
+      // A game kiss watched with a face like thunder: [the one watching, the one who kissed] (season 21 ep 15).
+      : e.kind === 'chal-watch' && e.extra?.of === 'fuming' ? pair(p0, p1)
+      : e.kind === 'chal-row' && e.extra?.of !== 'sorry' ? pair(p0, p1)
       : (e.kind === 'argument' || (e.kind === 'doubt-end' && e.extra?.of === 'friends')) && pair(p0, p1) ? 'row'
       : null;
     if (got) out = out && out !== got ? 'row' : got;

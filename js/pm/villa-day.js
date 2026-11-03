@@ -371,6 +371,16 @@ const RITUALS = {
 // sorted back into the morning and the day, so a friend's advice at lunch
 // could not know about the kiss at the challenge it aired before.
 const EARLY_RITUALS = new Set(['heart-rate', 'snog-marry-pie', 'notes', 'families']);
+// On a night with a ceremony the Hideaway is the night's last thing: the couple
+// it goes to is a couple after the fire pit (season 21 ep 15: Ryan and Priya won
+// it, spent the night, and then sat down at the recoupling).
+const afterTheNight = entry => !!entry && entry.moment !== 'villa';
+export function hideawayAfter(state, entry) {
+  if (!afterTheNight(entry) || !(entry.rituals || []).includes('hideaway')) return [];
+  const out = hideawayNight(state);
+  for (const e of out) e.phase = 'debrief';
+  return out;
+}
 export function morningScenes(state, rng) {
   return hideawayMorning(state, rng);
 }
@@ -382,7 +392,7 @@ export function runVillaDay(state, rng, entry) {
   const days = entry.days ? Math.max(1, entry.days[1] - entry.days[0] + 1) : 1;
   const out = [...ladderScenes(state, rng, days), ...feelingScenes(state, rng),
     ...confessions(state, rng), ...advice(state, rng), ...secondChances(state, rng, entry)];
-  for (const r of entry.rituals || []) if (!EARLY_RITUALS.has(r)) out.push(...(RITUALS[r]?.(state, rng) || []));
+  for (const r of entry.rituals || []) if (!EARLY_RITUALS.has(r) && !(r === 'hideaway' && afterTheNight(entry))) out.push(...(RITUALS[r]?.(state, rng) || []));
   // The love triangles (pm/triangle.js), each a story over episodes — on
   // their own dice, before the fights (a rivalry can boil over tonight).
   out.push(...triangles(state, streamFor(state.seed ?? 1, `triangle:${state.ep}${state.epSalt || ''}`), entry));

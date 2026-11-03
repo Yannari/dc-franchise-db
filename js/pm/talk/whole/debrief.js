@@ -77,6 +77,20 @@ export const DEBRIEF_WHOLE = { moves: { whole: [
     ['b', "I know. You'd only just got together."],
     say('a', "I know. It still stings.", { lad: "I know, bro. Still stings.", sharp: "I know. I just don't like losing." }),
   ], beat: "{b} hands {a} a drink, and they sit for a bit." },
+  // (Two taken back on one night heard the same one, season 21 ep 15.)
+  { when: { of: 'robbed', since: 'tonight' }, stage: "{Where}, {a} is sitting on {a.posAdj} own when {b} finds {a.obj}.", turns: [
+    ['b', "Are you all right?"],
+    ['a', "I had about ten minutes. Ten minutes of being in a couple, and then {c} stood up."],
+    ['b', "That's the worst way it could have gone."],
+    ['a', "I'm not even angry with {c}. They were together before me. I just wish I hadn't got my hopes up."],
+    ['b', "You were allowed to hope."],
+  ], beat: "{a} leans back and looks up at the sky, and {b} doesn't try to fill the quiet." },
+  { when: { of: 'robbed', since: 'tonight' }, stage: "{Where}, {b} brings {a} a blanket and sits down.", turns: [
+    ['b', "I couldn't believe it when {c} stood up."],
+    ['a', "I could. I think I knew when I picked. I just thought I'd get a bit longer."],
+    ['b', "Do you want to talk about it?"],
+    ['a', "Not really. Tomorrow I'll be fine. Tonight I just want to sit here."],
+  ], beat: "They sit under the blanket together until the others start going to bed." },
 
   // ── stole / took back ──
   { when: { of: 'stole', taken: true, cGone: STAY }, stage: "{Where}, {b} sits down next to {a}.", turns: [

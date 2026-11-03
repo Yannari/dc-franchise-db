@@ -15,7 +15,7 @@ export default {
       by('a', "I think we're about to find out."),
     ] },
     { id: 'fc.st.sh2', when: at(T, 'the-shack'), turns: [
-      by('a', "Hello. We're here to be welcomed."),
+      by('a', "Hello. We're here for the welcome."),
       beat('The fisherman looks them up and down, grunts, and pours two glasses of something clear.'),
       by('b', "That doesn't look like water."),
     ] },
@@ -27,17 +27,17 @@ export default {
     { id: 'fc.st.gl2', when: at(T, 'the-glass'), turns: [
       by('a', "All of it. In one go."),
       beat('They both knock it back, shudder from head to toe, and put the glasses down empty.'),
-      by('b', "My whole face is inside out."),
+      by('b', "Oh my God. That was so bad."),
     ] },
     { id: 'fc.st.wd1', when: at(T, 'the-words'), turns: [
-      beat('The fisherman leans forward and says a long sentence in the thick local dialect. It sounds like gravel in a bucket.'),
+      beat('The fisherman leans forward and says a long sentence in the thick local dialect.'),
       by('a', "Could you say that one more time? Slowly?"),
       beat('The fisherman says it again, exactly as fast.'),
     ] },
     { id: 'fc.st.wd2', when: at(T, 'the-words'), turns: [
       by('b', "I think it was \"Long may your big jib draw.\""),
       by('a', "Long may your big jib draw."),
-      beat('The fisherman nods, very slightly. That seems to be right.'),
+      beat('The fisherman nods, very slightly.'),
     ] },
     { id: 'fc.st.kc1', when: at(T, 'kiss-the-cod'), turns: [
       beat('The fisherman picks up the cod and holds it out, lips first.'),
@@ -52,8 +52,8 @@ export default {
     ] },
     { id: 'fc.st.hl1', when: at(T, 'honorary-locals'), turns: [
       beat('The fisherman stands up, shakes their hands, and declares them honorary locals.'),
-      by('b', "We're locals! We live here now!"),
-      by('a', "We do not live here. Take the tip. Run."),
+      by('b', "We're locals!"),
+      by('a', "Take the tip. Run."),
     ] },
     { id: 'fc.st.hl2', when: at(T, 'honorary-locals'), turns: [
       by('a', "That's the strangest welcome I've ever had."),
@@ -79,9 +79,9 @@ export default {
       by('b', "Not fish. It wasn't fish."),
     ] },
     { id: 'fc.sf.wd2', when: at(T, 'the-words'), turns: [
-      beat('{b} repeats the sentence, but with an accent from completely the wrong country.'),
-      by('a', "Why do you sound like a pirate?"),
-      beat('The fisherman is not impressed. Back to the vinegar.'),
+      beat('{b} repeats the sentence, but gets half the words wrong.'),
+      by('a', "That's not what he said!"),
+      beat('The fisherman shakes his head. Back to the drink.'),
     ] },
     { id: 'fc.sf.kc1', when: at(T, 'kiss-the-cod'), turns: [
       beat('{b} leans in to kiss the cod, gets a smell of it, and pulls away at the very last second.'),
@@ -90,7 +90,7 @@ export default {
     ] },
     { id: 'fc.sf.kc2', when: at(T, 'kiss-the-cod'), turns: [
       by('a', "Does a kiss on the cheek count?"),
-      beat('It does not. The fisherman pours the vinegar again.'),
+      beat('It doesn\'t. The fisherman pours the drink again.'),
       by('b', "From the start? We have to drink that again?"),
     ] },
   ],

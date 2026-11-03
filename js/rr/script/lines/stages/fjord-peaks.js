@@ -14,7 +14,7 @@ export default {
     { id: 'fp.st.ha1', when: at(T, 'harness'), turns: [
       beat('On the old iron bridge, the jump master straps {a} into a harness and clips the bungee cord round {a.posAdj} ankles.'),
       by('b', "How far down is it?"),
-      by('a', "Far. Really far. I can see the river, but I can't see any fish."),
+      by('a', "Far. Really far. I can see the river, but not the fish."),
     ] },
     { id: 'fp.st.ha2', when: at(T, 'harness'), turns: [
       by('a', "Is it tight enough? Check it again."),
@@ -44,7 +44,7 @@ export default {
     { id: 'fp.st.ru1', when: at(T, 'reel-up'), turns: [
       beat('The crew winches {a} back up to the bridge, upside down, both arms wrapped round the fish.'),
       by('a', "Grab it off me before I drop it."),
-      by('b', "No way, it's all yours. I'm not touching it."),
+      by('b', "No way. It's all yours."),
     ] },
     { id: 'fp.st.ru2', when: at(T, 'reel-up'), turns: [
       by('a', "All the blood's gone to my head."),
@@ -58,7 +58,7 @@ export default {
     ] },
     { id: 'fp.st.ft2', when: at(T, 'fish-tip'), turns: [
       by('a', "I caught a fish with my bare hands. Off a bridge."),
-      by('b', "I know. You smell like it, too."),
+      by('b', "I know. That was amazing."),
       beat('They run off the bridge, {a} still a little wobbly.'),
     ] },
 
@@ -66,7 +66,7 @@ export default {
     { id: 'fp.st.dl1', when: at(T, 'dance-lesson'), turns: [
       beat('On the stage in the valley, an elder shows them the dance: stamping feet, bent knees, slapping arms, and a fierce face with the tongue out.'),
       by('b', "We have to do the face too?"),
-      by('a', "Pretty sure the face is the main part."),
+      by('a', "I think the face is the most important part."),
     ] },
     { id: 'fp.st.dl2', when: at(T, 'dance-lesson'), turns: [
       by('a', "Stamp, stamp, slap, slap. Okay. Again."),
@@ -76,12 +76,12 @@ export default {
     { id: 'fp.st.ch1', when: at(T, 'the-chant'), turns: [
       beat('The elder teaches them the chant line by line, and they shout it back, a little louder every time.'),
       by('b', "My throat's already sore."),
-      by('a', "Good. I think that means we're doing it right."),
+      by('a', "Good. That means we're loud enough."),
     ] },
     { id: 'fp.st.ch2', when: at(T, 'the-chant'), turns: [
       by('a', "Bigger eyes. Look angry."),
       beat('{b} pulls the fiercest face {b.sub} can, eyes wide and tongue out, and the elder gives a small grunt.'),
-      by('b', "Was that a good grunt?"),
+      by('b', "Was that good?"),
       by('a', "I think so. Keep doing that."),
     ] },
     { id: 'fp.st.fe1', when: at(T, 'for-the-elders'), turns: [
@@ -102,7 +102,7 @@ export default {
     { id: 'fp.st.en2', when: at(T, 'elders-nod'), turns: [
       by('a', "Thank you so much. Really."),
       beat('The elder hands over the tip and pats {a} on the shoulder.'),
-      by('b', "I'm doing that dance at every party from now on."),
+      by('b', "I'm never going to forget that."),
     ] },
   ],
 
@@ -120,7 +120,7 @@ export default {
     ] },
     { id: 'fp.sf.gr1', when: at(T, 'the-grab'), turns: [
       beat('{a} hits the river at the bottom, grabs at everything, and comes up holding a handful of weed.'),
-      by('a', "Does weed count?"),
+      by('a', "Weed! Just weed!"),
       by('b', "No! Go again!"),
     ] },
     { id: 'fp.sf.gr2', when: at(T, 'the-grab'), turns: [
@@ -136,14 +136,14 @@ export default {
     { id: 'fp.sf.ru2', when: at(T, 'reel-up'), turns: [
       by('a', "Look! I've got it!"),
       beat('{a} holds the fish up over {a.posAdj} head to show {b}, and it shoots straight out of {a.posAdj} hands.'),
-      by('b', "Why would you wave it around?"),
+      by('b', "Why did you hold it up?"),
     ] },
 
     // ── Jump Around ──
     { id: 'fp.sf.dl1', when: at(T, 'dance-lesson'), turns: [
       beat('{a} stamps with the left foot when everyone else stamps with the right, and bumps straight into {b}.'),
       by('b', "Other foot!"),
-      by('a', "Sorry, sorry. Which one's the other foot?"),
+      by('a', "Sorry, sorry. Which foot?"),
     ] },
     { id: 'fp.sf.dl2', when: at(T, 'dance-lesson'), turns: [
       by('b', "Wait, is it slap then stamp, or stamp then slap?"),
@@ -151,7 +151,7 @@ export default {
       by('a', "Stamp then slap. I think."),
     ] },
     { id: 'fp.sf.ch1', when: at(T, 'the-chant'), turns: [
-      beat('They chant the words politely, about as loud as someone ordering a coffee.'),
+      beat('They chant the words politely, much too quietly.'),
       beat('The elder shakes their head and cups a hand to one ear.'),
       by('a', "Louder. Way louder."),
     ] },

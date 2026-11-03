@@ -28,7 +28,7 @@ export default {
     ] },
     { id: 'if.st.li2', when: at('narwhal', 'the-line'), turns: [
       by('a', "That's a real narwhal. I thought they were made up."),
-      by('b', "They're real. Now throw a ring at one."),
+      by('b', "They're real. Now throw."),
       beat('{a} grips the ring and waits for the next tusk.'),
     ] },
     { id: 'if.st.th1', when: at('narwhal', 'the-throw'), turns: [
@@ -44,11 +44,11 @@ export default {
     { id: 'if.st.rg1', when: at('narwhal', 'ringed'), turns: [
       beat('The narwhal sinks back under with the ring still on its tusk, and a local hands over the tip.'),
       by('b', "You ringed a narwhal!"),
-      by('a', "I ringed a narwhal. I can't believe that's a thing I just said."),
+      by('a', "I can't believe that worked."),
     ] },
     { id: 'if.st.rg2', when: at('narwhal', 'ringed'), turns: [
-      by('a', "Build an igloo. Okay. How hard can that be?"),
-      by('b', "Please stop saying that before every challenge."),
+      by('a', "Build an igloo. Okay."),
+      by('b', "Have you ever built one?"),
       beat('They run for the igloo village.'),
     ] },
 
@@ -71,7 +71,7 @@ export default {
     { id: 'if.st.fr2', when: at('igloo', 'first-ring'), turns: [
       by('b', "Pack the gaps with snow."),
       beat('{a} stuffs snow into the cracks between the blocks and pats it smooth.'),
-      by('a', "Nothing's getting through that."),
+      by('a', "That should hold."),
     ] },
     { id: 'if.st.dm1', when: at('igloo', 'the-dome'), turns: [
       beat('Ring by ring, the walls curve in, until there is only a small hole left at the top.'),
@@ -95,13 +95,13 @@ export default {
       by('b', "That's good, right? That sounded good."),
     ] },
     { id: 'if.st.it1', when: at('igloo', 'igloo-tip'), turns: [
-      beat('The local pokes a hand out through the door with the tip, and doesn\'t come out.'),
-      by('b', "I think they're staying."),
-      by('a', "Then it's a good igloo. Let's go."),
+      beat('The local pokes a hand out through the door with the tip.'),
+      by('b', "She liked it!"),
+      by('a', "Come on. Let's go."),
     ] },
     { id: 'if.st.it2', when: at('igloo', 'igloo-tip'), turns: [
       by('a', "We built a house. Out of snow."),
-      by('b', "And someone's living in it already."),
+      by('b', "And it actually held."),
       beat('They run across the ice towards the Chill Zone.'),
     ] },
   ],
@@ -115,7 +115,7 @@ export default {
     ] },
     { id: 'if.sf.dr2', when: at('narwhal', 'dig-ring'), turns: [
       by('a', "Got one!"),
-      beat('{a} holds it up. It\'s a bottle cap.'),
+      beat('{a} holds it up. It\'s just a bottle cap.'),
       by('b', "That's not a ring. Keep digging."),
     ] },
     { id: 'if.sf.th1', when: at('narwhal', 'the-throw'), turns: [
@@ -148,11 +148,11 @@ export default {
     { id: 'if.sf.fr1', when: at('igloo', 'first-ring'), turns: [
       beat('{a} sets the last block of the first ring, and the whole ring slowly leans outwards and falls over.'),
       by('b', "In! They're supposed to lean in!"),
-      by('a', "I know which way in is!"),
+      by('a', "I know! I thought they were!"),
     ] },
     { id: 'if.sf.fr2', when: at('igloo', 'first-ring'), turns: [
       by('b', "Is that circle a bit... oval?"),
-      beat('It is very oval. They have to knock it down and start the circle again.'),
+      beat('It\'s very oval. They have to knock it down and start the circle again.'),
       by('a', "Use the saw handle. Draw a circle in the snow first."),
     ] },
     { id: 'if.sf.dm1', when: at('igloo', 'the-dome'), turns: [
@@ -166,13 +166,13 @@ export default {
       by('b', "Why did you push it?"),
     ] },
     { id: 'if.sf.lt1', when: at('igloo', 'local-test'), turns: [
-      beat('The local crawls inside, then pokes a finger straight out through a gap in the wall and wiggles it at them.'),
+      beat('The local crawls inside, then pokes a finger straight out through a gap in the wall.'),
       by('a', "Oh. There's a gap."),
       by('b', "There's a big gap. We have to fix it."),
     ] },
     { id: 'if.sf.lt2', when: at('igloo', 'local-test'), turns: [
       by('b', "Is it holding?"),
-      beat('The local crawls in, and the back of the igloo slowly sags down onto them. They crawl back out, shaking their head.'),
+      beat('The local crawls in, and the back of the igloo slowly sags. She crawls back out, shaking her head.'),
       by('a', "Sorry! So sorry! We'll build it again!"),
     ] },
   ],

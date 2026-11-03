@@ -17,13 +17,13 @@ export default {
     ] },
     { id: 'ttb.st.fn2', when: at('kidnapper', 'first-note'), turns: [
       by('a', "A masked kidnapper. Leaving riddles. In a castle."),
-      by('b', "It's a bit much, isn't it?"),
+      by('b', "It's so dramatic."),
       beat('They grab a lantern and head inside.'),
     ] },
     { id: 'ttb.st.bt1', when: at('kidnapper', 'battlements'), turns: [
       beat('Up on the battlements, under the moon, a second note is tucked into the mouth of an old cannon.'),
       by('b', "\"Down where the prisoners cry, look for the cell with the open eye.\""),
-      by('a', "The dungeon. It's always the dungeon."),
+      by('a', "The dungeon. Of course."),
     ] },
     { id: 'ttb.st.bt2', when: at('kidnapper', 'battlements'), turns: [
       by('a', "Something just moved. Over there, on the wall."),
@@ -54,12 +54,12 @@ export default {
     { id: 'ttb.st.gt1', when: at('kidnapper', 'guard-tip'), turns: [
       beat('The guard holds out the tip without moving a single muscle in their face.'),
       by('b', "Thank you! Thank you so much!"),
-      beat('The guard does not respond. They run.'),
+      beat('The guard doesn\'t react. They run.'),
     ] },
     { id: 'ttb.st.gt2', when: at('kidnapper', 'guard-tip'), turns: [
       by('a', "Crown jewels next. The jewel vault."),
-      by('b', "We are not taking any. Just so you know."),
-      by('a', "Not even a little one?"),
+      by('b', "We're not taking any. Just so you know."),
+      by('a', "I know. I know."),
     ] },
 
     // ── the crown jewel ──
@@ -70,7 +70,7 @@ export default {
     ] },
     { id: 'ttb.st.vt2', when: at('crown-jewel', 'the-vault'), turns: [
       by('b', "You pick. I'll stay behind the rope."),
-      by('a', "Thanks for the support."),
+      by('a', "Thanks."),
       beat('{a} steps up to the table.'),
     ] },
     { id: 'ttb.st.tb1', when: at('crown-jewel', 'the-table'), turns: [
@@ -86,7 +86,7 @@ export default {
     { id: 'ttb.st.pk1', when: at('crown-jewel', 'the-pick'), turns: [
       beat('{a} picks up a small gold crown with a single red stone in the middle.'),
       by('a', "This one. It's the least flashy. Real things don't need to show off."),
-      by('b', "That's very wise. I hope it's right."),
+      by('b', "I hope you're right."),
     ] },
     { id: 'ttb.st.pk2', when: at('crown-jewel', 'the-pick'), turns: [
       by('b', "That one? Really?"),
@@ -106,10 +106,10 @@ export default {
     { id: 'ttb.st.rj1', when: at('crown-jewel', 'real-jewel'), turns: [
       beat('The keeper puts the crown back on its cushion and hands over the tip.'),
       by('b', "You picked the real one! First go!"),
-      by('a', "I've always had good taste."),
+      by('a', "I just had a feeling."),
     ] },
     { id: 'ttb.st.rj2', when: at('crown-jewel', 'real-jewel'), turns: [
-      by('a', "\"Walk into the fog.\" That's it? Just walk into the fog?"),
+      by('a', "It just says walk into the fog. That's it?"),
       by('b', "The Chill Zone's in there somewhere. Come on."),
       beat('They head out of the vault and into the foggy street.'),
     ] },
@@ -125,7 +125,7 @@ export default {
     { id: 'ttb.sf.bt2', when: at('kidnapper', 'battlements'), turns: [
       by('b', "There! The kidnapper!"),
       beat('They chase the purple cloak all the way along the wall, and it turns out to be a flag.'),
-      by('a', "It's a flag. We chased a flag."),
+      by('a', "It's a flag."),
     ] },
     { id: 'ttb.sf.dg1', when: at('kidnapper', 'the-dungeon'), turns: [
       beat('They search a cell, then another, then another. None of them has an eye over the door.'),
@@ -135,7 +135,7 @@ export default {
     { id: 'ttb.sf.dg2', when: at('kidnapper', 'the-dungeon'), turns: [
       by('a', "The lantern. The lantern's going out."),
       beat('The lantern flickers out. A laugh echoes from somewhere down the corridor.'),
-      by('b', "I don't like this. I don't like this at all."),
+      by('b', "I don't like this."),
     ] },
     { id: 'ttb.sf.gd1', when: at('kidnapper', 'the-guards'), turns: [
       beat('{a} walks up to a guard, holds out a hand, and waits. The guard doesn\'t move. No tip.'),

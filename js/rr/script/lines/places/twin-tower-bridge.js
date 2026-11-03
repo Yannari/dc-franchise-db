@@ -20,14 +20,14 @@ const place = {
   'don-opener.annoyed': [
     { id: 'ttb.op1', when: P, turns: [
       beat("Don stands on a great stone bridge between two towers, fog rolling up from the river, an umbrella over his head even though it isn't raining. Yet."),
-      don("Welcome to Twin Tower Bridge! Home of fog, tea, queues, and a lot of men in very tall furry hats who are not allowed to laugh at my jokes."),
+      don("Welcome to Twin Tower Bridge! Home of fog, tea, and a lot of guards in very tall fur hats!"),
       don("Tonight, teams hunt a masked kidnapper through an old fortress. I didn't write that. I wish I had. It's very dramatic."),
-      beat('It starts to rain. Don, already under the umbrella, looks smug.'),
+      beat('It starts to rain, and Don holds the umbrella a little higher.'),
     ] },
     { id: 'ttb.op2', when: P, turns: [
       don("Twin Tower Bridge. It rains here three hundred days a year. The other sixty-five, it's thinking about it."),
       don("Racers, the red double-decker bus to the fortress leaves from the end of the bridge. Sit upstairs. The view is better. The rain is the same."),
-      beat('A red double-decker bus splashes through a puddle behind him, soaking the bottom of his trousers.'),
+      beat('A red double-decker bus splashes through a puddle behind him.'),
     ] },
   ],
   'don-opener.bored': [
@@ -40,14 +40,14 @@ const place = {
   'arrival-awe.wonder': [
     { id: 'ttb.ar1', when: P, turns: [
       beat("The red bus crosses the great bridge at dusk, the two stone towers lit up gold, and the old city glowing all along the river."),
-      by('a', "It's like a storybook. A big, foggy storybook."),
+      by('a', "It's like something out of a story."),
       by('b', "Look at the clock tower! Look at the castle!"),
-      by('a', "Everything here is very old and very lit up."),
+      by('a', "Everything is so old and so beautiful."),
     ] },
     { id: 'ttb.ar2', when: P, turns: [
       beat("They pass a palace gate where a row of guards in red coats and tall black fur hats stand perfectly still."),
       by('b', "Are they real? They're not moving at all."),
-      by('a', "They're real. They're just very, very good at standing still."),
+      by('a', "They're real. They just don't move."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -59,7 +59,7 @@ const place = {
     { id: 'ttb.ad2', when: P, turns: [
       by('b', "The fog's so thick. I can't see the end of the street."),
       by('a', "Stay close. Don't get lost in a foggy city at night."),
-      by('b', "That's how every scary story starts."),
+      by('b', "Don't say that."),
     ] },
   ],
 };
@@ -70,8 +70,8 @@ const roads = {
     { id: 'ttb.tm1', when: { taskId: 'double-decker', mishap: 'stuck-in-traffic' }, turns: [
       beat("The double-decker crawls into a jam of black cabs and red buses that stretches all the way to the next bridge."),
       by('a', "We're not moving. We've not moved for ten minutes."),
-      by('b', "Everyone here seems very calm about it. They're all reading."),
-      beat('Twenty minutes later, the traffic finally starts to move, slowly, politely.'),
+      by('b', "Everyone here seems very calm about it."),
+      beat('Twenty minutes later, the traffic finally starts to move.'),
     ] },
   ],
 };
@@ -100,24 +100,24 @@ const kidnapper = {
     ] },
     { id: 'ttb.kd-s2', when: KD, turns: [
       by('b', "Hold the lantern higher. I can't read his handwriting."),
-      by('a', "He writes like he's in a hurry."),
-      by('b', "He's a kidnapper. He is in a hurry."),
+      by('a', "His writing's so messy."),
+      by('b', "Just read it."),
     ] },
     { id: 'ttb.kd-s3', when: KD, turns: [
       beat("{a} and {b} creep down narrow stone steps into the dungeon, the lantern throwing long shadows on the walls."),
       by('a', "Did you hear that?"),
-      by('b', "I'm trying very hard not to hear anything."),
+      by('b', "I'm trying not to hear anything."),
     ] },
     { id: 'ttb.kd-s4', when: KD, turns: [
       by('a', "Should we split up?"),
-      by('b', "In a dark fortress? With a kidnapper? Absolutely not."),
-      by('a', "Fair point."),
+      by('b', "In here? No way."),
+      by('a', "Okay. Fair."),
     ] },
   ],
   'task-try.first-try': [
     { id: 'ttb.kd-f1', when: KD, turns: [
       beat("Note by note, riddle by riddle, {a} and {b} solve every clue, and walk straight up to the right guard. He hands over the tip without a word."),
-      by('a', "We did it! We're detectives!"),
+      by('a', "We did it! We solved it!"),
       by('b', "He didn't even blink. Not once."),
     ] },
     { id: 'ttb.kd-f2', when: KD, turns: [
@@ -127,13 +127,13 @@ const kidnapper = {
     ] },
     { id: 'ttb.kd-f3', when: KD, turns: [
       beat("{a} reads the last note, thinks for a second, and points at one guard in a row of five."),
-      by('a', "Him. It's him. The one with the button undone."),
-      beat('The guard looks down at his button for the first time all night, and hands over the tip.'),
+      by('a', "Him. It's him. The note said the one with the button undone."),
+      beat('The guard hands over the tip without looking at them.'),
     ] },
     { id: 'ttb.kd-f4', when: KD, turns: [
       by('b', "First go. Every riddle."),
-      by('a', "I've always wanted to solve a mystery."),
-      by('b', "And now you have. In a dungeon."),
+      by('a', "That was so much fun."),
+      by('b', "We're good at this."),
     ] },
   ],
   'task-try.after-fails': [
@@ -150,19 +150,19 @@ const kidnapper = {
     { id: 'ttb.kd-a3', when: KD, turns: [
       by('a', "The wrong guard didn't blink. The right guard won't either. So look at the boots. Ours has muddy boots. The note said so."),
       beat("They check every guard's boots. Only one has mud on them. He hands over the tip."),
-      by('b', "Boots! It was in the boots!"),
+      by('b', "The boots! It was the boots!"),
     ] },
     { id: 'ttb.kd-a4', when: KD, turns: [
       beat("After two wrong guards and one very long walk back through the dungeon, {a} and {b} find the right guard at last."),
       by('a', "Third guard. Third time. Finally."),
-      by('b', "I never want to see a fur hat again."),
+      by('b', "Finally."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'ttb.kd-t1', when: KD, turns: [
       beat("{a} and {b} stand in the dark dungeon, reading the same note over and over, getting nowhere."),
       by('a', "'Where the light dies twice.' What does that mean?"),
-      by('b', "I don't know. I'm not a kidnapper."),
+      by('b', "I don't know."),
     ] },
     { id: 'ttb.kd-t2', when: KD, turns: [
       by('b', "The lantern's going out. It's flickering."),
@@ -172,19 +172,19 @@ const kidnapper = {
     { id: 'ttb.kd-t3', when: KD, turns: [
       beat("{a} is standing very close to a guard, pulling faces, trying to make him react."),
       by('a', "Are you the one? Blink twice if you're the one."),
-      by('b', "They don't blink! Stop it! Read the note!"),
+      by('b', "Stop it! Read the note!"),
     ] },
   ],
   'task-done.any': [
     { id: 'ttb.kd-dn1', when: KD, turns: [
       by('a', "Who was the kidnapper, though? We never found out."),
-      by('b', "Maybe it was Don."),
-      by('a', "It was definitely not Don. He's scared of the dark."),
+      by('b', "I don't know."),
+      by('a', "I don't want to know."),
     ] },
     { id: 'ttb.kd-dn2', when: KD, turns: [
       beat("{a} and {b} climb out of the fortress into the foggy street, blinking in the lamplight."),
       by('b', "We survived a dungeon."),
-      by('a', "And a kidnapper. And a lot of very serious hats."),
+      by('a', "And all those guards."),
     ] },
     { id: 'ttb.kd-dn3', when: KD, turns: [
       by('b', "The tip says 'treasure'. Crown jewels."),
@@ -199,14 +199,14 @@ const kidnapper = {
       by('b', "Back to the last note!"),
     ] },
     { id: 'ttb.kd-x2', when: KD, turns: [
-      beat("{a} and {b} follow the riddle into a dead end in the dungeon. Just a stone wall and a very old rat."),
-      by('b', "Is the rat the clue?"),
-      by('a', "The rat is not the clue! We read it wrong! Back!"),
+      beat("{a} and {b} follow the riddle into a dead end in the dungeon. Just a stone wall."),
+      by('b', "Is there anything here?"),
+      by('a', "Nothing! We read it wrong! Back!"),
     ] },
     { id: 'ttb.kd-x3', when: KD, turns: [
       beat("The lantern goes out in the middle of the dungeon. Total darkness."),
-      by('a', "Who turned the light off?"),
-      by('b', "The light turned itself off! Back to the courtyard!"),
+      by('a', "No! The lantern!"),
+      by('b', "Back to the courtyard! Feel your way!"),
     ] },
   ],
 };
@@ -231,28 +231,28 @@ const jewel = {
     { id: 'ttb.cj-w1', when: CJ, turns: [
       by('b', "You did the last one? No. That was me. So, you."),
       by('a', "I don't know anything about jewels."),
-      by('b', "You know about sparkly things. You love sparkly things."),
+      by('b', "You love jewellery."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'ttb.cj-w2', when: CJ, turns: [
       by('a', "I'll do it. I watch all the antiques shows."),
       by('b', "Do you ever guess right?"),
-      by('a', "Sometimes. Once. But I watch them."),
+      by('a', "Sometimes. Let me do it."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'ttb.cj-w3', when: CJ, turns: [
       by('b', "Not me. If I touch anything worth that much, I'll drop it. You."),
       by('a', "What if I drop it?"),
-      by('b', "Then at least it wasn't me."),
+      by('b', "You won't. You're careful."),
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'ttb.cj-w4', when: CJ, turns: [
-      by('a', "'Who has an eye for sparkle?' That's you. You can spot a sale from a mile away."),
-      by('b', "That's a different kind of sparkle."),
-      by('a', "Same eye. Go."),
+      by('a', "'Who has an eye for sparkle?' That's you."),
+      by('b', "Why me?"),
+      by('a', "You've got good taste. Go."),
     ] },
   ],
   'task-start.any': [
@@ -264,7 +264,7 @@ const jewel = {
     { id: 'ttb.cj-s2', when: CJ, turns: [
       by('b', "Real jewels sparkle in colours. Glass sparkles white. That's what I heard."),
       by('a', "Where did you hear that?"),
-      by('b', "On a show. About diamonds."),
+      by('b', "On a TV show."),
     ] },
     { id: 'ttb.cj-s3', when: CJ, turns: [
       beat("{a} leans in close to a crown, nose almost touching it, squinting at the stones."),
@@ -281,7 +281,7 @@ const jewel = {
     { id: 'ttb.cj-f1', when: CJ, turns: [
       beat("{a} picks a small, plain-looking ring from the very end of the table. The keeper holds it to the light, and nods."),
       by('b', "That one? The plainest one?"),
-      by('a', "The real thing doesn't need to show off."),
+      by('a', "It's always the plain one."),
     ] },
     { id: 'ttb.cj-f2', when: CJ, turns: [
       by('a', "This crown. It's heavier than the others. Feel."),
@@ -296,14 +296,14 @@ const jewel = {
     { id: 'ttb.cj-f4', when: CJ, turns: [
       by('b', "First pick. A real crown jewel."),
       by('a', "I held a real crown jewel."),
-      by('b', "For about four seconds."),
+      by('b', "For a few seconds."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'ttb.cj-a1', when: CJ, turns: [
       by('b', "The fakes are all too shiny. Pick the one that's a bit dull. Old things are dull."),
       beat("{a} picks the dullest crown on the table. The keeper holds it up. Real."),
-      by('a', "Dull was right! Dull was real!"),
+      by('a', "The dull one! It was real!"),
     ] },
     { id: 'ttb.cj-a2', when: CJ, turns: [
       beat("Third pick. {a} weighs every piece in turn, puts back every light one, and hands over the heaviest."),
@@ -313,7 +313,7 @@ const jewel = {
     { id: 'ttb.cj-a3', when: CJ, turns: [
       by('a', "The keeper looked at one ring twice when I picked the wrong ones. That one."),
       beat("{a} picks the ring the keeper glanced at. The keeper holds it up, and smiles very, very slightly."),
-      by('b', "She smiled! She actually smiled!"),
+      by('b', "She smiled!"),
     ] },
     { id: 'ttb.cj-a4', when: CJ, turns: [
       beat("After two fakes, {a} finally holds up a crown that throws colour all over the vault walls."),
@@ -330,11 +330,11 @@ const jewel = {
     { id: 'ttb.cj-t2', when: CJ, turns: [
       by('b', "That's four fakes. Four."),
       by('a', "They're very good fakes."),
-      by('b', "They're very good at being wrong."),
+      by('b', "Keep going."),
     ] },
     { id: 'ttb.cj-t3', when: CJ, turns: [
       beat("{a} picks up a sceptre, and it's so much heavier than expected that it nearly drops."),
-      by('a', "Heavy! Heavy! Very heavy!"),
+      by('a', "Heavy! It's so heavy!"),
       by('b', "Don't drop it! Whatever it is, don't drop it!"),
     ] },
   ],
@@ -342,12 +342,12 @@ const jewel = {
     { id: 'ttb.cj-dn1', when: CJ, turns: [
       by('a', "I touched a crown jewel."),
       by('b', "You touched about six fake ones too."),
-      by('a', "I only remember the real one."),
+      by('a', "I only care about the real one."),
     ] },
     { id: 'ttb.cj-dn2', when: CJ, turns: [
       beat("{a} and {b} walk out of the vault into the foggy night, towards the glow of the Chill Zone."),
-      by('b', "I feel like a royal."),
-      by('a', "You look like somebody who's been in a dungeon."),
+      by('b', "That was amazing."),
+      by('a', "We were in a dungeon and a jewel vault on the same night."),
     ] },
     { id: 'ttb.cj-dn3', when: CJ, turns: [
       by('b', "The keeper smiled at you at the end."),
@@ -363,7 +363,7 @@ const jewel = {
     ] },
     { id: 'ttb.cj-x2', when: CJ, turns: [
       beat("{a} picks up a ring, and a little painted stone falls right out of it onto the velvet."),
-      by('a', "Oops. That's definitely a fake."),
+      by('a', "That's definitely a fake."),
       by('b', "Put it back! Gently! Choose again!"),
     ] },
     { id: 'ttb.cj-x3', when: CJ, turns: [
@@ -374,9 +374,9 @@ const jewel = {
   ],
   'watching-botch.cheer': [
     { id: 'ttb.cj-v1', when: CJ, turns: [
-      by('b', "You've got a royal eye! A royal eye!"),
+      by('b', "You've got this!"),
       by('a', "Shh! You're making the keeper nervous!"),
-      by('b', "Nothing makes the keeper nervous!"),
+      by('b', "Sorry!"),
     ] },
   ],
   'watching-botch.nerves': [
@@ -397,14 +397,14 @@ const jewel = {
     { id: 'ttb.cj-v4', when: CJ, turns: [
       beat("{b} stands perfectly still behind the rope, as still as a royal guard, not saying a word."),
       by('a', "Are you okay?"),
-      by('b', "I'm being a guard. Guards don't talk."),
+      by('b', "I don't want to put you off."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'ttb.cj-h1', when: CJ, turns: [
       beat("While the keeper writes in her book, {b} tilts a lamp so the light falls across the whole table."),
       by('a', "Oh! That one's throwing rainbows now!"),
-      by('b', "The lamp moved on its own. Pick it."),
+      by('b', "Pick that one."),
     ] },
   ],
 };

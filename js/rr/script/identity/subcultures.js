@@ -47,7 +47,7 @@ export default {
         "{teamB} are like a sunny morning that won't stop talking, and I hate sunny mornings."],
       'about-friend': ["{teamB} are surprisingly good company. They don't talk much, and they don't mind the dark.",
         "I'd take {teamB} to the cemetery with us, and that's the nicest thing I've ever said about anyone."],
-      arrive: ["Are there any old churches around here, any crypts? No? Shame.",
+      arrive: ["Is there anywhere dark and quiet around here? No? Shame.",
         "There's too much colour here, {partner}. I need to find a shadow to stand in."],
       'mat-first': ["First, huh. I'll write a very sad poem about it anyway.",
         "We came first, {partner}, and I'm smiling under all this black lipstick. You can't tell, but I am."],

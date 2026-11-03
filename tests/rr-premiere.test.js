@@ -57,11 +57,13 @@ describe('an identity introduction says what the two of them are', () => {
     const intros = airSeason(r)[0].segments.filter(s => s.kind === 'team-intro' && /^pi\./.test(s.lineId));
     expect(intros.length).toBeGreaterThan(3);
     for (const s of intros) {
+      // (what they were at the premiere: exes who got back together by the end are still exes in their introduction)
       const t = r.state.teams[s.teams[0]];
-      const tags = (REL_TAGS[t.rel] || []).map(x => x.replace(/\{\w+\}/g, ''));
+      const rel = t.rel0 ?? t.rel;
+      const tags = (REL_TAGS[rel] || []).map(x => x.replace(/\{\w+\}/g, ''));
       const text = s.lines.map(l => l.text).join(' ');
       const has = tags.some(x => text.includes(x.slice(0, 25)));
-      expect(has, `${t.rel}: ${text}`).toBe(t.rel !== 'bffs' && t.identity !== 'goths');
+      expect(has, `${rel}: ${text}`).toBe(rel !== 'bffs' && t.identity !== 'goths');
     }
   });
 

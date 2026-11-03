@@ -28,7 +28,7 @@ export default {
     "And last week, {out} took the long walk home, and I offered them a ride, but I didn't mean it.",
     "And we lost {out}, not lost as in missing, just eliminated, which on this show is the same thing.",
     "And last time, the race ended for {out}, who left with their heads held high.",
-    "And {out} came in last, so they went home, because that's how it works, and I didn't make the rules, okay, I did.",
+    "And {out} came in last, so they went home, and we'll miss them.",
     "And we waved goodbye to {out}, and we'll miss them."],
   'exit.on-location': ["And {out} were so far behind that I had to go out and find them, just to send them home. Worth it.",
     "And {out} never even made it to the Chill Zone, so I went out to them, and now they're gone.",

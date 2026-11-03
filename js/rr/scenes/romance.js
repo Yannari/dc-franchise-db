@@ -13,7 +13,13 @@ import { romanticCompat } from '../../players.js';
 import { canFancy, interestOf, answerOf } from '../interest.js';
 
 const DIRECTED = new Set(['crush-noticed', 'crush-confided', 'flirt', 'confession-attempt', 'confession', 'torch']);
-const fits = (c, x, y) => (DIRECTED.has(c._kind) ? canFancy(x, y) : romanticCompat(x, y));
+// Someone racing with the person they're with doesn't fall for another racer (a husband told his wife, his own
+// teammate, "I like Zella, and nobody can know", seed 31 read 2026-11-03); a flirt or a kiss takes two people who are
+// both free. A couple that broke up on the race are exes, and free again.
+const TAKEN = new Set(['married', 'dating', 'newly-dating', 'on-off']);
+const taken = (c, n) => { const t = teamOfName(c, n); return !!t && TAKEN.has(t.rel) && (t.a === n ? t.b : t.a) != null; };
+const free = (c, x, y) => !taken(c, x) && (DIRECTED.has(c._kind) || !taken(c, y));
+const fits = (c, x, y) => free(c, x, y) && (DIRECTED.has(c._kind) ? canFancy(x, y) : romanticCompat(x, y));
 const torch = (c, x, y) => !!c.state.unrequited?.[`${x}>${y}`];
 
 // The two people: those the scene names, else the pair across the two teams with the most

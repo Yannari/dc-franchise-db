@@ -170,8 +170,9 @@ describe('the backfill this makes possible', () => {
     // A range, not the exact extremes — the extremes move whenever somebody is
     // given an age in the Studio, and this pinned 65 until a 73-year-old
     // existed. What it is really checking is that the parser is reading ages
-    // and not, say, a year out of a sentence.
-    expect(Math.min(...rows.map(r => r.age))).toBeGreaterThanOrEqual(14);
+    // and not, say, a year out of a sentence. Children exist now (Fiore 11,
+    // Penelope 10), so the floor is a child's age, not a teenager's.
+    expect(Math.min(...rows.map(r => r.age))).toBeGreaterThanOrEqual(5);
     expect(Math.max(...rows.map(r => r.age))).toBeLessThan(100);
   });
 });
@@ -189,6 +190,8 @@ describe('ethnicity and nationality are one description', () => {
   it('keeps the longer one when it already contains the other', () => {
     expect(joinOrigin('Korean', 'Korean American')).toBe('Korean American');
     expect(joinOrigin('Puerto Rican American', 'Puerto Rican')).toBe('Puerto Rican American');
+    expect(joinOrigin('Korean American', 'American')).toBe('Korean American');
+    expect(joinOrigin('Native', 'Native American')).toBe('Native American');
   });
 
   it('joins two genuinely different words', () => {

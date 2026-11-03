@@ -10093,6 +10093,917 @@
       "descriptor": "The Charming Bad Decision",
       "backstory": "Kieran O'Shea grew up in a council flat in Dublin with his mother and two younger sisters, and has been talking his way out of trouble since primary school. He plays drums in a band that has almost been signed three times and pays the rent pulling pints in a pub where half the customers are his friends. He moved to the United States for a summer at nineteen and stayed four years. He applied because his sisters told him he would never last a week, and he wants to send them a postcard from the final.",
       "personality": "Kieran is funny, flirtatious and much more perceptive than he looks. He reads a room in seconds, knows what to say to make anyone laugh and has a talent for escaping consequences. He flirts with almost everyone and means most of it. Trouble comes when feelings get involved: he hates letting people down, so he avoids hard conversations until they become disasters. He is loyal to his friends, generous with whatever he has and terrible at saying no."
+    },
+    {
+      "name": "Ahanu",
+      "slug": "ahanu",
+      "gender": "m",
+      "archetype": "hero",
+      "stats": {
+        "physical": 7,
+        "endurance": 7,
+        "mental": 6,
+        "social": 8,
+        "strategic": 4,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 6,
+        "temperament": 9
+      },
+      "sexuality": "straight",
+      "voice": "Easygoing, warm and full of dad jokes, tells stories to calm people down and calls his daughter 'kiddo'. #warm #goofy #calm",
+      "speakingVoice": "Man around fifty, Oklahoma American accent. Low, warm and rumbling, with a relaxed chuckle. Slow, easy pace with long, friendly pauses. Sounds patient, kind and amused.",
+      "ties": [
+        {
+          "name": "Suki",
+          "kin": "parent-child",
+          "role": "parent"
+        }
+      ],
+      "age": 49,
+      "birthdate": "1977-04-18",
+      "ethnicity": "Lenape",
+      "nationality": "American",
+      "hometown": "Bartlesville, Oklahoma",
+      "occupation": "Auto mechanic and garage owner",
+      "descriptor": "The Joking Dad",
+      "backstory": "Ahanu Reed has owned a small auto repair shop in Bartlesville, Oklahoma, for twenty years. He met Suki's mother, a Japanese American nurse, when she brought in a car with a dead alternator; they divorced when Suki was ten but stayed friends. He raised Suki half of every week and coached her middle school softball team. Now she is at college in another state, he talks to her less than he wants to, and he signed them up so they would have one more big adventure together before she grows up for good.",
+      "personality": "Ahanu is warm, patient and always joking, which suits his name: it means 'he laughs'. He keeps everyone calm, helps other teams without being asked, and is good with his hands under pressure. He hates arguments and tries to settle them with a story. His weakness is his daughter: he worries about her constantly and has trouble letting her lead, even when she is right."
+    },
+    {
+      "name": "Annie",
+      "slug": "annie",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 5,
+        "mental": 7,
+        "social": 8,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "sexuality": "straight",
+      "voice": "Sweet, polite and bubbly on the surface, full of backhanded compliments, with a cold little laugh when she wins. #cruel #proud #theatrical",
+      "speakingVoice": "Young woman in her early twenties, polished upper-class New England American accent. Medium-high pitch, light and sparkly, with a giggle that turns cold. Quick, sweet pace; slow and icy when she drops the act. Sounds well-mannered and quietly vicious.",
+      "ties": [
+        {
+          "name": "Georges",
+          "kin": "siblings"
+        }
+      ],
+      "age": 23,
+      "birthdate": "2003-08-30",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Greenwich, Connecticut",
+      "occupation": "Socialite and charity gala organiser",
+      "descriptor": "The Debutante",
+      "backstory": "Annie Whitcombe is Georges's younger sister, raised in the same house in Greenwich with a tennis coach, a sailing instructor and a nanny she had fired when she was twelve. She came out at a debutante ball at eighteen, sits on the committees of three of her mother's charity galas and has never had a paying job. At home she is the child who never gets caught: Georges takes the blame for the things she starts. She signed up for the race because she was bored, and she dragged Georges along because she needs someone to hide behind.",
+      "personality": "Annie is the sweeter-looking half of the team and the more dangerous one. She has never had to work for anything and sees the other racers as staff who forgot their uniforms. She is polite, giggly and charming to every team's face, and she uses that to learn what they want and what they fear. She lies easily, sabotages with a smile and lets her brother take the heat for both of them. She hates losing, and she hates being ignored even more. She is genuinely fond of Georges, but she has never once taken his side in front of their father."
+    },
+    {
+      "name": "Arthur",
+      "slug": "arthur",
+      "gender": "m",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 4,
+        "endurance": 6,
+        "mental": 7,
+        "social": 5,
+        "strategic": 5,
+        "loyalty": 9,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "sexuality": "straight",
+      "voice": "Earnest and theatrical, slips into a medieval king's voice when nervous, gives speeches and apologises a lot. #theatrical #earnest #nerdy",
+      "speakingVoice": "Young man in his mid twenties, Upper Midwest American accent. Medium pitch, slightly reedy, dropping into a grand, deeper theatrical voice when he is in character. Quick, nervous pace in normal talk; slow and booming during speeches.",
+      "ties": [
+        {
+          "name": "Emmy",
+          "kin": "teammates"
+        }
+      ],
+      "age": 25,
+      "birthdate": "2001-09-01",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Minneapolis, Minnesota",
+      "occupation": "Game shop clerk",
+      "descriptor": "The LARP King",
+      "backstory": "Arthur Bell grew up in a Minneapolis suburb as the kid who was picked last and read fantasy novels in the cafeteria. At sixteen he found a live-action role-play group that meets in a city park, and he has gone every weekend since; for the last three years his character has been the elected king of their kingdom. He works at a game shop, sews his own armour and still lives with his parents. Emmy joined the group four years ago and is the only person who has ever taken his kingdom as seriously as he does.",
+      "personality": "Arthur is earnest, dramatic and brave in a way his body does not quite back up. He speaks in character when he is nervous, makes grand speeches before small challenges, and keeps going long after he should have quit. He is easily embarrassed and used to being laughed at, and he has learned to laugh first. He is loyal, honourable and a terrible liar. He is not athletic, but he is very hard to discourage."
+    },
+    {
+      "name": "Blake",
+      "slug": "blake",
+      "gender": "m",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 4,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 9,
+        "intuition": 4,
+        "temperament": 5
+      },
+      "sexuality": "straight",
+      "voice": "Rambling, laid-back and silly, says 'dude' and 'wait, wait, wait', and teases his sister constantly. #goofy #chaotic #warm",
+      "speakingVoice": "Teenage boy of fifteen, General American accent with a relaxed Western drawl. Medium-high pitch, his voice still cracking upward when he is excited. Loose, quick, rambling pace, lots of 'like' and laughing mid-sentence. Sounds carefree and young.",
+      "ties": [
+        {
+          "name": "Cheyenne",
+          "kin": "siblings"
+        }
+      ],
+      "age": 15,
+      "birthdate": "2011-03-22",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Boise, Idaho",
+      "occupation": "High school sophomore",
+      "descriptor": "The Little Brother",
+      "backstory": "Blake Harlow is a sophomore at a high school in Boise who skateboards, plays too many video games and has been grounded more times this year than his sister was in four. He lives with his parents and their two dogs, and he has followed Cheyenne around since he could walk. She is leaving for college in Chicago next fall and he is pretending not to care. He filled in the application on the family computer as a joke, his parents signed the consent form thinking it would never happen, and nobody was more surprised than Blake when they were cast.",
+      "personality": "Blake is goofy, impulsive and fearless in the way only a fifteen-year-old can be. He dives into challenges before reading them, makes friends with anyone and treats the race like the best field trip of his life. He gets on his sister's nerves on purpose because it is the easiest way to get her attention. He is still a kid: he gets homesick, tired and cranky, and when he is scared he goes very quiet and stays close to Cheyenne."
+    },
+    {
+      "name": "Bradley",
+      "slug": "bradley",
+      "gender": "m",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 10,
+        "endurance": 8,
+        "mental": 5,
+        "social": 6,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 7,
+        "intuition": 4,
+        "temperament": 5
+      },
+      "sexuality": "straight",
+      "voice": "Short, direct and fired up, counts things down and talks in instructions. Laughs big when the pressure is off. #competitive #tough #blunt",
+      "speakingVoice": "Man in his mid twenties, General American accent. Deep, strong and resonant, a bit gravelly when he pushes. Clipped, punchy delivery during action, relaxed and warm when joking. Sounds like a coach on the floor.",
+      "ties": [
+        {
+          "name": "Chadley",
+          "kin": "best-friends"
+        }
+      ],
+      "age": 24,
+      "birthdate": "2002-01-26",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Phoenix, Arizona",
+      "occupation": "Personal trainer and amateur powerlifter",
+      "descriptor": "The Powerlifter",
+      "backstory": "Bradley Okafor grew up in Phoenix, the youngest of four, and was the small kid until a growth spurt and a garage weight bench changed that at fifteen. He competes in powerlifting meets on weekends and coaches at the same gym as Chadley, who became his best friend after spotting him on a lift he had no business attempting. He has been saving for two years to compete at a national meet and wants the prize money to open his own gym.",
+      "personality": "Bradley is intense, disciplined and much more serious than his friend. He treats every challenge like a lift: plan it, commit, finish. He is competitive to the point of being hard on himself and gets frustrated with mistakes, especially his own. Underneath the intensity he is loyal and protective, and he is the one who keeps Chadley focused when the jokes run long."
+    },
+    {
+      "name": "Chadley",
+      "slug": "chadley",
+      "gender": "m",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 8,
+        "endurance": 7,
+        "mental": 4,
+        "social": 8,
+        "strategic": 3,
+        "loyalty": 6,
+        "boldness": 6,
+        "intuition": 4,
+        "temperament": 6
+      },
+      "sexuality": "straight",
+      "voice": "Upbeat, cocky and friendly, says 'bro' a lot and hypes everything up. Flirts without thinking about it. #flirty #goofy #warm",
+      "speakingVoice": "Young man in his early twenties, General American accent with a Southwestern ease. Medium pitch, bright and confident, a little nasal when excited. Quick, bouncy pace, laughs easily, sounds like he is always smiling.",
+      "ties": [
+        {
+          "name": "Bradley",
+          "kin": "best-friends"
+        }
+      ],
+      "age": 23,
+      "birthdate": "2003-05-02",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Scottsdale, Arizona",
+      "occupation": "Personal trainer",
+      "descriptor": "The Gym Flirt",
+      "backstory": "Chadley Brooks played football in high school and walked onto a college team, where he spent most of his time on the bench. When his knee gave out in his junior year he got certified as a personal trainer, and he now runs early-morning classes at a gym in Scottsdale, where he met Bradley on his first day. He posts his workouts online, has a small following, and believes this race is his chance to become someone people recognise in public.",
+      "personality": "Chadley is confident, sunny and very aware of how he looks. He flirts out of habit with almost everyone, compliments people constantly, and is genuinely kind once the act drops. He is not as tough as he likes to appear: he hates heights, gets homesick, and leans on Bradley more than he would ever admit. He talks big before a challenge and gets quieter when it actually starts."
+    },
+    {
+      "name": "Cheyenne",
+      "slug": "cheyenne",
+      "gender": "f",
+      "archetype": "floater",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 7,
+        "social": 5,
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 3,
+        "intuition": 7,
+        "temperament": 7
+      },
+      "sexuality": "straight",
+      "voice": "Flat, deadpan and unimpressed, answers in as few words as possible and sighs at her brother. Softer in private moments. #dry #quiet #calm",
+      "speakingVoice": "Young woman of eighteen, General American accent. Medium-low pitch, smooth and flat, a hint of vocal fry. Slow, measured pace with long pauses before a sarcastic reply. Sounds tired and amused at once, and young under the deadpan.",
+      "ties": [
+        {
+          "name": "Blake",
+          "kin": "siblings"
+        }
+      ],
+      "age": 18,
+      "birthdate": "2008-04-17",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Boise, Idaho",
+      "occupation": "Diner waitress (gap year before college)",
+      "descriptor": "The Unimpressed Sister",
+      "backstory": "Cheyenne Harlow graduated from high school in Boise in June with the best grades in her class and a place at a university in Chicago, which she deferred for a year to save money. She waits tables on the early shift at a diner and spends her evenings reading about law school, three degrees too early. She is the one her parents leave in charge, and has been since Blake was born. She did not apply for this race: her little brother did, and their parents only agreed if she went as the responsible adult, a title she has held for exactly seven months.",
+      "personality": "Cheyenne is dry, guarded and hard to impress. She rolls her eyes at her brother and at most of the other teams, keeps her head down and does the job in front of her. She avoids drama and alliances and would rather go unnoticed than be anyone's target. She is younger than almost everyone in the race and quietly afraid it shows. She takes being responsible for Blake seriously, and she cares about him far more than she lets him see."
+    },
+    {
+      "name": "Cory",
+      "slug": "cory",
+      "gender": "m",
+      "archetype": "social-butterfly",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 6,
+        "social": 9,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 5,
+        "intuition": 6,
+        "temperament": 8
+      },
+      "sexuality": "straight",
+      "voice": "Friendly, upbeat and encouraging, hypes up his partner and everyone around them. Softens bad news with a joke. #warm #goofy #calm",
+      "speakingVoice": "Young man in his early twenties, General American accent with a Bay Area lilt. Medium pitch, smooth and friendly, with a warm laugh. Easy, rolling pace, a little faster when excited. Sounds like a friendly host.",
+      "ties": [
+        {
+          "name": "Mia",
+          "kin": "colleagues"
+        }
+      ],
+      "age": 23,
+      "birthdate": "2003-02-10",
+      "ethnicity": "Black and Puerto Rican",
+      "nationality": "American",
+      "hometown": "South San Francisco, California",
+      "occupation": "Streamer and video editor",
+      "descriptor": "The Hype Man",
+      "backstory": "Cory Rivera grew up in South San Francisco with his mother, his grandmother and a house full of cousins, which he says is where he learned to talk over anyone. He studied film for two years at a community college and now edits videos for other creators while streaming with Mia most nights. He handles the schedule, the editing and the sponsors' emails; Mia handles being Mia. He wanted the race as a chance to show people the side of the channel nobody sees.",
+      "personality": "Cory is warm, outgoing and easy to like. He talks to everyone, remembers names and makes friends with other teams before the first clue is open. He is the calm half of the team and the one who apologises when Mia's jokes go too far. He avoids conflict and sometimes agrees to things he should not, just to keep a room happy. He is a strong encourager and a weak decision-maker."
+    },
+    {
+      "name": "Emmy",
+      "slug": "emmy",
+      "gender": "f",
+      "archetype": "mastermind",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 9,
+        "social": 6,
+        "strategic": 9,
+        "loyalty": 8,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 6
+      },
+      "sexuality": "straight",
+      "voice": "Quick, clever and precise, lays out plans in steps and uses fantasy terms for strategy. Fierce in defence of her king. #nerdy #schemer #theatrical",
+      "speakingVoice": "Young woman in her mid twenties, Upper Midwest American accent. Medium pitch, clear and bright, with a confident edge. Brisk, articulate pace that slows into a storyteller's cadence when she is in character. Sounds smart and determined.",
+      "ties": [
+        {
+          "name": "Arthur",
+          "kin": "teammates"
+        }
+      ],
+      "age": 24,
+      "birthdate": "2002-07-04",
+      "ethnicity": "Irish American",
+      "nationality": "American",
+      "hometown": "St. Paul, Minnesota",
+      "occupation": "Costume maker and library assistant",
+      "descriptor": "The Elven Ranger",
+      "backstory": "Emmy Quinlan makes costumes for local theatres and works mornings at a public library in St. Paul. She joined Arthur's role-play kingdom four years ago as a wandering elven ranger, and within a year she was its strategist, running the battle plans that made Arthur king. She has red hair down to her waist, a sewing machine she named, and a homemade bow she was not allowed to bring on the plane. She signed up for the race to win it, and she has spreadsheets.",
+      "personality": "Emmy is clever, focused and quietly ruthless about winning. She plans every leg like a campaign, studies the other teams and is the one who makes the hard calls. She stays in character for fun, but she is the most practical person on the team. She is protective of Arthur and gets furious when people mock him. She can be impatient and condescending when others do not keep up with her plans."
+    },
+    {
+      "name": "Georges",
+      "slug": "georges",
+      "gender": "m",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 4,
+        "mental": 7,
+        "social": 7,
+        "strategic": 6,
+        "loyalty": 5,
+        "boldness": 7,
+        "intuition": 6,
+        "temperament": 5
+      },
+      "sexuality": "gay",
+      "voice": "Smooth, posh and condescending, full of backhanded compliments, and openly bored by anything that looks like work. #proud #cruel #dry",
+      "speakingVoice": "Man in his late twenties, polished upper-class New England American accent. Medium pitch, smooth and silky, with a lazy drawl. Slow, languid pace, sighing between sentences. Sounds bored, rich and amused.",
+      "ties": [
+        {
+          "name": "Annie",
+          "kin": "siblings"
+        }
+      ],
+      "age": 27,
+      "birthdate": "1999-05-21",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Greenwich, Connecticut",
+      "occupation": "Vice president (in title only) at the family holding company",
+      "descriptor": "The Old Money Heir",
+      "backstory": "Georges Whitcombe was named after a French great-grandmother nobody in the family ever met, and he has spent his whole life correcting people who leave off the s. He grew up in Greenwich, Connecticut, in a house with a name, went to the same boarding school as his father and grandfather, and has a job title at the family holding company that requires him to attend one lunch a month. He sails, plays tennis at the yacht club and has never been told no by anyone who was not related to him. His sister Annie talked him into the race. He agreed because their father said he would not last a week without staff.",
+      "personality": "Georges is charming, arrogant and casually cruel. He has never had to try at anything, and he cannot understand why anyone else bothers. He mocks other teams for their budgets, their jobs and their clothes, treats the race as something happening slightly beneath him, and expects every problem to have a price. When money cannot fix something he is genuinely lost, and then genuinely angry. He is quick-witted and can be very funny, usually at someone else's expense. He takes the blame for his sister more often than he realises."
+    },
+    {
+      "name": "Jisoo",
+      "slug": "jisoo",
+      "gender": "m",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 5,
+        "social": 7,
+        "strategic": 4,
+        "loyalty": 5,
+        "boldness": 8,
+        "intuition": 5,
+        "temperament": 3
+      },
+      "sexuality": "bi",
+      "voice": "Fast, loud and sarcastic, with a lot of slang and big reactions. Snaps back at his brother instantly, but is easy and friendly with everyone else. #loud #blunt #goofy",
+      "speakingVoice": "Young man in his mid twenties, General American accent with a relaxed Los Angeles drawl. Medium pitch, bright and energetic, quick pace that speeds up when he argues. Lots of laughter in his voice with strangers; sharp, raised and defensive with his brother.",
+      "ties": [
+        {
+          "name": "Jiwon",
+          "kin": "siblings"
+        }
+      ],
+      "age": 24,
+      "birthdate": "2002-07-19",
+      "ethnicity": "Korean American",
+      "nationality": "American",
+      "hometown": "Fullerton, California",
+      "occupation": "Bartender and part-time DJ",
+      "descriptor": "The Black Sheep",
+      "backstory": "Jisoo Park dropped out of college after one semester, moved to Los Angeles with three friends and has been bartending and playing DJ sets at small clubs ever since. His parents still call it a phase. He thinks his older brother Jiwon turned into a second father around the time Jisoo was twelve and never stopped, and he resents being judged by someone only three years older. When their mother entered them in the race he said yes immediately, mostly because he knew Jiwon would hate it.",
+      "personality": "Jisoo is loud, funny, impulsive and quick to take offence, especially from his brother. He makes friends with other teams in minutes and forgets the rules almost as fast. He hates being told what to do and will sometimes do the opposite just to prove a point, even when it costs them time. He is not lazy; he works hard at what he cares about. He has just never believed his brother respects him, and every challenge becomes a chance to prove it."
+    },
+    {
+      "name": "Jiwon",
+      "slug": "jiwon",
+      "gender": "m",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 5,
+        "endurance": 6,
+        "mental": 8,
+        "social": 5,
+        "strategic": 7,
+        "loyalty": 6,
+        "boldness": 4,
+        "intuition": 8,
+        "temperament": 6
+      },
+      "sexuality": "straight",
+      "voice": "Measured, dry and exact. Speaks in full sentences, corrects small mistakes, and goes clipped and cold with his brother. #dry #calm #blunt",
+      "speakingVoice": "Man in his late twenties, General American accent from Southern California. Medium-low pitch, even and controlled, slightly clipped consonants. Steady, unhurried pace; patient with strangers, flat and sharp when annoyed. Dry rather than warm, with little vocal range.",
+      "ties": [
+        {
+          "name": "Jisoo",
+          "kin": "siblings"
+        }
+      ],
+      "age": 27,
+      "birthdate": "1999-03-08",
+      "ethnicity": "Korean American",
+      "nationality": "American",
+      "hometown": "Fullerton, California",
+      "occupation": "Hospital pharmacist",
+      "descriptor": "The Responsible One",
+      "backstory": "Jiwon Park is the older of two sons of a couple who run a dry cleaner in Fullerton. He worked the counter after school, translated letters for his parents and did everything that was asked of him: good grades, pharmacy school, a steady job at a hospital pharmacy. His brother Jisoo did none of that and was forgiven for all of it, which Jiwon has never said out loud and never let go. They have not had a real conversation in two years. Their mother signed them both up for the race without telling either of them, and neither wanted to be the one who said no to her.",
+      "personality": "Jiwon is careful, organised and quietly observant. He reads instructions twice, keeps the money and notices what other teams are doing long before they notice him. He is polite to everyone except his brother, with whom every small thing turns into the same old argument about who carried the family. He rarely raises his voice; he goes cold and precise instead. Under the resentment he still feels responsible for Jisoo, and he hates that about himself."
+    },
+    {
+      "name": "Julio",
+      "slug": "julio",
+      "gender": "m",
+      "archetype": "goat",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 5,
+        "social": 8,
+        "strategic": 2,
+        "loyalty": 9,
+        "boldness": 4,
+        "intuition": 4,
+        "temperament": 9
+      },
+      "sexuality": "straight",
+      "voice": "Sweet, slow and delighted by everything, tells stories nobody asked for and calls his wife 'mi amor'. Never angry, mostly confused. #warm #ditzy #calm",
+      "speakingVoice": "Older man in his early sixties, Texan accent with a light Mexican Spanish lilt. Medium-low, soft and warm, slightly hoarse. Slow, unhurried pace with chuckles between sentences. Sounds kind, happy and a little bewildered.",
+      "ties": [
+        {
+          "name": "Octavia",
+          "kin": "married"
+        }
+      ],
+      "age": 61,
+      "birthdate": "1965-06-03",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "Houston, Texas",
+      "occupation": "Retired city bus driver",
+      "descriptor": "The Happy Tourist",
+      "backstory": "Julio Mendoza drove a city bus in Houston for thirty-one years and retired last spring with a pension, a bad back and a list of places he always wanted to see. He and Octavia met at a church dance in 1989 and have been married for thirty-five years. They raised three children and almost never travelled further than his sister's house in San Antonio. Their grandson sent in the application as a retirement gift, and Julio has already filled half a memory card with photos of the airport.",
+      "personality": "Julio is cheerful, gentle and easily amazed. He wants to stop and look at everything, talks to every local, and takes pictures when he should be running. He gets lost often and does not mind it. He is not competitive and does not really understand why anyone is in a hurry, which makes him a liability and a joy. He trusts everybody and lets Octavia make the decisions."
+    },
+    {
+      "name": "Kimberly",
+      "slug": "kimberly",
+      "gender": "f",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 5,
+        "endurance": 5,
+        "mental": 7,
+        "social": 8,
+        "strategic": 8,
+        "loyalty": 4,
+        "boldness": 7,
+        "intuition": 7,
+        "temperament": 5
+      },
+      "sexuality": "straight",
+      "voice": "Bright, sugary and fast, compliments people while sizing them up; turns cold and clipped when she is crossed. #schemer #proud #warm",
+      "speakingVoice": "Young woman around twenty, Southern American accent from Atlanta, polished rather than heavy. Medium-high pitch, bright and sweet, with an upward lilt. Quick, confident pace; turns slow, cool and precise when she is displeased.",
+      "ties": [
+        {
+          "name": "Sydney",
+          "kin": "best-friends"
+        }
+      ],
+      "age": 21,
+      "birthdate": "2005-02-14",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Atlanta, Georgia",
+      "occupation": "College student (marketing) and sorority president",
+      "descriptor": "The Sorority President",
+      "backstory": "Kimberly Vance is a senior studying marketing at a big state university in Georgia and the president of her sorority, a position she won by a single vote after a campaign her sisters still talk about. Her mother and grandmother were members of the same house. She has a five-year plan, a colour-coded planner and a very large group chat. She and Sydney have been best friends since their first week of pledging, and Kimberly picked her as a partner because Sydney is the one person everyone likes.",
+      "personality": "Kimberly is polished, ambitious and always working an angle. She is sweet to people's faces and keeps careful track of who might be useful, who is a threat and who can be talked into anything. She is good at making a deal feel like a favour. She cannot stand losing, and when things go wrong she looks for someone to blame. She is genuinely fond of Sydney, but she treats their friendship a little like a campaign too."
+    },
+    {
+      "name": "Lyon",
+      "slug": "lyon",
+      "gender": "f",
+      "archetype": "villain",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 6,
+        "social": 3,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 9,
+        "intuition": 6,
+        "temperament": 3
+      },
+      "sexuality": "lesbian",
+      "voice": "Low, sneering and blunt, hands out insults casually and swears often. Gentle only with Mandy. #cruel #blunt #dry",
+      "speakingVoice": "Young woman in her early twenties, Pacific Northwest American accent. Low, raspy pitch with a sardonic edge. Lazy, drawn-out pace that turns sharp and fast when she insults someone. Sounds bored, mocking and unafraid.",
+      "ties": [
+        {
+          "name": "Mandy",
+          "kin": "childhood-friends"
+        }
+      ],
+      "age": 23,
+      "birthdate": "2003-10-31",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Portland, Oregon",
+      "occupation": "Tattoo apprentice and bassist",
+      "descriptor": "The Punk",
+      "backstory": "Lyon Kessler grew up in a quiet suburb outside Portland with parents who wanted a different daughter, and left home at seventeen to sleep on the couch at Mandy's family's house. She plays bass in the band she and Mandy started in high school and apprentices at a tattoo shop, sweeping floors and practising linework on oranges. She thinks reality television is fake and everyone on it is a sellout, and she applied anyway because the band needs a van.",
+      "personality": "Lyon is sharp-tongued, contemptuous and quick to decide who she does not like. She mocks the other teams openly, especially the polished ones, and enjoys making people uncomfortable. She is not a liar; she is cruel in plain sight. She is fiercely loyal to Mandy, the only person she lets see her soft side, and she is more afraid of being rejected than she will ever admit."
+    },
+    {
+      "name": "Mandy",
+      "slug": "mandy",
+      "gender": "f",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 7,
+        "endurance": 8,
+        "mental": 5,
+        "social": 5,
+        "strategic": 3,
+        "loyalty": 10,
+        "boldness": 4,
+        "intuition": 5,
+        "temperament": 7
+      },
+      "sexuality": "bi",
+      "voice": "Quiet, mumbling and loyal, agrees with Lyon first and asks questions later. Polite with strangers. #quiet #earnest #anxious",
+      "speakingVoice": "Young woman in her early twenties, Pacific Northwest accent. Medium-low pitch, soft and slightly husky. Slow, hesitant pace with trailing endings and nervous laughs. Gets steadier and firmer when defending her friend.",
+      "ties": [
+        {
+          "name": "Lyon",
+          "kin": "childhood-friends"
+        }
+      ],
+      "age": 22,
+      "birthdate": "2004-03-12",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Portland, Oregon",
+      "occupation": "Record store clerk and drummer",
+      "descriptor": "The Drummer",
+      "backstory": "Mandy Price has known Lyon since the first week of seventh grade, when Lyon punched a boy who was teasing her. She plays drums in their band, works at a used record store and still lives at home with her mother and two younger brothers. Her family took Lyon in when Lyon's own family would not, and Mandy has stood by her ever since. She came on the race because Lyon asked, and she has never once said no to Lyon.",
+      "personality": "Mandy looks as tough as Lyon but is quieter, kinder and much more anxious. She follows Lyon's lead, laughs at her jokes and backs her up in every fight, even when she privately thinks Lyon is wrong. Away from Lyon she is polite and a little shy. She is steady under pressure, rarely complains, and does the hard physical work without being asked."
+    },
+    {
+      "name": "Maureen",
+      "slug": "maureen",
+      "gender": "f",
+      "archetype": "underdog",
+      "stats": {
+        "physical": 6,
+        "endurance": 7,
+        "mental": 7,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 6,
+        "temperament": 7
+      },
+      "sexuality": "straight",
+      "voice": "Polite and practical, explains things clearly like a safety briefing, then admits her nerves in confessionals. #earnest #warm #anxious",
+      "speakingVoice": "Woman around thirty, Midwestern American accent. Medium pitch, clear and pleasant, with a professional politeness. Even, clear pace that speeds up and wavers when she is nervous. Warm and sincere.",
+      "ties": [
+        {
+          "name": "Victor",
+          "kin": "engaged"
+        }
+      ],
+      "age": 29,
+      "birthdate": "1997-06-24",
+      "ethnicity": "Irish American",
+      "nationality": "American",
+      "hometown": "Dayton, Ohio",
+      "occupation": "Flight attendant and student pilot",
+      "descriptor": "The Student Pilot",
+      "backstory": "Maureen Doyle grew up in Dayton, where her grandfather took her to air shows every summer and taught her the name of every plane overhead. She failed the eye test for the air force at eighteen, became a flight attendant instead, and has spent seven years saving for flying lessons. She met Victor at a small airfield where he was giving sightseeing rides, and he proposed to her on the runway last year. She is two exams away from her commercial licence and wants the prize money to finish it.",
+      "personality": "Maureen is earnest, hard-working and used to being underestimated. Years of safety briefings have made her organised and calm when others panic, but she doubts herself the moment it matters, especially next to Victor's confidence. She is kind to other teams and hates cheating. When she finally believes she can do something, she is unstoppable."
+    },
+    {
+      "name": "Mia",
+      "slug": "mia",
+      "gender": "f",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 7,
+        "strategic": 5,
+        "loyalty": 6,
+        "boldness": 8,
+        "intuition": 6,
+        "temperament": 4
+      },
+      "sexuality": "bi",
+      "voice": "Rapid, playful and extremely online; narrates what is happening as if to a live chat, gives everyone nicknames, and goes small and quiet when she is actually upset. #chaotic #goofy #loud",
+      "speakingVoice": "Young woman in her early twenties, General American accent from the Bay Area. High-medium pitch, bright and expressive, with vocal fry at the end of sentences. Fast, chattering pace with sudden drops into a whisper for a joke. Lively and teasing.",
+      "ties": [
+        {
+          "name": "Cory",
+          "kin": "colleagues"
+        }
+      ],
+      "age": 22,
+      "birthdate": "2004-08-14",
+      "ethnicity": "Filipino American",
+      "nationality": "American",
+      "hometown": "Daly City, California",
+      "occupation": "Full-time video game streamer",
+      "descriptor": "The Streamer",
+      "backstory": "Mia Santos started streaming video games from her bedroom at sixteen and built a loyal audience by playing badly on purpose and narrating her own disasters. She and Cory met in an online game, found out they lived twenty minutes apart, and have co-hosted a channel together for three years. Her parents still ask when she will get a real job. She signed up because the race would be the biggest stream of her life, and she plans to treat it like one.",
+      "personality": "Mia is quick, funny and always performing for an audience that is not there. She does bits, makes up nicknames for other teams and turns every disaster into content. She can be thoughtless: she will say the rude thing for a laugh and only notice later who it hurt. When she is truly scared or tired the act drops and she gets small and quiet, and Cory is the only one who knows how to bring her back."
+    },
+    {
+      "name": "Octavia",
+      "slug": "octavia",
+      "gender": "f",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 4,
+        "endurance": 5,
+        "mental": 7,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 9,
+        "boldness": 8,
+        "intuition": 7,
+        "temperament": 3
+      },
+      "sexuality": "straight",
+      "voice": "Firm, quick and commanding, talks like she is breaking up a fight in a hallway. Loving and exasperated with her husband in the same breath. #bossy #blunt #loud",
+      "speakingVoice": "Woman in her late fifties, Southern Texan accent. Medium-low pitch, full and authoritative, with a sharp edge when she raises it. Crisp, fast pace and strong emphasis on key words. Warm underneath, but always in charge.",
+      "ties": [
+        {
+          "name": "Julio",
+          "kin": "married"
+        }
+      ],
+      "age": 58,
+      "birthdate": "1968-09-21",
+      "ethnicity": "Black",
+      "nationality": "American",
+      "hometown": "Houston, Texas",
+      "occupation": "Middle school vice principal",
+      "descriptor": "The Vice Principal",
+      "backstory": "Octavia Mendoza has spent twenty-five years as a vice principal at a Houston middle school, which she says has prepared her for every kind of nonsense the world can produce. She grew up in Beaumont, the eldest of five, and was running the household by the time she was ten. She married Julio at twenty-two and has kept the family calendar, the budget and his medication schedule ever since. She came on the race for him, and she intends to win it anyway.",
+      "personality": "Octavia is sharp, organised and short on patience. She speaks her mind, gives orders without thinking about it, and has no tolerance for rudeness or for young people who are not listening. She loses her temper quickly and gets over it just as fast. She is fiercely protective of Julio, even when he is the one slowing them down, and she will turn on anyone who mocks him."
+    },
+    {
+      "name": "Penelope",
+      "slug": "penelope",
+      "gender": "f",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 3,
+        "endurance": 4,
+        "mental": 7,
+        "social": 4,
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 8,
+        "intuition": 9,
+        "temperament": 5
+      },
+      "voice": "Soft, singsong and eerie, says morbid things cheerfully and stares while she talks. Still a little kid underneath. #theatrical #chaotic #quiet",
+      "speakingVoice": "Girl of ten, New England American accent. High, light and breathy child's voice. Slow, drifting pace with odd pauses and sudden giggles. Sounds sweet and deeply unsettling.",
+      "ties": [
+        {
+          "name": "Silas",
+          "kin": "cousins"
+        }
+      ],
+      "age": 10,
+      "birthdate": "2016-06-13",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Salem, Massachusetts",
+      "occupation": "Fifth grader and ghost-hunting web series host",
+      "descriptor": "The Creepy Kid",
+      "backstory": "Penelope Marsh is ten years old and lives in Salem, Massachusetts, in a narrow old house her family swears is haunted. She has been leaving notes for the ghost since she learned to write. She is in fifth grade, has no interest in anything her classmates like, and hosts a ghost-hunting web series that her much older cousin Silas films, edits and keeps suitable for her age. Her parents agreed to the race only because Silas promised never to let her out of his sight. She wants to visit places she has only read about, and to find out what haunts them.",
+      "personality": "Penelope is unsettling and knows it. She stares, smiles at the wrong moments, and talks about death in a cheerful little voice that makes the adult racers nervous. She loves scaring people and will tell a ghost story at the worst possible moment. She is not mean; she just finds the world more interesting when everyone is a little on edge. She is fearless in the dark and terrified of crowds, and like any ten-year-old she gets tired, cranky and homesick, and then she wants Silas and nobody else."
+    },
+    {
+      "name": "Rodrigo",
+      "slug": "rodrigo",
+      "gender": "m",
+      "archetype": "loyal-soldier",
+      "stats": {
+        "physical": 8,
+        "endurance": 9,
+        "mental": 6,
+        "social": 6,
+        "strategic": 4,
+        "loyalty": 9,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 8
+      },
+      "sexuality": "straight",
+      "voice": "Steady, patient and practical, gives clear instructions and safety warnings, and is gently funny. #calm #earnest #warm",
+      "speakingVoice": "Man in his mid thirties, Texan American accent with a light Mexican Spanish influence. Medium-low pitch, steady and reassuring. Measured, unhurried pace and clear instructions. Sounds dependable and kind.",
+      "ties": [
+        {
+          "name": "Winona",
+          "kin": "colleagues"
+        }
+      ],
+      "age": 34,
+      "birthdate": "1992-09-11",
+      "ethnicity": "Mexican American",
+      "nationality": "American",
+      "hometown": "El Paso, Texas (lives in Montana)",
+      "occupation": "National park ranger",
+      "descriptor": "The Ranger",
+      "backstory": "Rodrigo Salinas grew up in El Paso, Texas, and fell in love with the mountains on a school trip to New Mexico when he was eleven. He studied wildlife biology and has spent nine years as a ranger, the last five at a national park in Montana, where he leads search-and-rescue drills and talks tourists out of feeding the bears. He and Winona have worked the same backcountry district for five years and trust each other with their lives. He signed up to see wild places on other continents.",
+      "personality": "Rodrigo is dependable, practical and calm in a crisis. He follows rules because he has seen what happens when people do not, and he gets frustrated with teams who take reckless risks. He is a natural teacher and helps others even when it costs time. He is loyal to Winona to the bone and defers to her instincts outdoors. He is less sure of himself in cities and in social games."
+    },
+    {
+      "name": "Silas",
+      "slug": "silas",
+      "gender": "m",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 3,
+        "endurance": 5,
+        "mental": 8,
+        "social": 4,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 4,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "sexuality": "asexual",
+      "voice": "Slow, low and morbid, answers questions with dark facts and very dry humour. Never excited. #dry #quiet #nerdy",
+      "speakingVoice": "Man in his late twenties, New England American accent. Deep, low and hollow, with a tired rasp. Very slow, monotone pace with long pauses. Sounds gloomy, deadpan and calm.",
+      "ties": [
+        {
+          "name": "Penelope",
+          "kin": "cousins"
+        }
+      ],
+      "age": 29,
+      "birthdate": "1997-02-02",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Salem, Massachusetts",
+      "occupation": "Museum night guard and amateur historian",
+      "descriptor": "The Gloomy Cousin",
+      "backstory": "Silas Marsh is Penelope's cousin, nineteen years older than her, and the camera operator, sound man, editor and babysitter of her ghost-hunting series. He works overnight as a security guard at a history museum in Salem and spends his days reading about old shipwrecks, witch trials and plagues. He sleeps very little and eats less. He has never left New England, and he agreed to the race because Penelope's parents would not let her go with anyone else, and because she promised him there would be ruins.",
+      "personality": "Silas is quiet, gloomy and observant. He speaks slowly, rarely smiles and notices things others miss: who is lying, who is tired, which clue was folded twice. He is physically weak and complains about the sun, but he is patient and steady when a task needs focus. He takes being Penelope's guardian on the race more seriously than anything he has ever done, in his own deadpan way, and he is far funnier than people realise."
+    },
+    {
+      "name": "Suki",
+      "slug": "suki",
+      "gender": "f",
+      "archetype": "challenge-beast",
+      "stats": {
+        "physical": 9,
+        "endurance": 9,
+        "mental": 6,
+        "social": 5,
+        "strategic": 5,
+        "loyalty": 7,
+        "boldness": 7,
+        "intuition": 5,
+        "temperament": 4
+      },
+      "sexuality": "straight",
+      "voice": "Brisk, focused and impatient, gives directions and gets sharp when she is coddled. Softens with her dad when it matters. #competitive #blunt #earnest",
+      "speakingVoice": "Young woman around twenty, General American accent with a light Oklahoma twang. Medium pitch, clear and athletic, a little breathy. Quick, clipped pace, sharper when frustrated. Sounds determined.",
+      "ties": [
+        {
+          "name": "Ahanu",
+          "kin": "parent-child",
+          "role": "child"
+        }
+      ],
+      "age": 20,
+      "birthdate": "2006-03-07",
+      "ethnicity": "Lenape and Japanese American",
+      "nationality": "American",
+      "hometown": "Bartlesville, Oklahoma",
+      "occupation": "College student and middle-distance runner",
+      "descriptor": "The Track Star",
+      "backstory": "Suki Reed grew up between her father's garage and her mother's apartment, learning to change a tyre from one and to fold paper cranes from the other. She runs the 800 metres on a scholarship at a university in Colorado and is studying kinesiology. She loves her father and finds him exhausting, especially since she left home and he started calling every evening. She agreed to the race because she knows how much it means to him, and because she does not lose races.",
+      "personality": "Suki is driven, fast and competitive, with a short fuse when she is held back. She is focused and disciplined, and frustrated when her father fusses over her or slows down to help another team. She wants to be treated like an adult and gets defensive when she is not. Beneath the edge she is thoughtful and close to him, and the race forces her to admit how much she still needs him."
+    },
+    {
+      "name": "Sydney",
+      "slug": "sydney",
+      "gender": "f",
+      "archetype": "showmancer",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 6,
+        "social": 9,
+        "strategic": 4,
+        "loyalty": 6,
+        "boldness": 6,
+        "intuition": 7,
+        "temperament": 7
+      },
+      "sexuality": "bi",
+      "voice": "Bubbly, flirty and affectionate, calls people 'babe' and laughs a lot; turns calm and practical in an emergency. #flirty #warm #goofy",
+      "speakingVoice": "Young woman around twenty, Central Florida American accent with a slight Puerto Rican Spanish lilt. Medium pitch, warm and playful, with an easy laugh. Lively, quick pace that slows and steadies when someone is hurt.",
+      "ties": [
+        {
+          "name": "Kimberly",
+          "kin": "best-friends"
+        }
+      ],
+      "age": 21,
+      "birthdate": "2005-06-09",
+      "ethnicity": "Puerto Rican American",
+      "nationality": "American",
+      "hometown": "Orlando, Florida",
+      "occupation": "Nursing student and care home aide",
+      "descriptor": "The Social Sister",
+      "backstory": "Sydney Ortiz grew up in Orlando with three older brothers and a mother who ran a hair salon out of their garage. She earned a scholarship to study nursing in Georgia and joined the sorority because Kimberly talked her into it, though she still feels like a visitor there. She works weekend night shifts at a care home and sends part of her pay home. She came on the race for the adventure, and because she has never been on a plane that was not going to her grandmother's.",
+      "personality": "Sydney is warm, flirtatious and fun, the person who starts the dancing in any room. She makes friends on every team and catches feelings easily, which can distract her at bad moments. She is more down to earth than Kimberly and sometimes uncomfortable with her friend's plotting, but she avoids confronting her. Under pressure she is calm and practical, thanks to her nursing training."
+    },
+    {
+      "name": "Victor",
+      "slug": "victor",
+      "gender": "m",
+      "archetype": "wildcard",
+      "stats": {
+        "physical": 7,
+        "endurance": 6,
+        "mental": 5,
+        "social": 7,
+        "strategic": 3,
+        "loyalty": 7,
+        "boldness": 10,
+        "intuition": 5,
+        "temperament": 5
+      },
+      "sexuality": "straight",
+      "voice": "Brash, cheerful and full of flying slang, tells tall tales and treats danger like a joke. #loud #goofy #proud",
+      "speakingVoice": "Man in his early thirties, rural Midwestern accent. Medium-low pitch, warm and booming, with a grin in his voice. Quick, confident pace, loud laughter and dramatic pauses when telling a story. Sounds fearless.",
+      "ties": [
+        {
+          "name": "Maureen",
+          "kin": "engaged"
+        }
+      ],
+      "age": 32,
+      "birthdate": "1994-09-05",
+      "ethnicity": "White",
+      "nationality": "American",
+      "hometown": "Greenville, Ohio",
+      "occupation": "Crop-duster pilot",
+      "descriptor": "The Daredevil Pilot",
+      "backstory": "Victor Lindqvist grew up on a soybean farm in western Ohio and was flying a crop duster over his uncle's fields before he was old enough to buy a beer. He gives sightseeing rides on weekends at a small airfield near Dayton, which is where he met Maureen. He owns two leather jackets, one pair of goggles and a vintage biplane that has not flown in four years because he cannot afford a new engine. He thinks the race is the adventure of a lifetime.",
+      "personality": "Victor is bold, impulsive and full of stories, most of them exaggerated. He takes risks without thinking, loves speed and heights, and has no patience for reading instructions. He is generous and fun to be around, but he can be careless with Maureen's feelings, charging ahead without checking whether she is with him. He is genuinely proud of her and says so often, just not always at the right moments."
+    },
+    {
+      "name": "Winona",
+      "slug": "winona",
+      "gender": "f",
+      "archetype": "hero",
+      "stats": {
+        "physical": 8,
+        "endurance": 8,
+        "mental": 7,
+        "social": 6,
+        "strategic": 6,
+        "loyalty": 8,
+        "boldness": 7,
+        "intuition": 9,
+        "temperament": 8
+      },
+      "sexuality": "straight",
+      "voice": "Calm, sure and sparing with words, explains what she sees and expects people to keep up. Dry humour with Rodrigo. #calm #proud #warm",
+      "speakingVoice": "Woman around thirty, Upper Midwest American accent. Medium-low pitch, calm and grounded, a little husky. Slow, deliberate pace with short, confident sentences. Sounds steady and certain.",
+      "ties": [
+        {
+          "name": "Rodrigo",
+          "kin": "colleagues"
+        }
+      ],
+      "age": 30,
+      "birthdate": "1996-08-23",
+      "ethnicity": "Dakota",
+      "nationality": "American",
+      "hometown": "Spirit Lake, North Dakota (lives in Montana)",
+      "occupation": "National park ranger and wildlife tracker",
+      "descriptor": "The Tracker",
+      "backstory": "Winona Hale grew up on the Spirit Lake reservation in North Dakota, where her grandmother taught her to track deer and read the weather. She was the first in her family to go to college, studied environmental science, and became a ranger in Montana, where she now trains new hires in backcountry navigation. She and Rodrigo have worked the same district for five years. She applied to the race to prove that what her grandmother taught her works anywhere.",
+      "personality": "Winona is confident, capable and quietly intense. She reads terrain, weather and people with the same patience, and she is usually right. She looks out for the weaker teams and has no time for cruelty or cheating. She is not a big talker, but when she speaks the group listens. Her weakness is pride: she struggles to admit when she is lost."
     }
   ]
 }

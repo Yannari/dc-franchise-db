@@ -20,7 +20,7 @@
 // `conf` is a confessional: the viewer cuts to the camera and back.
 import { gs, players, seasonConfig } from '../../core.js';
 import { pronouns } from '../../players.js';
-import { pickEntry, newLedger } from '../../script/pick.js';
+import { pickEntry, newLedger, matches } from '../../script/pick.js';
 import { stableRng } from '../../script/rng.js';
 import { POOLS } from './lines/index.js';
 import { factsFor } from './facts.js';
@@ -142,7 +142,11 @@ export function writeScene(scene, ctx = {}) {
   // ...and nothing outdoors on the jet (read 2026-10-14: "Same rock? ... Don't sit on our rock" on the World Tour plane)
   const indoorOk = e => venue !== 'world-tour' || !JET_NO.test(entryText(e));
   // (ctx.drop: a writer's own rule for lines that do not fit this moment, td/script/island.js; kept only while something is left)
+  // ...left that FITS: day one's filters left Jane and Chris McLean one charm line, written for a register
+  // neither has, and the scene threw "no lines for life.charm.any".
+  const fitsAny = list => list.some(e => matches(e.when, facts));
   for (const k of [].concat(key)) { const kept = (base[k] || []).filter(e => foodOk(venue, entryText(e)) && indoorOk(e) && !(ctx.drop && ctx.drop(e))); pools[k] = kept.length ? kept : (base[k] || []); }
+  if (!fitsAny(Object.values(pools).flat())) for (const k of [].concat(key)) pools[k] = base[k] || [];
   const entry = pickEntry(ledger(), pools, key, facts, pairKey, rng, speakers, clockOf(ctx));
   if (!entry) throw new Error(`no lines for ${[].concat(key).join(' + ')}`);
   const lines = entry.turns.map(t => {

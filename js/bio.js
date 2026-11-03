@@ -187,6 +187,11 @@ export function joinOrigin(ethnicity, nationality) {
   if (le === ln) return e;
   if (ln.startsWith(le + ' ')) return n;
   if (le.startsWith(ln + ' ')) return e;
+  // "Korean American" + "American": the ethnicity already ends with the
+  // nationality. Only the front was checked, and 24 voice lead-ins read
+  // "Korean American American".
+  if (le.endsWith(' ' + ln)) return e;
+  if (ln.endsWith(' ' + le)) return n;
   return `${e} ${n}`;
 }
 

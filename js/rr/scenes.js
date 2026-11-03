@@ -8,7 +8,7 @@
 // applies it; the words are written later from the record (manual §19). Every
 // ending changes something, and `fx` records it in `data.effects`, so nothing is
 // cosmetic (CLAUDE.md: every social event has consequences).
-import { addScene, S, mayScheme, REL } from './state.js';
+import { addScene, S, mayScheme, REL, oneSided, FOOLED_VIEW } from './state.js';
 import { getBond, addBond } from '../bonds.js';
 import { nudgeMind } from './mind.js';
 import { perceivedRank, believe } from './knowledge.js';
@@ -21,6 +21,13 @@ import { SCENES, K, register, pairKey } from './scenes/registry.js';
 export { SCENES, K, register, pairKey };
 
 const people = (state, id) => (id && state.teams[id] ? [state.teams[id].a, state.teams[id].b] : []);
+
+/** How x feels about y: the bond, or, for the fooled partner of a one-sided team who hasn't found out, what they think it is. */
+export function viewOf(st, x, y) {
+  const t = Object.values(st?.teams || {}).find(tm => (tm.a === x && tm.b === y) || (tm.a === y && tm.b === x));
+  const o = t ? oneSided(st, t.id) : null;
+  return o && !o.found && x === o.fooled ? o.view : getBond(x, y);
+}
 
 // ── What a scene may know (the dialogue reads this, never live state; manual §19.2 step 1) ──
 // Taken when the scene is played, BEFORE its ending changes anything: how the two stood, where, when.
@@ -68,7 +75,10 @@ export function snapOf(st, { tid = null, oid = null, stretch = null, t = null, f
     phase: f <= 0.34 ? 'early' : f >= 0.67 ? 'late' : 'mid',
     tod: t == null ? null : ((Math.round((st.clock ?? 420) + t) % 1440) + 1440) % 1440,
     rank: tid ? Math.round(perceivedRank(st, tid) * 100) / 100 : null,
-    band: A && B ? bandOf(getBond(A, B)) : null,
+    // (a one-sided team nobody has seen through is friends to look at: the resentment is in the interviews)
+    band: A && B ? (oneSided(st, tid) && !oneSided(st, tid).found ? 'friends' : bandOf(getBond(A, B))) : null,
+    // a one-sided team: is a the one who resents, and has the other found out
+    ...(() => { const o = oneSided(st, tid); return o ? { resents: A ? A === o.resents : null, found: o.found } : {}; })(),
     bandX: across ? bandOf(across.reduce((s, x) => s + x, 0) / across.length) : null,
     allied: !!(tid && oid && st.alliances.some(al => !al.ended && al.teams.includes(tid) && al.teams.includes(oid))),
     // a's team is already in an alliance the other team isn't in: a pitch is to join it (and names who's in it)
@@ -122,7 +132,9 @@ export function prepare(ctx) {
     _ready: true, A, B, C, D, tid, oid,
     lead: tid ? st.lead[tid] : null,
     rel: tid ? st.teams[tid].rel : null,
-    S, bond: (x, y) => getBond(x, y),
+    // how x feels about y: the real bond, except for the fooled partner of a one-sided team, who still thinks they're
+    // best friends (their choices follow that; the team's teamwork, skill.js, reads the real one)
+    S, bond: (x, y) => viewOf(st, x, y),
     stress: n => st.mind[n]?.stress ?? 0,
     morale: n => st.mind[n]?.morale ?? 50,
     energy: n => st.mind[n]?.energy ?? 100,
@@ -165,6 +177,10 @@ function makeFx(ctx, effects, kindId = null) {
     pop(n, d) { if (!gs.popularity) gs.popularity = {}; gs.popularity[n] = (gs.popularity[n] || 0) + d; push(['pop', n, d]); },
     pending(teamId, m) { st.pending[teamId] = (st.pending[teamId] || 0) + m; push(['pending', teamId, m]); },
     rel(teamId, r) { st.teams[teamId].rel = r; push(['rel', teamId, r]); },
+    // a one-sided team: what the fooled partner thinks of the friendship moves (never above where it started), or
+    // they find out
+    view(teamId, d) { st.view ||= {}; st.view[teamId] = Math.min(FOOLED_VIEW, (st.view[teamId] ?? FOOLED_VIEW) + d); push(['view', teamId, d]); },
+    found(teamId) { st.found ||= {}; st.found[teamId] = st.leg; push(['found', teamId]); },
     snap(teamId, on) { st.snapped[teamId] = on; push(['snapped', teamId, on]); },
     ally(t1, t2) {
       // a forced pairing (Superteam, a pass given) that would grow a bloc past its size stays a friendship
@@ -363,6 +379,7 @@ export function interviewAfter(state, sc, rng, { force = false } = {}) {
 
 // Load the families (each file registers its kinds).
 import './scenes/partners.js';
+import './scenes/frenemies.js';
 import './scenes/teams.js';
 import './scenes/groups.js';
 import './scenes/romance.js';

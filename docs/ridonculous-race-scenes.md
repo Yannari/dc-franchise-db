@@ -71,6 +71,13 @@ every stretch, chosen by the situation.
 | `bond-moment` | a quiet stretch, good bond | `laugh` · `memory` (how they met, from the roster) · `gratitude` (bond +1) | how they know each other | every ep |
 | `separation` | partners split by a vehicle or a wrong turn | `regroup` (min +) · `different-rules` (each goes elsewhere; the mat needs both) | the place, the family rule | ep 12 |
 | `leader-shift` | an injury, a crush, anger, a win | `takes-charge` (lead) · `gives-way` | why | ep 10, 15, 22, 24 |
+| `dig` | frenemies, any stretch | `lets-it-go` (bond −0.3) · `digs-back` (bond −0.8, str +3 both) · `laughs-it-off` (bond +0.4) | a compliment with an edge | the user, 2026-11-02 |
+| `keep-score` | frenemies, a pass or the mat | `takes-credit` (bond −0.7, pop −1) · `shares-credit` (bond +0.8) · `tally` (bond −0.2) | who did it | the user, 2026-11-02 |
+| `frenemy-turn` | frenemies, bond ≥ 5 or ≤ −4 | `real-friends` (rel → bffs) · `mask-off` (rel → enemies) | the scorekeeping | the user, 2026-11-02 |
+| `gush` | one-sided, a is the fooled one | `sweet` · `big-plans` (the resenter's str +) · `noticed` (what a thinks of the friendship −1) | nothing they don't share | the user, 2026-11-02 |
+| `cold-shoulder` | one-sided, a is the resenter (anybody: not a scheme) | `bites-tongue` · `cold-reply` (bond −0.3) · `eye-roll` (pop −0.5); a sharp partner notices | the resentment, in a's interview | the user, 2026-11-02 |
+| `quiet-sabotage` | one-sided, a is the resenter ⚑ | `takes-credit` (pass/mat) · `blames-partner` (a fail) · `pushes-the-botch` (str +6, min +4); pop −0.5–1 | what b did | the user, 2026-11-02 |
+| `finds-out` | one-sided, a is the fooled one, from leg 2; likelier the sharper a is and the lower a's view has fallen | `mask-off` (rel → enemies, mor −15) · `have-it-out` (rel → bffs, bond +4) | why, in the resenter's words | the user, 2026-11-02 |
 
 ## 2. Teams together (two teams at one place)
 

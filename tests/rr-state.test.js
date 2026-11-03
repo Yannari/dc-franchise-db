@@ -36,7 +36,8 @@ describe('rr state', () => {
     expect(REL.siblings.family).toBe(true);
     expect(REL.exes.family).toBeFalsy();
     expect(REL.exes.snap).toBe(1.5);
-    expect(Object.keys(REL)).toHaveLength(16);
+    // (frenemies and one-sided, 2026-11-02)
+    expect(Object.keys(REL)).toHaveLength(18);
   });
 
   it('a scene records who saw it', () => {

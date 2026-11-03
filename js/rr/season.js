@@ -10,9 +10,9 @@
 // still starts with three. The franchise walks in with the cast (manual §8.3):
 // carried bonds, and grudges as rivalries between their teams.
 import { setGs } from '../core.js';
-import { addBond } from '../bonds.js';
+import { addBond, setBond, getBond } from '../bonds.js';
 import { streamFor } from '../dr/rng.js';
-import { newState, addTeams, teamOf } from './state.js';
+import { newState, addTeams, teamOf, REL, S, mayScheme } from './state.js';
 import { buildSchedule } from './schedule.js';
 import { drawRoute } from './route.js';
 import { PLACES } from './places.js';
@@ -22,6 +22,23 @@ import { playFinal } from './final.js';
 import { medevac } from './chill.js';
 import { pairKey } from './scenes.js';
 
+// The partner of a one-sided team who resents the other, when the Pairs view didn't say: one who may scheme over one
+// who may not, then the less loyal, then the sharper (strategic).
+export function resenterOf(t) {
+  const score = n => (mayScheme(n) ? 100 : 0) + (10 - S(n, 'loyalty')) * 3 + S(n, 'strategic');
+  return score(t.b) > score(t.a) ? t.b : t.a;
+}
+
+/** What the two of each team already are to each other, before the race changes it (state.js REL start). */
+export function walkIn(state) {
+  for (const t of Object.values(state.teams)) {
+    // (set, not added: addBond scales by temperament and archetype, and this is a starting point, not a moment)
+    if (REL[t.rel]?.start) setBond(t.a, t.b, getBond(t.a, t.b) + REL[t.rel].start);
+    // a one-sided team names who resents whom (the Pairs view); unnamed, it's the colder, sharper of the two
+    if (t.rel === 'one-sided' && ![t.a, t.b].includes(t.resents)) t.resents = resenterOf(t);
+  }
+}
+
 export function playRaceSeason({ teams, options = {}, seed = 1, carried = null }) {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const cast = teams.flatMap(t => [t.a, t.b]);
@@ -30,6 +47,7 @@ export function playRaceSeason({ teams, options = {}, seed = 1, carried = null }
   addTeams(state, teams);
   state.lastOrder = [...state.order];
 
+  walkIn(state);
   // the franchise walks in with them
   for (const s of carried?.sums || []) if (cast.includes(s.a) && cast.includes(s.b)) addBond(s.a, s.b, s.delta);
   for (const b of carried?.bonds || []) {

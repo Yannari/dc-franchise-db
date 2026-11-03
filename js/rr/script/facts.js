@@ -79,6 +79,9 @@ export const RR_FACT_KEYS = [
   'aDid', 'exitHow',
   // a is the older of the two by a generation (a parent, a grandparent): true / false; null when unknown
   'aElder',
+  // a one-sided team: a is the one who resents the other (true) or the one who thinks they're best friends (false),
+  // and whether the fooled one has found out yet; null on every other team
+  'resents', 'found',
   // the scene that caused this one (a chain, or the moment an interview is about), its ending, and the storyline step it moves
   'cause', 'causeEnding', 'threadStep',
   // how a talks, and how b talks: the voice family of their strongest tag (sharp, dry, loud, soft, odd)
@@ -147,6 +150,12 @@ export function factsFor(scene, roles, state) {
     matPlace: d.matPlace ?? null, why: d.why ?? null, rule: d.rule ?? null, byVote: !!d.byVote, stage: d.stage ?? null, blind: !!d.blind,
     aDid: !!d.aDid, exitHow: d.exitHow ?? null, mishap: scene.kind === 'travel-mishap' ? d.kind ?? null : null,
     aElder: (() => { const e = elderOf(state.teams[d.team]); const a = roles?.roles?.a; return e && a ? e === a : null; })(),
+    // (from the team, which never changes, and the scene's own snapshot of whether it was out yet)
+    ...(() => {
+      const tm = state.teams[d.team], a = roles?.roles?.a;
+      if (tm?.rel !== 'one-sided' && !s.found) return { resents: null, found: null };
+      return { resents: tm?.resents && [tm.a, tm.b].includes(a) ? a === tm.resents : null, found: !!s.found };
+    })(),
     fails: !s.fails ? 0 : s.fails === 1 ? 1 : 'many',
     switched: !!(d.switched), quit: !!(d.quit), place: s.place ?? null, taskId: d.stretch ?? null,
     picked: pickedOf(s.picked),

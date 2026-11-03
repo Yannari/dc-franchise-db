@@ -44,6 +44,10 @@ export default {
       // A character's Total Drama camp kit (js/td/story/kits.js), written from their PROFILE only.
       // Same reason as `casting-interview` for living here: the key is here.
       return await generateCampKit(body, env);
+    } else if (mode === "race-lines") {
+      // A Ridonculous Race team's own lines (the Casting Room's Pairs view), from the two PROFILES only.
+      // Same reason as `camp-kit` for living here: the key is here.
+      return await generateRaceLines(body, env);
     } else if (mode === "voice-direction") {
       // How each line of an episode should be SAID, for voice acting (js/vp-td-ep/voicing.js). The key is here.
       return await generateVoiceDirection(body, env);
@@ -3745,6 +3749,9 @@ function joinOrigin(ethnicity, nationality) {
   if (le === ln) return e;
   if (ln.startsWith(le + " ")) return n;
   if (le.startsWith(ln + " ")) return e;
+  // "Korean American" + "American" (js/bio.js, 2026-11-02)
+  if (le.endsWith(" " + ln)) return e;
+  if (ln.endsWith(" " + le)) return n;
   return `${e} ${n}`;
 }
 
@@ -4017,6 +4024,106 @@ async function generateCampKit(body, env) {
     .map(g => ({ tag: g.tag, quote: String(g.quote).trim() }));
   if (!kit.thing || !n) return json({ error: "the model wrote no usable kit" }, 502);
   return json({ ok: true, kit, ground, source });
+}
+
+/**
+ * ── A RACE TEAM'S OWN LINES: WRITTEN FROM THE TWO PROFILES ──
+ *
+ * The Ridonculous Race's Pairs view has "Their own lines (optional)": the premiere introduction (one line each, to
+ * camera) and four lines the team says first at a moment, once a season (js/rr-run.js TEAM_LINES: at a challenge
+ * they're good at, when one keeps beating them, when they win something, going home). The user, 2026-11-02: "add a
+ * fill button that use ai with the profiles info to fill automatically their own lines like we do for the casting
+ * interview". Written from the two profiles and what the team is (relationship, identity), nothing else: like the
+ * camp kit, it must never see a season, and it may not add a fact the profiles don't have.
+ */
+async function generateRaceLines(body, env) {
+  const cors = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" };
+  const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: cors });
+  if (!env.OPENAI_API_KEY) {
+    return json({ error: "Race lines need OPENAI_API_KEY on this worker.",
+      hint: "wrangler secret put OPENAI_API_KEY --config wrangler-analytics.toml" }, 400);
+  }
+  const [A, B] = Array.isArray(body.people) ? body.people : [];
+  const team = body.team || {};
+  if (!A?.name || !B?.name) return json({ error: "a team is two people" }, 400);
+  const thin = p => !String(p.backstory || "").trim() && !String(p.personality || "").trim() && !String(p.voice || "").trim();
+  if (thin(A) && thin(B)) {
+    return json({ error: "nothing to write from: neither profile has a backstory, a personality or a voice, so it would all be invented" }, 400);
+  }
+  const who = p => [
+    `${p.name}${p.age ? `, ${p.age}` : ""}${p.gender === "f" ? ", female" : p.gender === "m" ? ", male" : p.gender === "nb" ? ", non-binary" : ""}`,
+    p.occupation && `Occupation: ${p.occupation}`,
+    p.hometown && `From: ${p.hometown}`,
+    joinOrigin(p.ethnicity, p.nationality),
+    p.archetype && `Plays as: ${p.archetype}`,
+    p.voice && `How they talk: ${p.voice}`,
+    p.backstory && `Backstory: ${p.backstory}`,
+    p.personality && `Personality: ${p.personality}`,
+  ].filter(Boolean).join("\n");
+  const rel = String(team.rel || "").trim();
+  const resents = [A.name, B.name].includes(team.resents) ? team.resents : null;
+  const fooled = resents ? (resents === A.name ? B.name : A.name) : null;
+  const relLine = rel === "one-sided" && resents
+    ? `What they are: ${fooled} thinks they're best friends. ${resents} secretly can't stand ${fooled}, and hides it. ${fooled}'s lines are warm and sincere; ${resents}'s are polite on the surface with the resentment just underneath (a flat reply, a dry aside to camera), never said outright.`
+    : rel === "one-sided"
+      ? "What they are: one of them secretly can't stand the other, who thinks they're best friends. Keep it under the surface: polite, a little flat, never said outright."
+      : rel === "frenemies"
+        ? "What they are: best friends who are also competing with each other. Compliments with an edge, keeping score of who did what. Never outright cruel."
+        : rel ? `What they are: ${String(team.relLabel || rel).toLowerCase()}.` : "";
+  const prompt = [
+    "You are writing a few lines for one team on The Ridonculous Race, an animated travel-race reality show: teams of two race around the world, a host named Don, a mat at the end of every leg where the last team can go home.",
+    "These two profiles are the ONLY source of facts about them.",
+    "",
+    "PERSON A:", who(A), "",
+    "PERSON B:", who(B), "",
+    relLine,
+    team.identity ? `They race as: ${team.identity}.` : "",
+    team.teamName ? `Team name: ${team.teamName}.` : "",
+    "",
+    "THE RULE ABOVE ALL: stay true to the characters. Never invent a family member, a name, a past event, a job, a place, a",
+    "pet, an injury or a number the profiles don't contain. No other team, no real country, city or landmark, no brand.",
+    "",
+    "HOW IT SOUNDS (this is checked):",
+    "- Real people talking out loud, the way each of these two talks. Plain words, contractions, whole sentences.",
+    "- One or two sentences per line, at most 25 words. No metaphors, no wordplay, no clever endings, no stacked shouts.",
+    "- A joke only if it falls out naturally and lands on first read.",
+    "- Contractions always (we're, I'm, it's): nobody says 'we are' or 'I am' out loud.",
+    "- Nobody says their own name. Don't name the partner in the four moment lines: they're said to the partner, never to Don.",
+    "- Six different lines: no two start the same way, and a pet name or catchphrase at most once.",
+    "",
+    "THE LINES (return ONLY this JSON object):",
+    '{ "introA": "A\'s line to camera in the first episode, introducing the two of them",',
+    '  "introB": "B\'s line to camera right after, reacting to or adding to A\'s (B may undercut it)",',
+    '  "good": "said by either of them at a challenge they\'re good at (any challenge: name no task, object or place)",',
+    '  "struggle": "said by either of them when a challenge keeps beating them (any challenge, no object)",',
+    '  "win": "said by either of them when they win something (a leg, a challenge)",',
+    '  "elim": "said by either of them when they\'re going home" }',
+  ].filter(x => x !== "").join("\n");
+
+  let text = "";
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: "gpt-5.5", instructions: prompt, input: "Write the lines.", max_output_tokens: 2000 }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return json({ error: `openai ${res.status}`, detail: data?.error?.message || JSON.stringify(data).slice(0, 300) }, 502);
+    text = typeof data?.output_text === "string" ? data.output_text
+      : Array.isArray(data?.output) ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("") : "";
+  } catch (e) {
+    return json({ error: `openai: ${e.message}` }, 502);
+  }
+  text = String(text).trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
+  let k = null;
+  try { k = JSON.parse(text); } catch { /* below */ }
+  if (!k || typeof k !== "object") return json({ error: "the model did not return JSON", raw: String(text).slice(0, 400) }, 502);
+  // plain strings, straight quotes, no braces (a typed line is said as typed: braces would read as slots)
+  const clean = x => String(x || "").trim().replace(/[{}]/g, "").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ");
+  const lines = {};
+  for (const part of ["introA", "introB", "good", "struggle", "win", "elim"]) { const v = clean(k[part]); if (v) lines[part] = v; }
+  if (!Object.keys(lines).length) return json({ error: "the model wrote no usable lines" }, 502);
+  return json({ ok: true, lines });
 }
 
 async function socialViaOpenAI(prompt, env) {

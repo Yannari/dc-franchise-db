@@ -20,6 +20,7 @@ import { seasonFormat } from './core.js';
 import { engineOf } from './shows.js';
 import { saveCast, renderCast, editPlayer, cancelEdit, TRIBE_PALETTE } from './cast-ui.js';
 import { franchiseHistorySummary } from './franchise-meta.js';
+import { writerEndpoint } from './social/writer.js';
 
 // ══════════════════════════════════════════════════════════════════════
 // PURE HELPERS
@@ -483,6 +484,8 @@ function _raceTeamPanel(a, b) {
   return `<div class="cr-race-team" data-a="${esc(a.name)}" data-b="${esc(b.name)}" onclick="event.stopPropagation()" ondragstart="event.stopPropagation()">
     <select class="cr-rt" data-f="rrRel" onchange="crRaceTeam(this)" title="What the two of them are to each other. Family teams never have a romance.">
       <option value="">${(() => { const d = window.raceDefaultRel?.(a.name, b.name); return d ? `Relationship: ${esc(d.label.toLowerCase())}${d.from ? ` (from their ${d.from === 'family' ? 'family' : d.from === 'life' ? 'life' : 'past seasons'})` : ' (the default)'}` : 'Relationship: from their history'; })()}</option>${opt(o.rels, v('rrRel'))}</select>
+    ${v('rrRel') === 'one-sided' ? `<select class="cr-rt" data-f="rrResents" onchange="crRaceTeam(this)" title="The one who can't stand the other. The other thinks they're best friends, until they find out.">
+      <option value="">Who resents the other: let the race decide</option>${[a, b].map(p => `<option value="${esc(p.name)}"${v('rrResents') === p.name ? ' selected' : ''}>${esc(p.name)} resents ${esc((p === a ? b : a).name)}</option>`).join('')}</select>` : ''}
     <select class="cr-rt" data-f="rrIdentity" onchange="crRaceTeam(this)" title="The kind of team they race as. It shapes what they're good at and how they talk. Two teams can't share one.">
       <option value="">No identity: named after the two of them</option>${opt(o.ids, v('rrIdentity'))}
       <option value="custom"${custom ? ' selected' : ''}>Custom identity…</option></select>
@@ -498,6 +501,8 @@ function _raceTeamPanel(a, b) {
     <input class="cr-rt" data-f="rrTeamName" placeholder="Team name (optional: the identity's, or the two of them)" value="${esc(v('rrTeamName'))}" onchange="crRaceTeam(this)">
     <details class="cr-rt-lines"${[a.rrLineIntro, b.rrLineIntro, ...LINE_FIELDS.map(([f]) => v(f))].some(Boolean) ? ' open' : ''}>
       <summary>Their own lines (optional)</summary>
+      <div class="cr-rt-row"><button type="button" class="cr-tool" onclick="crRaceFillLines(this)" title="Writes all six lines from the two profiles and what the team is. Read them and edit: nothing else changes.">Fill with AI</button>
+        <span class="cr-rt-sub cr-rt-fill-note"></span></div>
       <div class="cr-rt-sub">Their introduction in the premiere, one line each to camera (both, or Don's lines air)</div>
       ${[a, b].map(p => `<input class="cr-rt" data-f="rrLineIntro" data-p="${esc(p.name)}" placeholder="${esc(p.name)} says…" value="${esc(p.rrLineIntro || '')}" onchange="crRaceTeam(this)">`).join('')}
       <div class="cr-rt-sub">Said first at that moment, once a season</div>
@@ -505,6 +510,62 @@ function _raceTeamPanel(a, b) {
     </details>
   </div>`;
 }
+/**
+ * "Fill with AI" on a team's own lines: the worker (mode 'race-lines') writes them from the two profiles and what the
+ * team is, into the cards' boxes, like the Studio's casting interview. Lines already typed are replaced only after
+ * asking. The profiles come from the roster (backstory, personality, voice), the card for anything set on it.
+ */
+const PROFILE_KEYS = ['gender', 'age', 'archetype', 'occupation', 'hometown', 'ethnicity', 'nationality', 'voice', 'backstory', 'personality'];
+export async function crRaceFillLines(btn) {
+  const box = btn?.closest?.('.cr-race-team');
+  if (!box) return;
+  const byName = new Map(players.map(p => [p.name, p]));
+  const a = byName.get(box.dataset.a), b = byName.get(box.dataset.b);
+  if (!a || !b) return;
+  const say = (t, root = box) => { const n = root?.querySelector('.cr-rt-fill-note'); if (n) n.textContent = t; };
+  const v = k => a[k] ?? b[k] ?? '';
+  const typed = [a.rrLineIntro, b.rrLineIntro, ...LINE_FIELDS.map(([f]) => v(f))].filter(Boolean).length;
+  if (typed && !confirm(`${typed} of their lines are already written.\n\nReplace them with new ones?`)) return;
+  const roster = Array.isArray(window.FRANCHISE_ROSTER) ? window.FRANCHISE_ROSTER : [];
+  const profile = p => {
+    const r = roster.find(x => (p.baseSlug && x.slug === p.baseSlug) || x.slug === p.slug || x.name === p.name) || {};
+    return { name: p.name, ...Object.fromEntries(PROFILE_KEYS.map(k => [k, p[k] ?? r[k] ?? null])) };
+  };
+  const o = window.raceTeamOptions?.() || {};
+  const rel = v('rrRel') || window.raceDefaultRel?.(a.name, b.name)?.rel || '';
+  const idId = v('rrIdentity');
+  const team = {
+    rel, relLabel: (o.rels || []).find(x => x.id === rel)?.label || rel, resents: v('rrResents') || null,
+    identity: idId === 'custom' ? v('rrCustomName') : (o.ids || []).find(x => x.id === idId)?.label || '',
+    teamName: v('rrTeamName'),
+  };
+  btn.disabled = true;
+  say('writing from their profiles…');
+  let lines;
+  try {
+    const res = await fetch(writerEndpoint(), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'race-lines', people: [profile(a), profile(b)], team }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !json?.ok) throw new Error(json?.error || `worker ${res.status}`);
+    lines = json.lines || {};
+  } catch (e) {
+    btn.disabled = false;
+    say(`couldn't write them: ${e.message}`);
+    return;
+  }
+  const set = (who, other, f, text) => { if (text) window.raceSetTeam?.(who, other, f, text); };
+  set(a.name, b.name, 'rrLineIntro', lines.introA);
+  set(b.name, a.name, 'rrLineIntro', lines.introB);
+  for (const [f, key] of [['rrLineGood', 'good'], ['rrLineStruggle', 'struggle'], ['rrLineWin', 'win'], ['rrLineElim', 'elim']]) set(a.name, b.name, f, lines[key]);
+  saveCast();
+  crRenderGrid();
+  // the lane is drawn again (its lines open now): say it there
+  const again = [...document.querySelectorAll('.cr-race-team')].find(x => x.dataset.a === a.name && x.dataset.b === b.name);
+  say('written from their profiles: read them and edit any you want', again);
+}
+
 /** A team field changed on its lane: both cards take it, and the lane redraws when the identity changes. */
 export function crRaceTeam(el) {
   const box = el?.closest?.('.cr-race-team');
@@ -514,7 +575,7 @@ export function crRaceTeam(el) {
   if (p) window.raceSetTeam?.(p, p === box.dataset.a ? box.dataset.b : box.dataset.a, el.dataset.f, el.value);
   else window.raceSetTeam?.(box.dataset.a, box.dataset.b, el.dataset.f, el.value);
   saveCast();
-  if (el.dataset.f === 'rrIdentity') crRenderGrid();
+  if (el.dataset.f === 'rrIdentity' || el.dataset.f === 'rrRel') crRenderGrid();
 }
 
 function _pairsBodyHTML(shown) {

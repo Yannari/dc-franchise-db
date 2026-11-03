@@ -38,7 +38,9 @@ export { teamRef };
 // what the two of them are to each other, the way a host introduces them
 const REL_TAG = { cousins: 'cousins', married: 'married couple', dating: 'couple', 'newly-dating': 'brand-new couple',
   'on-off': 'on-again, off-again couple', exes: 'exes', 'once-engaged': 'former fiancés', bffs: 'best friends',
-  coworkers: 'coworkers', roommates: 'roommates', rivals: 'rivals', enemies: 'sworn enemies', 'reality-vets': 'reality TV veterans' };
+  coworkers: 'coworkers', roommates: 'roommates', rivals: 'rivals', enemies: 'sworn enemies', 'reality-vets': 'reality TV veterans',
+  // both look like best friends from outside, and a one-sided team is introduced the way the fooled one would put it
+  frenemies: 'best friends', 'one-sided': 'best friends' };
 const he = n => pronouns(n)?.sub;
 function relTag(t) {
   const [x, y] = [t.a, t.b];
@@ -58,7 +60,7 @@ function relTag(t) {
 
 // what the two of them are, as Don labels a team at its introduction: "best friends", "a married couple", "father and son"
 const REL_LABEL = { married: 'a married couple', dating: 'a couple', 'newly-dating': 'a brand-new couple', 'on-off': 'an on-again, off-again couple',
-  'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets' };
+  'once-engaged': 'former fiancés', 'reality-vets': 'reality-show vets', frenemies: 'best friends, supposedly' };
 export function relLabel(t) {
   // what their history made them (rr-run.js raceHistoryRel): an engagement, or a bond from another show
   if (t?.history?.engaged) return 'an engaged couple';

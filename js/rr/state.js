@@ -17,24 +17,40 @@ export { mayScheme, S };
 // How two people are tied. `family` rules romance out (spec §2); `snap` scales how
 // fast the pair snaps at each other under pressure (identities doc, "temperament off
 // the task": exes snap fastest, a grandparent swallows it for the grandchild).
+// `start` is the bond the two of them walk in with (season.js), before anything carried from other shows is added:
+// every team used to start at 0, so enemies and best friends raced the first leg with the same teamwork (skill.js).
 export const REL = {
-  'parent-child': { family: true, snap: 0.8 },
-  siblings: { family: true, snap: 1.1 },
-  cousins: { family: true, snap: 0.9 },
-  'grandparent-grandchild': { family: true, snap: 0.6 },
-  married: { snap: 0.9 },
-  dating: { snap: 1.0 },
-  'newly-dating': { snap: 1.0 },
-  'on-off': { snap: 1.3 },
-  exes: { snap: 1.5 },
-  'once-engaged': { snap: 1.4 },
-  bffs: { snap: 0.8 },
-  coworkers: { snap: 1.0 },
-  roommates: { snap: 1.0 },
-  rivals: { snap: 1.3 },
-  enemies: { snap: 1.6 },
-  'reality-vets': { snap: 1.0 },
+  'parent-child': { family: true, snap: 0.8, start: 4 },
+  siblings: { family: true, snap: 1.1, start: 2 },
+  cousins: { family: true, snap: 0.9, start: 2 },
+  'grandparent-grandchild': { family: true, snap: 0.6, start: 5 },
+  married: { snap: 0.9, start: 5 },
+  dating: { snap: 1.0, start: 4 },
+  'newly-dating': { snap: 1.0, start: 3 },
+  'on-off': { snap: 1.3, start: 1 },
+  exes: { snap: 1.5, start: -2 },
+  'once-engaged': { snap: 1.4, start: -1 },
+  bffs: { snap: 0.8, start: 4 },
+  coworkers: { snap: 1.0, start: 1 },
+  roommates: { snap: 1.0, start: 2 },
+  rivals: { snap: 1.3, start: -2 },
+  enemies: { snap: 1.6, start: -4 },
+  'reality-vets': { snap: 1.0, start: 0 },
+  // best friends in public who keep score: digs pull the bond down, shared wins push it up (scenes/frenemies.js)
+  frenemies: { snap: 1.2, start: 1 },
+  // one of them (team.resents) can't stand the other, who thinks they're best friends: the bond is the real one,
+  // the fooled partner's own view of it is state.view (scenes/frenemies.js), until they find out
+  'one-sided': { snap: 1.0, start: -3 },
 };
+
+// The fooled partner of a one-sided team, and what they think the bond is, while they still don't know.
+export const FOOLED_VIEW = 6;
+export function oneSided(state, teamId) {
+  const t = state?.teams?.[teamId];
+  if (t?.rel !== 'one-sided' || !t.resents) return null;
+  const fooled = t.resents === t.a ? t.b : t.a;
+  return { resents: t.resents, fooled, found: !!state.found?.[teamId], view: state.view?.[teamId] ?? FOOLED_VIEW };
+}
 
 export function blankRecord() {
   return { legWins: 0, lasts: 0, penalties: 0, begged: 0, sabotage: 0, caught: 0, helped: 0, quits: 0 };

@@ -19,6 +19,12 @@ export const REL_TAGS = {
     "We don't actually like each other. That bit was acting.",
     "Our families made us do this together. Nobody asked us.",
   ],
+  // (a one-sided team gets nothing: from outside they're best friends, and best friends get nothing)
+  frenemies: [
+    "We're best friends, by the way. We're also keeping score. Both of those are true.",
+    "We love each other. We'd also both quite like to beat each other.",
+    "Best friends. Very competitive best friends. Mostly best friends.",
+  ],
   rivals: [
     "We're also trying to beat each other. At everything. Including this introduction.",
     "Don't let the smiling fool you. We're keeping score.",

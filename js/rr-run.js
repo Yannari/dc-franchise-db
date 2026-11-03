@@ -67,7 +67,8 @@ export const RACE_RELATIONSHIPS = Object.keys(REL).map(id => ({ id, label: {
   'parent-child': 'Parent and child', siblings: 'Siblings', cousins: 'Cousins', 'grandparent-grandchild': 'Grandparent and grandchild',
   married: 'Married', dating: 'Dating', 'newly-dating': 'Newly dating', 'on-off': 'On and off', exes: 'Exes',
   'once-engaged': 'Once engaged', bffs: 'Best friends', coworkers: 'Coworkers', roommates: 'Roommates', rivals: 'Rivals',
-  enemies: 'Enemies', 'reality-vets': 'Reality-show vets' }[id] || id }))
+  enemies: 'Enemies', 'reality-vets': 'Reality-show vets', frenemies: 'Frenemies (best friends who keep score)',
+  'one-sided': 'One-sided (one secretly resents the other)' }[id] || id }))
   // a couple who are engaged: the engine races them as a couple (dating), and everybody knows (history.engaged)
   .concat({ id: 'engaged', label: 'Engaged' });
 /** The identities a team can race as, for the cast card's picker. */
@@ -136,14 +137,16 @@ export function raceTeams(list = _list(), config = seasonConfig) {
     seen.add(p.name); seen.add(o);
     const q = _player(o) || {};
     const pick = k => p[k] || q[k] || null;
-    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
+    out.push(_team(out.length, p.name, o, { rel: pick('rrRel'), resents: pick('rrResents'), identity: pick('rrIdentity'), name: pick('rrTeamName'),
       customName: pick('rrCustomName'), customLike: [pick('rrCustomLike'), pick('rrCustomLike2'), pick('rrCustomLike3')],
       customGood: [pick('rrCustomGood1'), pick('rrCustomGood2')], customBad: [pick('rrCustomBad1'), pick('rrCustomBad2')], carried,
       lines: _teamLines(p, q) }));
   }
   return out;
 }
-function _team(i, a, b, { rel = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null, lines = null } = {}) {
+// a one-sided team: who resents the other, when the Pairs view named one of the two
+const oneSidedOf = (rel, resents, a, b) => (rel === 'one-sided' && [a, b].includes(resents) ? { resents } : {});
+function _team(i, a, b, { rel = null, resents = null, identity = null, name = null, customName = null, customLike = [], customGood = [], customBad = [], carried = null, lines = null } = {}) {
   let vets = false;
   try { vets = hasFranchiseHistory(a) && hasFranchiseHistory(b); } catch { vets = false; }
   // a relationship set on the Pairs view wins; else what their history says
@@ -163,11 +166,11 @@ function _team(i, a, b, { rel = null, identity = null, name = null, customName =
     const mix = uniq(customLike).filter(x => IDENTITIES[x]).slice(0, 3);
     const good = uniq(customGood).filter(x => TASK_TYPES[x]).slice(0, 2);
     const bad = uniq(customBad).filter(x => TASK_TYPES[x] && !good.includes(x)).slice(0, 2);
-    return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: null, name: typed || own,
+    return { id: 't' + (i + 1), a, b, rel: r, ...oneSidedOf(r, resents, a, b), ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: null, name: typed || own,
       custom: { name: own, mix, voice: mix[0] || null, good, bad, strength: mix[0] || null } };
   }
   const id = IDENTITIES[identity] ? identity : null;
-  return { id: 't' + (i + 1), a, b, rel: r, ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: id,
+  return { id: 't' + (i + 1), a, b, rel: r, ...oneSidedOf(r, resents, a, b), ...(history ? { history } : {}), ...(lines ? { lines } : {}), identity: id,
     // a typed name over an identity's is the team's own (the engine's identityName reads custom.name)
     name: typed || (id ? IDENTITIES[id].name : `${a} & ${b}`),
     custom: typed && (!id || typed !== IDENTITIES[id].name) ? { name: typed } : null };
@@ -502,7 +505,7 @@ function _teamLines(p, q) {
 }
 
 /** The team fields the Pairs view sets, on both of the team's cards (so the team reads the same either way round). */
-const TEAM_FIELDS = new Set(['rrRel', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
+const TEAM_FIELDS = new Set(['rrRel', 'rrResents', 'rrIdentity', 'rrCustomName', 'rrCustomLike', 'rrCustomLike2', 'rrCustomLike3',
   'rrCustomGood1', 'rrCustomGood2', 'rrCustomBad1', 'rrCustomBad2', 'rrTeamName', ...TEAM_LINES.map(([f]) => f), 'rrLineIntro']);
 // a person's own line (their half of the introduction) is on their card only
 const PERSON_FIELDS = new Set(['rrLineIntro']);

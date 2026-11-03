@@ -4,6 +4,8 @@
 // the first scene there), so a new backdrop or a staging change can be looked at.
 //   (serve the repo: python -m http.server 8771)   node tools/pm-vp-shots.mjs [seed] [episode] [max] [sets|story|kind:<kind>]
 // Shots land in $PM_SHOTS (default shots/pm-vp)/s<seed>-e<ep>-<n>-<set>.png.
+//   PM_REAL=1   the real Season 1 cast (data/seasons/pm-1-data.json, roster portraits) instead of the synthetic one
+//   PM_FULL=1   the whole player (stage, dialogue, side panel), not only the stage
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
@@ -18,11 +20,16 @@ page.on('pageerror', e => errors.push(String(e)));
 page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
 await page.goto(base + 'simulator.html');
 await page.waitForFunction(() => typeof window.openVisualPlayer === 'function', null, { timeout: 60000 });
-const eps = await page.evaluate(async ([seed, ep]) => {
+const eps = await page.evaluate(async ([seed, ep, real]) => {
   const core = await import('./js/core.js');
   const season = await import('./js/pm/season.js');
   const { makeIslanders, roleSetup } = await import('./tests/helpers/pm-cast.js');
-  const cast = makeIslanders(22, seed);
+  let cast = makeIslanders(22, seed);
+  if (real) {
+    const roster = (await (await fetch('./franchise_roster.json')).json()).players;
+    const want = (await (await fetch('./data/seasons/pm-1-data.json')).json()).placements.map(p => p.name);
+    cast = want.map(n => roster.find(p => p.name === n)).filter(Boolean);
+  }
   core.setPlayers(cast);
   const names = cast.map(p => p.name);
   const { rows } = season.playPerfectMatchSeason({ cast: names, setup: roleSetup(names), seed });
@@ -30,7 +37,7 @@ const eps = await page.evaluate(async ([seed, ep]) => {
   try { localStorage.setItem('vp_debug', 'false'); } catch { /* */ }
   window.openVisualPlayer(ep);
   return rows.length;
-}, [Number(seed), Number(ep)]);
+}, [Number(seed), Number(ep), !!process.env.PM_REAL]);
 await page.waitForSelector('.pmv', { timeout: 30000 });
 await page.waitForTimeout(800);
 // Every screen's steps, and the set each one stands in.
@@ -56,7 +63,7 @@ for (const { si, k, bg } of plan.slice(0, Number(max))) {
     await page.waitForTimeout(60);
   }
   await page.waitForTimeout(1400);
-  const el = await page.$('.pmv-stage');
+  const el = await page.$(process.env.PM_FULL ? '.pmv' : '.pmv-stage');
   const file = `${OUT}/s${seed}-e${ep}-${String(++n).padStart(2, '0')}-${bg}.png`;
   await (el || page).screenshot({ path: file });
   console.log(file);

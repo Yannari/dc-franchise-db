@@ -101,29 +101,56 @@ function identHtml(row, screen) {
     <div class="${P('identWhere')}"><span>${esc(where)}</span><small>${esc(hudOf(row))}</small></div></div>`;
 }
 
-// ── the cards: one per scene, filling in a line at a time ──────────────
-function cardsHtml(uid, screen) {
+// ── the script: every word, in order, under the picture ──────────────
+// (2026-11-03, the user: Perfect Match "visually not on par with the other
+// stepped viewers". It was a small stage over a stack of cards that repeated
+// every line; Big Brother's and the Challenge's are a big picture over a
+// player bar, with the script beside the panel.) A scene opens on its faces
+// and its name; each line is the speaker's name and the words, a beach-hut
+// line and the narrator marked; nothing shows before its step.
+function scriptHtml(uid, screen) {
   const out = [];
-  let open = null, hutShown = false;
   screen.steps.forEach((st, i) => {
     if (st.sceneStart) {
-      hutShown = false;
-      if (open) out.push(open.join('') + '</div></div>');
       const faces = [...new Set(st.cast.map(c => c[0]))];
-      open = [`<div class="${P('card')}${st.big ? ' ' + P('big') : ''}${st.raw ? ' ' + P('unaired') : ''}" id="${P('c')}-${uid}-${i}" data-first="${i}">
-        <div class="${P('fx')}">${faces.map(mini).join('')}</div><div class="${P('body')}"><div class="${P('k')}">${esc(st.headline || screen.label)}</div>`];
-      if (st.raw) open.push(`<div class="${P('tape')}">Didn't air</div>`);
-      if (st.caption) open.push(`<p class="${P('ln')} ${P('cap')}" data-s="${i}">${esc(st.caption)}</p>`);
+      out.push(`<div class="${P('sh')}${st.raw ? ' ' + P('unaired') : ''}${st.big ? ' ' + P('big') : ''}" data-s="${i}">
+        <span class="${P('fx')}">${faces.map(mini).join('')}</span><b>${esc(st.headline || screen.label)}</b>${st.raw ? `<em>Didn't air</em>` : ''}</div>`);
+      if (st.caption) out.push(`<div class="${P('sl')} ${P('sl-stage')}" data-s="${i}"><span>${esc(st.caption)}</span></div>`);
     }
-    const cls = st.part === 'hut' ? P('hutl') : st.part === 'narr' ? P('narl') : st.part === 'stage' ? P('cap') : '';
-    const who = st.part === 'stage' || !st.who ? '' : `<span class="${P('who')}">${esc(st.who)}:</span> `;
-    const hutTag = st.part === 'hut' && !hutShown ? `<span class="${P('hutk')}">Beach hut${st.stance === 'two-faced' ? ' · two-faced' : ''}</span>` : '';
-    if (st.part === 'hut') hutShown = true;
-    open.push(`<p class="${P('ln')} ${cls}" data-s="${i}">${hutTag}${who}${esc(st.text)}</p>`);
-    if (st.beat) open.push(`<p class="${P('ln')} ${P('bt')}" data-s="${i}">${esc(st.beat)}</p>`);
+    const kind = st.part === 'hut' ? 'hut' : st.part === 'narr' ? 'narr' : st.part === 'stage' ? 'stage' : 'line';
+    const who = kind === 'stage' || !st.who ? '' : `<b>${kind === 'hut' ? `<small>Beach hut${st.stance === 'two-faced' ? ' · two-faced' : ''}</small>` : ''}${esc(st.who)}</b>`;
+    out.push(`<div class="${P('sl')} ${P('sl-' + kind)}" data-s="${i}">${who}<span>${esc(st.text)}</span></div>`);
+    if (st.beat) out.push(`<div class="${P('sl')} ${P('sl-stage')}" data-s="${i}"><span>${esc(st.beat)}</span></div>`);
   });
-  if (open) out.push(open.join('') + '</div></div>');
   return out.join('');
+}
+
+// ── the player: the controls every stepped viewer has ─────────────────
+// Back, play (lines go by on their own, at the speed chosen, and the show
+// rolls on to the next screen), next, a bar to scrub, the count, the speed.
+const SPEEDS = [1, 1.5, 2];
+const speedOf = () => { try { const v = Number(localStorage.getItem('pm-speed')); return SPEEDS.includes(v) ? v : 1; } catch { return 1; } };
+const PI = {
+  restart: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 5v14M18 5l-9 7 9 7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M15 5l-8 7 8 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  play: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 4h4v16H7zM13 4h4v16h-4z" fill="currentColor"/></svg>',
+  next: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M9 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  end: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M18 5v14M6 5l9 7-9 7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+};
+function playerHtml(uid, screen) {
+  const u = esc(uid);
+  const b = (fn, title, icon, cls = '') => `<button type="button" class="${P('pb')} ${cls}" onclick="${fn}('${u}')" title="${title}">${icon}</button>`;
+  return `<div class="${P('player')}">
+    ${b('pmRevealReset', 'Back to the start of this screen', PI.restart)}
+    ${b('pmRevealBack', 'Back one line', PI.back)}
+    ${b('pmAuto', 'Play: the lines go by on their own', autoOn() ? PI.pause : PI.play, P('pbPlay'))}
+    ${b('pmRevealNext', 'Next line', PI.next)}
+    ${b('pmRevealAll', 'Show the whole screen', PI.end)}
+    <div class="${P('bar')}" id="${P('bar')}-${u}" data-uid="${u}" title="Drag to move through the screen"><i></i><b></b></div>
+    <span class="${P('count')}" id="${P('count')}-${u}">0 / ${screen.steps.length}</span>
+    <button type="button" class="${P('pb')} ${P('pbSpeed')}" onclick="pmSpeed('${u}')" title="Play speed">${speedOf()}×</button>
+  </div>`;
 }
 
 const railHtml = (screen, idx) => (screen.rail ? `<div class="${P('rail')}">${screen.rail.map((p, i) => {
@@ -146,20 +173,15 @@ function screenHtml(uid, row, prev, screens, si) {
       ${soundCtl()}
       <button type="button" class="${P('themeBtn')} ${P('tvBtn')}" onclick="pmTv()">${tvBtn()}</button>
       <button type="button" class="${P('themeBtn')}" onclick="pmTheme()">${themeBtn(theme)}</button></div>
-    <div class="${P('layout')}">
-      <div class="${P('main')}" style="min-width:0">
-        ${stageHtml(`${P('st')}-${uid}`, screen, hudOf(row)).replace(' data-bg=', ` data-bug="${esc(screen.teaser ? screen.label : 'Coming up')}" data-bg=`)
-          .replace(/<\/div>$/, identHtml(row, screen) + '</div>')}
-        <div id="${P('rail')}-${uid}">${railHtml(screen, -1)}</div>
-        <div class="${P('cards')}" id="${P('cards')}-${uid}">${cardsHtml(uid, screen)}</div>
-      </div>
-      <div class="${P('aside')}" id="${P('aside')}-${uid}">${asideHtml(row, prev, screens, si, -1)}</div>
+    <div class="${P('theatre')}">
+      ${stageHtml(`${P('st')}-${uid}`, screen, hudOf(row)).replace(' data-bg=', ` data-bug="${esc(screen.teaser ? screen.label : 'Coming up')}" data-bg=`)
+        .replace(/<\/div>$/, identHtml(row, screen) + '</div>')}
+      ${playerHtml(uid, screen)}
+      <div id="${P('rail')}-${uid}">${railHtml(screen, -1)}</div>
     </div>
-    <div class="${P('controls')}">
-      <button type="button" class="${P('ghost')}" onclick="pmRevealReset('${esc(uid)}')">Restart</button>
-      <button type="button" class="${P('next')}" onclick="pmRevealNext('${esc(uid)}')">Next</button>
-      <button type="button" class="${P('ghost')}" onclick="pmRevealAll('${esc(uid)}')">Reveal all</button>
-      <span class="${P('count')}" id="${P('count')}-${uid}">0 / ${screen.steps.length}</span>
+    <div class="${P('layout')}">
+      <div class="${P('script')}" id="${P('script')}-${uid}">${scriptHtml(uid, screen)}</div>
+      <div class="${P('aside')}" id="${P('aside')}-${uid}">${asideHtml(row, prev, screens, si, -1)}</div>
     </div>
   </div>`;
 }
@@ -173,20 +195,23 @@ function paint(uid, fresh) {
   const root = document.querySelector(`.pmv[data-uid="${uid}"]`);
   if (root) root.dataset.idx = String(idx);
   paintStage(document.getElementById(`${P('st')}-${uid}`), screen, idx, { fresh, hud: hudOf(row) });
-  const cards = document.getElementById(`${P('cards')}-${uid}`);
-  if (cards) {
-    cards.querySelectorAll('[data-s]').forEach(el => el.classList.toggle(P('vis'), Number(el.dataset.s) <= idx));
-    cards.querySelectorAll('.' + P('card')).forEach(c => c.classList.toggle(P('vis'), Number(c.dataset.first) <= idx));
-  }
+  const script = document.getElementById(`${P('script')}-${uid}`);
+  if (script) script.querySelectorAll('[data-s]').forEach(el => el.classList.toggle(P('vis'), Number(el.dataset.s) <= idx));
+  const bar = document.getElementById(`${P('bar')}-${uid}`);
+  if (bar) bar.style.setProperty('--at', `${screen.steps.length ? 100 * Math.max(0, idx + 1) / screen.steps.length : 0}%`);
+  const play = root?.querySelector('.' + P('pbPlay'));
+  if (play) play.innerHTML = autoOn() ? PI.pause : PI.play;
   const rail = document.getElementById(`${P('rail')}-${uid}`);
   if (rail) rail.innerHTML = railHtml(screen, idx);
   const aside = document.getElementById(`${P('aside')}-${uid}`);
   if (aside) aside.innerHTML = asideHtml(row, prev, screens, si, idx, S.sel);
   const count = document.getElementById(`${P('count')}-${uid}`);
   if (count) count.textContent = `${Math.max(0, idx + 1)} / ${screen.steps.length}`;
-  if (fresh && cards) {
-    const last = [...cards.querySelectorAll(`[data-s="${idx}"]`)].pop();
-    try { last?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch { /* jsdom */ }
+  // The script follows the picture inside its own box: the page doesn't move.
+  if (script) {
+    const last = [...script.querySelectorAll(`[data-s="${idx}"]`)].pop();
+    if (last) script.scrollTop = Math.max(0, last.offsetTop - script.clientHeight + last.offsetHeight + 12);
+    else if (idx < 0) script.scrollTop = 0;
   }
 }
 
@@ -213,6 +238,71 @@ export function pmRevealNext(uid) {
   const sp = S.screens[S.si].steps[S.idx].cast.find(c => c[2] === 'speak')?.[0];
   if (sp && S.names?.includes(sp)) S.sel = sp;
   paint(uid, true);
+}
+export function pmRevealBack(uid) {
+  const S = sync(uid);
+  if (!S || S.idx < 0) return;
+  S.idx--;
+  paint(uid, false);
+}
+/** Jump to a fraction of the screen (the bar): the whole state, no animation. */
+export function pmSeek(uid, frac) {
+  const S = sync(uid);
+  if (!S) return;
+  const n = S.screens[S.si].steps.length;
+  const idx = Math.max(-1, Math.min(n - 1, Math.round(frac * n) - 1));
+  if (idx === S.idx) return;
+  S.idx = idx;
+  paint(uid, false);
+}
+// Auto: each line held for as long as it takes to type and read, then the next;
+// the last line of a screen rolls on to the next screen, which carries on.
+function autoOn() { return !!(typeof window !== 'undefined' && window.__pmAuto); }
+let autoTimer = null;
+const holdFor = st => { const n = (st?.text || '').length; return Math.min(9000, 1300 + n * 52); };
+function autoTick() {
+  clearTimeout(autoTimer);
+  if (!autoOn() || typeof document === 'undefined') return;
+  const root = document.querySelector('.pmv[data-uid]');
+  if (!root) { window.__pmAuto = false; return; }
+  const S = sync(root.dataset.uid);
+  if (!S) return;
+  const st = S.screens[S.si].steps[S.idx];
+  autoTimer = setTimeout(() => {
+    if (!autoOn()) return;
+    const at = S.idx;
+    pmRevealNext(root.dataset.uid);
+    if (S.idx !== at) autoTick();   // the screen change brings its own tick (vp:screen, below)
+  }, (S.idx < 0 ? 700 : holdFor(st)) / speedOf());
+}
+export function pmAuto(uid) {
+  if (typeof window === 'undefined') return;
+  window.__pmAuto = !window.__pmAuto;
+  const root = document.querySelector(`.pmv[data-uid="${uid}"]`);
+  const play = root?.querySelector('.' + P('pbPlay'));
+  if (play) play.innerHTML = autoOn() ? PI.pause : PI.play;
+  if (autoOn()) autoTick(); else clearTimeout(autoTimer);
+}
+export function pmSpeed(uid) {
+  const next = SPEEDS[(SPEEDS.indexOf(speedOf()) + 1) % SPEEDS.length];
+  try { localStorage.setItem('pm-speed', String(next)); } catch { /* per viewer */ }
+  document.querySelectorAll('.' + P('pbSpeed')).forEach(b => { b.textContent = `${next}×`; });
+  if (autoOn()) autoTick();
+}
+if (typeof document !== 'undefined' && !globalThis.__pmPlayerWired) {
+  globalThis.__pmPlayerWired = true;
+  // A new screen while playing: carry on from its first line.
+  document.addEventListener('vp:screen', () => { if (autoOn()) setTimeout(() => { if (document.querySelector('.pmv[data-uid]')) autoTick(); else window.__pmAuto = false; }, 400); });
+  // The bar: press and drag to scrub.
+  let drag = null;
+  const seekAt = (bar, x) => { const r = bar.getBoundingClientRect(); pmSeek(bar.dataset.uid, Math.max(0, Math.min(1, (x - r.left) / Math.max(1, r.width)))); };
+  document.addEventListener('pointerdown', e => {
+    const bar = e.target?.closest?.('.' + P('bar'));
+    if (!bar) return;
+    e.preventDefault(); drag = bar; window.__pmAuto = false; clearTimeout(autoTimer); seekAt(bar, e.clientX);
+  });
+  document.addEventListener('pointermove', e => { if (drag) seekAt(drag, e.clientX); });
+  document.addEventListener('pointerup', () => { drag = null; });
 }
 export function pmRevealAll(uid) {
   const S = sync(uid);

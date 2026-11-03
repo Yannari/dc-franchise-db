@@ -100,6 +100,11 @@ const petalsHtml = () => Array.from({ length: 30 }, (_, i) => {
   return `<i style="--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d * .7 - 40).toFixed(0)}px;--r:${(i * 53) % 360}deg;--dl:${(i % 8) * 50}ms;--pk:${['#ff4fa0', '#ffc15e', '#ff7a59', '#fff'][i % 4]}">${IC.heart}</i>`;
 }).join('');
 
+// Where we are, on the HUD (2026-11-03: the other stepped viewers all say which room).
+const PLACE_OF = { day: 'The villa', daybeds: 'The daybeds', lawn: 'The lawn', 'lawn-night': 'The lawn', roof: 'The roof terrace', 'roof-night': 'The roof terrace',
+  kitchen: 'The kitchen', 'kitchen-night': 'The kitchen', bedroom: 'The bedroom', 'bedroom-night': 'The bedroom', dressing: 'The dressing room',
+  'pool-night': 'The pool', terrace: 'The terrace', night: 'The fire pit', 'firepit-dusk': 'The fire pit', hideaway: 'The Hideaway',
+  hut: 'The beach hut', casa: 'Casa Amor', 'casa-day': 'Casa Amor', cinema: 'Movie Night', date: 'The date', final: 'The final', vt: '' };
 function frame(bg, hud, board) {
   const screen = bg === 'cinema' ? `<div class="${P('bigscreen')}"><div class="${P('bs-in')}"><b>Movie Night</b></div><div class="${P('bs-rec')}"></div><div class="${P('bs-sub')}"></div></div>
     <div class="${P('poster')}"><small>Now showing</small><b></b></div>` : '';
@@ -130,7 +135,7 @@ function frame(bg, hud, board) {
     <div class="${P('caption')}"></div>
     <div class="${P('l3')}"><small></small><b></b></div>
     <div class="${P('dlg')} ${P('hide')}"><div class="${P('plate')}"></div><div class="${P('txt')}"></div><div class="${P('beat')}"></div><div class="${P('story')}"><b></b><span></span><em></em></div><span class="${P('nxt')}">${IC.next}</span></div>
-    <div class="${P('hud')}"><span class="${P('pill')}">${esc(hud)}</span><span class="${P('pill')} ${P('air')}"><span class="${P('scissors')}">${IC.scissors}</span><span class="${P('airtxt')}">On air</span></span></div>
+    <div class="${P('hud')}"><span class="${P('pill')}">${esc(hud)}</span><span class="${P('pill')} ${P('air')}"><span class="${P('scissors')}">${IC.scissors}</span><span class="${P('airtxt')}">On air</span></span>${PLACE_OF[bg] ? `<span class="${P('pill')} ${P('place')}">${esc(PLACE_OF[bg])}</span>` : ''}</div>
     <div class="${P('headline')}"></div>
     <div class="${P('wipe')}"><svg viewBox="-20 -14 40 27"><path d="${HEART}"/></svg></div>
     <div class="${P('switch')}"><i></i><span></span></div>`;

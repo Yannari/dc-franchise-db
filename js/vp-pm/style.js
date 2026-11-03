@@ -754,9 +754,52 @@ details.pmv-debug[open] summary::before{transform:rotate(45deg)}
 .pm-tv .pmv-tvBtn .pmv-tvOn{display:none}.pm-tv .pmv-tvBtn .pmv-tvOff{display:inline}
 @media (max-width:640px){ .pm-tv .pmv .pmv-stage{aspect-ratio:4/5;width:min(100%, calc((100vh - 150px) * 4 / 5))} }
 
+/* ── THE THEATRE (2026-11-03: "visually not on par with the other stepped
+   viewers"): the picture as wide as the column and as tall as the window
+   allows, the player bar under it, then the script beside the panel — the
+   shape Big Brother's and the Challenge's viewers have. ── */
+.pmv-theatre{width:min(100%, calc((100vh - 190px) * 16 / 9));margin:0 auto 14px}
+.pmv .pmv-theatre .pmv-stage{position:relative;top:auto;width:100%;aspect-ratio:16/9}
+/* A bigger picture keeps the box to the words: a third of a 1300px stage was empty glass. */
+.pmv-theatre .pmv-dlg{min-height:0;bottom:3.5%;left:6%;right:6%;padding:1.6% 2.4% 1.4%}
+.pmv-theatre .pmv-dlg .pmv-txt{font-size:clamp(15px,1.45vw,22px);min-height:2.9em}
+.pmv-player{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);box-shadow:var(--shadow)}
+.pmv-pb{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--ink);cursor:pointer;font:800 13px Outfit}
+.pmv-pb:hover{background:var(--bg2)}
+.pmv-pb.pmv-pbPlay{min-width:46px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--coral),var(--pink));color:#fff;box-shadow:0 6px 16px #ff2e8855}
+.pmv-pb.pmv-pbSpeed{border:1.5px solid var(--line)}
+.pmv-bar{position:relative;flex:1;height:8px;margin:0 8px;border-radius:99px;background:var(--line);cursor:pointer;touch-action:none}
+.pmv-bar i{position:absolute;left:0;top:0;bottom:0;width:var(--at,0%);border-radius:99px;background:linear-gradient(90deg,var(--coral),var(--pink));transition:width .25s}
+.pmv-bar b{position:absolute;top:50%;left:var(--at,0%);width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--pink),0 2px 8px #0004;transition:left .25s}
+.pmv-player .pmv-count{font:600 13px Outfit;color:var(--muted);min-width:56px;text-align:right}
+.pmv-theatre .pmv-rail{margin-top:10px}
+.pmv-hud .pmv-place{background:linear-gradient(135deg,#14c8bb,#0f9c93);color:#fff;letter-spacing:.14em}
+/* the script */
+.pmv-script{max-height:min(46vh,420px);overflow:auto;scrollbar-width:thin;padding:12px 16px;border-radius:18px;background:var(--card);border:1.5px solid var(--line);scroll-behavior:smooth}
+.pmv-script > *{display:none}
+.pmv-script > .pmv-vis{display:flex}
+.pmv-sh{align-items:center;gap:10px;margin:14px 0 6px;padding-top:10px;border-top:1px solid var(--line);font:13px 'Bebas Neue';letter-spacing:.14em;color:var(--pink)}
+.pmv-script > .pmv-sh:first-child{margin-top:0;padding-top:0;border-top:0}
+.pmv-sh .pmv-fx{display:flex}
+.pmv-sh em{font:600 11px Outfit;letter-spacing:.06em;font-style:normal;color:#fff;background:#8a6b80;border-radius:6px;padding:1px 6px}
+.pmv-sh.pmv-unaired{color:var(--muted)}
+.pmv-sl{gap:12px;padding:3px 0;font:400 14.5px/1.45 Outfit;color:var(--ink)}
+.pmv-sl b{flex:0 0 108px;font:800 12px/1.9 Outfit;letter-spacing:.06em;text-transform:uppercase;color:var(--pink);text-align:right}
+.pmv-sl b small{display:block;font:600 10px Outfit;letter-spacing:.08em;color:var(--lav);line-height:1.2}
+.pmv-sl-hut span{font-style:italic}
+.pmv-sl-narr b{color:var(--lav)}
+.pmv-sl-narr span{font-style:italic;color:var(--muted)}
+.pmv-sl-stage{padding-left:120px}
+.pmv-sl-stage span{font-style:italic;color:var(--muted)}
+.pmv .pmv-layout{grid-template-columns:minmax(0,1fr) 320px}
+@media (max-width:960px){ .pmv .pmv-layout{grid-template-columns:minmax(0,1fr)} .pmv-sl b{flex-basis:84px} .pmv-sl-stage{padding-left:96px} }
+.pm-tv .pmv .pmv-layout{display:none}
+.pm-tv .pmv .pmv-theatre{width:min(100%, calc((100vh - 150px) * 16 / 9))}
+
 /* COMPACT, LAST (ADDING-A-SHOW §6.5 rule 1): a short window gets a shorter stage. */
 @media (max-height: 820px) and (min-width: 641px){
   .pmv .pmv-stage{aspect-ratio:16/7}
+  .pmv .pmv-theatre .pmv-stage{aspect-ratio:16/9}
   .pm-tv .pmv .pmv-stage{aspect-ratio:16/9}
   .pmv-card{scroll-margin-top:calc(36vh + 24px)}
   .pmv-dlg{min-height:22%}

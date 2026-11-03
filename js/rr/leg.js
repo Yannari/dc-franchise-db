@@ -19,7 +19,7 @@ import { tick, behind } from './mind.js';
 import { perceivedRank } from './knowledge.js';
 import { teamLevel } from './skill.js';
 import { checkIn } from './chill.js';
-import { emit, playScene, interviewAfter } from './scenes.js';
+import { emit, playScene, interviewAfter, SCENES } from './scenes.js';
 import { addScene } from './state.js';
 import { DON_GOES_AFTER, DEPART_CARRY, DEPART_CARRY_MAX, FORM, DRIVER } from './format.js';
 import { spotOfStage } from './spots.js';
@@ -316,6 +316,48 @@ export function playLeg(state, leg, from, to, rng, { adjust = null } = {}) {
         const at = row && fearTime(row.stages, sc.data.atStage, row.from);
         if (at != null) sc.data.t = Math.min(l.to, Math.max(l.from, at + 1));
       }
+    }
+    // Two teams meet where both of them are, as the runs now stand (the user, 2026-10-21: "do the engine fix for meetings
+    // across stages"; rr-stage-spots). A meeting is decided while the leg plays, from the stages as planned; the runs
+    // were stretched to their real length above, and a moment is kept inside its own team's visit only, so a meeting
+    // decided at one stage could leave the other team a stage on (2026-11-02: a trash-talk on the pepper cliff from the
+    // bottom and the top of it). It moves to the nearest minute both teams were in one spot. With no such minute (one
+    // team at the elevator, the other at the foot of the stairs side, the whole time both were there: 1 meeting in 1853
+    // over 30 seasons) it can't be shown anywhere true: it stays as it happened, `apart`, and doesn't air (director.js).
+    for (const sc of state.scenes) {
+      if (sc.leg !== state.leg || SCENES[sc.kind]?.cast !== 'teams' || !sc.data?.team || !sc.data?.other || sc.data.t == null) continue;
+      const st = stretches.find(x => x.id === sc.data.stretch);
+      if (!st || !TASKS.includes(st.kind) || !(st.stages?.length || st.sides)) continue;
+      const rowOf = (id, t) => (state.taskLog || []).find(r => r.leg === state.leg && r.team === id && r.stretch === st.id && r.from <= t + 0.5 && t <= r.to + 0.5);
+      const spotAt = (id, t) => {
+        const r = rowOf(id, t);
+        if (!r) return null;
+        // (a team taking the elevator is at its doors a minute after it chose, as startFor says)
+        if (t - r.from <= (r.liftUp ? LIFT.doors : MEET_START)) return st.sides ? 'start' : (st.stages?.[0] ? spotOfStage(to.id, st.id, st.stages[0].id) : null);
+        const cur = (r.stages || []).find(x => x.t >= t - 0.5);
+        return cur ? spotOfStage(to.id, st.id, cur.id) : null;
+      };
+      // (at a Botch or Watch the watcher stays at the start, so a team is in both its botcher's spot and the start's)
+      const watch = st.kind === 'botch' && st.stages?.[0] ? spotOfStage(to.id, st.id, st.stages[0].id) : null;
+      const near = (id, t) => new Set([-3, 0, 3].map(d => spotAt(id, t + d)).concat(watch).filter(Boolean));
+      const t0 = sc.data.t, A = near(sc.data.team, t0), B = near(sc.data.other, t0);
+      if (!A.size || !B.size || [...A].some(x => B.has(x))) continue;
+      // (each team's run nearest the moment: a meeting at the clue box can be a minute before either run began)
+      const nearest = id => (state.taskLog || []).filter(r => r.leg === state.leg && r.team === id && r.stretch === st.id)
+        .sort((x, y) => Math.abs(x.from - t0) - Math.abs(y.from - t0))[0];
+      const ra = rowOf(sc.data.team, t0) || nearest(sc.data.team), rb = nearest(sc.data.other);
+      if (!ra || !rb) continue;
+      const lo = Math.max(ra.from, rb.from), hi = Math.min(ra.to, rb.to);
+      let best = null;
+      for (let m = lo; m <= hi + 0.01; m += 0.5) {
+        const a = spotAt(sc.data.team, m);
+        if (!a || a !== spotAt(sc.data.other, m)) continue;
+        if (best == null || Math.abs(m - t0) < Math.abs(best - t0)) best = m;
+      }
+      if (best == null) { sc.data.apart = true; continue; }
+      sc.data.t = best;
+      sc.t = best;
+      sc.data.moved = t0;
     }
     // an interview is about a moment: it comes after it, wherever that moment now is
     const byId = new Map(state.scenes.filter(x => x.leg === state.leg).map(x => [x.id, x]));

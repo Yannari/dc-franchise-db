@@ -11,11 +11,12 @@ import { SCENES } from '../js/rr/scenes/registry.js';
 import { playRaceSeason } from '../js/rr/season.js';
 import { setPlayers } from '../js/core.js';
 import { raceCast } from './helpers/rr-cast.js';
+import { LIFT } from '../js/rr/lift.js';
 
 const START = 5;   // leg.js MEET_START
 const DRIFT = 3;   // minutes
 const apart = [];
-let met = 0;
+let met = 0, offScreen = 0;
 beforeAll(() => {
   for (const seed of [8, 3, 21, 44]) {
     const { cast, teams } = raceCast(12, seed);
@@ -29,12 +30,15 @@ beforeAll(() => {
         if (!r) return null;
         // (arriving: at an Either/Or its foot, where everybody is before choosing; at any other challenge its first stage)
         const def = PLACES[leg.place]?.stretches.find(x => x.id === stretch);
-        if (t - r.from <= START) return def?.sides ? 'start' : (def?.stages?.[0] ? spotOfStage(leg.place, stretch, def.stages[0].id) : null);
+        // (a team taking the elevator is at its doors a minute after it chose: leg.js startFor, lift.js LIFT.doors)
+        if (t - r.from <= (r.liftUp ? LIFT.doors : START)) return def?.sides ? 'start' : (def?.stages?.[0] ? spotOfStage(leg.place, stretch, def.stages[0].id) : null);
         const cur = (r.stages || []).find(x => x.t >= t - 0.5);
         return cur ? spotOfStage(leg.place, stretch, cur.id) : null;
       };
       for (const s of st.scenes) {
         if (s.leg !== leg.n || SCENES[s.kind]?.cast !== 'teams' || !s.data?.team || !s.data?.other || s.data.t == null) continue;
+        // (a meeting the engine found no true minute for is kept off the screen: counted, and rare, below)
+        if (s.data.apart) { offScreen++; continue; }
         // (a run's stages and its moments are fitted to its real length once the clock has run, leg.js settleRuns: a
         // minute or two either way around the moment)
         // (at a Botch or Watch one partner does the stages and the other watches from the start: the team is in both)
@@ -63,5 +67,7 @@ describe('rr: two teams meet where both of them are', () => {
   it('never has two teams meet from two different spots of one challenge', () => {
     expect(met).toBeGreaterThan(50);
     expect(apart).toEqual([]);
+    // (the elevator and the foot of the stairs, the whole time: 1 in 1853 over 30 seasons)
+    expect(offScreen).toBeLessThanOrEqual(Math.max(1, met / 500));
   });
 });

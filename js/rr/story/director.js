@@ -348,7 +348,9 @@ function cutByChallenge(segs, leg) {
 
 export function airLeg(state, leg) {
   const n = leg.n;
-  const scenes = state.scenes.filter(s => s.leg === n);
+  // (a meeting of two teams who were never in one spot at that challenge doesn't air, nor anything about it: leg.js)
+  const apart = new Set(state.scenes.filter(s => s.leg === n && s.data?.apart).map(s => s.id));
+  const scenes = state.scenes.filter(s => s.leg === n && !apart.has(s.id) && !apart.has(s.data?.about));
   const byId = new Map(scenes.map(s => [s.id, s]));
   const follow = followed(state);
   const tierOf = s => {

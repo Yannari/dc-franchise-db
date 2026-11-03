@@ -19,9 +19,9 @@ const place = {
   'don-opener.annoyed': [
     { id: 'bwh.op1', when: P, turns: [
       beat("Don stands on top of an ancient stone wall that winds away over misty green hills, a forest of bamboo swaying below."),
-      don("Welcome to the Bamboo Wall Hills! Bamboo as far as the eye can see, pandas eating it, and a wall so old nobody remembers who it was supposed to keep out."),
+      don("Welcome to the Bamboo Wall Hills! Bamboo as far as the eye can see, pandas eating it, and a wall that's hundreds of years old!"),
       don("Today, teams race along the wall against a gong, and then eat a meal I was too scared to look at. I looked at it. I'm still scared."),
-      beat('Somewhere along the wall, a gong booms. Don jumps, and pretends he didn\'t.'),
+      beat('Somewhere along the wall, a gong booms, and Don jumps.'),
     ] },
     { id: 'bwh.op2', when: P, turns: [
       don("The Bamboo Wall Hills. The steps on this wall are all different heights. On purpose. To trip people. Nine hundred years ago, it worked. It still works."),
@@ -46,7 +46,7 @@ const place = {
     { id: 'bwh.ar2', when: P, turns: [
       beat("In the bamboo beside the road, a panda sits chewing a stalk, looking completely unbothered by everything."),
       by('b', "A panda! A real panda!"),
-      by('a', "It looks so relaxed. I want to be that panda."),
+      by('a', "It's so cute. I want to stay and watch it."),
     ] },
   ],
   'arrival-awe.dread': [
@@ -57,8 +57,8 @@ const place = {
     ] },
     { id: 'bwh.ad2', when: P, turns: [
       by('b', "'Who will eat anything?' That's never a good question."),
-      by('a', "It's the worst question."),
-      by('b', "And it's always a bowl."),
+      by('a', "It means food. Weird food."),
+      by('b', "I know. I'm scared."),
     ] },
   ],
 };
@@ -95,7 +95,7 @@ const wall = {
     { id: 'bwh.wl-s1', when: WL, turns: [
       beat("{a} and {b} start up the first flight of steps, and the steps are steep, uneven, and every one is a different height."),
       by('a', "Why is this one so tall? And that one so short?"),
-      by('b', "So invaders trip! Don't be an invader!"),
+      by('b', "I don't know! Just watch your feet!"),
     ] },
     { id: 'bwh.wl-s2', when: WL, turns: [
       by('b', "Pace yourself. It's a long way. Don't sprint the first bit."),
@@ -110,7 +110,7 @@ const wall = {
     { id: 'bwh.wl-s4', when: WL, turns: [
       by('a', "How many towers are there?"),
       by('b', "I count seven."),
-      by('a', "Please count again."),
+      by('a', "Seven. Okay. Let's go."),
     ] },
   ],
   'task-try.first-try': [
@@ -120,7 +120,7 @@ const wall = {
       by('a', "Just before! One second before!"),
     ] },
     { id: 'bwh.wl-f2', when: WL, turns: [
-      by('a', "Up, down, up, down. Don't stop. Never stop."),
+      by('a', "Up, down, up, down. Don't stop."),
       beat("They never stop, tower after tower, and reach the last one with the monk's mallet still raised."),
       by('b', "He hasn't even swung it yet! We're early!"),
     ] },
@@ -131,19 +131,19 @@ const wall = {
     ] },
     { id: 'bwh.wl-f4', when: WL, turns: [
       by('b', "First try! The whole wall!"),
-      by('a', "My legs have turned to noodles."),
-      by('b', "Ancient wall noodles."),
+      by('a', "My legs are shaking so much."),
+      by('b', "Mine too. But we made it."),
     ] },
   ],
   'task-try.after-fails': [
     { id: 'bwh.wl-a1', when: WL, turns: [
       by('b', "We went too fast at the start and died at the end. This time, steady. The same speed all the way."),
       beat("At the same steady speed all the way, they reach the last tower before the gong."),
-      by('a', "Steady! Steady wins!"),
+      by('a', "Steady worked! We made it!"),
     ] },
     { id: 'bwh.wl-a2', when: WL, turns: [
       beat("Second run. {a} and {b} take the downhill bits at a run and the uphill bits at a walk, and beat the gong by a breath."),
-      by('a', "Run down, walk up! That's the secret!"),
+      by('a', "Run down, walk up! It worked!"),
       by('b', "Just in time!"),
     ] },
     { id: 'bwh.wl-a3', when: WL, turns: [
@@ -154,7 +154,7 @@ const wall = {
     { id: 'bwh.wl-a4', when: WL, turns: [
       beat("After two gongs and two long walks back, {a} and {b} finally reach the last tower in time."),
       by('a', "Third time! Before the gong!"),
-      by('b', "I've walked this wall so many times I could give tours."),
+      by('b', "I never want to see this wall again."),
     ] },
   ],
   'task-try.struggling': [
@@ -165,8 +165,8 @@ const wall = {
     ] },
     { id: 'bwh.wl-t2', when: WL, turns: [
       by('b', "We've run it twice and missed the gong twice."),
-      by('a', "Maybe the monk hates us."),
-      by('b', "The monk doesn't hate anyone. He's a monk."),
+      by('a', "Maybe he's watching us. Maybe he waits till we're close."),
+      by('b', "He's not. We're just too slow. Come on."),
     ] },
     { id: 'bwh.wl-t3', when: WL, turns: [
       beat("The mist rolls in so thick that {a} and {b} can barely see the next step in front of them."),
@@ -177,8 +177,8 @@ const wall = {
   'task-done.any': [
     { id: 'bwh.wl-dn1', when: WL, turns: [
       by('a', "I'll never complain about stairs again."),
-      by('b', "These weren't stairs. These were mountains made of stairs."),
-      by('a', "I'll never complain about mountains again either."),
+      by('b', "These weren't stairs. They were mountains."),
+      by('a', "My legs are never going to forgive me."),
     ] },
     { id: 'bwh.wl-dn2', when: WL, turns: [
       beat("{a} and {b} sit on the floor of the last watchtower, while the monk bows to them, very slightly."),
@@ -204,7 +204,7 @@ const wall = {
     ] },
     { id: 'bwh.wl-x3', when: WL, turns: [
       beat("{b} trips on one of the uneven steps and slides back down a whole flight."),
-      by('b', "The steps got me! The steps won!"),
+      by('b', "Ow! These steps!"),
       by('a', "Up you get! We'll never beat the gong now! Back to the start!"),
     ] },
   ],
@@ -216,7 +216,7 @@ const bowl = {
     { id: 'bwh.dl-d1', when: DL, turns: [
       don("In this Botch or Watch, eat this bowl of the hills' finest delicacies. Every bite."),
       beat('He lifts the lid. A thousand-year egg, black and green, stares up at him. He puts the lid back on.'),
-      don("There's a thousand-year egg, fried scorpions, a soup with things in it, and something the cook won't tell me about. Enjoy."),
+      don("There's a thousand-year egg, fried scorpions, a soup with things in it, and something the cook won't tell me about. Enjoy!"),
     ] },
   ],
   'don-demo.dry': [
@@ -228,21 +228,21 @@ const bowl = {
   ],
   'whose-botch.obvious': [
     { id: 'bwh.dl-w1', when: DL, turns: [
-      by('b', "You did the last one? No, that was me. So you're eating."),
+      by('b', "I did the last one. So you're eating."),
       by('a', "Of course I am. Of course it's the bowl."),
-      by('b', "Think of it as dinner."),
+      by('b', "Think of it as lunch."),
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'bwh.dl-w2', when: DL, turns: [
-      by('a', "I'll eat it. I'll eat anything. I ate a worm once for a pound."),
-      by('b', "That was when you were six."),
-      by('a', "And I'm still that person."),
+      by('a', "I'll eat it. I'll eat anything."),
+      by('b', "Are you sure?"),
+      by('a', "I'm sure. Let me do it."),
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'bwh.dl-w3', when: DL, turns: [
-      by('b', "I'm a very fussy eater. Everybody knows that. You."),
+      by('b', "I'm a really fussy eater. You know that. You do it."),
       by('a', "I'm fussy too!"),
       by('b', "You eat cold pizza for breakfast. You're not fussy."),
     ] },
@@ -250,7 +250,7 @@ const bowl = {
   'whose-botch.teaser-guess': [
     { id: 'bwh.dl-w4', when: DL, turns: [
       by('a', "'Who will eat anything?' You. You've eaten things off the floor."),
-      by('b', "Only things that just fell. The five-second rule."),
+      by('b', "Only if they just fell."),
       by('a', "Exactly. You'll eat anything."),
     ] },
   ],
@@ -258,7 +258,7 @@ const bowl = {
     { id: 'bwh.dl-s1', when: DL, turns: [
       beat("{a} sits down in front of the bowl, picks up the chopsticks, and stares at the thousand-year egg staring back."),
       by('a', "It's black. Why is it black?"),
-      by('b', "Because it's a thousand years old! Eat it!"),
+      by('b', "It's meant to be! Just eat it!"),
     ] },
     { id: 'bwh.dl-s2', when: DL, turns: [
       by('b', "Scorpions first. Get the crunchy ones out of the way."),
@@ -267,13 +267,13 @@ const bowl = {
     ] },
     { id: 'bwh.dl-s3', when: DL, turns: [
       beat("{a} picks up a fried scorpion on a stick, holds it at arm's length, and looks at it for a long time."),
-      by('a', "It's looking at me."),
-      by('b', "It's fried! It's not looking at anything!"),
+      by('a', "I can't. I can see its legs."),
+      by('b', "Don't look at the legs! Eat it!"),
     ] },
     { id: 'bwh.dl-s4', when: DL, turns: [
       by('a', "What's the thing in the soup?"),
       by('b', "Don't ask. Just drink."),
-      by('a', "I really want to ask."),
+      by('a', "Okay. Okay. Drinking."),
     ] },
   ],
   'task-try.first-try': [
@@ -283,9 +283,9 @@ const bowl = {
       by('a', "Don't talk to me for an hour."),
     ] },
     { id: 'bwh.dl-f2', when: DL, turns: [
-      by('a', "Crunchy. Crunchy. Slimy. Crunchy. Done."),
+      by('a', "Done. Done. Don't let me think about it."),
       beat("The cook looks into the empty bowl, beams, and hands over the tip."),
-      by('b', "The cook's so happy! You made her day!"),
+      by('b', "She's so happy! Look at her!"),
     ] },
     { id: 'bwh.dl-f3', when: DL, turns: [
       beat("{a} tastes the thousand-year egg, stops, and looks surprised."),
@@ -294,7 +294,7 @@ const bowl = {
     ] },
     { id: 'bwh.dl-f4', when: DL, turns: [
       by('b', "First try! Every bite!"),
-      by('a', "Even the one she wouldn't name."),
+      by('a', "Even the one she wouldn't tell us about."),
       by('b', "What did it taste like?"),
     ] },
   ],
@@ -302,29 +302,29 @@ const bowl = {
     { id: 'bwh.dl-a1', when: DL, turns: [
       by('b', "You didn't chew last time. Chew. Slowly. And breathe through your nose."),
       beat("{a} chews slowly, breathes through {a.posAdj} nose, and gets through the whole second bowl."),
-      by('a', "Chewing! Who knew?"),
+      by('a', "That was so much better."),
     ] },
     { id: 'bwh.dl-a2', when: DL, turns: [
       beat("Second bowl. This time {a} eats it in the order the cook recommends, and it all stays down."),
-      by('a', "Her order! Her order was the trick!"),
-      by('b', "She knows her food!"),
+      by('a', "Her way worked! It all stayed down!"),
+      by('b', "Thank you! Thank you so much!"),
     ] },
     { id: 'bwh.dl-a3', when: DL, turns: [
-      by('a', "I'm going to pretend it's all chicken. Every single bit of it. Chicken."),
-      beat("Telling {a.ref} it's all chicken, {a} empties the bowl to the last drop."),
-      by('b', "Was it chicken?"),
+      by('a', "I'm going to pretend it's all chicken. Every bit of it."),
+      beat("{a} keeps going, bite after bite, and empties the bowl to the last drop."),
+      by('b', "You did it! Every bite!"),
     ] },
     { id: 'bwh.dl-a4', when: DL, turns: [
       beat("After two bowls that didn't stay down, {a} finally finishes the third one."),
-      by('a', "Third bowl. Finished. Nobody move."),
+      by('a', "Third bowl. Finished. Don't talk to me."),
       by('b', "Nobody's moving. Take your time."),
     ] },
   ],
   'task-try.struggling': [
     { id: 'bwh.dl-t1', when: DL, turns: [
       beat("{a} has had a scorpion halfway to {a.posAdj} mouth for a whole minute and hasn't moved it any closer."),
-      by('a', "I can't. Its little legs."),
-      by('b', "Don't look at its little legs! Eat it!"),
+      by('a', "I can't. Its legs."),
+      by('b', "Don't look at its legs! Eat it!"),
     ] },
     { id: 'bwh.dl-t2', when: DL, turns: [
       by('b', "How much is left?"),
@@ -332,26 +332,26 @@ const bowl = {
       by('b', "That's the only thing left?"),
     ] },
     { id: 'bwh.dl-t3', when: DL, turns: [
-      beat("{a} sips the soup, finds something floating in it with eyes, and puts the spoon down very slowly."),
-      by('a', "It had eyes. The thing in the soup had eyes."),
-      by('b', "Don't look at the eyes! Drink!"),
+      beat("{a} sips the soup, finds something chewy floating in it, and puts the spoon down very slowly."),
+      by('a', "There's something in it. I don't know what it is."),
+      by('b', "Don't look! Just drink!"),
     ] },
   ],
   'task-done.any': [
     { id: 'bwh.dl-dn1', when: DL, turns: [
-      by('a', "I'll never be able to look at an egg again."),
-      by('b', "Not even a normal egg?"),
-      by('a', "Especially not a normal egg. It'll remind me."),
+      by('a', "I'm never eating an egg again."),
+      by('b', "Not even a normal one?"),
+      by('a', "Not for a long time."),
     ] },
     { id: 'bwh.dl-dn2', when: DL, turns: [
       beat("{a} and {b} walk away from the table, {a} still sipping water, very, very slowly."),
       by('b', "You were so brave."),
-      by('a', "I was so brave, and so full of scorpions."),
+      by('a', "I'm never doing that again."),
     ] },
     { id: 'bwh.dl-dn3', when: DL, turns: [
       by('b', "Did you ever find out what the last thing was?"),
       by('a', "I asked her after. She just smiled."),
-      by('b', "That's worse."),
+      by('b', "I don't want to know."),
     ] },
   ],
   'attempt-fail.any': [
@@ -363,25 +363,25 @@ const bowl = {
     { id: 'bwh.dl-x2', when: DL, turns: [
       beat("{a} shows the cook the bowl. She looks inside, finds one scorpion leg at the bottom, and shakes her head."),
       by('a', "One leg! It's one tiny leg!"),
-      by('b', "A leg is still a bite! New bowl!"),
+      by('b', "It still counts! New bowl!"),
     ] },
     { id: 'bwh.dl-x3', when: DL, turns: [
       beat("{a} hides the unnamed thing under a napkin. The cook lifts the napkin, and points at a fresh bowl."),
       by('a', "How did she know?"),
-      by('b', "Cooks always know! Start again!"),
+      by('b', "She watched you do it! Start again!"),
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'bwh.dl-v1', when: DL, turns: [
-      by('b', "You can do it! You're a champion eater! An eating champion!"),
+      by('b', "You can do it! Keep going!"),
       by('a', "I'm chewing! Don't make me laugh while I'm chewing!"),
-      by('b', "Chew like a champion!"),
+      by('b', "Sorry! Just keep going!"),
     ] },
   ],
   'watching-botch.nerves': [
     { id: 'bwh.dl-v2', when: DL, turns: [
-      beat("{b} watches {a} eat with both hands over {b.posAdj} mouth, gagging quietly on {a}'s behalf."),
-      by('b', "I can't watch. I can taste it from here."),
+      beat("{b} watches {a} eat with both hands over {b.posAdj} mouth."),
+      by('b', "I can't watch. I feel sick for you."),
       by('a', "Then stop watching!"),
     ] },
   ],
@@ -396,14 +396,14 @@ const bowl = {
     { id: 'bwh.dl-v4', when: DL, turns: [
       beat("{b} sits across the table in total silence, giving {a} a thumbs up after every bite."),
       by('a', "Say something."),
-      by('b', "If I open my mouth, I'll be sick for you."),
+      by('b', "You're doing great. I just don't want to put you off."),
     ] },
   ],
   'helped-botch.any': [
     { id: 'bwh.dl-h1', when: DL, turns: [
       beat("While the cook turns to the stove, {b} slides a big jug of water right next to {a}'s bowl."),
       by('a', "Where did the water come from?"),
-      by('b', "It was always there. Drink."),
+      by('b', "Don't worry about it. Drink."),
     ] },
   ],
 };

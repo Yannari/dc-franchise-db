@@ -26,7 +26,7 @@ const place = {
       don("I walked up here. I'm getting a rickshaw down."),
     ] },
     { id: 'gwh.op2', when: P, turns: [
-      don("Welcome to Great Wall Hills, home of ancient history, beautiful mountains, and food on sticks that looks back at you."),
+      don("Welcome to Great Wall Hills, home of ancient history, beautiful mountains, and some very unusual food on sticks!"),
       { beat: 'A street vendor offers him a skewer of something crunchy. He waves it away politely.' },
       don("No, thank you. I'm saving myself for the teams' reactions. Racers, your next Don Box is waiting!"),
     ] },
@@ -43,12 +43,12 @@ const place = {
       { beat: 'Through the cab window, the wall winds away over the mountains as far as they can see.' },
       { by: 'a', ...V("Look at it. It goes on forever. It just doesn't stop.", "It goes on forever.", "It never stops.", "LOOK at it! It goes on FOREVER! It just DOESN'T STOP!", "Look at it, it just goes on forever.", "It's a wall that forgot to end.") },
       { by: 'b', say: "Imagine building that. By hand." },
-      { by: 'a', say: "Imagine walking it. Which we're probably about to do." },
+      { by: 'a', say: "We're probably going to walk it, aren't we?" },
     ] },
     { id: 'gwh.ar2', when: P, turns: [
       { by: 'b', say: "Smell that. Everything's frying. The whole street is frying something." },
       { by: 'a', say: "I'm starving." },
-      { by: 'b', say: "Remember you said that. Remember it later." },
+      { by: 'b', say: "Remember you said that." },
     ] },
   ],
   'arrival-awe.dread': [
@@ -60,7 +60,7 @@ const place = {
     { id: 'gwh.ad2', when: P, turns: [
       { by: 'b', say: "Look at the stalls. Is that a scorpion? On a stick?" },
       { by: 'a', say: "Don't look at the stalls. Whatever you do, don't look at the stalls." },
-      { by: 'b', say: "It's waving at me. The scorpion is waving." },
+      { by: 'b', say: "Okay. I'm not looking." },
     ] },
   ],
 };
@@ -84,38 +84,38 @@ const skydive = {
   'task-start.any': [
     { id: 'gwh.sk-s1', when: SK, turns: [
       { beat: '{a} and {b} sit by the open door of the plane, each strapped to an instructor. The ground is a long way down.' },
-      { by: 'a', say: "Whatever happens, I love you. Platonically. Or however we are." },
-      { by: 'b', ...V("Don't say goodbye things! Why are you saying goodbye things?", "No goodbye things!", "Don't say that!", "DON'T say GOODBYE things! WHY are you saying GOODBYE things?", "Don't say goodbye things, why are you saying goodbye things?", "Save the farewell speech for the ground!") },
+      { by: 'a', say: "Whatever happens, I love you." },
+      { by: 'b', say: "Don't say that! It sounds like goodbye!" },
     ] },
     { id: 'gwh.sk-s2', when: SK, turns: [
       { by: 'b', say: "How do we steer?" },
-      { by: 'a', say: "The instructor steers. We just scream." },
-      { by: 'b', say: "I can do that. I'm very good at that." },
+      { by: 'a', say: "The instructor steers. We just hold on." },
+      { by: 'b', say: "Okay. I can do that." },
     ] },
     { id: 'gwh.sk-s3', when: SK, turns: [
       { beat: 'The instructor taps {a} on the shoulder. It\'s time.' },
       { by: 'a', say: "Now? Right now? Can I have a minute?" },
-      { beat: 'There is no minute. Out they go.' },
+      { beat: 'There\'s no minute. Out they go.' },
     ] },
     { id: 'gwh.sk-s4', when: SK, turns: [
       { by: 'a', say: "Look for the stadium. It's the giant round thing." },
-      { by: 'b', say: "Everything's a giant round thing from up here." },
-      { by: 'a', say: "Then aim for the round thing with the people in it." },
+      { by: 'b', say: "Everything looks the same from up here." },
+      { by: 'a', say: "Then follow the instructor. He knows where it is." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'gwh.sk-f1', when: SK, turns: [
       { beat: 'Two parachutes open, and {a} and {b} float down right into the middle of the stadium.' },
       { by: 'b', ...V("That was the best thing that's ever happened to me!", "Best thing ever!", "Amazing!", "That was the BEST thing that's EVER happened to me!", "That was honestly the best thing that's ever happened to me!", "I've flown! I've actually flown!") },
-      { by: 'a', say: "My legs are shaking. My whole body is shaking. Let's do it again." },
+      { by: 'a', say: "My legs are shaking. My whole body is shaking." },
     ] },
     { id: 'gwh.sk-f2', when: SK, turns: [
       { by: 'a', say: "We landed! We landed in the stadium!" },
-      { by: 'b', say: "I landed on my face, but I landed in the stadium." },
-      { by: 'a', say: "Your face counts." },
+      { by: 'b', say: "I landed on my face, but I'm in the stadium." },
+      { by: 'a', say: "That counts! Come on!" },
     ] },
     { id: 'gwh.sk-f3', when: SK, turns: [
-      { beat: '{a} touches down so gently it looks like {a.sub} stepped off a kerb.' },
+      { beat: '{a} touches down so gently it looks easy.' },
       { by: 'b', say: "How did you do that? I bounced. I bounced twice." },
       { by: 'a', say: "I just kept my knees bent. Like the instructor said." },
     ] },
@@ -132,14 +132,14 @@ const skydive = {
       { by: 'a', ...V("Then we run in! Grab the parachute and run!", "Grab the chute and run!", "Run in! Go!", "Then we RUN in! GRAB the parachute and RUN!", "Then we run in, grab the parachute and run!", "To the stadium, on foot, like common peasants!") },
     ] },
     { id: 'gwh.sk-a2', when: SK, turns: [
-      { by: 'a', say: "We landed in a park. There's a man doing tai chi." },
+      { by: 'a', say: "We landed in a park. Where's the stadium?" },
       { by: 'b', say: "Ask him the way to the stadium." },
-      { beat: 'The man points without stopping his tai chi. They run.' },
+      { beat: 'A man doing tai chi points across the road without stopping. They run.' },
     ] },
     { id: 'gwh.sk-a3', when: SK, turns: [
-      { beat: '{a} and {b} come through the stadium gates on foot, dragging their parachutes like enormous capes.' },
+      { beat: '{a} and {b} come through the stadium gates on foot, dragging their parachutes behind them.' },
       { by: 'b', say: "Everybody else landed in here." },
-      { by: 'a', say: "And we got to see the car park. Not everybody can say that." },
+      { by: 'a', say: "I know. Just run." },
     ] },
     { id: 'gwh.sk-a4', when: SK, turns: [
       { by: 'b', say: "My parachute's tangled in a tree." },
@@ -151,7 +151,7 @@ const skydive = {
     { id: 'gwh.sk-t1', when: SK, turns: [
       { beat: '{b} is still at the door of the plane, holding on to both sides of it.' },
       { by: 'b', say: "I can't! I can't let go! My hands won't let go!" },
-      { by: 'a', say: "Your instructor is very patient, but the plane is running out of fuel!" },
+      { by: 'a', say: "You have to let go! Everybody's waiting!" },
     ] },
     { id: 'gwh.sk-t2', when: SK, turns: [
       { by: 'a', say: "Which way is the stadium? I can't see it! I can only see clouds!" },
@@ -160,7 +160,7 @@ const skydive = {
     ] },
     { id: 'gwh.sk-t3', when: SK, turns: [
       { beat: '{a} and {b} are drifting further and further from the stadium.' },
-      { by: 'a', say: "The wind hates us. The wind has always hated us." },
+      { by: 'a', say: "The wind is pushing us the wrong way." },
       { by: 'b', say: "Pull left! Tell your instructor to pull left!" },
     ] },
   ],
@@ -174,29 +174,29 @@ const skydive = {
     { id: 'gwh.sk-dn2', when: SK, turns: [
       { by: 'b', say: "I've never done anything that scary in my life." },
       { by: 'a', say: "And now we never have to do it again." },
-      { by: 'b', say: "Don't say never. This show hears never." },
+      { by: 'b', say: "Don't say that. We don't know what's next." },
     ] },
     { id: 'gwh.sk-dn3', when: SK, turns: [
-      { beat: 'Their instructors pack up the parachutes. {a} and {b} are still grinning like children.' },
-      { by: 'a', say: "Can we keep our helmets?" },
-      { by: 'b', say: "We're in a race. Run." },
+      { beat: 'Their instructors pack up the parachutes. {a} and {b} are still grinning.' },
+      { by: 'a', say: "That was the best thing I've ever done." },
+      { by: 'b', say: "Me too. Now run." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'gwh.sk-x1', when: SK, turns: [
       { beat: 'A gust swings {a} wide, over the stadium roof and away.' },
-      { by: 'a', say: "Noooo! The stadium! It's going! It's leaving!" },
-      { by: 'b', say: "The stadium isn't leaving! You are!" },
+      { by: 'a', say: "No! The stadium! We're going past it!" },
+      { by: 'b', say: "It's the wind! Hold on!" },
     ] },
     { id: 'gwh.sk-x2', when: SK, turns: [
       { beat: '{a} and {b} land in a pond just outside the stadium, with a splash.' },
-      { by: 'b', ...V("We're in a pond. We jumped out of a plane into a pond.", "We're in a pond.", "A pond.", "We're in a POND! We jumped out of a PLANE into a POND!", "We're in a pond. We jumped out of a plane into a pond.", "We've landed in a pond. The ducks are judging us.") },
-      { by: 'a', say: "At least it was soft." },
+      { by: 'b', say: "We're in a pond. We landed in a pond." },
+      { by: 'a', say: "At least nobody's hurt. Get out!" },
     ] },
     { id: 'gwh.sk-x3', when: SK, turns: [
-      { beat: '{a} lands on the roof of a bus, which keeps driving.' },
-      { by: 'a', say: "Stop the bus! Somebody stop the bus!" },
-      { by: 'b', say: "Jump! Jump off the bus!" },
+      { beat: '{a} comes down on the roof of a parked bus, outside the stadium.' },
+      { by: 'a', say: "I'm on a bus! How do I get down?" },
+      { by: 'b', say: "Slide down the back! Carefully!" },
     ] },
   ],
 };
@@ -225,9 +225,9 @@ const skewers = {
     ] },
     { id: 'gwh.sw-s2', when: SW, turns: [
       { by: 'b', say: "Who's eating?" },
-      { by: 'a', say: "You're eating. I'm cooking. I've always been the cook." },
-      { by: 'b', say: "You've never cooked anything in your life." },
-      { by: 'a', say: "Then today's my first day." },
+      { by: 'a', say: "You're eating. I'm cooking." },
+      { by: 'b', say: "Why am I always the one who eats?" },
+      { by: 'a', say: "Because you're better at it. Come on." },
     ] },
     { id: 'gwh.sw-s3', when: SW, turns: [
       { beat: 'The tray is covered in things with too many legs.' },
@@ -235,31 +235,31 @@ const skewers = {
       { by: 'a', say: "It's mostly scorpions." },
     ] },
     { id: 'gwh.sw-s4', when: SW, turns: [
-      { by: 'a', say: "Don't think of them as bugs. Think of them as crisps." },
-      { by: 'b', say: "Crisps don't have faces." },
-      { by: 'a', say: "Then don't look at the faces. Look at the money." },
+      { by: 'a', say: "Don't think about it. Just eat." },
+      { by: 'b', say: "They have faces! I can see their faces!" },
+      { by: 'a', say: "Then close your eyes. Think about the money." },
     ] },
   ],
   'task-try.first-try': [
     { id: 'gwh.sw-f1', when: SW, turns: [
       { beat: '{b} eats the whole set without stopping, one crunch after another.' },
-      { by: 'b', ...V("They taste like chicken. Crunchy chicken.", "Crunchy chicken.", "Like chicken.", "They taste like CHICKEN! CRUNCHY chicken!", "They honestly taste like crunchy chicken.", "They taste like chicken that went to war.") },
-      { by: 'a', say: "You're a monster. I'm so proud of you." },
+      { by: 'b', say: "They taste like chicken. Crunchy chicken." },
+      { by: 'a', say: "I can't believe you just did that. I'm so proud of you." },
     ] },
     { id: 'gwh.sw-f2', when: SW, turns: [
       { by: 'a', say: "Eat them fast. Don't chew. Just swallow." },
-      { beat: '{b} doesn\'t chew. {b} just swallows. All of them.' },
+      { beat: '{b} barely chews, and swallows them all, one after another.' },
       { by: 'b', say: "I'm never going to tell my mother about this." },
     ] },
     { id: 'gwh.sw-f3', when: SW, turns: [
       { beat: '{b} eats a fried scorpion and then reaches for another without being asked.' },
       { by: 'a', say: "Are you enjoying that?" },
-      { by: 'b', say: "I'm enjoying it a little bit, and I'm very confused about it." },
+      { by: 'b', say: "It's actually not bad. I don't know how I feel about that." },
     ] },
     { id: 'gwh.sw-f4', when: SW, turns: [
       { by: 'b', say: "Done. Every stick. Look." },
       { by: 'a', say: "You didn't even pull a face." },
-      { by: 'b', say: "I pulled a face on the inside." },
+      { by: 'b', say: "I wanted to. Believe me." },
     ] },
   ],
   'task-try.after-fails': [
@@ -278,36 +278,36 @@ const skewers = {
     { id: 'gwh.sw-a3', when: SW, turns: [
       { beat: 'Third set. {b} has a technique now: hold nose, eat, drink water, repeat.' },
       { by: 'b', say: "Hold nose. Eat. Water. Hold nose. Eat. Water." },
-      { by: 'a', say: "It's like a dance. A horrible dance." },
+      { by: 'a', say: "That's it. Keep going." },
     ] },
     { id: 'gwh.sw-a4', when: SW, turns: [
       { by: 'a', say: "Fry them longer. If they're really crunchy, you can't tell what they are." },
       { beat: 'The extra-crunchy scorpions go down much easier.' },
-      { by: 'b', say: "You're a genius. A horrible genius." },
+      { by: 'b', say: "That really helps. Keep doing that." },
     ] },
   ],
   'task-try.struggling': [
     { id: 'gwh.sw-t1', when: SW, turns: [
       { beat: '{b} is staring at a single worm on a stick, and has been for some time.' },
       { by: 'a', say: "It's just one worm. You've eaten twenty." },
-      { by: 'b', say: "This one is looking at me." },
+      { by: 'b', say: "This one's bigger than the others." },
     ] },
     { id: 'gwh.sw-t2', when: SW, turns: [
       { by: 'b', ...V("I can't do another one. My mouth won't open.", "My mouth won't open.", "Can't do another.", "I CAN'T do another one! My MOUTH won't OPEN!", "I can't do another one, my mouth won't open.", "My mouth has gone on strike.") },
-      { by: 'a', say: "Then I'll put it in. Open up. Here comes the aeroplane." },
-      { by: 'b', say: "Don't you dare do the aeroplane." },
+      { by: 'a', say: "Yes, it will. Just one more. Open up." },
+      { by: 'b', say: "Okay. Okay. One more." },
     ] },
     { id: 'gwh.sw-t3', when: SW, turns: [
       { beat: 'Team after team finishes and leaves. {a} and {b} are on their fourth set.' },
       { by: 'a', say: "We're the last ones at the stall." },
-      { by: 'b', say: "Then we've got the best stall all to ourselves." },
+      { by: 'b', say: "Then let's just get it done." },
     ] },
   ],
   'task-done.any': [
     { id: 'gwh.sw-dn1', when: SW, turns: [
       { beat: 'The stall owner looks at the empty sticks, then at {b}\'s face, and hands over the tip with a kind smile.' },
-      { by: 'b', say: "The stall owner smiled at me. That's sympathy. That's a sympathy smile." },
-      { by: 'a', say: "That's respect. Take the respect." },
+      { by: 'b', say: "He smiled at me. Was that a nice smile or a sorry smile?" },
+      { by: 'a', say: "It was a nice one. You did so well." },
     ] },
     { id: 'gwh.sw-dn2', when: SW, turns: [
       { by: 'a', say: "Rickshaw. Whoever didn't do the last Botch pulls the other one." },
@@ -317,7 +317,7 @@ const skewers = {
     { id: 'gwh.sw-dn3', when: SW, turns: [
       { beat: '{b} rinses {b.posAdj} mouth out with a whole bottle of water.' },
       { by: 'b', say: "Can you still smell it? On my breath?" },
-      { by: 'a', say: "I'm going to stand over here, and you're going to stand over there." },
+      { by: 'a', say: "A little. Have some more water." },
     ] },
   ],
   'attempt-fail.any': [
@@ -329,7 +329,7 @@ const skewers = {
     { id: 'gwh.sw-x2', when: SW, turns: [
       { beat: '{a} drops the whole set of skewers in the hot oil, and they come out black.' },
       { by: 'a', say: "Burnt. They're burnt." },
-      { by: 'b', say: "Good. Now I can't see their faces." },
+      { by: 'b', say: "Start again. Watch the time." },
     ] },
     { id: 'gwh.sw-x3', when: SW, turns: [
       { by: 'b', say: "There's one left. One." },
@@ -358,36 +358,36 @@ const rickshaw = {
   'whose-botch.obvious': [
     { id: 'gwh.rk-w1', when: RK, turns: [
       { by: 'b', say: "It's pulling. You're the strong one. You carry the shopping." },
-      { by: 'a', ...V("I carry the shopping because you won't.", "Because you won't.", "You won't carry it.", "I carry the SHOPPING because you WON'T!", "I carry the shopping because you never will.", "I carry the shopping because I'm the only one with arms.") },
-      { by: 'b', say: "Exactly. Practice." },
+      { by: 'a', say: "I carry the shopping because you never do." },
+      { by: 'b', say: "Exactly. So you're used to it." },
     ] },
   ],
   'whose-botch.volunteer': [
     { id: 'gwh.rk-w2', when: RK, turns: [
       { by: 'a', say: "I'll pull. Get in. Sit back. Enjoy the view." },
       { by: 'b', say: "That's the nicest thing you've said all race." },
-      { by: 'a', say: "Don't get used to it. It's only because you ate all those bugs." },
+      { by: 'a', say: "You ate all those bugs. It's the least I can do." },
     ] },
   ],
   'whose-botch.pushed': [
     { id: 'gwh.rk-w3', when: RK, turns: [
       { by: 'a', say: "You pull. I'm getting in." },
       { by: 'b', ...V("I've got bugs in my stomach! I can't pull!", "I'm full of bugs!", "Bugs! In me!", "I've got BUGS in my STOMACH! I CAN'T pull!", "I've got bugs in my stomach, I can't pull anything!", "My stomach is a bug zoo! I can't pull!") },
-      { by: 'a', say: "Then pull carefully." },
+      { by: 'a', say: "You'll be fine. Go." },
     ] },
   ],
   'whose-botch.teaser-guess': [
     { id: 'gwh.rk-w4', when: RK, turns: [
       { by: 'b', say: "'Who has the legs for it?' Legs. It's going to be running." },
-      { by: 'a', say: "Or climbing. Or kicking. Legs do lots of things." },
+      { by: 'a', say: "Or climbing. Or pulling something." },
       { by: 'b', say: "Then it's you. You've got the better legs." },
     ] },
   ],
   'task-start.any': [
     { id: 'gwh.rk-s1', when: RK, turns: [
       { beat: '{b} climbs into the rickshaw and {a} picks up the poles.' },
-      { by: 'b', say: "To the wall, please. And don't spare the horses." },
-      { by: 'a', ...V("I'm the horses. I'm all the horses.", "I'm the horses.", "I'm the horse.", "I'm the HORSES! I'm ALL the HORSES!", "I'm the horses, though. I'm all of them.", "There are no horses. There is only me.") },
+      { by: 'b', say: "To the wall, please. Fast." },
+      { by: 'a', say: "I'm going. I'm going." },
     ] },
     { id: 'gwh.rk-s2', when: RK, turns: [
       { beat: 'The road starts going up almost at once.' },
@@ -397,7 +397,7 @@ const rickshaw = {
     { id: 'gwh.rk-s3', when: RK, turns: [
       { by: 'b', say: "Is it comfortable back here? It's very comfortable back here." },
       { by: 'a', say: "Don't. Don't talk about the comfort." },
-      { by: 'b', say: "Okay. I'll enjoy it quietly." },
+      { by: 'b', say: "Okay. Sorry. You're doing great." },
     ] },
     { id: 'gwh.rk-s4', when: RK, turns: [
       { beat: '{a} takes off at a sprint, and {b} grabs the sides to stay in.' },
@@ -409,105 +409,105 @@ const rickshaw = {
     { id: 'gwh.rk-f1', when: RK, turns: [
       { beat: '{a} pulls steadily up the mountain road, never stopping, while {b} calls out the bumps.' },
       { by: 'b', say: "Hole on the left! Rock on the right! Smooth for a bit!" },
-      { by: 'a', say: "You're a very good passenger." },
+      { by: 'a', say: "Keep telling me! That helps!" },
     ] },
     { id: 'gwh.rk-f2', when: RK, turns: [
       { by: 'b', ...V("You're doing amazing! I've barely felt a bump!", "Barely a bump!", "Smooth ride!", "You're doing AMAZING! I've BARELY felt a BUMP!", "You're doing amazing, I've hardly felt a single bump!", "Five stars! I'm leaving a review!") },
-      { by: 'a', say: "I'll take a tip. A real one. Money." },
+      { by: 'a', say: "Thanks. Keep calling them out." },
       { beat: 'They reach the foot of the wall with the rickshaw in one piece.' },
     ] },
     { id: 'gwh.rk-f3', when: RK, turns: [
       { beat: '{a} overtakes two other rickshaws on the steepest part of the road.' },
       { by: 'b', say: "We're passing people! Wave at them!" },
-      { by: 'a', say: "You wave. I'm busy being a horse." },
+      { by: 'a', say: "You wave. I'm busy pulling." },
     ] },
     { id: 'gwh.rk-f4', when: RK, turns: [
       { by: 'a', say: "Talk to me. Tell me a story. It helps." },
-      { by: 'b', say: "Once upon a time, someone pulled a rickshaw up a mountain and won a million dollars." },
-      { by: 'a', say: "Good story. Keep going." },
+      { by: 'b', say: "Okay. When we get home, the first thing we do is go out for a big dinner. Anywhere you want." },
+      { by: 'a', say: "Somewhere with chairs. Keep talking." },
     ] },
   ],
   'task-try.after-fails': [
     { id: 'gwh.rk-a1', when: RK, turns: [
       { beat: 'A wheel drops into a pothole and comes clean off. {a} and {b} stare at it.' },
       { by: 'b', say: "Can you fix it?" },
-      { by: 'a', say: "I can push it back on and hope." },
-      { beat: 'Pushed back on and hoped for, the wheel holds the rest of the way.' },
+      { by: 'a', say: "I can push it back on. That's all I can do." },
+      { beat: 'The wheel holds the rest of the way.' },
     ] },
     { id: 'gwh.rk-a2', when: RK, turns: [
       { by: 'a', say: "I need to stop. Just for one second." },
-      { by: 'b', ...V("You can stop. I'll sing to you.", "Stop. I'll sing.", "I'll sing.", "You can STOP! I'll SING to you!", "You can stop for a second. I'll sing to you.", "Rest, and I'll sing you a rickshaw ballad.") },
-      { by: 'a', say: "That's not the encouragement you think it is." },
-      { beat: 'Under threat of singing, {a} keeps going.' },
+      { by: 'b', say: "Okay. Ten seconds. Then we go." },
+      { by: 'a', say: "Okay. Ten seconds." },
+      { beat: 'After ten seconds, {a} picks the poles back up and keeps going.' },
     ] },
     { id: 'gwh.rk-a3', when: RK, turns: [
       { beat: '{b} keeps leaning out to look at the view, and the rickshaw keeps tipping.' },
       { by: 'a', say: "Sit in the middle! Sit in the middle!" },
-      { by: 'b', say: "Sorry! The middle has no view!" },
+      { by: 'b', say: "Sorry! Sorry. I'm in the middle." },
     ] },
     { id: 'gwh.rk-a4', when: RK, turns: [
       { by: 'a', say: "Zigzag. If I zigzag, it's less steep." },
       { beat: '{a} zigzags across the whole road, and it works.' },
-      { by: 'b', say: "I feel seasick, but it's working." },
+      { by: 'b', say: "It's working! Keep zigzagging!" },
     ] },
   ],
   'task-try.struggling': [
     { id: 'gwh.rk-t1', when: RK, turns: [
       { beat: '{a} is bent almost double, dragging the rickshaw one slow step at a time.' },
       { by: 'b', say: "Can I get out and walk? Just a little bit?" },
-      { by: 'a', say: "No! You'll get us a penalty! Stay in and be heavy!" },
+      { by: 'a', say: "No! You'll get us a penalty! Stay in!" },
     ] },
     { id: 'gwh.rk-t2', when: RK, turns: [
       { by: 'a', ...V("How far? Please tell me it's not far.", "How far?", "Far?", "How FAR? PLEASE tell me it's NOT far!", "How far is it? Please tell me it's not far.", "How much further? Lie to me if you have to.") },
       { by: 'b', say: "I can see the wall! I can see it!" },
       { by: 'a', say: "Is it close?" },
-      { by: 'b', say: "It's... visible." },
+      { by: 'b', say: "It's... I mean, I can see it." },
     ] },
     { id: 'gwh.rk-t3', when: RK, turns: [
       { beat: 'Every other rickshaw has gone past them. {a} is still going, very, very slowly.' },
       { by: 'b', say: "You're doing so well." },
-      { by: 'a', say: "Don't lie to me while I'm pulling you." },
+      { by: 'a', say: "I'm not. I'm really not." },
     ] },
   ],
   'task-done.any': [
     { id: 'gwh.rk-dn1', when: RK, turns: [
       { beat: '{a} drops the poles at the foot of the wall and lies flat on the ground.' },
       { by: 'b', ...V("You did it! You pulled me up a mountain!", "You pulled me up a mountain!", "You did it!", "You DID it! You PULLED me up a MOUNTAIN!", "You did it, you actually pulled me up a mountain!", "You hauled me up a mountain like a hero!") },
-      { by: 'a', say: "Never again. Next time, you're the horse." },
+      { by: 'a', say: "Never again. Next time, you're pulling." },
     ] },
     { id: 'gwh.rk-dn2', when: RK, turns: [
       { by: 'b', say: "The tip says the Chill Zone is along the wall." },
       { by: 'a', say: "Which way along the wall?" },
-      { by: 'b', say: "It doesn't say. It's a very long wall." },
+      { by: 'b', say: "It doesn't say. Let's just pick one." },
     ] },
     { id: 'gwh.rk-dn3', when: RK, turns: [
-      { beat: '{b} climbs out of the rickshaw and stretches like {b.sub}\'s just had a nap.' },
-      { by: 'b', say: "That was lovely. Very relaxing." },
-      { by: 'a', say: "I hate you. Give me the tip." },
+      { beat: '{b} climbs out of the rickshaw and stretches.' },
+      { by: 'b', say: "Thank you. That was so nice of you." },
+      { by: 'a', say: "You owe me. Give me the tip." },
     ] },
   ],
   'attempt-fail.any': [
     { id: 'gwh.rk-x1', when: RK, turns: [
       { beat: 'The rickshaw hits a rock, and the whole thing tips over. {b} rolls out onto the road.' },
-      { by: 'b', say: "Ow! Was that a pothole or was that you?" },
+      { by: 'b', say: "Ow! What happened?" },
       { by: 'a', say: "Get back in! Quickly, before anyone sees!" },
     ] },
     { id: 'gwh.rk-x2', when: RK, turns: [
       { beat: 'A wheel snaps clean off and rolls away down the hill.' },
-      { by: 'a', ...V("Wheel! Wheel! Come back!", "Wheel! Come back!", "Wheel!", "WHEEL! WHEEL! Come BACK!", "The wheel! Come back, wheel!", "Our wheel has abandoned us!") },
+      { by: 'a', say: "The wheel! The wheel's come off!" },
       { by: 'b', say: "It's not coming back. Go and get it." },
     ] },
     { id: 'gwh.rk-x3', when: RK, turns: [
       { beat: '{a} stops, gasping, and the rickshaw starts rolling backwards down the hill.' },
       { by: 'b', say: "We're going backwards! We're going backwards!" },
-      { by: 'a', say: "Dig your feet in! No, wait, you can't! Hold on!" },
+      { by: 'a', say: "I can't hold it! Hold on!" },
     ] },
   ],
   'watching-botch.cheer': [
     { id: 'gwh.rk-v1', when: RK, turns: [
-      { by: 'b', say: "You're a machine! You're a rickshaw machine!" },
-      { by: 'a', say: "I'm a tired machine." },
-      { by: 'b', say: "A tired, beautiful machine!" },
+      { by: 'b', say: "You're doing so well! Keep going!" },
+      { by: 'a', say: "I'm so tired." },
+      { by: 'b', say: "I know! Nearly there!" },
     ] },
   ],
   'watching-botch.nerves': [
@@ -528,14 +528,14 @@ const rickshaw = {
     { id: 'gwh.rk-v4', when: RK, turns: [
       { beat: '{b} sits very still in the back, trying to make {b.ref} as light as possible.' },
       { by: 'a', say: "Why are you holding your breath?" },
-      { by: 'b', say: "I'm being lighter." },
+      { by: 'b', say: "I don't know. I'm trying to be lighter." },
     ] },
   ],
   'helped-botch.any': [
     { id: 'gwh.rk-h1', when: RK, turns: [
       { beat: 'On the steepest bit, {b} hops out and pushes from behind, just for a moment.' },
       { by: 'a', say: "Get back in! Get back in before they see!" },
-      { by: 'b', say: "I'm not here! I'm a gust of wind!" },
+      { by: 'b', say: "It's only for a second! Keep going!" },
     ] },
   ],
 };
@@ -547,7 +547,7 @@ const wall = {
       { by: 'a', say: "Left or right? It's a wall. It goes both ways forever." },
       { by: 'b', say: "Left. I've got a good feeling about left." },
       { beat: 'Left is the wrong way. They realise it at the third watchtower, and turn round.' },
-      { by: 'a', say: "Your good feelings are terrible." },
+      { by: 'a', say: "Next time, we ask somebody." },
     ] },
   ],
 };

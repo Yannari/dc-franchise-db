@@ -12,14 +12,14 @@ export default {
   'task-stage.ok': [
     // ── the skydive ──
     { id: 'gwh.st.do1', when: at('skydive', 'the-door'), turns: [
-      beat('The side door of the little plane slides open, and the wind roars in. Far below, the city looks like a map, and the stadium looks like a bowl.'),
-      by('a', "That's where we're landing? That tiny bowl?"),
+      beat('The side door of the little plane slides open, and the wind roars in. Far below, the stadium is a small green circle in the middle of the city.'),
+      by('a', "That's where we're landing? It's so small!"),
       by('b', "It's not tiny. It's just really far down."),
     ] },
     { id: 'gwh.st.do2', when: at('skydive', 'the-door'), turns: [
       by('b', "Are you strapped in? Tight?"),
       beat('{a}\'s instructor gives the straps a hard tug and a thumbs-up, and shuffles them both to the edge of the door.'),
-      by('a', "I just met this person, and now we're jumping out of a plane together."),
+      by('a', "I met this guy five minutes ago, and now we're jumping out of a plane together."),
     ] },
     { id: 'gwh.st.ju1', when: at('skydive', 'the-jump'), turns: [
       beat('On three, the instructors jump, and {a} and {b} go out of the door with them, screaming all the way down.'),
@@ -28,7 +28,7 @@ export default {
     ] },
     { id: 'gwh.st.ju2', when: at('skydive', 'the-jump'), turns: [
       by('b', "See you down there!"),
-      beat('{b} tumbles out of the plane, and {a} follows one second later, arms and legs spread wide like a starfish.'),
+      beat('{b} tumbles out of the plane, and {a} follows one second later, arms and legs spread wide.'),
       by('a', "I can't feel my face!"),
     ] },
     { id: 'gwh.st.dr1', when: at('skydive', 'the-drift'), turns: [
@@ -42,19 +42,19 @@ export default {
       by('b', "This is the best thing I've ever done."),
     ] },
     { id: 'gwh.st.la1', when: at('skydive', 'the-landing'), turns: [
-      beat('{a}\'s feet touch the grass, run a few steps, and the parachute flops down behind like a giant tired jellyfish.'),
+      beat('{a}\'s feet touch the grass, run a few steps, and the parachute comes down behind.'),
       by('a', "I landed! I'm on the ground!"),
       beat('{b} lands a few seconds later, much less gracefully, on {b.posAdj} bottom.'),
     ] },
     { id: 'gwh.st.la2', when: at('skydive', 'the-landing'), turns: [
       by('b', "Legs up, legs up, and... down."),
-      beat('{b} lands right on the halfway line, stays standing, and throws both arms up in the air like a gymnast.'),
-      by('a', "Show-off."),
+      beat('{b} lands right on the halfway line, stays standing, and throws both arms up in the air.'),
+      by('a', "Perfect! That was perfect!"),
     ] },
     { id: 'gwh.st.ct1', when: at('skydive', 'centre-tip'), turns: [
       beat('They unclip, shake hands with their instructors, and sprint to the tip box in the centre circle.'),
-      by('b', "\"Make your way to the food stall.\" Food! I'm starving!"),
-      by('a', "Me too, actually."),
+      by('b', "It says go to the food stall. Food! I'm starving!"),
+      by('a', "Me too. Come on."),
     ] },
     { id: 'gwh.st.ct2', when: at('skydive', 'centre-tip'), turns: [
       by('a', "Can we do that again? Please?"),
@@ -64,7 +64,7 @@ export default {
 
     // ── the skewers ──
     { id: 'gwh.st.tr1', when: at('skewers', 'the-tray'), turns: [
-      beat('At the food stall, the cook pushes a tray across the counter: worms, scorpions, beetles and one seahorse, lined up neatly like party snacks.'),
+      beat('At the food stall, the cook pushes a tray across the counter: worms, scorpions, beetles and one seahorse, all lined up in rows.'),
       by('b', "Oh no. Oh no, no, no."),
       by('a', "I'll put them on the sticks. You eat them."),
       by('b', "Why do I always get the eating?"),
@@ -75,17 +75,17 @@ export default {
       beat('The cook hands {a} a bundle of bamboo sticks and nods at the tray.'),
     ] },
     { id: 'gwh.st.th1', when: at('skewers', 'thread-em'), turns: [
-      beat('{a} threads a worm onto the first stick, then a scorpion, then a beetle, making a little kebab of nightmares.'),
+      beat('{a} threads a worm onto the first stick, then a scorpion, then a beetle.'),
       by('a', "This is so gross."),
       by('b', "Don't tell me about it. Just do it."),
     ] },
     { id: 'gwh.st.th2', when: at('skewers', 'thread-em'), turns: [
       by('a', "Two of each on every stick, like the photo."),
       beat('{a} works quickly and neatly, and the skewers pile up on the counter, each one exactly like the last.'),
-      by('b', "You're weirdly good at that."),
+      by('b', "You're really fast at that."),
     ] },
     { id: 'gwh.st.fr1', when: at('skewers', 'the-fryer'), turns: [
-      beat('The skewers go into the hot oil with a huge, angry sizzle, and the bugs curl up and turn golden.'),
+      beat('The skewers go into the hot oil with a loud sizzle, and the bugs curl up and turn golden.'),
       by('b', "They actually smell good. Why do they smell good?"),
       by('a', "Everything smells good deep-fried."),
     ] },
@@ -101,14 +101,14 @@ export default {
     ] },
     { id: 'gwh.st.ea2', when: at('skewers', 'eat-em'), turns: [
       by('a', "Just pretend they're chicken."),
-      by('b', "Chicken doesn't have this many legs."),
+      by('b', "I can't. It has legs. I can feel the legs."),
       beat('{b} works through the skewers one by one, chewing fast and swallowing hard, until there\'s only one left.'),
     ] },
     { id: 'gwh.st.ea3', when: at('skewers', 'eat-em'), turns: [
       beat('{b} gets to the seahorse and stops.'),
       by('b', "It's so cute. I can't eat that."),
       by('a', "You have to. It's the last one."),
-      beat('{b} eats it, and says sorry to it first.'),
+      beat('{b} closes {b.posAdj} eyes and eats it.'),
     ] },
     { id: 'gwh.st.es1', when: at('skewers', 'empty-sticks'), turns: [
       beat('{b} lays the last empty stick on the plate. The cook counts the sticks, nods, and slides over the tip.'),
@@ -116,7 +116,7 @@ export default {
       by('a', "You were amazing. Here's the tip."),
     ] },
     { id: 'gwh.st.es2', when: at('skewers', 'empty-sticks'), turns: [
-      by('a', "\"Pull your partner by rickshaw to the wall.\" Pull? Like a horse?"),
+      by('a', "It says pull your partner in a rickshaw to the wall. Pull? Up that hill?"),
       by('b', "You're pulling. I'm full of bugs."),
       beat('They run for the rickshaws.'),
     ] },
@@ -125,17 +125,17 @@ export default {
     { id: 'gwh.st.pu1', when: at('rickshaw', 'pick-up'), turns: [
       beat('A row of red-seated rickshaws waits at the bottom of the mountain road, and the road goes up, and up, and up.'),
       by('b', "I sit, you pull. That's the rule."),
-      by('a', "Who made that rule?"),
+      by('a', "Fine. Get in."),
     ] },
     { id: 'gwh.st.pu2', when: at('rickshaw', 'pick-up'), turns: [
-      by('a', "Get in. Hold on. Don't wave at people."),
-      beat('{b} climbs into the seat and settles back like royalty.'),
-      by('b', "To the wall, please."),
+      by('a', "Get in. Hold on tight."),
+      beat('{b} climbs into the seat and holds on to both sides.'),
+      by('b', "Okay. Go!"),
     ] },
     { id: 'gwh.st.cl1', when: at('rickshaw', 'the-climb'), turns: [
       beat('{a} leans into the handles and pulls. The rickshaw creaks, rolls, and starts up the hill, slowly and steadily.'),
       by('b', "Faster! The others are catching up!"),
-      by('a', "You could help by being lighter!"),
+      by('a', "I'm going as fast as I can!"),
     ] },
     { id: 'gwh.st.cl2', when: at('rickshaw', 'the-climb'), turns: [
       by('b', "You're doing great. Left, right, left, right."),
@@ -159,7 +159,7 @@ export default {
     ] },
     { id: 'gwh.st.wa2', when: at('rickshaw', 'the-wall'), turns: [
       by('b', "We made it. You pulled me all the way up a mountain."),
-      by('a', "You owe me. Big time."),
+      by('a', "You owe me. You really owe me."),
       beat('The tip says to walk along the wall to the Chill Zone, and they set off.'),
     ] },
   ],
@@ -174,7 +174,7 @@ export default {
     { id: 'gwh.sf.do2', when: at('skydive', 'the-door'), turns: [
       by('b', "Just a second. Just give me one second."),
       beat('{b}\'s instructor waits. The plane circles round the city again, which costs them a whole lap.'),
-      by('a', "That's a lot of seconds."),
+      by('a', "Come on! We just lost a whole lap!"),
     ] },
     { id: 'gwh.sf.dr1', when: at('skydive', 'the-drift'), turns: [
       beat('A gust of wind catches the parachute and carries {a} away from the stadium, over a road, and towards a car park.'),
@@ -183,45 +183,45 @@ export default {
     ] },
     { id: 'gwh.sf.dr2', when: at('skydive', 'the-drift'), turns: [
       by('a', "Are we going to make it?"),
-      beat('They do not make it. They float gently down into a park outside the stadium, right next to a family having a picnic.'),
+      beat('They don\'t make it. They float down into a park outside the stadium, right next to a family having a picnic.'),
       by('b', "Sorry! Hello! We have to run!"),
     ] },
     { id: 'gwh.sf.la1', when: at('skydive', 'the-landing'), turns: [
-      beat('{b} hits the grass running, trips over the parachute lines, and rolls across the field like a burrito.'),
+      beat('{b} hits the grass running, trips over the parachute lines, and ends up tangled in them on the field.'),
       by('b', "I'm okay! I'm just stuck!"),
-      by('a', "Hold still. I'll unroll you."),
+      by('a', "Hold still. I'll get you out."),
     ] },
     { id: 'gwh.sf.la2', when: at('skydive', 'the-landing'), turns: [
       by('a', "Legs up! Legs up!"),
       beat('{a} forgets to put {a.posAdj} legs up and lands bottom first, sliding across the grass for several metres.'),
-      by('a', "Meant to do that."),
+      by('a', "Ow. I'm okay. I'm okay."),
     ] },
 
     // ── the skewers ──
     { id: 'gwh.sf.tr1', when: at('skewers', 'the-tray'), turns: [
       beat('One of the scorpions on the tray twitches its tail.'),
       by('b', "That one moved! It's alive!"),
-      by('a', "It's not alive. It's... probably not alive."),
+      by('a', "It's not alive. It can't be. It's been fried."),
     ] },
     { id: 'gwh.sf.tr2', when: at('skewers', 'the-tray'), turns: [
-      by('b', "I'm not eating anything that's looking at me."),
-      beat('{b} turns every single bug on the tray round so that it faces away, which takes a very long time.'),
-      by('a', "Are you done?"),
+      by('b', "I'm not eating anything that moves."),
+      beat('{b} stands there staring at the tray for a long time, not touching anything.'),
+      by('a', "Come on. We're losing time."),
     ] },
     { id: 'gwh.sf.th1', when: at('skewers', 'thread-em'), turns: [
-      beat('{a} pushes the stick through a beetle, and it flies off the end, bounces off the counter and lands in somebody\'s soup at the next stall.'),
-      by('a', "Sorry! Very sorry! That's mine!"),
+      beat('{a} pushes the stick through a beetle, and it flies off the end and onto the ground.'),
+      by('a', "No! Sorry! Can I have another one?"),
       by('b', "Leave it. Get another one."),
     ] },
     { id: 'gwh.sf.th2', when: at('skewers', 'thread-em'), turns: [
       by('a', "Ow! It pinched me! The scorpion pinched me!"),
       by('b', "It's dead!"),
-      by('a', "Well, it still pinched me!"),
+      by('a', "Then why does my finger hurt?"),
     ] },
     { id: 'gwh.sf.fr1', when: at('skewers', 'the-fryer'), turns: [
-      beat('{a} leaves the skewers in the oil a bit too long, and they come out black, smoking, and shrivelled into little crunchy commas.'),
+      beat('{a} leaves the skewers in the oil too long, and they come out black and smoking.'),
       by('b', "I'm not eating charcoal. Fry a new batch."),
-      by('a', "It's just extra crispy!"),
+      by('a', "Sorry! Okay, new ones."),
     ] },
     { id: 'gwh.sf.fr2', when: at('skewers', 'the-fryer'), turns: [
       by('a', "How long do they go in for?"),

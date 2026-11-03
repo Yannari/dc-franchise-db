@@ -18,11 +18,11 @@ export default {
     { id: 'bw.st.ws2', when: at('wall-race', 'wall-start'), turns: [
       by('a', "Same pace the whole way. Don't sprint the first bit."),
       by('b', "I always sprint the first bit."),
-      by('a', "I know. That's why I said it."),
+      by('a', "I know. Don't. Not today."),
     ] },
     { id: 'bw.st.st1', when: at('wall-race', 'wall-steps'), turns: [
       beat('The steps get steeper and steeper, some of them up to their knees. They climb on hands and feet.'),
-      by('b', "Who built steps this big? Giants?"),
+      by('b', "Why are these steps so big?"),
       by('a', "Keep going. It goes down after this. I hope."),
     ] },
     { id: 'bw.st.st2', when: at('wall-race', 'wall-steps'), turns: [
@@ -33,7 +33,7 @@ export default {
     { id: 'bw.st.tt1', when: at('wall-race', 'tower-to-tower'), turns: [
       beat('They run through one watchtower, out the other side, and on along the top of the wall towards the next.'),
       by('b', "How many towers is that?"),
-      by('a', "Don't count. Counting makes it worse."),
+      by('a', "Don't count. Just keep running."),
     ] },
     { id: 'bw.st.tt2', when: at('wall-race', 'tower-to-tower'), turns: [
       by('a', "Grab my hand. We stay together."),
@@ -55,7 +55,7 @@ export default {
     { id: 'bw.st.bl1', when: at('delicacies', 'the-bowl'), turns: [
       beat('The cook sets down a big bowl. In it: black eggs, scorpions on sticks, a cloudy soup, and something the cook won\'t name.'),
       by('b', "What's that one?"),
-      by('a', "Don't ask what it is. Asking makes it worse."),
+      by('a', "Don't ask. Just eat it."),
     ] },
     { id: 'bw.st.bl2', when: at('delicacies', 'the-bowl'), turns: [
       by('a', "Every bite? The whole bowl?"),
@@ -69,11 +69,11 @@ export default {
     ] },
     { id: 'bw.st.eg2', when: at('delicacies', 'the-eggs'), turns: [
       by('b', "How is it?"),
-      by('a', "It tastes like an egg that's been waiting a long time to get me."),
+      by('a', "It's... strong. It's really strong."),
       by('b', "Next one. Quick, before you think about it."),
     ] },
     { id: 'bw.st.sc1', when: at('delicacies', 'the-scorpions'), turns: [
-      beat('{a} holds up a fried scorpion on a stick, looks it in the eye, and bites the whole thing off.'),
+      beat('{a} holds up a fried scorpion on a stick, takes a breath, and bites the whole thing off.'),
       by('b', "You did it! What's it like?"),
       by('a', "Crunchy. Very, very crunchy."),
     ] },
@@ -100,7 +100,7 @@ export default {
     { id: 'bw.st.eb2', when: at('delicacies', 'bowl-empty'), turns: [
       by('a', "I need water. A lot of water."),
       by('b', "Chill Zone's at the end of the wall. There'll be water there."),
-      by('a', "There had better be."),
+      by('a', "Good. Let's go."),
     ] },
   ],
 
@@ -145,7 +145,7 @@ export default {
     ] },
     { id: 'bw.sf.eg2', when: at('delicacies', 'the-eggs'), turns: [
       by('b', "Why are you holding it so far away?"),
-      by('a', "Because it's looking at me."),
+      by('a', "Because I don't want to smell it."),
       beat('The egg slips off the chopsticks and rolls across the table.'),
     ] },
     { id: 'bw.sf.sc1', when: at('delicacies', 'the-scorpions'), turns: [

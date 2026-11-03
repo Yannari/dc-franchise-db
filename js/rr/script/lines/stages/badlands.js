@@ -38,7 +38,7 @@ export default {
     { id: 'bl.st.fr2', when: at('dino', 'the-frame'), turns: [
       by('a', "Lift the skull. Careful. On three."),
       beat('They heave the skull up onto the end of the neck, and it slots into place.'),
-      by('b', "It's looking at me. It's actually looking at me."),
+      by('b', "Look at it. That's so cool."),
     ] },
     { id: 'bl.st.in1', when: at('dino', 'inspection'), turns: [
       beat('The palaeontologist walks all the way round the skeleton, counting bones under their breath.'),
@@ -48,14 +48,14 @@ export default {
     { id: 'bl.st.in2', when: at('dino', 'inspection'), turns: [
       by('a', "We built a dinosaur. We actually built a dinosaur."),
       by('b', "Tip says barrels next. Buried ones."),
-      by('a', "We're just going to dig all day, aren't we?"),
+      by('a', "More digging. Great."),
     ] },
 
     // ── the barrel ──
     { id: 'bl.st.om1', when: at('oil-barrel', 'old-map'), turns: [
       beat('By the old drilling rig, a patch of ground is staked out in squares. {a} unfolds a faded map.'),
-      by('a', "X marks the spot. There's an X. Kind of."),
-      by('b', "That's a coffee stain."),
+      by('a', "There's an X. I think it's an X."),
+      by('b', "That might just be a stain."),
     ] },
     { id: 'bl.st.om2', when: at('oil-barrel', 'old-map'), turns: [
       by('b', "Three squares from the rig. Two to the left."),
@@ -79,13 +79,13 @@ export default {
     ] },
     { id: 'bl.st.bs2', when: at('oil-barrel', 'barrel-stuck'), turns: [
       by('b', "Rock it side to side. Loosen it."),
-      beat('{a} rocks the barrel back and forth until it comes free with a slurp.'),
+      beat('{a} rocks the barrel back and forth until it comes free.'),
       by('a', "Out! It's out!"),
     ] },
     { id: 'bl.st.ro1', when: at('oil-barrel', 'rolled-out'), turns: [
       beat('{a} rolls the barrel up out of the pit and over to the rig. Taped to the lid is the tip.'),
       by('b', "The Chill Zone! The campfire!"),
-      by('a', "I'm never digging again. Not even in a garden."),
+      by('a', "I'm never digging again."),
     ] },
     { id: 'bl.st.ro2', when: at('oil-barrel', 'rolled-out'), turns: [
       by('a', "Tip's on the lid."),
@@ -98,17 +98,17 @@ export default {
     // ── the dinosaur ──
     { id: 'bl.sf.bd1', when: at('dino', 'bone-dig'), turns: [
       beat('{a} swings the pickaxe a little too hard. There\'s a crack, and the bone breaks in two.'),
-      by('a', "It was like that! It was already broken!"),
-      by('b', "It was not. Find another one."),
+      by('a', "Oh no. Does that count?"),
+      by('b', "I don't know. Find another one, just in case."),
     ] },
     { id: 'bl.sf.bd2', when: at('dino', 'bone-dig'), turns: [
       by('b', "Is this a bone or a rock?"),
       by('a', "A rock. That's a rock. You've been brushing a rock."),
-      beat('{b} looks at the rock for a long time, then puts down the brush.'),
+      beat('{b} looks at the rock for a second, then puts down the brush.'),
     ] },
     { id: 'bl.sf.cb1', when: at('dino', 'carry-bones'), turns: [
       beat('Halfway to the frame, {b} trips, and an armful of ribs scatters across the ground.'),
-      by('b', "I'm okay! The ribs are less okay."),
+      by('b', "I'm okay! Are the ribs okay?"),
       by('a', "Pick them up. Count them. All of them."),
     ] },
     { id: 'bl.sf.cb2', when: at('dino', 'carry-bones'), turns: [
@@ -117,13 +117,13 @@ export default {
       beat('They go back to the dig to look for it.'),
     ] },
     { id: 'bl.sf.fr1', when: at('dino', 'the-frame'), turns: [
-      beat('They stand back. The skeleton has its tail sticking out of its head.'),
+      beat('They stand back. The tail is on the wrong end.'),
       by('a', "That's not right."),
-      by('b', "Maybe it was a weird dinosaur?"),
+      by('b', "Okay. Take it off. Start that bit again."),
     ] },
     { id: 'bl.sf.fr2', when: at('dino', 'the-frame'), turns: [
       by('b', "Why are there so many leg bones?"),
-      by('a', "Because those are arms. Those are tiny arms."),
+      by('a', "Because some of those are arms."),
       beat('They take the legs off and start again.'),
     ] },
     { id: 'bl.sf.in1', when: at('dino', 'inspection'), turns: [
@@ -140,7 +140,7 @@ export default {
     // ── the barrel ──
     { id: 'bl.sf.dg1', when: at('oil-barrel', 'digging'), turns: [
       beat('{a} digs a deep, neat hole, right down to the bedrock. There\'s nothing in it.'),
-      by('a', "Empty. A whole hole of nothing."),
+      by('a', "Empty. There's nothing here."),
       by('b', "Fill it in. Pick another square."),
     ] },
     { id: 'bl.sf.dg2', when: at('oil-barrel', 'digging'), turns: [
@@ -155,7 +155,7 @@ export default {
     ] },
     { id: 'bl.sf.bs1', when: at('oil-barrel', 'barrel-stuck'), turns: [
       beat('{a} pulls and pulls on the barrel. It doesn\'t move an inch.'),
-      by('a', "It's stuck! It's like it grew roots!"),
+      by('a', "It's stuck! It won't move!"),
       by('b', "Dig round the sides more. You've only done the top."),
     ] },
     { id: 'bl.sf.bs2', when: at('oil-barrel', 'barrel-stuck'), turns: [

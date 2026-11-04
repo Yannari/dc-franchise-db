@@ -212,7 +212,7 @@ describe('the publish button says what it sends', () => {
     const src = fs.readFileSync('js/social/session.js', 'utf8');
     expect(src).toMatch(/toPublishPayload\(gs, \{/);
     const store = fs.readFileSync('js/social/store.js', 'utf8');
-    expect(store).toMatch(/posts: store\.posts\.map/);
+    expect(store).toMatch(/for \(const p of store\.posts\)/);
   });
 });
 

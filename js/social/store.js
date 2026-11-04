@@ -123,11 +123,27 @@ export function bumpEngagement(gs, postId, { likes = 0, tomatoes = 0 } = {}) {
  */
 export function toPublishPayload(gs, { season, format } = {}) {
   const store = storeOf(gs);
+  const fmt = format ?? store.posts[0]?.format ?? null;
+  // The site's social_posts.id is one key across EVERY show, and a post id is
+  // 'p-<season>-<episode>-<n>' — so the Ridonculous Race's season 1 episode 1
+  // asked for the very ids a finished show's season 1 still holds (a published
+  // season keeps its feed), and the whole sync failed on "UNIQUE constraint
+  // failed: social_posts.id" (the user, 2026-11-04). Filed under the show here,
+  // at the edge, so feeds already in a save go up too; a reply keeps its parent.
+  const key = id => (id && fmt && !String(id).startsWith(`${fmt}:`) ? `${fmt}:${id}` : id);
+  const seen = new Set();
+  const posts = [];
+  for (const p of store.posts) {
+    const id = key(p.id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    posts.push({ ...p, id, replyTo: p.replyTo ? key(p.replyTo) : p.replyTo });
+  }
   return {
     version: store.version || SOCIAL_VERSION,
     season: season ?? store.posts[0]?.season ?? null,
-    format: format ?? store.posts[0]?.format ?? null,
-    posts: store.posts.map(p => ({ ...p })),
+    format: fmt,
+    posts,
   };
 }
 

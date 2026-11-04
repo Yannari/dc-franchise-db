@@ -124,6 +124,18 @@ describe('publishing', () => {
     expect(payload).not.toHaveProperty('builtEpisodes');
   });
 
+  it('files post ids under the show, so season 1 of two shows never shares an id on the site', () => {
+    // the user, 2026-11-04: "UNIQUE constraint failed: social_posts.id" syncing a Ridonculous Race season 1
+    const gs = {};
+    addEpisodePosts(gs, 1, [post('p-1-1-0000'), post('p-1-1-0001', { replyTo: 'p-1-1-0000' })]);
+    const rr = toPublishPayload(gs, { season: 1, format: 'ridonculous-race' }).posts;
+    const bb = toPublishPayload(gs, { season: 1, format: 'big-brother' }).posts;
+    expect(rr.map(p => p.id)).toEqual(['ridonculous-race:p-1-1-0000', 'ridonculous-race:p-1-1-0001']);
+    expect(rr[1].replyTo).toBe(rr[0].id);
+    expect(bb.some(p => rr.some(q => q.id === p.id))).toBe(false);
+    expect(postsForEpisode(gs, 1)[0].id).toBe('p-1-1-0000');
+  });
+
   it('copies rather than handing out the live posts', () => {
     const gs = {};
     addEpisodePosts(gs, 1, [post('p-1', { likes: 10 })]);

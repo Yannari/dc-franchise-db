@@ -922,6 +922,8 @@ export const RU_CLIP = kind('ru-clip', ['what', 'fate', 'of'], [
     ['b', "I knew something was going on. Everyone told me I was being paranoid."],
     ['dior', "{c}, did you know {a} was with {b} at the time?"],
     ['c', "I did. I should have stayed out of it."],
+    ['dior', "{a}, you've gone very quiet."],
+    ['a', "Because there's nothing to say. {b} wasn't being paranoid. I'm sorry."],
   ], beat: "The studio gasps." },
   { when: { what: ['kiss', 'bed'], fate: 'together' }, turns: [
     ['dior', "{b}. Did you know?"],
@@ -959,6 +961,7 @@ export const RU_CLIP = kind('ru-clip', ['what', 'fate', 'of'], [
     ['b', "No. I'd heard bits from other people. I never saw it."],
     ['c', "For what it's worth, I'm sorry. I knew you two were together."],
     ['b', "Thank you for saying that. It's more than I got from {a}."],
+    ['a', "That's fair. I should have said it a long time ago."],
   ], beat: "{a} looks at the floor." },
   { when: { what: ['pull', 'said', 'promise', 'head-turned'], fate: ['split', 'over'] }, turns: [
     ['dior', "{b}. How does that make you feel?"],

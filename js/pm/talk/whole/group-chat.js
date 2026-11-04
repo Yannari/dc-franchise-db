@@ -187,7 +187,21 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     ['a', "Yes. And {x.he} said sorry like that fixes it."],
     ['b', "It doesn't. You don't have to forgive {x} today."],
   ], beat: "{a} wipes {a.posAdj} eyes with the back of {a.posAdj} hand." },
-  { when: { subj: 'honest', story: 'doubt', cast: C }, stage: "{a} sits down on the daybeds, and the others make room.", turns: [
+  // …and when it's somebody else, the name (season 41 ep 4: Marcus told Mia "I've been thinking about Priya", and Mia told the girls he'd just gone off her).
+  { when: { subj: 'honest', story: 'doubt', hasWith: true, kissed: false, cast: C }, stage: "{a} sits down with the others, and doesn't say anything for a moment.", turns: [
+    ['b', "Did you talk to {x}?"],
+    ['a', "I did. {x.He} told me {x.he}'s been thinking about {about}."],
+    ['c', "{about}? Are you serious?"],
+    ['a', "That's what {x.he} said. {x.He} says nothing has happened."],
+    ['b', "Do you believe {x.obj}?"],
+    ['a', "I think so. That's almost worse. Nothing had to happen for {x.obj} to want someone else."],
+  ], beat: "Nobody looks over at {about}, and everybody wants to." },
+  { when: { subj: 'honest', story: 'doubt', hasWith: true, kissed: false, tier: SHORT }, stage: "{a} finds {b} in the kitchen.", turns: [
+    ['a', "I asked {x} what's wrong. It's {about}. {x.He}'s been thinking about {about.obj}."],
+    ['b', "Oh, no. I'm sorry."],
+    ['a', "At least I know why now."],
+  ], beat: "{b} holds on to {a} for a long time." },
+  { when: { subj: 'honest', story: 'doubt', hasWith: false, cast: C }, stage: "{a} sits down on the daybeds, and the others make room.", turns: [
     ['b', "How did it go with {x}?"],
     say('a', "{x} said {x.he}'s not feeling it like {x.he} was.", { lad: "{x} is not feeling it any more, {~mate}. Said it straight.", bestie: "{x} has gone off me, babe. {x.He} actually said it." }),
     ['c', "Did {x.he} say why?"],
@@ -195,7 +209,7 @@ export const GROUP_CHAT_WHOLE = { moves: { whole: [
     ['b', "At least {x.he} was honest."],
     say('a', "I know. It doesn't make it hurt any less.", { quiet: "Yeah.", romantic: "I know. I just thought we were going to be the ones who made it." }),
   ], beat: "The others sit with {a} for a long time." },
-  { when: { subj: 'honest', story: 'doubt', tier: SHORT }, stage: "{a} finds {b} in the kitchen.", turns: [
+  { when: { subj: 'honest', story: 'doubt', hasWith: false, tier: SHORT }, stage: "{a} finds {b} in the kitchen.", turns: [
     ['a', "I asked {x}. {x.He} told me. {x.He}'s not sure about us any more."],
     ['b', "Oh, no. Come here."],
     ['a', "I wanted to know. Now I know, and I wish I didn't."],

@@ -233,7 +233,8 @@ function storyPhase(state, rng, trng, phase, texture, entry = null) {
  * enough that an old season should be offered the new one.
  */
 // (2026-11-03: the episode spine — the day in air order, the light story, a heart one way a day.)
-export const PM_ENGINE = '2026-11-03';
+// (2026-11-04: long talks for a split, a shut-down and the friends hearing it; a group chat's friends are never the ones flirting with {x} that day.)
+export const PM_ENGINE = '2026-11-04';
 
 /**
  * THE RESUME (user, 2026-10-25: "with our new system I don't wanna start a new

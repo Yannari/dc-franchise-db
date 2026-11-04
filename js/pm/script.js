@@ -281,7 +281,8 @@ export function factsFor(state, ev) {
   f.flirt = FLIRT_KINDS.has(ev.kind);
   // A beat of the stretch's main or second story (pm/stretch.js; 2026-11-03, the
   // user: "fix the scene length"): its long talks are written for it, and play first.
-  const tid = ev.extra?.thread?.id, st = state.stretch;
+  // (A group chat about a beat names the story it tells as `storyId`.)
+  const tid = ev.extra?.thread?.id || ev.extra?.storyId, st = state.stretch;
   f.main = !!tid && !!st && !st.off && (st.a === tid || st.b === tid);
   // Walked in on the same night: only then is "remember how nervous we were
   // when we walked in" theirs (season 33: Josh, day 5, and Nadia, day 15).

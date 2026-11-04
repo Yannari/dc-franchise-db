@@ -1035,9 +1035,15 @@ export function queueReaction(state, e) {
   const s = state.stretch;
   if (s && !s.off && !BIG_NEWS.has(r.subj) && !e.extra?.stretch && !storyRoleOf(state, r.center)) return;
   // `src` is the scene it reacts to; `about` stays the third person's name.
-  th.queue.push({ ...r, src: e.id, from: e.phase });
+  th.queue.push({ ...r, src: e.id, from: e.phase, ...(e.extra?.thread?.id ? { tid: e.extra.thread.id } : {}) });
 }
 
+// Who flirted with n today: a pull, a crush kiss, a spark (the friends who must not be the ones comforting n's ex).
+const FLIRTS = new Set(['pull', 'game-kiss', 'kiss', 'chal-spark', 'graft-turn', 'bed-share', 'blow-dare', 'snog-marry-pie', 'head-turned', 'tod-truth']);
+function flirtedWith(state, n) {
+  return today(state).filter(e => FLIRTS.has(e.kind) && e.players.slice(0, 2).includes(n)
+    && !(e.kind === 'game-kiss' && e.extra?.of === 'fun')).map(e => e.players.slice(0, 2).find(p => p !== n)).filter(Boolean);
+}
 const NEXT = { night: 'morning', morning: 'day', day: 'evening', challenge: 'evening', event: 'evening', evening: 'night' };
 /** The reactions that are due in this part of the day, as group chats. */
 // How many group chats about the same kind of news an episode airs.
@@ -1059,7 +1065,11 @@ export function reactions(state, rng, phase, max = 3) {
     if (!inVilla(state, center)) continue;
     // Never x's own partner: the girls round the beanbags asking about Jordan
     // included Jordan's partner, who nodded along (season 41 ep 5).
-    const fs = friendsOf(state, center, [x, about, x && heartOf(state, x)].filter(Boolean), 3).filter(f => f !== x && f !== about);
+    // …nor anyone who flirted with {x} today (season 41 ep 5: Mia kissed Theo in
+    // the game, then comforted Tasha about Theo), nor anyone with news of their own
+    // today (Tasha, dumped that afternoon, told Mia "Friends? Seriously?").
+    const busy = [...th.queue.map(z => z.center), ...(th.reacted || []).filter(n => n !== center), ...(x ? flirtedWith(state, x) : [])];
+    const fs = friendsOf(state, center, [x, about, x && heartOf(state, x), ...busy].filter(Boolean), 3).filter(f => f !== x && f !== about);
     if (!fs.length) continue;
     // Found out, and what came of it (season read 2026-10-25: Sean believed Leah,
     // then told the boys he'd "let Leah sweat"; Molly told the girls "I need to
@@ -1097,6 +1107,8 @@ export function reactions(state, rng, phase, max = 3) {
     if (aired) th.chatsAired = total + 1;
     out.push(scene(state, rng, phase, 'group-chat', [center, ...fs], { subj: subjNow, x: x || null, about: about || null, ...(q.of ? { of: q.of } : {}),
       ...(q.sec ? { sec: q.sec } : {}), ...(q.kissed ? { kissed: true } : {}), ...(q.why ? { why: q.why } : {}), ...(q.took ? { took: q.took } : {}), ...(q.story ? { thread: { type: q.story, beat: 'react' } } : {}),
+      // Which story it tells (script.js `main`): never a thread id, which the edit's budget would count as the story's own beat.
+      ...(q.tid ? { storyId: q.tid } : {}),
       pop: pop([center, wronged ? 0.4 : 0.2, 1], [fs[0], 0.1, 0.5]) }, { aired }));
     if (followUp) { const after = haveItOut(state, followUp, { force: true, phase }); if (after) out.push(after); }
   }

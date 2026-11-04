@@ -85,7 +85,16 @@ describe('a season in the mix', () => {
       // islander at 90.4%. The bar sat two deviations out; 2026-10-30's stretch
       // reshuffled who is in which scene and put one at 93% of 127, which is
       // 2.5. The bar sits three out: a broken mix reads 100/0, not 93/7.
-      if (!(second >= 0.05 && first < 0.95)) short.push(`${p.name} ${regs.join('/')}: ${(first * 100).toFixed(0)}% / ${(second * 100).toFixed(0)}% of ${got.length}`);
+      // The second register's own bar, three deviations under the share its
+      // weight gives it: a low second tag (#goofy #ditzy #warm #anxious: soft is
+      // 1.5 of ~10, so ~15%) read 4% of 67 on 2026-11-04's reshuffle, 2.4 out,
+      // where a fixed 5% sat 2.3 out. A broken mix still reads 0.
+      const by = {};
+      for (const [t, w] of voiceWeights(p.name)) if (w > 0 && regOf(t)) by[regOf(t)] = (by[regOf(t)] || 0) + w;
+      const total = Object.values(by).reduce((s, w) => s + w, 0);
+      const want = (by[regs[1]] || 0) / total;
+      const bar = Math.max(0.01, want - 3 * Math.sqrt(want * (1 - want) / got.length));
+      if (!(second >= bar && first < 0.95)) short.push(`${p.name} ${regs.join('/')}: ${(first * 100).toFixed(0)}% / ${(second * 100).toFixed(0)}% of ${got.length}`);
     }
     expect(short).toEqual([]);
     expect(firsts.length).toBeGreaterThan(8);

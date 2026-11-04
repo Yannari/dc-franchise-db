@@ -26,6 +26,7 @@ import { CHAL_BUZZ_WHOLE, CHAL_WATCH_WHOLE, CHAL_PRIZE_WHOLE, CHAL_ROW_WHOLE, CH
 import { GAME_KISS_WHOLE } from './whole/game-kiss.js';
 import { VILLA_BIT } from './runner.js';
 import { LONG_PULL, LONG_WATCHING, LONG_FEELS_OFF, LONG_GRAFT_EYES, LONG_VENT, LONG_LOYALTY, LONG_WHERE_HEAD, LONG_SECRET_BURDEN } from './whole/long.js';
+import { LONG_DOUBT_END, LONG_GRAFT_SHUT, LONG_GROUP_CHAT } from './whole/long-ends.js';
 import { LONG_PULL_MORE, LONG_GRAFT_EYES_MORE, LONG_WATCHING_MORE, LONG_WHERE_HEAD_MORE, LONG_VENT_MORE, LONG_FEELS_OFF_MORE, LONG_PULL_BOTH, LONG_GRAFT_EYES_TAKEN, LONG_WATCHING_CHASER } from './whole/long-more.js';
 import { ARRIVAL_CHAT_WHOLE } from './whole/arrival.js';
 import { extend, build } from './build.js';
@@ -268,6 +269,8 @@ BED_CHAT.leads = [...(BED_CHAT.leads || []), 'backNow'];
 extend(DOUBT_END, DOUBT_END_REASONS);
 DOUBT_END.leads = [...(DOUBT_END.leads || []), 'why', 'took'];
 DOUBT_END.slots = (state, ev) => (ev.extra?.about ? { x: ev.extra.about } : {});
+// …and at length when it is the episode's story (whole/long-ends.js), as are the shut-down and the friends hearing it.
+extend(DOUBT_END, { moves: { whole: LONG_DOUBT_END } }); extend(GRAFT_SHUT, { moves: { whole: LONG_GRAFT_SHUT } }); extend(GROUP_CHAT, { moves: { whole: LONG_GROUP_CHAT } });
 extend(VENT, VENT_REASONS);
 extend(RECOUPLE_PICK, RECOUPLE_EX);
 RECOUPLE_PICK.leads = [...(RECOUPLE_PICK.leads || []), 'exPick', 'reclaimFrom', 'stoleFrom', 'tookFrom', 'leftFrom', 'afterNo', 'cites'];

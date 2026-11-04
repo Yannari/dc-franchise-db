@@ -43,7 +43,7 @@ export const GROUP_CHAT_STORY = {
         ['b', "Wow. Okay. At least {x} was honest?"],
         ['a', "Everyone keeps saying that like honest is a present. It's not a present. It's a slap with a bow on it."],
       ] },
-      { when: { subj: 'honest', story: 'doubt' }, turns: [
+      { when: { subj: 'honest', story: 'doubt', hasWith: false }, turns: [
         ['a', "I asked {x} where {x.posAdj} head's at. And {x} told me. {x} isn't feeling it like before. Just like that. I'd been worrying for two days that something was off, and it turns out I wasn't mad. I almost wish I was."],
         ['b', "Oh, I'm so sorry."],
         ['a', "Don't be nice to me. I'll go."],

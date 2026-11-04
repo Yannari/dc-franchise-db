@@ -305,6 +305,7 @@ function shell(scr, classicScreen, ep, o) {
   <button type="button" class="tdx-btn" onclick="tdxAll('${uid}')">Skip ⏭</button>
   <div class="tdx-chap" id="tdx-chap-${uid}" onpointerdown="tdxSeek('${uid}',event)" title="Click or drag to go anywhere in the episode">${chapHtml(scr)}<span class="head"></span></div>
   <span class="tdx-count" id="tdx-count-${uid}">0 / ${scr.steps.length}</span>
+  ${musicSlider()}
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
   <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
 </div>
@@ -741,6 +742,7 @@ function mapShell(map, S, ep, o) {
   <button type="button" class="tdx-btn go" onclick="tdxNext('${uid}')">Next ▶ <kbd>Space</kbd></button>
   <button type="button" class="tdx-btn" id="tdx-auto-${uid}" onclick="tdxAuto('${uid}')">Auto</button>
   <span class="tdx-count" id="tdm-count-${uid}">0 / ${map.convs.length} watched</span>
+  ${musicSlider()}
   <button type="button" class="tdx-btn" onclick="tdxTv()">TV mode</button>
   <button type="button" class="tdx-btn" onclick="tdxSwitchViewer('classic')" title="Back to the classic screens">Classic</button>
 </div>
@@ -1104,6 +1106,23 @@ export function tdxTab(uid, e) { if (e.target.closest('[data-close]')) { tdxInte
   const sp = e.target.closest('[data-spoil]'); if (sp) { setHideBooth(sp.checked); paint(uid, false); return; } const pick = e.target.closest('[data-rel]'); const b = pick || e.target.closest('[data-tab]'); if (!b) return; const R = reg()[uid]; if (!R) return; if (pick) R.relWho = pick.dataset.rel; else R.tab = b.dataset.tab; const st = document.getElementById(`tdx-st-${uid}`); st.querySelector('.tdx-intel').innerHTML = intelHtml(R.scr, ledgerAt(R.scr, R.idx), R.tab, false, R.relWho); }
 const holdFor = s => Math.min(9000, 1700 + String(s?.text || '').length * 40) + (['title', 'idol', 'out', 'found', 'intro'].includes(s?.k) ? 2400 : 0) + (s?.k === 'ballot' ? 2600 : 0) + (s?.tense ? 1200 : 0) + (s?.k === 'scene' ? 900 : 0) + (s?.k === 'safe' && s.last ? 1800 : 0);
 function stopAuto(R) { R.auto = false; clearTimeout(R.timer); }
+// The music's own level, under the voices: the Big Brother and Challenge viewers' slider (the user,
+// 2026-11-03: "add the volume for bg music media player like the other simulators"). It moves only the
+// music channel (audio.setMusicLevel), so the blips, the effects and the camp's sound keep theirs.
+const musicLevel = () => { try { const v = window.audio?.getMusicLevel?.(); return typeof v === 'number' ? v : 1; } catch { return 1; } };
+function musicSlider() {
+  const v = Math.round(musicLevel() * 100);
+  return `<label class="tdx-mvol${v ? '' : ' zero'}" title="Music volume (the voices stay as they are)"><span>&#127925;</span><input type="range" min="0" max="100" step="1" value="${v}" aria-label="Music volume" oninput="tdxMusicLevel(this.value)" onchange="tdxMusicLevel(this.value);this.blur()" onkeydown="event.stopPropagation()"></label>`;
+}
+export function tdxMusicLevel(v) {
+  const lvl = Math.max(0, Math.min(100, Number(v) || 0)) / 100;
+  try { window.audio?.setMusicLevel?.(lvl); } catch { /* sound never breaks the bar */ }
+  if (typeof document === 'undefined') return;
+  document.querySelectorAll('.tdx-mvol').forEach(l => {
+    l.classList.toggle('zero', !lvl);
+    const inp = l.querySelector('input'); if (inp && inp !== document.activeElement) inp.value = String(Math.round(lvl * 100));
+  });
+}
 export function tdxAuto(uid) {
   const R = sync(uid); if (!R) return;
   R.auto = !R.auto;
@@ -1139,7 +1158,7 @@ export function tdxSwitchViewer(which) {
 /** The classic screens' way back to the stepped viewer. */
 export const TDX_SWITCH = `<div style="display:flex;justify-content:flex-end;margin:0 0 8px"><button type="button" onclick="tdxSwitchViewer('stepped')" style="border:1px solid #ff8a1f;background:#171a24;color:#ff8a1f;border-radius:8px;padding:7px 12px;font:800 11px Nunito,system-ui,sans-serif;letter-spacing:1px;cursor:pointer">▶ STEPPED VIEWER</button></div>`;
 
-if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxSeek, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer, tdmZone, tdmPlace, tdmMap, tdmWin, tdmPlay, tdmStage });
+if (typeof window !== 'undefined') Object.assign(window, { tdxNext, tdxBack, tdxAll, tdxReset, tdxJump, tdxSeek, tdxIntel, tdxTab, tdxAuto, tdxTv, tdxSwitchViewer, tdxMusicLevel, tdmZone, tdmPlace, tdmMap, tdmWin, tdmPlay, tdmStage });
 if (typeof document !== 'undefined') {
   // a stepped screen opens on its first scene; leaving it stops its sound and its Auto
   document.addEventListener('vp:screen', () => {

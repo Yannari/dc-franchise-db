@@ -546,6 +546,9 @@ export const TDX_CSS = `
 .tdx .tdx-btn.go{background:var(--or);color:#1a0e02;border-color:var(--or);padding:8px 20px}
 .tdx .tdx-btn.on{background:var(--te);color:#04201f;border-color:var(--te)}
 .tdx .tdx-btn kbd{font:900 10px Nunito;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.2)}
+.tdx .tdx-mvol{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:#171a24;color:#e9ebf1;border-radius:9px;padding:6px 10px;font-size:13px;cursor:pointer}
+.tdx .tdx-mvol input{width:80px;margin:0;accent-color:var(--or);cursor:pointer}
+.tdx .tdx-mvol.zero span{opacity:.5;text-decoration:line-through}
 .tdx .tdx-chap{flex:1;min-width:140px;display:flex;gap:3px;position:relative;padding:9px 0;cursor:pointer;touch-action:none;user-select:none}
 .tdx .tdx-chap i{flex:1;height:6px;border-radius:3px;background:#2a2f3e;position:relative;overflow:hidden;transition:height .15s}
 .tdx .tdx-chap:hover i{height:10px}.tdx .tdx-chap i:hover{background:#3a4156}
